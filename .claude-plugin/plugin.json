@@ -1,19 +1,21 @@
 {
   "name": "onlyworlds",
-  "description": "Worldbuilding toolkit for OnlyWorlds - the open standard for digital worlds. Parse text into structured elements, design world systems, build tools with the SDK, and sync via API.",
-  "version": "0.4.0",
+  "description": "Parse text into structured world data. Model systems. Build tools. Works with any AI, optimized for Claude Code, outputs OnlyWorlds format.",
+  "version": "1.0.0",
   "author": {
     "name": "Titus Oosting",
     "url": "https://onlyworlds.com"
   },
-  "homepage": "https://onlyworlds.github.io",
+  "homepage": "https://onlyworlds.github.io/docs/development/tooling",
   "repository": "https://github.com/OnlyWorlds/toolkit",
   "license": "MIT",
   "keywords": [
     "worldbuilding",
-    "onlyworlds",
+    "writing",
+    "ttrpg",
+    "game-dev",
     "parsing",
-    "api",
-    "sdk"
+    "fiction",
+    "lore"
   ]
 }

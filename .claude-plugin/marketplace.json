@@ -1,0 +1,35 @@
+{
+  "name": "onlyworlds",
+  "owner": {
+    "name": "Titus Oosting",
+    "email": "contact@onlyworlds.com"
+  },
+  "metadata": {
+    "description": "Worldbuilding toolkit for AI assistants. Parse text into structured data, design world systems, build tools.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "toolkit",
+      "source": "./",
+      "description": "Parse text into structured world data. Model systems. Build tools. Works with any AI, optimized for Claude Code, outputs OnlyWorlds format.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Titus Oosting"
+      },
+      "homepage": "https://onlyworlds.github.io/docs/development/tooling",
+      "repository": "https://github.com/OnlyWorlds/toolkit",
+      "license": "MIT",
+      "keywords": [
+        "worldbuilding",
+        "ttrpg",
+        "writing",
+        "game-dev",
+        "ai",
+        "parsing",
+        "claude"
+      ],
+      "category": "worldbuilding"
+    }
+  ]
+}
