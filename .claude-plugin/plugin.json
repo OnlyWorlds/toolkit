@@ -1,0 +1,19 @@
+{
+  "name": "onlyworlds",
+  "description": "Worldbuilding toolkit for OnlyWorlds - the open standard for digital worlds. Parse text into structured elements, design world systems, build tools with the SDK, and sync via API.",
+  "version": "0.4.0",
+  "author": {
+    "name": "Titus Oosting",
+    "url": "https://onlyworlds.com"
+  },
+  "homepage": "https://onlyworlds.github.io",
+  "repository": "https://github.com/OnlyWorlds/toolkit",
+  "license": "MIT",
+  "keywords": [
+    "worldbuilding",
+    "onlyworlds",
+    "parsing",
+    "api",
+    "sdk"
+  ]
+}
