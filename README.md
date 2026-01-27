@@ -19,9 +19,10 @@ Works with any AI that reads markdown. Optimized for Claude Code. Optimized for 
 ```bash
 /plugin marketplace add OnlyWorlds/toolkit
 /plugin install toolkit@onlyworlds
+# Restart Claude Code to load
 ```
 
-Or direct:
+Or direct (no restart needed):
 ```bash
 git clone https://github.com/OnlyWorlds/toolkit
 claude --plugin-dir ./toolkit
