@@ -1,6 +1,6 @@
 # OnlyWorlds Toolkit
 
-Claude Code / local AI plugin for [OnlyWorlds](https://onlyworlds.com) - the open worldbuilding standard.
+Claude Code / local AI plugin for [OnlyWorlds](https://onlyworlds.com).
 
 Parse text into structured world data. Get design help modeling your world. Build tools with the SDK. Manage worlds via API.
 
