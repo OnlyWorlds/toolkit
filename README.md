@@ -1,6 +1,6 @@
 # Worldbuilding Toolkit
 
-Parse text into structured world data. Model systems. Build tools.
+Claude Code / local AI plugin for [OnlyWorlds](https://onlyworlds.com), an [open worldbuilding standard](https://explorer.onlyworlds.com).
 
 Works with any AI that reads markdown. Optimized for Claude Code. Optimized for converting and outputting to [OnlyWorlds](https://onlyworlds.com) format.
 
