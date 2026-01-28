@@ -2,7 +2,7 @@
 
 Claude Code / local AI plugin for [OnlyWorlds](https://onlyworlds.com), an [open worldbuilding standard](https://explorer.onlyworlds.com).
 
-Works with any AI that reads markdown. Optimized for Claude Code. Optimized for converting and outputting to [OnlyWorlds](https://onlyworlds.com) format.
+Works with any AI that reads markdown. Optimized for Claude Code. Optimized for converting and outputting to OnlyWorlds [format](https://github.com/OnlyWorlds/OnlyWorlds/tree/main/schema).
 
 ## What It Does
 
