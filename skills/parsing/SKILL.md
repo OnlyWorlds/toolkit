@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-parsing
-description: Parse text into OnlyWorlds format. Extract world elements from worldbuilding text, stories, lore, or documents. Use when user mentions OnlyWorlds parsing, wants to convert text to OnlyWorlds, extract characters/locations/elements from text, or import worldbuilding content. Handles paragraphs to full document collections. Loads schema knowledge first to ensure valid output.
+description: This skill should be used when a user wants to extract world elements from text - manuscripts, campaign notes, lore documents, wikis, or any worldbuilding prose. Converts text into structured OnlyWorlds JSON with Characters, Locations, Institutions, etc. Handles messy sources, avoids hallucinated fields, links elements together. Works on paragraphs to full document collections.
 ---
 
 # OnlyWorlds Parsing

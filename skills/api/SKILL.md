@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-api
-description: Interact with the OnlyWorlds REST API to read and write world data. Use when user wants to fetch elements from their world, upload parsed data, sync changes, check for duplicates, or do any CRUD operations. Requires API-Key (from world settings) and API-Pin (from user profile). Base URL is onlyworlds.com/api/worldapi/.
+description: This skill should be used when a user wants to interact with the OnlyWorlds REST API - fetching elements from their world, uploading parsed data, syncing changes, checking for duplicates, or any CRUD operations. Requires API-Key (from world settings) and API-Pin (from user profile). Base URL is onlyworlds.com/api/worldapi/.
 ---
 
 # OnlyWorlds API

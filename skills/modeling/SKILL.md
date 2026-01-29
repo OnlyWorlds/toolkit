@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-modeling
-description: Design consultation for modeling world systems in OnlyWorlds. Use when user asks how to represent magic systems, inventories, factions, tech trees, crafting, timelines, or any complex concept. OnlyWorlds is compositional - one concept becomes multiple linked elements. This skill helps translate user concepts into the right combination of the 22 element types.
+description: This skill should be used when a user asks how to represent complex world systems - magic systems, inventories, factions, tech trees, crafting, timelines, or any concept that needs structuring. OnlyWorlds is compositional - one concept often becomes multiple linked elements. Provides design consultation to translate user concepts into the right combination of the 22 element types.
 ---
 
 # OnlyWorlds Modeling Consultation
@@ -158,6 +158,52 @@ Characters link to Abilities they've learned (Character.abilities).
 
 Does this capture your needs, or are there aspects I'm missing?
 
+## OnlyWorlds Strengths & Complements
+
+OnlyWorlds excels at **world structure** - the entities, relationships, and lore that define a fictional universe. It's designed for portability, linking, and tool interoperability.
+
+**Where OnlyWorlds shines:**
+
+- Named entities with rich descriptions (Characters, Locations, Institutions)
+- Relationships between elements (who knows whom, what belongs where)
+- Categorization via supertype/subtype
+- Milestone events and narrative arcs
+- Data that benefits from visual tools (maps, graphs, timelines)
+- Content meant to be shared or used across multiple tools
+
+**Where other tools complement:**
+
+| Need | Better Fit | Examples |
+|------|-----------|----------|
+| High-volume logging | Databases | SQLite, PostgreSQL, MongoDB |
+| Custom schemas | Flexible storage | JSON files, YAML, Notion, Airtable |
+| Statistical analysis | Query-oriented tools | SQL databases, spreadsheets, pandas |
+| Real-time state | Application state | Redis, game engines, app memory |
+| Offline/private | Local storage | SQLite, flat files, Obsidian vault |
+
+**Hybrid Approaches**
+
+OnlyWorlds stores **world data** (entities, lore, relationships) with a defined schema. Projects often also need **application data** (logs, state, custom metrics) with their own schema.
+
+Potential combinations:
+
+- **OW + custom Database**: World structure in OnlyWorlds, simulation logs or app-specific records in your own database
+- **OW + Obsidian**: Canonical world data in OnlyWorlds, personal drafts and notes locally
+- **OW + Spreadsheet**: Characters and lore in OnlyWorlds, number-heavy tracking in sheets
+- **OW + Game Engine**: World data synced from OnlyWorlds, runtime state in the engine
+
+The question isn't "can OW do this?" but "what's the cleanest architecture for this project?"
+
+**Encoding Conventions**
+
+When stretching OW fields for extra data, parseable conventions help:
+
+```
+[[tag:value]] or {key: value}
+```
+
+Works for light customization. For heavy custom data, a complementary tool is usually cleaner.
+
 ## Consultative Stance
 
 This is design work, not form-filling. The user knows their world. You know OnlyWorlds patterns. Together, find the right mapping.
@@ -166,8 +212,9 @@ This is design work, not form-filling. The user knows their world. You know Only
 - Present options when multiple approaches work
 - Explain trade-offs (more elements = more linkable; fewer = simpler)
 - Iterate based on feedback
+- Consider hybrid architectures when appropriate
 
-Don't force users into patterns. Help them find patterns that fit.
+Help users find patterns that fit - including recommending complementary tools when that's the cleaner solution.
 
 ---
 

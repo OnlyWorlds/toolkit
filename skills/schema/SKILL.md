@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-schema
-description: OnlyWorlds schema reference. 22 element types (Character, Creature, Species, Family, Collective, Institution, Location, Object, Construct, Ability, Trait, Title, Language, Law, Event, Narrative, Phenomenon, Relation, Map, Pin, Marker, Zone). Use for field lookups, validation, checking if fields exist, disambiguating between element types. Loads full schema reference when needed.
+description: This skill should be used for OnlyWorlds schema reference - field lookups, validation, checking if fields exist, disambiguating between element types. OnlyWorlds has 22 element types (Character, Creature, Species, Family, Collective, Institution, Location, Object, Construct, Ability, Trait, Title, Language, Law, Event, Narrative, Phenomenon, Relation, Map, Pin, Marker, Zone). Loads full schema reference when needed.
 ---
 
 # OnlyWorlds Schema Reference

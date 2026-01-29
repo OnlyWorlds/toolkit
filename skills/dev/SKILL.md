@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-dev
-description: Build tools and games on OnlyWorlds data. Use when user wants to create visualizations, editors, games, or any application using world data. Covers SDK setup (npm install @onlyworlds/sdk), project scaffolding, credential handling, and deployment. OnlyWorlds works as a headless backend - world data lives in the cloud, your app just fetches and renders.
+description: This skill should be used when a user wants to build tools, games, or applications using OnlyWorlds data - visualizations, editors, games, or any software consuming world data. Covers SDK setup (npm install @onlyworlds/sdk), project scaffolding, credential handling, and deployment. OnlyWorlds works as a headless backend - world data lives in the cloud, your app just fetches and renders.
 ---
 
 # OnlyWorlds Tool Development
