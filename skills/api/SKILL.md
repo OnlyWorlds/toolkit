@@ -1,7 +1,6 @@
 ---
 name: onlyworlds-api
-description: Interact with the OnlyWorlds REST API to read and write world data. Use when user wants to fetch existing world elements, upload parsed data, check for duplicates, or sync with OnlyWorlds. Works with API-Key and API-Pin authentication.
-disable-model-invocation: true
+description: Interact with the OnlyWorlds REST API to read and write world data. Use when user wants to fetch elements from their world, upload parsed data, sync changes, check for duplicates, or do any CRUD operations. Requires API-Key (from world settings) and API-Pin (from user profile). Base URL is onlyworlds.com/api/worldapi/.
 ---
 
 # OnlyWorlds API

@@ -1,7 +1,6 @@
 ---
 name: onlyworlds-modeling
-description: Design consultation for modeling systems in OnlyWorlds. Use when user wants to translate their concepts, game systems, magic systems, inventories, factions, or world structures into OnlyWorlds elements. Interactive and consultative.
-disable-model-invocation: true
+description: Design consultation for modeling world systems in OnlyWorlds. Use when user asks how to represent magic systems, inventories, factions, tech trees, crafting, timelines, or any complex concept. OnlyWorlds is compositional - one concept becomes multiple linked elements. This skill helps translate user concepts into the right combination of the 22 element types.
 ---
 
 # OnlyWorlds Modeling Consultation
