@@ -45,6 +45,22 @@ Based on user situation, explain relevant capabilities:
 | "I need to sync data" | api | CRUD operations - fetch, upload, sync with OnlyWorlds |
 | "What fields exist?" | schema | All 22 types, all fields - reference and validation |
 
+### Parsing Depth
+
+Parsing works at any depth:
+
+**Raw** - Dump text, extract what's visible. Works immediately, no context needed.
+
+**Focused** - Prioritize certain elements. A novel might care most about Characters and Events; a TTRPG about Locations and Objects.
+
+**Vocabulary-aware** - Know project terms. "Threads" = Narrative. "Factions" = Institution. "Hongers" = Narrative with specific supertype.
+
+**Project-aware** - Watch for things that matter to this world. Story arcs in progress. Recurring themes. Elements that need tracking.
+
+These layers build naturally. First parse is raw. As the project develops, focus emerges. Vocabulary gets established. Awareness accumulates.
+
+For ongoing projects, a short conversation about what matters can help - but it's not required. The parser adapts to whatever context exists.
+
 ### 4. Standalone Use
 
 The toolkit works without an OnlyWorlds account:

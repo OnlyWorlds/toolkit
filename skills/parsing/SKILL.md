@@ -188,7 +188,8 @@ Offer to save JSON to file.
 ## Additional Guidelines
 
 - **Relation sparingly** - Use friends/rivals/family fields first
-- **Existing world?** - If working with existing world, fetch data first to match against
+- **Existing world?** - If syncing to an existing world, consider using api skill to fetch current data first and check for duplicates
+- **Need IDs back?** - When uploading via api skill, the response includes created element UUIDs. Useful for linking parsed elements to external systems (local databases, game engines, etc.)
 
 ## Example Parse
 

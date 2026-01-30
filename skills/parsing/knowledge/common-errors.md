@@ -90,6 +90,19 @@ When no appropriate element exists, leave the field empty - don't put descriptio
 - BAD: Character and their Title exist but aren't linked
 - GOOD: Title.holders should include the Character
 
+**Family relationships need Family element**
+- BAD: Trying to link "Anna and Erik are siblings" directly between Characters
+- GOOD: Create Family element, then link both Characters to it via their `family_ids` field
+- Pattern: Characters don't link directly to each other for family - they link to a shared Family element
+- Example:
+  ```json
+  "Family": [{ "name": "The Holmberg Family" }],
+  "Character": [
+    { "name": "Anna Holmberg", "family": ["The Holmberg Family"] },
+    { "name": "Erik Holmberg", "family": ["The Holmberg Family"] }
+  ]
+  ```
+
 ---
 
 ## Schema Errors - Hallucinated Fields
