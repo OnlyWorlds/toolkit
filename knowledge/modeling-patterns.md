@@ -176,6 +176,23 @@ Marker 4 (order: 4) ──────── Marker 3 (order: 3)
 - Zone: "The Fluffium District"
 - Markers: 4 points at corners, order 1-4, all linking to the Zone
 
+### Schedules and Structured Data
+
+**Pattern: Construct with `rationale` field**
+
+For tabular or operational data (schedules, rules, formulas), use Construct. The `rationale` field holds freeform text - put markdown tables there, parse client-side.
+
+```
+Construct: "Weekly Schedule"
+  supertype: schedule
+  rationale: "| Hour | Mon | Tue | ... |"
+  custodian: [Institution]
+```
+
+Query with `?supertype=schedule` to filter.
+
+---
+
 ### Timeline/Historical Periods
 
 **Pattern: Event + Construct + Narrative**

@@ -6,7 +6,7 @@ Works with any AI that reads markdown. Optimized for Claude Code. Optimized for 
 
 ## What It Does
 
-Expert worldbuilding support: not to build your worlds for you, but to manage data, develop tools, and make full use of the OnlyWorlds universal standard with specializd skills:
+Expert worldbuilding support: not to build your worlds for you, but to manage data, develop tools, and make full use of the OnlyWorlds universal standard with specialized skills:
 
 **Parsing** takes any text and extracts world elements. Paste a paragraph, a chapter, upload files, point at folders.  
 
@@ -42,11 +42,13 @@ Point at the knowledge files:
 
 | Skill | Purpose |
 |-------|---------|
+| **onlyworlds-start** | Entry point — understands your situation, routes to the right skill |
 | **parsing** | Text (or files, links) to OnlyWorlds elements |
 | **modeling** | Design consultation, data mapping |
 | **schema** | Field reference (auto-loads) |
 | **api** | CRUD operations through natural language |
-| **dev** | development, SDK integration, and deployment |
+| **dev** | Development, SDK integration, and deployment |
+| **project-setup** | Connect your project to an OnlyWorlds world (runs automatically when needed) |
 
 ## Usage
 

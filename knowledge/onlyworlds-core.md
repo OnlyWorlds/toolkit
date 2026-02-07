@@ -158,13 +158,14 @@ ONLYWORLDS_API_PIN=your-pin
 
 Never commit credentials to version control.
 
-### Bulk Operations
+### Fetching Multiple Elements
 
-For importing/exporting entire worlds, use WorldSync endpoints:
-- Export: `POST /api/worldsync/send/` (body auth)
-- Import: `POST /api/worldsync/store/` (body auth)
+To fetch all elements of a type:
+```
+GET /api/worldapi/{element_type}/
+```
 
-These use body authentication instead of headers.
+Returns array of all elements of that type in the world. Use this to build caches or display full lists.
 
 ---
 

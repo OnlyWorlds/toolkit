@@ -7,6 +7,12 @@ description: This skill should be used when a user wants to interact with the On
 
 Read and write world data via the OnlyWorlds REST API.
 
+**⚠️ Safety Notice:** This skill performs write operations that can modify or delete world data. Always:
+- Review changes before executing
+- Test with small batches first
+- Keep backups of your world (export data regularly)
+- Check `.ow/config.json` for `last_backup` date - if > 7 days, consider backing up before major operations
+
 ## Quick Start
 
 When user wants to interact with OnlyWorlds API:
@@ -58,13 +64,13 @@ Based on user request:
 - Get world info → [Get World](#get-world)
 - List elements → [List Elements](#list-elements)
 - Get specific element → [Get Element](#get-element)
-- Export entire world → [Bulk Export](#bulk-export)
+- Export entire world → [Fetch Existing World](#fetch-existing-world-for-parsing)
 
 **Writing data:**
 - Create element → [Create Element](#create-element)
 - Update element → [Update Element](#update-element)
 - Delete element → [Delete Element](#delete-element)
-- Import parsed data → [Bulk Import](#bulk-import)
+- Upload parsed data → [Upload Multiple Elements](#upload-multiple-elements)
 
 ## API Operations
 
@@ -97,20 +103,24 @@ curl -s -X GET "https://www.onlyworlds.com/api/worldapi/{element_type}/" \
 - ability, trait, language, law
 - event, narrative, phenomenon, relation
 
-**Response format:**
+**Response format:** Returns a JSON array of all elements of that type.
+
 ```json
-{
-  "count": 42,
-  "next": null,
-  "previous": null,
-  "results": [...]
-}
+[
+  {"id": "uuid", "name": "Element Name", "description": "...", ...},
+  ...
+]
 ```
 
 **Optional query parameters:**
 - `?search=name` - Filter by name
-- `?limit=10&offset=0` - Pagination
-- `?ordering=-created_at` - Sort order
+- `?supertype=X` - Filter by supertype (e.g., `?supertype=honger` for narratives, `?supertype=schedule` for constructs)
+
+**Note:** The SDK wraps this in `{count, next, previous, results}` for pagination. Raw curl returns a plain array.
+
+**IMPORTANT: Endpoint names are SINGULAR** (not plural):
+- CORRECT: `/character/`, `/location/`, `/institution/`
+- WRONG: `/characters/`, `/locations/`, `/institutions/`
 
 ### Get Element
 
@@ -184,67 +194,76 @@ curl -s -X DELETE "https://www.onlyworlds.com/api/worldapi/{element_type}/{uuid}
 
 Returns 204 No Content on success.
 
-### Bulk Export
+### Upload Multiple Elements
 
-Export entire world as JSON:
+**DEFAULT: Use individual POST requests per element.**
 
-```bash
-curl -s -X POST "https://www.onlyworlds.com/api/worldsync/send/" \
-  -H "Content-Type: application/json" \
-  -d '{"pin": "{api_pin}", "api_key": "{api_key}"}'
-```
-
-Note: WorldSync endpoints use body auth, not headers.
-
-Returns complete world data with all elements grouped by type.
-
-### Bulk Import
-
-Import world data from JSON:
+For parsing workflows, upload each element individually:
 
 ```bash
-curl -s -X POST "https://www.onlyworlds.com/api/worldsync/store/" \
+# For each element in your parsed JSON:
+curl -s -X POST "https://www.onlyworlds.com/api/worldapi/{element_type}/" \
+  -H "API-Key: {api_key}" \
+  -H "API-Pin: {api_pin}" \
   -H "Content-Type: application/json" \
-  -d '{
-    "pin": "{api_pin}",
-    "api_key": "{api_key}",
-    "Character": [...],
-    "Location": [...]
-  }'
+  -d '{...element data...}'
 ```
 
-Note: WorldSync endpoints use body auth, not headers. Include credentials alongside element data.
+**Why individual POSTs:**
+- Returns UUID immediately (needed for linking)
+- Clear error messages per element
+- Easy to track what succeeded/failed
+- Works for any batch size (1 to 1000+)
 
-Use this to upload parsed data in bulk.
+**Performance:** Even 100+ elements work fine with individual POSTs. The overhead is minimal and the benefits (UUIDs, error clarity) are worth it.
 
 ## Common Workflows
 
+### Upload Parsed Elements
+
+**Before uploading**, check backup status:
+
+1. Read `.ow/config.json`
+2. Check `last_backup` field
+3. If null or > 7 days ago, remind user: "Your last backup was [X days/never]. Consider exporting your world before this upload."
+4. For large uploads (20+ elements), always recommend backup first
+
+**Standard upload flow** (use this for parsed content):
+
+```python
+# Pseudocode for uploading parsed elements
+for element in parsed_json:
+    response = POST(f"/worldapi/{element.type.lower()}/", element.data)
+    uuid = response["id"]
+    # Store uuid for linking dependent elements
+```
+
+Use individual POST requests. Batch size doesn't matter - 10 elements or 100 elements, same approach.
+
+**After large uploads**, offer to update `last_backup` date if user wants to mark this as backed up.
+
 ### Fetch Existing World for Parsing
 
-When parsing skill needs existing world data:
+When parsing skill needs existing world data for reconciliation:
 
 1. Validate credentials
 2. Get world info (name, settings)
-3. List all elements by type (or bulk export)
-4. Return data for parsing skill to match against
+3. Fetch all existing elements
 
+Use individual GET requests per type:
 ```bash
-# Get everything at once
-curl -s -X POST "https://www.onlyworlds.com/api/worldsync/send/" \
-  -H "Content-Type: application/json" \
-  -d '{"pin": "{api_pin}", "api_key": "{api_key}"}'
+curl -s -X GET "https://www.onlyworlds.com/api/worldapi/character/" \
+  -H "API-Key: {api_key}" \
+  -H "API-Pin: {api_pin}"
+
+curl -s -X GET "https://www.onlyworlds.com/api/worldapi/location/" \
+  -H "API-Key: {api_key}" \
+  -H "API-Pin: {api_pin}"
+
+# ... repeat for each type you need
 ```
 
-### Upload Parsed Elements
-
-After parsing skill generates JSON:
-
-1. Validate credentials
-2. Convert element names to IDs for relationships (if linking to existing)
-3. Create elements via POST or bulk import
-
-**For small batches** (< 20 elements): Create individually with POST
-**For large imports**: Use bulk import endpoint
+This gives you clean, predictable data per type.
 
 ### Check for Duplicates
 
@@ -264,7 +283,7 @@ If results found, consider updating instead of creating.
 2. **Link suffixes matter** - `_id` for single, `_ids` for multi
 3. **World-scoped keys** - Each API key = one world
 4. **Check before create** - Search for existing elements to avoid duplicates
-5. **Use bulk for large data** - Don't create 100 elements one by one
+5. **Individual POSTs** - Use one POST per element for clear errors and immediate UUIDs
 
 ## Error Handling
 
@@ -282,14 +301,15 @@ If results found, consider updating instead of creating.
 
 **400**: Schema validation failed. Check field names against schema-reference.md. Verify link fields use correct suffixes. Ensure required fields present (name is required).
 
-**429**: Wait and retry. Consider bulk operations (WorldSync) instead of rapid individual calls.
+**429**: Wait and retry. Add delays between requests (e.g., 100ms between POSTs).
 
 ## Integration with Parsing Skill
 
 This skill complements `onlyworlds-parsing`:
 
 1. **Before parsing**: Use this skill to fetch existing world data
-2. **After parsing**: Use this skill to upload the generated JSON
+2. **After parsing**: Use this skill to upload the generated JSON (individual POSTs)
 3. **Existing world flow**: Fetch → Parse → Match → Upload
 
 When user says "existing world", fetch the world data first, then pass to parsing skill for matching.
+

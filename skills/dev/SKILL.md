@@ -363,31 +363,20 @@ const otherFormat = transformToOtherFormat(allData);
 
 ## Bulk Operations
 
-For importing/exporting entire worlds:
+For fetching all world data (e.g., for backup or display):
 
 ```typescript
-// Export whole world (WorldSync uses body auth, not SDK)
-const response = await fetch('https://www.onlyworlds.com/api/worldsync/send/', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ pin: apiPin, api_key: apiKey })
-});
-const worldData = await response.json();
+// Fetch each type individually
+const characters = await client.characters.list();
+const locations = await client.locations.list();
+// ... etc for all types you need
 
-// Import data
-await fetch('https://www.onlyworlds.com/api/worldsync/store/', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    pin: apiPin,
-    api_key: apiKey,
-    Character: [...],
-    Location: [...]
-  })
-});
+// Or fetch world metadata
+const world = await client.worlds.get();
+console.log(world.name, world.description);
 ```
 
-Note: WorldSync uses body auth, not headers.
+For uploads, always use individual POST/PATCH operations through the SDK.
 
 ## MCP Integration
 

@@ -30,17 +30,41 @@ Read all four knowledge files before extracting - this ensures your output impor
 
 Reading these first prevents field hallucination (inventing plausible-sounding fields that don't exist in the schema).
 
-### Step 1: Quick Questions (If Needed)
+### Step 1: Check Project Setup (If User Has World)
+
+**If user mentioned having an OnlyWorlds world**, check for project setup:
+
+```bash
+# Check for .ow/ folder
+ls -la .ow/
+```
+
+**If `.ow/` folder exists:**
+- Project is set up, reconciliation ready
+- Load world cache from `.ow/world-cache.json`
+- Parse with duplicate checking enabled
+
+**If `.ow/` folder does NOT exist (but user has world):**
+- **STOP** - Don't parse yet
+- Tell user: "Let's set up your project first - enables reconciliation and prevents duplicates"
+- Invoke `onlyworlds:project-setup` skill
+- Wait for setup to complete, THEN parse
+
+**If user has NO OnlyWorlds world:**
+- Skip this step entirely
+- Proceed directly to fresh parsing (outputs JSON only)
+- This is perfectly valid - many users just want structured JSON without cloud sync
+
+### Step 2: Quick Questions (If Needed)
 
 If context is clear (user intent obvious, scope understood), skip to extraction. Otherwise, ask:
 
-1. **"Existing world or fresh start?"** - If existing, get world data first to match against
-2. **"Extract everything, or focus on specific types?"** - Helps choose the right strategy
-3. **"Output as JSON file or inline?"** - Default to inline, offer to save
+1. **"Extract everything, or focus on specific types?"** - Helps choose the right strategy
+2. **"Output as JSON file or inline?"** - Default to inline, offer to save
 
 Don't ask users to explain what's "world-specific" - figure that out from context (named things, invented terminology, unique concepts = world-specific; generic nouns = skip).
 
-### Step 2: Choose Strategy
+### Step 3: Choose Strategy
 
 Based on scope:
 - **Single-pass**: Small text, extract everything at once
@@ -49,7 +73,7 @@ Based on scope:
 
 Tell user your plan and get confirmation.
 
-### Step 3: Extract Elements
+### Step 4: Extract Elements
 
 Read text and identify elements. For each:
 
@@ -76,7 +100,7 @@ Read text and identify elements. For each:
    - Mental description → Character.mentality (NOT Trait)
    - Generic personality → Character fields (NOT separate elements)
 
-### Step 4: Link Relationships
+### Step 5: Link Relationships & Validate References
 
 After all elements identified:
 
@@ -85,9 +109,7 @@ After all elements identified:
 3. Only link what's explicitly stated or clearly implied
 4. Use Relation sparingly - existing fields (friends, rivals, family) first
 
-### Step 5: Validate References
-
-Before generating output, verify all link fields:
+**Then validate all references** before generating output:
 
 1. **Check every linked name exists** - Scan all arrays (abilities, effects, objects, languages, etc.)
 2. **For each referenced name**, either:
