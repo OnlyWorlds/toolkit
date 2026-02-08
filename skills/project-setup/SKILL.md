@@ -75,7 +75,7 @@ This will create:
 Is this the right place for your project?
 ```
 
-**STOP HERE. Ask the question. Use the AskUserQuestion tool or wait for their response in conversation.**
+**STOP HERE. Ask the question. Use the AskUserQuestion tool or (preferably) wait for their response in conversation.**
 
 Do NOT proceed to Step 2 until user explicitly says:
 - "yes" / "y" / "proceed" / "that's fine" / "go ahead" / etc.
@@ -112,6 +112,20 @@ If user doesn't have these:
 > 1. Sign in at onlyworlds.com
 > 2. Go to your Profile for your API-Pin
 > 3. Go to World Settings for the API-Key (each world has its own key)"
+
+**Then ask how to store credentials:**
+
+> "Your API-Pin grants write access to your world. How would you like to store credentials?"
+
+| Mode | What's stored in .env | Behavior |
+|------|----------------------|----------|
+| **full** (default) | API-Key + API-Pin | Fully automated, no prompts |
+| **key-only** | API-Key only | PIN asked when needed for write operations |
+| **manual** | Nothing | Both asked each session |
+
+Present user with these three options. Default to full if user just wants to get going.
+
+Record the chosen mode — it affects Step 7.
 
 ### Step 4: Validate Credentials
 
@@ -157,11 +171,26 @@ Parse responses into lightweight cache (name, uuid, type for each element).
 
 ### Step 7: Create Project Files
 
-**`.env`**:
+**`.env`** (varies by credential mode from Step 3):
+
+**full mode:**
 ```
 ONLYWORLDS_API_KEY=your-api-key
 ONLYWORLDS_API_PIN=your-pin
 ONLYWORLDS_WORLD_UUID=world-uuid
+```
+
+**key-only mode:**
+```
+ONLYWORLDS_API_KEY=your-api-key
+ONLYWORLDS_WORLD_UUID=world-uuid
+# PIN not stored — will be asked when needed for write operations
+```
+
+**manual mode:**
+```
+ONLYWORLDS_WORLD_UUID=world-uuid
+# Credentials not stored — will be asked each session
 ```
 
 **`.ow/config.json`**:
@@ -169,6 +198,7 @@ ONLYWORLDS_WORLD_UUID=world-uuid
 {
   "world_name": "World Name",
   "world_uuid": "uuid",
+  "credential_mode": "full",
   "cached_at": "2026-02-04T12:00:00Z",
   "last_backup": null,
   "element_counts": {
@@ -193,14 +223,12 @@ Note: `last_backup` tracks when full world export was last done. Used to remind 
 
 ### Step 8: Update .gitignore
 
-Check if .gitignore exists. Append if not already present:
+Check if .gitignore exists. If it does, check whether `.env` and `.ow/` are already listed — only append lines that are missing. If no .gitignore exists, create one:
 ```
 # OnlyWorlds credentials and cache
 .env
 .ow/
 ```
-
-If no .gitignore, create one with these entries.
 
 ### Step 9: Confirm Setup and Safety Notice
 
@@ -208,13 +236,14 @@ Report to user:
 ```
 Connected to world: "World Name"
 - Cached X elements (Y Characters, Z Locations, ...)
-- Credentials stored in .env
+- Credential mode: {full / key-only / manual}
 - Ready for reconciliation parsing
 
 ⚠️  Important: AI operations can modify/delete data.
 - Back up your world regularly (export world data periodically)
 - Review changes before approving uploads
 - Test with small batches first
+- To change credential storage later, edit .env and update credential_mode in .ow/config.json
 
 Next: Parse some text with `/onlyworlds:parsing`
 ```
@@ -269,7 +298,9 @@ If `.ow/` exists and user wants to add another world:
 After setup, other skills should:
 
 1. Detect `.ow/` folder exists
-2. Load credentials from `.env`
-3. Load cache from `.ow/world-cache.json`
-4. Enable reconciliation mode automatically
-5. Check cache freshness before operations
+2. Check `credential_mode` in `.ow/config.json`
+3. Load credentials from `.env` (may be partial depending on mode)
+4. If PIN missing and needed for write operations: ask user for it
+5. Load cache from `.ow/world-cache.json`
+6. Enable reconciliation mode automatically
+7. Check cache freshness before operations

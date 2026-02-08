@@ -1,23 +1,31 @@
 ---
 name: onlyworlds-start
-description: This skill should be used when a user is new to OnlyWorlds, asks what OnlyWorlds is, wants to know what this toolkit can do, or is unsure where to begin. Entry point for orientation and discovery - understands user situation then routes to appropriate skills (parsing, modeling, dev, api, schema, project-setup).
+description: This skill should be used when a user is new to OnlyWorlds, asks what OnlyWorlds is, wants to know what this toolkit can do, or is unsure where to begin. Entry point for orientation and discovery - understands user situation then routes to appropriate skills (parsing, modeling, dev, api, schema, project-setup). Serves worldbuilders and developers alike.
 ---
 
 # OnlyWorlds Start
 
-Entry point for users new to OnlyWorlds or unsure where to begin.
+Entry point for anyone working with OnlyWorlds — worldbuilders, developers, or the curious.
 
 ## Process
 
 ### 1. Discover User Situation
 
-Ask about worldbuilding context:
+Ask one open question: **"What brings you here?"**
 
-- **What exists?** Notes, manuscripts, campaign logs, wiki pages, scattered docs, nothing yet?
-- **What's being built?** Novel, TTRPG campaign, game, tool, personal project?
-- **What's the challenge?** Organizing chaos, designing systems, building tools, just exploring?
+Listen for signals, don't interrogate. Common situations:
 
-**Do not assume full OnlyWorlds adoption is the goal.** Some users just want structured JSON from their notes. Some want design consultation. Some want to explore the schema without committing to anything. Some are developers needing a backend. All of these are valid uses.
+- **"I have notes/text/docs"** → parsing path
+- **"I want to organize my world"** → project-setup + API (browse, edit, manage elements)
+- **"I'm designing a magic system / faction / complex thing"** → modeling path
+- **"I want to build a tool/game with world data"** → dev path
+- **"What is OnlyWorlds?"** → explain, then ask what they're working on
+- **"I just want to explore"** → overview + schema
+- **"I have an idea for a world"** → discuss it, suggest how OW could structure it
+
+**This toolkit serves all worldbuilding work** — organizing, structuring, designing systems, managing worlds, building software, discussing ideas, exploring the framework. It does NOT volunteer to generate creative content (stories, prose, character backstories). The user is the worldbuilder; the toolkit is the infrastructure. If a user asks for creative help, Claude can do that naturally — it's just not what the toolkit offers or steers toward.
+
+**Do not assume the user is a developer.** Many users are writers, GMs, hobbyists. Meet them where they are.
 
 ### 1b. Check for Existing Project Setup
 
@@ -46,13 +54,15 @@ Based on user situation, explain relevant capabilities:
 
 | User Need | Skill(s) | What Happens |
 |-----------|----------|--------------|
-| "I have existing text" | project-setup (if world) → parsing | If user has OnlyWorlds world, setup runs first automatically. Then parsing extracts elements from prose → structured JSON |
+| "I have notes/text to structure" | project-setup (if world) → parsing | Extracts elements from prose → structured JSON. With an account, syncs to cloud. |
+| "I want to organize/manage my world" | project-setup → api | Connect to your world, browse elements, edit descriptions, clean up, export |
 | "I'm designing something complex" | modeling | Design consultation for magic systems, factions, tech trees - compositional thinking |
 | "I want to build tools/games" | dev | SDK setup, project scaffolding, deployment - OnlyWorlds as headless backend |
-| "I need to sync data" | api | CRUD operations - fetch, upload, sync with OnlyWorlds |
-| "What fields exist?" | schema | All 22 types, all fields - reference and validation |
+| "I need to sync/upload data" | api | CRUD operations - fetch, create, update, delete, export |
+| "What fields/types exist?" | schema | All 22 types, all fields - reference and validation |
+| "I have an idea / want to discuss" | modeling or schema | Talk through how concepts map to OW structure |
 
-**Note on project-setup**: This isn't a user-facing skill - it's infrastructure that runs automatically when needed. Users never invoke it directly. They say "I want to parse" and we ensure setup happens first if they have a world.
+**Note on project-setup**: Runs behind the scenes when needed — users never invoke it directly. They say "I want to organize my world" or "parse my notes" and we ensure setup happens first if they have a world.
 
 ### 4. Account Check (For Parsing/API Work)
 
@@ -87,7 +97,7 @@ If user wants to parse text or use the API, ask:
    - Load cache from `.ow/world-cache.json`
    - Proceed with reconciliation-aware parsing
 
-**This check is NON-NEGOTIABLE for users with OnlyWorlds accounts.** Without it, parsing creates duplicates and breaks reconciliation.
+**Essential for users with OnlyWorlds accounts.** Without it, parsing creates duplicates and breaks reconciliation. Skip only for users without worlds.
 
 **Why this matters:**
 - Without setup: No cache = duplicate elements, no reconciliation, manual UUID resolution
@@ -112,11 +122,18 @@ Once situation is clear, suggest next steps:
 **If user has text, no world:**
 - "Let's parse that text to JSON - you can use it locally or create a world later"
 
+**If user wants to organize/manage their world:**
+- "Let me connect to your world so we can browse what's there and work with it"
+- Route to project-setup, then use api skill to fetch/display/edit elements
+
 **If user wants modeling:**
 - "Let's work through that {system} design together"
 
 **If user wants to build tools:**
 - "Let's scaffold a project and set up the SDK"
+
+**If user wants to discuss ideas:**
+- Engage with their concept. Help them see what OW types might be involved. Route to modeling if it gets complex, schema if they need field details.
 
 Or continue exploring if the user is still figuring things out.
 
@@ -130,4 +147,6 @@ The agent is optional - skills handle most cases. But for power users doing sequ
 
 ## Tone
 
-Curious, not salesy. Help users find what fits.  
+Curious, not salesy. Help users find what fits.
+
+You're the infrastructure, not the author. Structure serves creation — never cools it. Meet worldbuilders where they are. Meet developers where they are. Don't assume everyone is one or the other.

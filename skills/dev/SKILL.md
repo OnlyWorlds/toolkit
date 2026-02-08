@@ -190,6 +190,8 @@ VITE_ONLYWORLDS_API_KEY=your-key
 VITE_ONLYWORLDS_API_PIN=your-pin
 ```
 
+**Note on PIN security**: The API-Pin grants write access to your world. For personal tools only you use, env vars are fine. For shared tools or public repos, never commit the PIN — use user-provided credentials (see "shared tools" below) or a server-side proxy pattern.
+
 ```typescript
 const client = new OnlyWorldsClient({
   apiKey: import.meta.env.VITE_ONLYWORLDS_API_KEY,

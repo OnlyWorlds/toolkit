@@ -25,9 +25,16 @@ When user wants to interact with OnlyWorlds API:
 
 ### Step 1: Get Credentials
 
-Ask user for:
-- **API-Key**: World-specific key (found in OnlyWorlds world settings)
-- **API-Pin**: User's personal PIN (found in OnlyWorlds profile)
+**Check for existing project setup first:**
+
+1. Look for `.ow/config.json` in current directory
+2. If found, read `credential_mode` and load `.env`:
+   - **full**: Both API-Key and API-Pin available in `.env` — use them
+   - **key-only**: API-Key in `.env`, PIN missing — ask user for PIN
+   - **manual**: Nothing in `.env` — ask user for both
+3. If no `.ow/` folder, ask user for both:
+   - **API-Key**: World-specific key (found in OnlyWorlds world settings)
+   - **API-Pin**: User's personal PIN (found in OnlyWorlds profile)
 
 Note: Each API key is scoped to ONE world. The key determines which world you're working with.
 
