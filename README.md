@@ -1,18 +1,16 @@
 # Worldbuilding Toolkit
 
-Claude Code / local AI plugin for [OnlyWorlds](https://onlyworlds.com), an [open worldbuilding standard](https://explorer.onlyworlds.com).
+Structure, organize, and build with your worlds. Powered by [OnlyWorlds](https://onlyworlds.com), an open standard for worldbuilding data.
 
-Works with any AI that reads markdown. Optimized for Claude Code. Optimized for converting and outputting to OnlyWorlds [format](https://github.com/OnlyWorlds/OnlyWorlds/tree/main/schema).
+Works with any AI that reads markdown. Optimized for Claude Code.
 
 ## What It Does
 
-Expert worldbuilding support: not to build your worlds for you, but to manage data, develop tools, and make full use of the OnlyWorlds universal standard with specialized skills:
+**Structure** — Parse any text into world elements. Paste a paragraph, a chapter, upload files, point at folders. Out comes structured JSON across 22 element types.
 
-**Parsing** takes any text and extracts world elements. Paste a paragraph, a chapter, upload files, point at folders.  
+**Organize** — Connect to your world and manage it. Browse elements, clean up descriptions, design complex systems (magic, stories, timelines), export data.
 
-**Modeling** helps translate concepts into structure. Magic systems, inventories, faction hierarchies, timelines.  
-
-**Building** uses OnlyWorlds as a headless backend. REST API, TypeScript SDK, no infrastructure to manage.  
+**Build** — Use OnlyWorlds as a headless backend. REST API, TypeScript SDK, no infrastructure to manage.
 
 ## Install
 
@@ -42,29 +40,30 @@ Point at the knowledge files:
 
 | Skill | Purpose |
 |-------|---------|
-| **onlyworlds-start** | Entry point — understands your situation, routes to the right skill |
-| **parsing** | Text (or files, links) to OnlyWorlds elements |
-| **modeling** | Design consultation, data mapping |
-| **schema** | Field reference (auto-loads) |
-| **api** | CRUD operations through natural language |
-| **dev** | Development, SDK integration, and deployment |
-| **project-setup** | Connect your project to an OnlyWorlds world (runs automatically when needed) |
+| **onlyworlds-start** | Entry point — understands your situation, routes you forward |
+| **parsing** | Text, files, or folders → structured OnlyWorlds elements |
+| **modeling** | Design consultation for complex world systems |
+| **schema** | Field reference across all 22 types |
+| **api** | Fetch, create, update, delete — natural language CRUD |
+| **dev** | SDK integration, project scaffolding, deployment |
+| **project-setup** | Connect to an OnlyWorlds world (runs automatically when needed) |
 
 ## Usage
 
 ```
-"Parse this" + text, files, folders, URLs
+"I want to organize my world"
+"Parse this" + text, files, folders
 "How should I model a magic system?"
 "What fields does Character have?"
-"Fetch my world and show all locations"
-"I am making a game with a world.."
+"Fetch all my locations"
+"I'm building a game with world data"
 ```
 
-## With or Without OnlyWorlds
+## With or Without an Account
 
-The parsing and modeling work standalone. Output is structured JSON you can use anywhere.
+Parsing, modeling, and schema work standalone — no account needed. Output is structured JSON you can use anywhere.
 
-With an OnlyWorlds account ([onlyworlds.com](https://onlyworlds.com)), you get cloud storage, API sync, tools and games. Get credentials from Profile (PIN) and World Settings (API Key).
+With a free OnlyWorlds account ([onlyworlds.com](https://onlyworlds.com)), you get cloud storage, API access, visual tools, and the growing ecosystem of apps and games. The toolkit connects to your world automatically.
 
 ## Resources
 

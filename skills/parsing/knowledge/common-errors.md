@@ -1,6 +1,22 @@
 # Common Parsing Errors
 
-Mistakes to avoid when parsing text into OnlyWorlds elements. This list will grow based on testing.
+Mistakes to avoid when parsing text into OnlyWorlds elements.
+
+## Table of Contents
+
+- [Link Fields Require Element Names](#critical-link-fields-require-element-names)
+- [Over-Extraction](#over-extraction)
+- [Wrong Element Type](#wrong-element-type)
+- [Inventing Elements](#inventing-elements)
+- [Relationship Errors](#relationship-errors)
+- [Schema Errors - Hallucinated Fields](#schema-errors---hallucinated-fields)
+- [Other Schema Errors](#other-schema-errors)
+- [Type Confusion](#type-confusion)
+- [Messy Source Handling](#messy-source-handling)
+- [Ships: Object vs Location](#ships-object-vs-location)
+- [Institution vs Location with Same Name](#institution-vs-location-with-same-name)
+- [Event.triggers Field](#eventtriggers-field)
+- [Treaty: Event vs Law](#treaty-event-vs-law)
 
 ---
 

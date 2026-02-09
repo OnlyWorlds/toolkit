@@ -1,6 +1,21 @@
 # OnlyWorlds Disambiguation Decision Trees
 
-When parsing text, some element types can be confused. Use these decision trees to choose correctly.
+Decision trees for choosing between confusing element types during parsing.
+
+## Table of Contents
+
+- [World-Specific vs Generic](#core-principle-world-specific-vs-generic)
+- [Object vs Construct](#object-vs-construct)
+- [Title vs Construct](#title-vs-construct)
+- [Collective vs Institution](#collective-vs-institution)
+- [Species vs Creature](#species-vs-creature)
+- [Event vs Narrative](#event-vs-narrative)
+- [Phenomenon vs Law vs Construct](#phenomenon-vs-law-vs-construct)
+- [Trait vs Ability vs Character Field](#trait-vs-ability-vs-character-field)
+- [Location vs Zone](#location-vs-zone)
+- [Relation (Use Sparingly)](#relation-use-sparingly)
+- [Event vs Construct (Historical Periods)](#event-vs-construct-historical-periods)
+- [Ships and Vehicles](#ships-and-vehicles-object-vs-location)
 
 ---
 

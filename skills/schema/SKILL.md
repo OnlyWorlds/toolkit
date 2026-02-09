@@ -1,22 +1,23 @@
 ---
 name: onlyworlds-schema
-description: This skill should be used for OnlyWorlds schema reference - field lookups, validation, checking if fields exist, disambiguating between element types. OnlyWorlds has 22 element types (Character, Creature, Species, Family, Collective, Institution, Location, Object, Construct, Ability, Trait, Title, Language, Law, Event, Narrative, Phenomenon, Relation, Map, Pin, Marker, Zone). Loads full schema reference when needed.
+description: OnlyWorlds schema reference — look up fields, validate element structure, check if fields exist, disambiguate between element types (e.g. Trait vs Ability, Institution vs Collective). Use when the user asks about OnlyWorlds fields, types, or data structure. Covers all 22 element types.
 ---
 
 # OnlyWorlds Schema Reference
 
-Quick field lookups and element type validation.
+## Quick Reference
 
-## When to Use This
-
-This skill is a reference library. Reach for it when:
-
-- Validating a field name exists on an element type
-- Checking what fields an element type has
-- Disambiguating between similar element types
-- Answering "what fields does X have?"
-
-For interactive design consultation (modeling systems, translating user concepts), use the modeling skill instead.
+| Question | Answer |
+|----------|--------|
+| "What fields does X have?" | Read ../../knowledge/schema-reference.md, find the element section |
+| "Does X.field exist?" | Grep schema-reference.md — no match = doesn't exist |
+| "Object vs Construct?" | Specific instance vs type/concept. Can you touch it? Object. |
+| "Character vs Creature?" | Narrative agency → Character. Biological focus → Creature. |
+| "Event vs Narrative?" | What happened (factual) → Event. How it's told → Narrative. |
+| "Trait vs Ability?" | Inherent quality → Trait. Learnable/usable power → Ability. |
+| "Institution vs Collective?" | Formal hierarchy → Institution. Named group of people → Collective. |
+| "Location vs Zone?" | Physical place → Location. Abstract territory/boundary → Zone. |
+| "How to link X to Y?" | Check schema-reference.md for which element has the link field |
 
 ## Field Lookup
 
@@ -24,9 +25,9 @@ For complete field reference, read:
 
 **../../knowledge/schema-reference.md**
 
-This file lists every field for all 22 element types, organized by element.
+Every field for all 22 element types, organized by element.
 
-### Quick Reference: Base Fields (All Elements)
+### Base Fields (All Elements)
 
 Every element has:
 - `name` (text, required)
@@ -34,36 +35,29 @@ Every element has:
 - `supertype` (text)
 - `subtype` (text)
 
-### Quick Reference: Common Field Patterns
+### Link Field Patterns
 
-**Link fields:**
 - Single link: field name, links to one element
 - Multi link: field name, links to array of elements
+- **API writes**: single links use `_id` suffix, multi links use `_ids` suffix
 
-**In API/SDK:**
-- Single links use `_id` suffix when writing
-- Multi links use `_ids` suffix when writing
+### Number Ranges
 
-**Number ranges:**
 - Personality scores: 0-100 (Character: charisma, courage, etc.)
 - Trait modifiers: -100 to 100
-- intensity (Relation): 0-100
+- Relation intensity: 0-100
 
-## Element Type Disambiguation
+## Type Disambiguation
 
 ### Object vs Construct
 
 **Object**: Specific physical instance. You can point at it.
-- The Vorpal Blade (this specific sword)
-- USS Fuzzball (this specific ship)
-- The Crown of Feltropolis (this specific artifact)
+- The Vorpal Blade, USS Fuzzball, The Crown of Feltropolis
 
 **Construct**: Concept, system, blueprint, category.
-- "Swords" as a weapon type
-- "Naval Vessels" as a class
-- "The Fluffium Standard" as an economic system
+- "Swords" as weapon type, "Naval Vessels" as class, "The Fluffium Standard" as economic system
 
-**Test**: Can someone touch it? Object. Is it an idea that things instantiate? Construct.
+**Test**: Can someone touch it? → Object. Is it an idea that things instantiate? → Construct.
 
 ### Character vs Creature
 
@@ -71,93 +65,66 @@ Every element has:
 
 **Creature**: Biological/behavioral focus. Part of environment or encounters.
 
-A dragon NPC with dialogue and motivations → Character (even if species links to "Dragon").
-A generic wolf in the forest → Creature.
+A dragon NPC with dialogue → Character. A generic wolf → Creature.
 
 ### Event vs Narrative
 
-**Event**: Factual occurrence. Dates, participants, outcomes. What happened.
+**Event**: Factual occurrence. Dates, participants, outcomes.
 
-**Narrative**: Subjective telling. Perspective, story, interpretation. How it's told.
+**Narrative**: Subjective telling. Perspective, story, interpretation.
 
-The Battle of Button Bay → Event.
-"The Admiral's Last Stand: A Hero's Tale" → Narrative (about the Event).
+The Battle of Button Bay → Event. "The Admiral's Last Stand" → Narrative (about the Event).
+
+### Institution vs Collective
+
+**Institution**: Formal structure — ranks, hierarchy, doctrine, headquarters.
+
+**Collective**: Cultural group, informal movement, identity-based — ethnic group, nomadic tribe, loose rebel alliance.
+
+A military order with ranks → Institution. A wandering band of outcasts → Collective.
 
 ### Trait vs Character Fields
 
-**Trait**: World-specific condition worth tracking as an element. Affects multiple characters. Has game/story significance.
+**Trait**: World-specific condition worth tracking as element. Affects multiple characters. Has game/story significance.
 
-**Character fields**: Description of one character. Physicality, mentality, background.
+**Character fields**: Description of one character — physicality, mentality, background.
 
-"Tall with gray beard" → Character.physicality
-"Fluffium Sensitivity" (magical gift tracked across world) → Trait
+"Tall with gray beard" → Character.physicality. "Fluffium Sensitivity" (magical gift tracked across world) → Trait.
 
-**Rule**: If only one character has it, use Character fields. If it's a condition multiple characters can have and it matters systemically, use Trait.
+**Rule**: If only one character has it, use Character fields. If it's a systemic condition multiple characters share, use Trait.
 
 ### Title vs Construct
 
-**Title**: Position with holder(s). Grants authority. Characters hold it.
+**Title**: Position with holder(s). Grants authority.
 
-**Construct**: If it's conceptual without specific holders.
+**Construct**: Conceptual without specific holders.
 
-"Admiral" (position in the navy, Fluffington holds it) → Title
-"Naval Command Structure" (the system itself) → Construct
+"Admiral" (Fluffington holds it) → Title. "Naval Command Structure" → Construct.
 
 ### Location vs Zone
 
-**Location**: A place. Settlement, building, landmark, planet, room. Has function, governance, populations. You'd name it as a destination.
+**Location**: Physical place — settlement, building, landmark. Has function, governance. You'd name it as a destination.
 
-**Zone**: A region. Drawn area defining territory, climate bands, political boundaries. Has Markers that define its shape on Maps.
+**Zone**: Abstract region — territory, climate band, political boundary. Defined by Markers on Maps.
 
-Feltropolis (the city) → Location
-The Fluffium Mining District (region) → Zone
-The Frozen North (climate region) → Zone
+Feltropolis → Location. The Fluffium Mining District → Zone. The Frozen North → Zone.
 
-Locations and Zones can contain each other. A planet (Location) has climate zones. A kingdom (Zone) contains cities (Locations). Use whichever fits how you're modeling the space.
+## Common Hallucinations
 
-## Validation Patterns
-
-### Checking Field Existence
-
-When validating parsed data or user input:
-
-1. Read schema-reference.md for the element type
-2. Confirm field is listed
-3. If not listed → field doesn't exist, will fail on API
-
-**Common hallucinations** (fields that don't exist):
-- `age` on Character
-- `titles` on Character (use Title element with holders)
-- `occupation` on Character
-- `owner`/`owners` on Object (use Character.objects instead)
-- `status` on Location (use `political_climate`)
-- `background` on Institution (use `description` or `doctrine`)
-- `laws` on Event
+Fields that DON'T EXIST (will fail on API):
+- `age` on Character → use description or birth_date
+- `titles` on Character → use Title element with holders
+- `occupation` on Character → use background field
+- `owner`/`owners` on Object → use Character.objects instead
+- `status` on Location → use `political_climate`
+- `background` on Institution → use `description` or `doctrine`
+- `laws` on Event → doesn't exist
 
 ### Link Direction
 
 Some relationships only go one direction:
-
 - Characters link TO Objects (Character.objects), not Object.owner
 - Title links TO Characters (Title.holders), not Character.titles
 - Constructs link TO many things, things link back via their `constructs` field
 
 When unsure, check schema-reference.md for which element has the link field.
-
-## Quick Answers
-
-**"What fields does Character have?"**
-→ Read schema-reference.md, Character section. 42 total fields including base fields.
-
-**"Does Location have a 'status' field?"**
-→ No. Location has `political_climate` for similar purpose.
-
-**"How do I link a Character to a Title?"**
-→ Create Title element with `holders: ["Character Name"]`. Character doesn't link to Title directly.
-
-**"What's the difference between effects on Object vs Phenomenon?"**
-→ Object.effects links to Phenomenon elements (multi-link). Phenomenon.effects is text describing what the phenomenon does.
-
----
-
-*This is a reference skill. For full schema, see ../../knowledge/schema-reference.md. For modeling consultation, invoke the modeling skill.*
