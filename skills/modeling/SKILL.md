@@ -43,11 +43,15 @@ Identify what the user is building:
 - What relationships matter? (who owns what, who belongs where?)
 - What state needs tracking? (quantities, scores, statuses?)
 
-### Step 2: Load Modeling Patterns
+### Step 2: Load Knowledge
 
-Read modeling-patterns.md first — this prevents misclassification and shows compositional thinking:
+Read these files first — they prevent misclassification and show compositional thinking:
 
-**../../knowledge/modeling-patterns.md**
+1. **../../knowledge/modeling-patterns.md** — compositional patterns, system translation examples
+2. **../../knowledge/element-types.md** — the 22 types and when to use each
+3. **../../knowledge/decision-trees.md** — disambiguation for confusing pairs (Collective vs Institution, Trait vs Ability, Law vs Construct, etc.)
+
+If relative paths fail, use Glob to find these files within the plugin/toolkit directory.
 
 ### Step 3: Propose Structure
 

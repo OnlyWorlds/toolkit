@@ -34,7 +34,7 @@ Quick reference for identifying the 22 OnlyWorlds element types during parsing.
 | **Law** | Formal rule/regulation | Named decree, treaty, code | Custom/tradition (→ Construct) |
 | **Phenomenon** | Physical/metaphysical process | Gravity, magic, storms, plagues | Human-created system (→ Law/Construct) |
 | **Event** | What happened (objective) | Named battle, disaster, ceremony | How it's told (→ Narrative) |
-| **Narrative** | Story/account of events | Named tale, legend, chronicle | The events themselves (→ Event) |
+| **Narrative** | Story/account of events | Named tale, legend, chronicle, rumor, prophecy, chapter, scene | The events themselves (→ Event) |
 | **Relation** | Named relationship between entities | Named bond, rivalry, alliance | Implicit connections |
 
 ---

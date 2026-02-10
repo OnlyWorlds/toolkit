@@ -23,7 +23,7 @@ Convert worldbuilding text into structured OnlyWorlds JSON.
 1. **Load knowledge first** — read schema files before extracting
 2. **World-specific filter** — no elements for generic real-world things
 3. **Fields over elements** — use Character.physicality, not Trait "Tall"
-4. **Never invent** — can't quote it from text? Don't create it
+4. **Decompose structural splits** — one concept often needs multiple types (see below)
 5. **Schema strict** — only real OnlyWorlds fields (check schema-reference.md)
 6. **Sparse is valid** — a name alone makes a valid element
 7. **Facts vs speculation** — parse what's stated as fact; report author questions separately
@@ -35,9 +35,11 @@ Convert worldbuilding text into structured OnlyWorlds JSON.
 Read all four files before extracting — this ensures valid, importable output:
 
 1. **../../knowledge/schema-reference.md** — field whitelist for all 22 types
-2. **knowledge/common-errors.md** — patterns that cause import failures
-3. **knowledge/element-types.md** — the 22 types and when to use each
-4. **knowledge/decision-trees.md** — disambiguation for confusing cases
+2. **../../knowledge/element-types.md** — the 22 types and when to use each
+3. **../../knowledge/decision-trees.md** — disambiguation for confusing cases
+4. **knowledge/common-errors.md** (in this skill's directory) — patterns that cause import failures
+
+If relative paths fail, use Glob to find these files: search for `schema-reference.md`, `element-types.md`, `decision-trees.md`, `common-errors.md` within the plugin/toolkit directory.
 
 CRITICAL: Without reading these, you WILL hallucinate fields that don't exist (e.g., `Character.age`, `Object.owner`, `Location.status`). Read them.
 
@@ -75,7 +77,17 @@ For each piece of text:
 
 2. **Determine type** using the 22 OnlyWorlds types. Consult decision-trees.md for edge cases.
 
-3. **Populate fields** using only schema fields:
+3. **Decompose structural splits** — one concept often maps to multiple types. Don't flatten:
+   - A magical tradition practitioners *learn* → Construct (the system) + Ability (each learnable technique)
+   - A formal decree that *forbids/mandates* → Law (not just Construct)
+   - A ruled territory → Zone (the territory) + Institution (the ruling body)
+   - A material type prized for its properties → Construct (the concept), not Object (that's a specific instance)
+   - A type of creature → Species (the kind), not Creature (that's a named individual)
+   - A signed agreement → Law (the document) + optionally Event (the signing)
+
+   The text may describe one thing, but the structure implies multiple facets. Extract them all.
+
+4. **Populate fields** using only schema fields:
    - Physical description → Character.physicality (NOT Trait)
    - Mental description → Character.mentality (NOT Trait)
    - Generic personality → Character fields (NOT separate elements)
@@ -177,3 +189,9 @@ Separate markdown summarizing conflicts resolved, author notes not parsed, and j
 ```
 
 Age → description. Titles → separate Title element. Ownership → Character.objects (not Object.owners).
+
+## Complex Systems
+
+If the text contains a deep system (magic system, political hierarchy, economy, faction network), parsing extracts what's there. For deeper structural design — inventing elements the text implies but doesn't state, exploring alternative decompositions, or designing game mechanics — suggest the modeling skill:
+
+> "For deeper structural design of [the magic system / political hierarchy / etc], the modeling skill can help explore additional decompositions."

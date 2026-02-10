@@ -153,6 +153,12 @@ curl -s -X POST "https://www.onlyworlds.com/api/worldapi/{element_type}/" \
 
 Individual POSTs return UUIDs immediately, give clear error messages per element, and work for any batch size.
 
+**Two-pass pattern for linked elements:**
+1. **Pass 1**: Upload elements without link fields (Characters, Locations, Objects, etc.). Collect returned UUIDs.
+2. **Pass 2**: PATCH elements to add links using UUIDs from Pass 1 (`location_id`, `objects_ids`, etc.).
+
+This avoids broken references — you can't link to an element that doesn't exist yet.
+
 ### Fetch Existing World for Parsing
 
 Fetch all existing elements for reconciliation:

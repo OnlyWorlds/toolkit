@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Worldbuilding toolkit for AI assistants. Parse text into structured data, design world systems, build tools.",
-    "version": "1.4.0"
+    "version": "1.5.0"
   },
   "plugins": [
     {
       "name": "toolkit",
       "source": "./",
       "description": "Parse text into structured world data. Model systems. Build tools. Works with any AI, optimized for Claude Code, outputs OnlyWorlds format.",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "author": {
         "name": "Titus Oosting"
       },
