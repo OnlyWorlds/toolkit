@@ -71,12 +71,23 @@ For ongoing projects with existing worlds:
 
 ### Phase 3: Reconcile
 1. Load world cache from .ow/world-cache.json
-2. For each extracted element:
-   - Exact name match → UPDATE candidate
-   - Similar name → FLAG for review
+2. For each extracted element, check against cache:
+   - Exact name match → existing element
+   - Variation match ("The Great Hall" vs "Great Hall", "Dr. Marcus" vs "Marcus") → existing element
    - No match → CREATE candidate
-3. For UPDATE candidates, fetch current state from API
-4. Generate reconciliation summary
+3. For existing elements, fetch current state from API and decide:
+
+| Situation | Action |
+|-----------|--------|
+| Extraction adds meaningful new info (description, relationships, status change) | UPDATE |
+| Current OW data is richer than extraction | SKIP |
+| Element just appeared in scene, nothing new | SKIP |
+| Extraction contradicts existing data | FLAG as conflict |
+
+**Enrichment over replacement**: When updating descriptions, append new information rather than overwrite. Existing data was approved previously.
+
+4. For each UPDATE, include reasoning ("Day 3 reveals physical description not in current data")
+5. Generate reconciliation summary: CREATE / UPDATE / SKIP / CONFLICT counts
 
 ### Phase 4: Resolve Link Dependencies
 
@@ -113,8 +124,14 @@ Batches:
 ### Phase 5: Review
 1. Present batches to user with dependency explanation
 2. Show CREATE/UPDATE/SKIP per batch
-3. For UPDATEs, show current vs proposed
-4. Get user approval (may modify decisions)
+3. For UPDATEs, show current vs proposed (side by side)
+4. For CONFLICTs, show both versions with recommendation
+5. **Flag judgment calls** — some elements need human decision, not mechanical CREATE/UPDATE. Examples:
+   - Story threads where arc direction matters
+   - Elements that could be modeled multiple ways
+   - Status changes that affect other elements
+   Present analysis and recommendation, let the user decide.
+6. Get user approval (may modify decisions)
 
 ### Phase 6: Execute in Order
 For each batch:
@@ -238,26 +255,72 @@ Spawner should specify `model: "sonnet"` for:
 
 ## Extending the Agent
 
-Power users may copy and customize this agent for project-specific needs:
+Copy and customize this agent for project-specific needs. The patterns below are proven in production use.
 
-### Custom executor pattern
-Separate mechanical upload into its own agent:
-- Reads approved reconciliation JSON
-- Executes all API calls
-- Updates tracking files
-- No judgment, pure execution
+### Three-Role Pipeline
 
-### Custom conventions
-Document project-specific patterns:
-- Custom supertypes (e.g., "honger" for story threads)
-- Local tracking beyond OW
-- Element naming conventions
+For ongoing parsing projects, split the agent's work into three separate agents with distinct responsibilities:
 
-### Integration with local systems
+| Role | Purpose | Tool Access | Judgment Level |
+|------|---------|-------------|----------------|
+| **Extractor** | Read text, output raw extraction JSON | Read, Glob, Write (no API) | Creative — interpret text |
+| **Reconciler** | Compare extraction against world state, categorize changes | Read, Write, Bash (API reads only) | Analytical — match and diff |
+| **Executor** | Upload approved changes, update tracking | Read, Write, Edit, Bash (API writes) | None — mechanical execution |
+
+**Why split?** Restricting tool access creates natural safety boundaries. The extractor can't accidentally hit the API. The executor can't reinterpret what should be uploaded. The human reviews between reconciler and executor.
+
+**Workflow**:
+```
+Text → [Extractor] → extraction.json
+                          ↓
+     world-cache.json → [Reconciler] → reconciliation.json
+                                            ↓
+                                     [Human Review]
+                                            ↓
+                                       [Executor] → API + tracking files
+```
+
+**Extraction output** (from extractor):
+```json
+{
+  "source": "chapter-5.txt",
+  "characters": [{"name": "...", "description": "...", "notes": "..."}],
+  "locations": [...],
+  "relations": [...]
+}
+```
+Extract everything. Over-extract. The reconciler filters.
+
+**Reconciliation output** (from reconciler):
+```json
+{
+  "creates": {"characters": [...]},
+  "updates": {"characters": [{"uuid": "...", "fields_to_update": {...}, "reason": "..."}]},
+  "skips": [{"name": "...", "reason": "..."}],
+  "conflicts": [{"element": "...", "existing": "...", "extracted": "...", "recommendation": "..."}],
+  "judgment_calls": [{"element": "...", "analysis": "...", "recommendation": "..."}]
+}
+```
+The `judgment_calls` section holds anything requiring human strategic decision — not mechanical CREATE/UPDATE/SKIP.
+
+### Project-Specific Conventions
+
+Document patterns unique to your world:
+
+- **Custom supertypes** — e.g., "quest" narratives, "divine" phenomena, story thread categories
+- **Local tracking** — files beyond `.ow/` that your project maintains (character arcs, plot logs, relationship maps)
+- **Naming rules** — language conventions, title formatting, how to handle aliases
+- **What NOT to extract** — every project has categories that look like OW elements but belong elsewhere (e.g., consumable items → local inventory, not Object)
+
+Put these in your agent files or a project-level reference doc that agents read at startup.
+
+### Integration with Local Systems
+
 When some data goes to OW and some stays local:
-- Define what goes where
-- Build sync logic
-- Maintain consistency
+
+- Define boundaries clearly in agent instructions ("Objects go to OW, inventory goes to local DB")
+- Track both in one place (e.g., `ow-ids.md` maps OW UUIDs to local references)
+- Reconciler handles the routing — extraction includes everything, reconciler decides what goes where
 
 ## Error Handling
 

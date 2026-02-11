@@ -20,6 +20,7 @@ Read and write world data via the OnlyWorlds REST API.
 | Upsert element | PUT | `/api/worldapi/{type}/{uuid}/` |
 | Delete element | DELETE | `/api/worldapi/{type}/{uuid}/` |
 | Search by name | GET | `/api/worldapi/{type}/?search=name` |
+| Upload linked elements | Two-pass | POST without links → collect UUIDs → PATCH to add links |
 
 **CRITICAL: Endpoint names are SINGULAR** — `/character/`, `/location/`, `/institution/`. NOT plural.
 
