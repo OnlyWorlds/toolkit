@@ -11,12 +11,13 @@ Convert worldbuilding text into structured OnlyWorlds JSON.
 
 | Task | Approach |
 |------|----------|
-| Small text, extract everything | Single-pass extraction |
+| Small text (<2k words) | Single-pass extraction |
 | Multiple documents | Document-by-document with running registry |
-| Large text (novel, campaign) | Foundation-first: major elements, then details |
+| Large text (novel, campaign) | Multi-pass: Foundations → Organizations → Dynamics → Sweep |
+| Messy notes with contradictions | Parse facts, report conflicts separately |
 | User has OW world | Check `.ow/` setup first — enables reconciliation |
 | User has no account | Parse to standalone JSON — works great |
-| Messy notes with contradictions | Parse facts, report conflicts separately |
+| Second parse of same world | Revise earlier elements with new discoveries |
 
 ## Key Rules
 
@@ -25,8 +26,8 @@ Convert worldbuilding text into structured OnlyWorlds JSON.
 3. **Fields over elements** — use Character.physicality, not Trait "Tall"
 4. **Decompose structural splits** — one concept often needs multiple types (see below)
 5. **Schema strict** — only real OnlyWorlds fields (check schema-reference.md)
-6. **Sparse is valid** — a name alone makes a valid element
-7. **Facts vs speculation** — parse what's stated as fact; report author questions separately
+6. **Sparse is valid** — a name and type alone make a valid element
+7. **Revise, don't just append** — later discoveries transform earlier elements
 
 ## Instructions
 
@@ -59,9 +60,18 @@ test -d .ow && echo "EXISTS" || echo "NOT_EXISTS"
 
 Based on text scope:
 
-- **Single-pass**: Small text, extract everything at once
-- **Document-by-document**: Multiple docs, maintain running registry
-- **Foundation-first**: Large text, extract major elements first, then details
+- **Single-pass**: Small text (<2k words), extract everything at once
+- **Document-by-document**: Multiple docs, maintain running registry of extracted elements
+- **Multi-pass** (recommended for large/messy sources):
+
+| Pass | Focus | What to Extract |
+|------|-------|-----------------|
+| 1. Foundations | Characters, Species, Locations | The beings and places — the world skeleton |
+| 2. Organizations | Institutions, Collectives, Objects, Constructs, Titles | Groups, things, systems that structure the world |
+| 3. Dynamics | Events, Relations, Phenomena, Laws, Narratives, Traits | What happened, what connects, what emerges |
+| 4. Sweep | Everything remaining | Fragments, contradictions, sparse mentions |
+
+**After each pass, revise earlier elements.** Pass 3 may completely transform the meaning of Pass 1 elements (a "battle" becomes a "massacre," a "natural spring" becomes "ancient technology"). Go back and update — don't just add new elements alongside stale ones.
 
 Confirm strategy with user, then proceed.
 
@@ -92,6 +102,8 @@ For each piece of text:
    - Mental description → Character.mentality (NOT Trait)
    - Generic personality → Character fields (NOT separate elements)
 
+5. **Sparse elements are valid.** "Nibbles is a Cookie Pirates member" is enough to create a Character with name + description. Don't require full field population. Fields can be enriched later.
+
 ### Step 4: Link and Validate References
 
 After extraction:
@@ -107,14 +119,26 @@ Common dangling references:
 
 ### Step 5: Handle Messy Sources
 
-Distinguish between:
+#### Speculation Markers
 
-| Source Content | Action |
-|---------------|--------|
-| Stated as fact | Parse it, even if sparse |
-| Author speculation ("what if X?") | Don't parse — report separately |
-| Author indecision ("Feltropolis? Or Puddleton? DECIDE") | Don't parse — report separately |
-| Contradictions across sources | Pick most detailed/recent, note conflict |
+| Signal | Action |
+|--------|--------|
+| "I think," "going with," "picking," "leaning toward" | **Parse it** — author has chosen |
+| Stated-as-fact prose | **Parse it** — even if sparse |
+| "maybe," "what if," "???," "brainstorming" | **Don't parse** — report separately |
+| Questions to self/others ("DECIDE," "need to figure out") | **Don't parse** — but the THING may exist even if details are open |
+| Author picks a final version ("This is canon now") | **Use it** — overrides all earlier contradictions |
+
+#### Contradictions
+
+When sources conflict:
+1. Check if the author resolved it anywhere ("going with option A," "This is canon now")
+2. If resolved: use the author's final word, note the contradiction existed
+3. If unresolved: pick the most detailed/recent version, report the conflict
+
+#### Dark/Late-Night Files
+
+Late-night brainstorming that seems speculative may be intentional worldbuilding. Cross-reference with other sources. If confirmed elsewhere, it's authorial intent — parse it.
 
 ### Step 6: Schema Compliance Check
 
@@ -165,9 +189,15 @@ No wrapper, no `parsed` key, no conflicts mixed in. This goes directly to Base T
 
 **Field naming**: Use readable names (`location`, `objects`, `holders`) for standalone JSON. For direct API upload, link fields need `_id`/`_ids` suffixes. Default to readable names unless user is uploading via API.
 
-#### 2. Parsing Report (for messy sources only)
+#### 2. Parsing Report
 
-Separate markdown summarizing conflicts resolved, author notes not parsed, and judgment calls made. Skip for clean sources.
+Separate markdown summarizing:
+- **Judgment calls** — type decisions at ambiguity boundaries with reasoning
+- **Conflicts resolved** — which version picked, what was overridden
+- **Author notes not parsed** — speculation, indecision, brainstorming
+- **Low confidence elements** — extracted but uncertain (sparse mentions, placeholder names)
+
+Skip the report for clean, unambiguous sources.
 
 ## CRITICAL: Schema Violation Examples
 

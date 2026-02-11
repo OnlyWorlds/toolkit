@@ -484,4 +484,62 @@ Decision trees for choosing between confusing element types during parsing.
 
 ---
 
+## Cultural Sayings and Catchphrases: Character Field vs Narrative
+
+**The core question**: Does this phrase transcend the individual?
+
+```
+"Better safe than sorry"
+    └─ Generic real-world saying? → YES
+    └─ NO element needed
+
+"We sail where the puddles flow"
+    └─ World-specific phrase? → YES
+    └─ Said by one character only, personal quirk? → Could be Character.reputation
+    └─ Repeated by others, culturally significant? → YES
+    └─ Does its meaning shift with world knowledge? → YES (coping narrative)
+    └─ Narrative: "We Sail Where the Puddles Flow"
+```
+
+**Key signals for Narrative**:
+- The phrase has cultural weight beyond its speaker
+- Its meaning shifts when you know the world's dark truths
+- Multiple characters reference or live by it
+- It functions as a story the society tells itself
+
+**Key signals for Character field**:
+- Personal quirk or habit (Character.reputation or Character.mentality)
+- No cultural significance beyond the individual
+- Generic catchphrase without world-specific meaning
+
+---
+
+## Formal Ranks: Title vs Construct vs Character Field
+
+**The core question**: Is the rank system world-specific AND does someone hold it?
+
+```
+"Admiral Fluffington"
+    └─ World-specific rank? → YES (Puddle Navy)
+    └─ Specific holder? → YES (Fluffington)
+    └─ Title: "Admiral" with holders: [Fluffington]
+
+"the village healer"
+    └─ Formal rank with authority? → NO (it's a role)
+    └─ World-specific? → NO
+    └─ Character.background: "serves as the village healer"
+
+"Navigator Pip"
+    └─ World-specific rank system? → YES (Puddle Navy)
+    └─ Specific holder? → YES (Pip)
+    └─ Many such ranks in the system? → YES
+    └─ Title: "Navigator" + Construct: "Puddle Navy Rank System" (if the system itself matters)
+```
+
+**When to extract many Titles**: If the text describes a full rank hierarchy with multiple holders, extract each rank as a Title. Create a single Construct for the rank system itself only if the system has world-specific significance.
+
+**When NOT to extract Titles**: Generic ranks (soldier, guard, clerk) without world-specific naming or authority. Put these in Character.background.
+
+---
+
 *Reference: OnlyWorlds SDK types.ts for complete field schemas*

@@ -64,10 +64,38 @@ For ongoing projects with existing worlds:
 2. If missing: invoke project-setup skill
 3. Verify credentials work
 
-### Phase 2: Extract
+### Phase 2: Extract (Multi-Pass)
+
+For large or messy sources, extract in layered passes:
+
+| Pass | Focus | Source Files |
+|------|-------|-------------|
+| 1. Foundations | Characters, Species, Locations | Clean/structured files first |
+| 2. Organizations | Institutions, Collectives, Objects, Constructs, Titles | Organizational docs, lists, CSVs |
+| 3. Dynamics | Events, Relations, Phenomena, Laws, Narratives, Traits | Lore, history, dark/deep files |
+| 4. Sweep | Everything remaining | Messy notes, brainstorming, fragments |
+
+For each pass:
 1. Read source text
 2. Invoke parsing skill
 3. Get list of potential elements
+4. **Revision step**: Check if new discoveries transform earlier elements
+
+### Phase 2b: Revise Earlier Extractions
+
+**CRITICAL — do not skip this.** After each pass, check if new information changes the meaning of elements from earlier passes:
+
+- A "battle" revealed as a "massacre" → update the Event name and description
+- A "natural spring" revealed as "ancient technology" → transform the Location description
+- An author resolving contradictions ("This is canon now") → apply their final decision to ALL affected elements
+- Age/date corrections → update across all elements that reference the old values
+
+**The revision pattern**:
+1. List elements from earlier passes that are mentioned in or affected by new discoveries
+2. For each: update description, type, or fields to reflect the fuller picture
+3. Apply the author's final word when multiple versions exist
+
+Without revision, later passes produce correct new elements but leave earlier elements stale. The output becomes internally inconsistent.
 
 ### Phase 3: Reconcile
 1. Load world cache from .ow/world-cache.json
@@ -83,6 +111,8 @@ For ongoing projects with existing worlds:
 | Current OW data is richer than extraction | SKIP |
 | Element just appeared in scene, nothing new | SKIP |
 | Extraction contradicts existing data | FLAG as conflict |
+| Author explicitly resolves a contradiction ("This is canon now", "going with X") | UPDATE — author's final word overrides |
+| Later pass transforms an element's meaning (battle → massacre, spring → machine) | UPDATE — revise, don't leave stale |
 
 **Enrichment over replacement**: When updating descriptions, append new information rather than overwrite. Existing data was approved previously.
 
