@@ -98,6 +98,9 @@ For each pass:
 Without revision, later passes produce correct new elements but leave earlier elements stale. The output becomes internally inconsistent.
 
 ### Phase 3: Reconcile
+
+**Note**: The parsing skill (Step 4b) now handles basic reconciliation — name matching and CREATE/ENRICH/SKIP/CONFLICT decisions against the world cache. Use this agent's Phase 3 when you need deeper reconciliation: API fetching for current state, UUID resolution, batch dependency ordering, or automated execution.
+
 1. Load world cache from .ow/world-cache.json
 2. For each extracted element, check against cache:
    - Exact name match → existing element

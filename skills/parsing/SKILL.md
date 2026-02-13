@@ -18,7 +18,7 @@ Convert worldbuilding text into structured OnlyWorlds JSON.
 | User has OW world | Check `.ow/` setup first — enables reconciliation |
 | User has no account | Parse to standalone JSON — works great |
 | Second parse of same world | Revise earlier elements with new discoveries |
-| Ongoing project with existing world | Extract-first (thorough), then reconcile against `.ow/` cache |
+| Ongoing project with existing world | Extract-first, then reconcile (Step 4b) — outputs CREATE/ENRICH/SKIP |
 | Enrich links on existing elements | Re-parse with element list in hand, focus on populating link fields |
 
 ## Key Rules
@@ -54,7 +54,7 @@ CRITICAL: Without reading these, you WILL hallucinate fields that don't exist (e
 test -d .ow && echo "EXISTS" || echo "NOT_EXISTS"
 ```
 
-- **EXISTS**: Load cache from `.ow/world-cache.json`. Parse with duplicate checking.
+- **EXISTS**: Load cache from `.ow/world-cache.json`. After extraction, reconcile in Step 4b.
 - **NOT_EXISTS**: Stop. Invoke `Skill(skill: "onlyworlds:project-setup")` first — without it, parsing creates duplicates and breaks reconciliation. Resume parsing after setup completes.
 - **No world**: Skip this step. Parse to standalone JSON.
 
@@ -75,7 +75,7 @@ Based on text scope:
 
 **After each pass, revise earlier elements.** Pass 3 may completely transform the meaning of Pass 1 elements (a "battle" becomes a "massacre," a "natural spring" becomes "ancient technology"). Go back and update — don't just add new elements alongside stale ones.
 
-**For ongoing projects**: If the user has an existing world (`.ow/` folder), recommend extract-first, reconcile-second. Extract everything without checking for duplicates, then compare against the cache to decide CREATE/UPDATE/SKIP. See ow-agent.md for the full reconciliation workflow.
+**For ongoing projects**: If the user has an existing world (`.ow/` folder), extract everything first (Steps 3-4), then reconcile in Step 4b. This produces safe CREATE/ENRICH/SKIP output instead of overwriting existing data. For full orchestration (UUID resolution, batch dependencies, API execution), see ow-agent.md.
 
 #### Parsing Perspective
 
@@ -157,6 +157,49 @@ For existing worlds where elements are already created but link fields are spars
 
 This is not a separate tool — it's parsing with a different focus. The same schema knowledge and validation rules apply.
 
+### Step 4b: Reconcile Against Existing World
+
+**Skip this step if no `.ow/` folder was found in Step 1.** For standalone parses (no world), go straight to Step 5.
+
+If you loaded a world cache in Step 1, compare every extracted element against it before generating output:
+
+#### 1. Name Matching
+
+For each extracted element, check the cache for matches:
+
+| Match Type | Example | Action |
+|------------|---------|--------|
+| Exact name | "Captain Snoot" = "Captain Snoot" | Existing element found |
+| Case-insensitive | "the crumbler" = "The Crumbler" | Existing element found |
+| Article-stripped | "The Soggy Sock" vs "Soggy Sock" | Existing element found |
+| No match | "Drizzle" not in cache | New element — CREATE |
+
+Do NOT auto-match on partial names or honorifics ("Admiral Fluffington" vs "Fluffington" could be different characters). Flag these for user review.
+
+#### 2. Field Comparison
+
+For each name match, compare the extraction against existing data:
+
+| Situation | Decision | Example |
+|-----------|----------|---------|
+| Extraction adds new fields not in existing | **ENRICH** | Existing has description only; extraction adds `physicality` |
+| Extraction adds new facts to a text field | **ENRICH** | Existing description: "Leader of Cookie Pirates." Extraction adds: "Sent message: 'We're coming home.'" |
+| Existing data is richer than extraction | **SKIP** | Existing: 5 populated fields. Extraction: just name + thin description |
+| Both have same field with different content | **CONFLICT** | Existing description vs extraction description — flag for user |
+| Extraction matches existing exactly | **SKIP** | No new information |
+
+**Enrichment over replacement**: When enriching text fields (description, background, etc.), the new info should be ADDED to existing content, not replace it. Present the new facts to append, not a replacement string.
+
+#### 3. Reconciliation Summary
+
+After comparing all elements, report counts:
+
+```
+Reconciliation: 8 CREATE, 2 ENRICH, 3 SKIP, 1 CONFLICT
+```
+
+List each SKIP and CONFLICT with reasoning so the user can override.
+
 ### Step 5: Handle Messy Sources
 
 #### Speculation Markers
@@ -195,9 +238,9 @@ When uncertain: grep schema-reference.md for the field name. No match = hallucin
 
 ### Step 7: Generate Output
 
-Produce two separate outputs:
+#### Standalone Parse (no world)
 
-#### 1. Clean JSON (importable)
+Produce grouped JSON — this goes directly to Base Tool:
 
 ```json
 {
@@ -214,22 +257,45 @@ Produce two separate outputs:
       "name": "Willowbrook",
       "description": "A village governed by Mayor Thomas Oak"
     }
-  ],
-  "Title": [
-    {
-      "name": "Mayor",
-      "holders": ["Thomas Oak"],
-      "locations": ["Willowbrook"]
-    }
   ]
 }
 ```
 
-No wrapper, no `parsed` key, no conflicts mixed in. This goes directly to Base Tool.
+No wrapper, no `parsed` key, no conflicts mixed in.
 
 **Field naming**: Use readable names (`location`, `objects`, `holders`) for standalone JSON. For direct API upload, link fields need `_id`/`_ids` suffixes. Default to readable names unless user is uploading via API.
 
-#### 2. Parsing Report
+#### Reconciled Parse (existing world)
+
+If Step 4b was performed, separate output by action:
+
+**1. CREATE** — new elements, grouped by type (same format as standalone):
+```json
+{
+  "Character": [{ "name": "Drizzle", "description": "..." }],
+  "Event": [{ "name": "The Soggy Sock Incident", "description": "..." }]
+}
+```
+
+**2. ENRICH** — existing element name + only the new information:
+```
+- "Captain Snoot" (Character) — NEW FIELD physicality: "Wears an eyepatch". APPEND TO description: "Old friend of Drizzle. Discovered The Rolling Pin, a Bakerfolk ruin."
+- "The Crumbler" (Character) — APPEND TO description: "Sent message: 'We're coming home.'"
+```
+
+**3. SKIP** — name + reason:
+```
+- "Bakerfolk" (Species) — existing data richer, no new fields
+```
+
+**4. CONFLICT** — both versions for user decision:
+```
+- "The Soft Spot" (Location) — existing: "Area within the Snack Nebula where cookies..." vs extraction: "A known Bakerfolk ruin in the Crumblefields area."
+```
+
+The CREATE JSON is directly importable to Base Tool. ENRICH and CONFLICT items need manual application or API PATCHing (see ow-agent.md for automated execution).
+
+#### Parsing Report
 
 Separate markdown summarizing:
 - **Judgment calls** — type decisions at ambiguity boundaries with reasoning
