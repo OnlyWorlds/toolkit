@@ -190,6 +190,29 @@ These fields DON'T EXIST. Common hallucinations from Moppetopia chaos test:
 
 ---
 
+## API Link Field Suffixes (_id / _ids)
+
+When sending data to the API directly (not standalone JSON), link fields need suffixes:
+- Single links: `location` becomes `location_id`
+- Multi links: `species` becomes `species_ids`
+
+**The silent failure**: Pydantic silently drops unknown fields. Sending `parent_location` instead of `parent_location_id` produces NO error — the field is just ignored. The element is created without the link.
+
+**Standalone JSON** (for Base Tool import) uses readable names without suffixes. Only add suffixes for direct API calls.
+
+---
+
+## Singular Endpoint Names
+
+All API endpoints use **singular** names. Plural forms redirect (301) or fail.
+
+- CORRECT: `/api/worldapi/character/`
+- WRONG: `/api/worldapi/characters/` (returns 301 redirect)
+
+Every element type is singular: `character`, `location`, `institution`, `species`, `phenomenon`, etc.
+
+---
+
 ## Type Confusion
 
 **Link fields pointing to wrong element type**

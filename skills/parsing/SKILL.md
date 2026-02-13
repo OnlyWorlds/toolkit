@@ -18,6 +18,8 @@ Convert worldbuilding text into structured OnlyWorlds JSON.
 | User has OW world | Check `.ow/` setup first — enables reconciliation |
 | User has no account | Parse to standalone JSON — works great |
 | Second parse of same world | Revise earlier elements with new discoveries |
+| Ongoing project with existing world | Extract-first (thorough), then reconcile against `.ow/` cache |
+| Enrich links on existing elements | Re-parse with element list in hand, focus on populating link fields |
 
 ## Key Rules
 
@@ -73,6 +75,20 @@ Based on text scope:
 
 **After each pass, revise earlier elements.** Pass 3 may completely transform the meaning of Pass 1 elements (a "battle" becomes a "massacre," a "natural spring" becomes "ancient technology"). Go back and update — don't just add new elements alongside stale ones.
 
+**For ongoing projects**: If the user has an existing world (`.ow/` folder), recommend extract-first, reconcile-second. Extract everything without checking for duplicates, then compare against the cache to decide CREATE/UPDATE/SKIP. See ow-agent.md for the full reconciliation workflow.
+
+#### Parsing Perspective
+
+Before extracting, consider the text's natural perspective:
+
+| Perspective | When to Use | Effect on Output |
+|-------------|-------------|------------------|
+| **Character-centric** | Novels, POV chapters | Descriptions filtered through character experience |
+| **World-as-record** | Wikis, encyclopedias, campaign notes | Neutral, reusable descriptions. Elements stand alone |
+| **Hybrid** | Mixed sources | Extract characters subjectively, locations/systems objectively |
+
+Default to world-as-record for maximum reusability. Ask the user which perspective fits if the source is ambiguous.
+
 Confirm strategy with user, then proceed.
 
 ### Step 3: Extract Elements
@@ -104,18 +120,42 @@ For each piece of text:
 
 5. **Sparse elements are valid.** "Nibbles is a Cookie Pirates member" is enough to create a Character with name + description. Don't require full field population. Fields can be enriched later.
 
+#### Commonly Missed Type Decisions
+
+| Concept | Correct Type | NOT |
+|---------|-------------|-----|
+| Ships where characters live/work | Location | Object |
+| Named era/war (period) | Construct | Event |
+| Treaty document with articles | Law (+ optionally Event for signing) | Construct |
+| Cultural saying with world significance | Narrative | Character field |
+| Formal rank with holder | Title | Construct |
+| Empire/kingdom territory | Zone + Institution (both) | Just Institution |
+
 ### Step 4: Link and Validate References
 
 After extraction:
 
 1. Link elements using NAMES (not UUIDs). Only link what's explicitly stated or clearly implied.
 2. Use existing fields first (friends, rivals, family) — Relation only when depth demands it.
-3. **Validate every reference**: every name in a link field must have a matching element. For each dangling reference: create the missing element, or remove the reference.
+3. **Check link direction**: If Character→Event doesn't exist as a field, check Event→Characters instead. Schema-reference.md shows which type holds each link field.
+4. **Validate every reference**: every name in a link field must have a matching element. For each dangling reference: create the missing element, or remove the reference.
 
 Common dangling references:
 - Language references without Language element
 - Ability references but only Phenomenon created
 - Parent locations/zones never defined
+
+#### Link Enrichment Mode
+
+For existing worlds where elements are already created but link fields are sparse, re-run parsing focused on links:
+
+1. Load the existing element list (from JSON, `.ow/world-cache.json`, or API)
+2. Re-read source material with the element list in hand
+3. For each element, scan descriptions and source text for connections to other known elements
+4. Populate link fields — focus on `friends`, `rivals`, `species`, `location`, `institutions`, `events`, `characters`, `objects`, and other cross-reference fields
+5. Output as PATCH-ready JSON (element name/UUID + link fields to add)
+
+This is not a separate tool — it's parsing with a different focus. The same schema knowledge and validation rules apply.
 
 ### Step 5: Handle Messy Sources
 

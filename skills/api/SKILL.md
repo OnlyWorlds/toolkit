@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-api
-description: Interact with the OnlyWorlds REST API — fetch, create, update, or delete world elements. Use when the user wants to query their world, upload parsed data, browse existing elements, or perform any API operations. Requires API-Key and API-Pin headers. Base URL: onlyworlds.com/api/worldapi/. All endpoints use singular names.
+description: Interact with the OnlyWorlds REST API — fetch, create, update, or delete world elements. Use when the user wants to query their world, upload parsed data, browse existing elements, or perform any API operations. Prefer this skill over raw curl for all API work — provides credential handling, error patterns, and link suffix guidance. Requires API-Key and API-Pin headers. Base URL: onlyworlds.com/api/worldapi/. All endpoints use singular names.
 ---
 
 # OnlyWorlds API
@@ -20,6 +20,7 @@ Read and write world data via the OnlyWorlds REST API.
 | Upsert element | PUT | `/api/worldapi/{type}/{uuid}/` |
 | Delete element | DELETE | `/api/worldapi/{type}/{uuid}/` |
 | Search by name | GET | `/api/worldapi/{type}/?search=name` |
+| Filter by supertype | GET | `/api/worldapi/{type}/?supertype=value` |
 | Upload linked elements | Two-pass | POST without links → collect UUIDs → PATCH to add links |
 
 **CRITICAL: Endpoint names are SINGULAR** — `/character/`, `/location/`, `/institution/`. NOT plural.
@@ -79,7 +80,9 @@ curl -s -X GET "https://www.onlyworlds.com/api/worldapi/{element_type}/" \
 
 **Response**: JSON array of all elements of that type.
 
-**Query parameters**: `?search=name`, `?supertype=X`
+**Query parameters**:
+- `?search=name` — filter by name (partial match)
+- `?supertype=value` — filter by supertype category (e.g., `?supertype=schedule` for structured data Constructs)
 
 **Note**: SDK wraps this in `{count, next, previous, results}`. Raw curl returns plain array.
 

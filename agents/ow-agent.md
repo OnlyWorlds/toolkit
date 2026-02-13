@@ -17,7 +17,7 @@ Before doing anything else, load the toolkit:
 Skill(skill: "onlyworlds:onlyworlds-start")
 ```
 
-This loads all OnlyWorlds skills and knowledge.
+This loads all OnlyWorlds skills and knowledge. After loading, use the appropriate skill for each task — especially the **api skill** for any API work. The API has singular endpoints, `_id`/`_ids` suffixes, and specific headers that are easy to get wrong from memory. The api skill has them right.
 
 ## When to Use This Agent
 
@@ -101,7 +101,11 @@ Without revision, later passes produce correct new elements but leave earlier el
 1. Load world cache from .ow/world-cache.json
 2. For each extracted element, check against cache:
    - Exact name match → existing element
-   - Variation match ("The Great Hall" vs "Great Hall", "Dr. Marcus" vs "Marcus") → existing element
+   - Variation match → existing element. Apply these normalizations:
+     - Strip leading articles: "The ", "A ", "An ", "De ", "Het "
+     - Case-insensitive compare
+     - Normalize apostrophes: curly → straight
+     - Honorifics and titles: "Admiral Fluffington" vs "Fluffington" — flag for human review, don't auto-match (could be different characters)
    - No match → CREATE candidate
 3. For existing elements, fetch current state from API and decide:
 
