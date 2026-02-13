@@ -202,6 +202,20 @@ When sending data to the API directly (not standalone JSON), link fields need su
 
 ---
 
+## Base URL and Headers
+
+**Base URL must include `www.`** — without it, you get a 301 redirect that drops authentication headers.
+
+- CORRECT: `https://www.onlyworlds.com/api/worldapi/...`
+- WRONG: `https://onlyworlds.com/api/worldapi/...` (301 → auth headers lost → 401)
+
+**Header names are exact**: `API-Key` and `API-Pin`. Wrong casing fails silently.
+
+- CORRECT: `-H "API-Key: ..." -H "API-Pin: ..."`
+- WRONG: `-H "Api-Key: ..." -H "Pin: ..."` (401 Unauthorized)
+
+---
+
 ## Singular Endpoint Names
 
 All API endpoints use **singular** names. Plural forms redirect (301) or fail.

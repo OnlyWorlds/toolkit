@@ -333,7 +333,9 @@ Decision trees for choosing between confusing element types during parsing.
 
 ## Location vs Zone
 
-**The core question**: Is this a physical place or an abstract territory?
+**The core question**: Is this area defined by what's physically there, or by what's meaningful there?
+
+Zone is spatial but not geometric — it covers ground because of what's significant there (jurisdiction, phenomena, culture), not because of what's physically there. Both Locations and Zones occupy real space; the difference is what DEFINES them.
 
 ```
 "The city of Ironhaven"
@@ -376,7 +378,7 @@ Decision trees for choosing between confusing element types during parsing.
 - **Location**: Feltropolis (the space station), The Marionette Theatre, Admiral Fluffington's Quarters, USS Fuzzball (ship as place)
 - **Zone**: The Fluffium Mining District (territory), Moppetopia Proper (political boundary), The Soggy Sector (region)
 
-**The test**: "Can you point to it on a map?" → Both. "Can you stand at a specific spot there?" → Location. "Is it a conceptual area (possibly) defined by something other than physical geography?" → Zone.
+**The test**: "Can you point to it on a map?" → Both can. "What defines this area — its physical features or its significance?" Physical features (form, architecture, terrain) → Location. Significance (jurisdiction, phenomena, culture, history) → Zone.
 
 ---
 
