@@ -53,6 +53,7 @@ After loading toolkit, invoke these skills as needed:
 | **modeling** | Design consultation |
 | **schema** | Field lookups |
 | **api** | CRUD operations |
+| **survey** | Creative brief of a world |
 | **dev** | SDK/tool building |
 
 ## Workflow: Reconciled Parsing

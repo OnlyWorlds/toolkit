@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-start
-description: Entry point for OnlyWorlds worldbuilding toolkit. Use when the user asks what OnlyWorlds is, wants to organize or structure a fictional world, is new to the toolkit, or is unsure where to begin. Routes to the right skill based on user situation — parsing, modeling, schema, dev, api, or project setup.
+description: Entry point for OnlyWorlds worldbuilding toolkit. Use when the user asks what OnlyWorlds is, wants to organize or structure a fictional world, is new to the toolkit, or is unsure where to begin. Routes to the right skill based on user situation — parsing, modeling, schema, dev, api, survey, or project setup.
 ---
 
 # OnlyWorlds Start
@@ -16,6 +16,8 @@ Route users to the right OnlyWorlds capability.
 | "I'm designing a magic system / factions / complex thing" | modeling |
 | "I want to build a tool/game with world data" | dev |
 | "I need to sync/upload/fetch data" | api |
+| "I want to understand/feel/read a world" | survey |
+| "Give me a creative brief of my world" | survey |
 | "What fields/types exist?" | schema |
 | "What is OnlyWorlds?" | Explain below, then ask what they're working on |
 | "I have an idea for a world" | Discuss, then modeling or schema |
@@ -57,6 +59,8 @@ CRITICAL: For users with an OnlyWorlds world who want parsing or API work, **pro
 **Wants modeling**: "Let's work through that design together." → modeling
 
 **Wants to build tools**: "Let's scaffold a project." → dev
+
+**Wants to understand a world**: "Let me read your world and write you a brief." → survey (no project-setup needed — just credentials)
 
 **Exploring/discussing ideas**: Engage with their concept, route to modeling or schema as complexity emerges.
 
