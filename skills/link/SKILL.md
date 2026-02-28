@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-link
-description: Enrich connections between existing OnlyWorlds world elements. Use when the user wants to find missing links, connect orphaned elements, add Relations, improve element interconnections, or audit their world's link density. Works with worlds via API — reads all elements, analyzes the web, suggests and applies links.
+description: Enrich connections between existing OnlyWorlds world elements. Use when the user wants to find missing links, connect orphaned elements, add Relations, improve element interconnections, audit link density, or says elements feel disconnected or unlinked. Works with worlds via API — reads all elements, analyzes the web, suggests and applies links.
 ---
 
 # OnlyWorlds Link

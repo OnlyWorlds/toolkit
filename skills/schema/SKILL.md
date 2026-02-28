@@ -9,7 +9,7 @@ description: OnlyWorlds schema reference — look up fields, validate element st
 
 | Question | Answer |
 |----------|--------|
-| "What fields does X have?" | Read ../../knowledge/schema-reference.md, find the element section |
+| "What fields does X have?" | Read ../../knowledge/schema-reference.md, find the element section, and **present the fields directly** to the user |
 | "Does X.field exist?" | Grep schema-reference.md — no match = doesn't exist |
 | "Object vs Construct?" | Specific instance vs type/concept. Can you touch it? Object. |
 | "Character vs Creature?" | Narrative agency → Character. Biological focus → Creature. |
@@ -26,6 +26,8 @@ For complete field reference, read:
 **../../knowledge/schema-reference.md**
 
 Every field for all 22 element types, organized by element.
+
+When the user asks "what fields does X have?", read the file and **present the fields directly in your response**. Do not just tell the user to read the file — extract and show them the answer.
 
 ### Base Fields (All Elements)
 
