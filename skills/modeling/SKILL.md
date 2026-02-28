@@ -95,3 +95,5 @@ OnlyWorlds excels at world structure — entities, relationships, lore. For high
 - **OW + Obsidian**: Canonical data in OW, personal drafts locally
 
 The question isn't "can OW do this?" but "what's the cleanest architecture?"
+
+If you hit a genuine schema limitation (missing field, unclear type boundary) that decision-trees doesn't resolve, use the **council** skill to check for existing motions or draft a proposal.

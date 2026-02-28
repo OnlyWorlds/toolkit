@@ -54,6 +54,8 @@ After loading toolkit, invoke these skills as needed:
 | **schema** | Field lookups |
 | **api** | CRUD operations |
 | **survey** | Creative brief of a world |
+| **council** | Browse/draft schema governance motions |
+| **link** | Enrich connections between elements |
 | **dev** | SDK/tool building |
 
 ## Workflow: Reconciled Parsing
@@ -359,6 +361,16 @@ When some data goes to OW and some stays local:
 - Define boundaries clearly in agent instructions ("Objects go to OW, inventory goes to local DB")
 - Track both in one place (e.g., `ow-ids.md` maps OW UUIDs to local references)
 - Reconciler handles the routing — extraction includes everything, reconciler decides what goes where
+
+## Schema Boundary Awareness
+
+When modeling or parsing hits a type disambiguation that decision-trees doesn't cleanly resolve — especially "this concept needs a field that doesn't exist" or "this type boundary is fundamentally unclear":
+
+1. Invoke council skill to search for related motions on that element type
+2. If found: surface to user ("there's an active council motion about this")
+3. If not: suggest drafting one ("this might be worth a council motion")
+
+This connects individual worldbuilding work to collective schema evolution.
 
 ## Error Handling
 

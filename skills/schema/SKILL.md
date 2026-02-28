@@ -128,3 +128,5 @@ Some relationships only go one direction:
 - Constructs link TO many things, things link back via their `constructs` field
 
 When unsure, check schema-reference.md for which element has the link field.
+
+If a field genuinely doesn't exist and the user needs it, use the **council** skill to check for existing motions or propose a schema change.

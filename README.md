@@ -44,7 +44,10 @@ Point at the knowledge files:
 | **parsing** | Text, files, or folders → structured OnlyWorlds elements |
 | **modeling** | Design consultation for complex world systems |
 | **schema** | Field reference across all 22 types |
-| **api** | Fetch, create, update, delete — natural language CRUD |
+| **api** | Fetch, create, update, delete, natural language CRUD |
+| **survey** | Read a world and get a creative brief  |
+| **council** | Browse and participate in schema governance  |
+| **link** | Find missing connections, enrich links, resolve orphaned elements |
 | **dev** | SDK integration, project scaffolding, deployment |
 | **project-setup** | Connect to an OnlyWorlds world (runs automatically when needed) |
 
@@ -56,6 +59,9 @@ Point at the knowledge files:
 "How should I model a magic system?"
 "What fields does Character have?"
 "Fetch all my locations"
+"Give me a creative brief of my world"
+"Are there any schema motions about death_date?"
+"Find orphaned elements in my world"
 "I'm building a game with world data"
 ```
 

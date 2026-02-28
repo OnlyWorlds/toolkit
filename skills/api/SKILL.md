@@ -86,6 +86,8 @@ curl -s -X GET "https://www.onlyworlds.com/api/worldapi/{element_type}/" \
 
 **Note**: SDK wraps this in `{count, next, previous, results}`. Raw curl returns plain array.
 
+**Link fields in GET responses** return nested objects: `"species": [{"id": "uuid", "name": "Puddle Moppet", ...}]`. The `_id`/`_ids` suffix convention is for **write operations only** (POST/PATCH).
+
 ### Get Element
 
 ```bash
@@ -197,7 +199,7 @@ If results found, consider updating instead of creating.
 | Code | Meaning | Fix |
 |------|---------|-----|
 | 401 | Wrong API-Key or API-Pin | Re-check credentials |
-| 403 | Key doesn't have permission | Verify key matches intended world |
+| 403 | Key doesn't have permission | Verify key matches intended world. Also check: must use `www.onlyworlds.com` (non-www redirects and strips auth headers), and Python `urllib` needs an explicit `User-Agent` header |
 | 404 | Element or endpoint doesn't exist | Check type spelling (lowercase, singular) |
 | 400 | Invalid data format | Check field names against schema, verify `_id`/`_ids` suffixes |
 | 429 | Rate limited | Wait, add delays between requests |

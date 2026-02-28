@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-start
-description: Entry point for OnlyWorlds worldbuilding toolkit. Use when the user asks what OnlyWorlds is, wants to organize or structure a fictional world, is new to the toolkit, or is unsure where to begin. Routes to the right skill based on user situation — parsing, modeling, schema, dev, api, survey, or project setup.
+description: Entry point for OnlyWorlds worldbuilding toolkit. Use when the user asks what OnlyWorlds is, wants to organize or structure a fictional world, is new to the toolkit, or is unsure where to begin. Routes to the right skill based on user situation — parsing, modeling, schema, dev, api, survey, council, link, or project setup.
 ---
 
 # OnlyWorlds Start
@@ -19,6 +19,10 @@ Route users to the right OnlyWorlds capability.
 | "I want to understand/feel/read a world" | survey |
 | "Give me a creative brief of my world" | survey |
 | "What fields/types exist?" | schema |
+| "The schema should have X / propose a change" | council |
+| "Are there motions about X?" | council |
+| "My elements aren't connected well" | link |
+| "Find orphaned elements / enrich links" | link |
 | "What is OnlyWorlds?" | Explain below, then ask what they're working on |
 | "I have an idea for a world" | Discuss, then modeling or schema |
 
@@ -61,6 +65,10 @@ CRITICAL: For users with an OnlyWorlds world who want parsing or API work, **pro
 **Wants to build tools**: "Let's scaffold a project." → dev
 
 **Wants to understand a world**: "Let me read your world and write you a brief." → survey (no project-setup needed — just credentials)
+
+**Wants to propose schema changes**: "Let's check what's already been discussed." → council
+
+**Wants to connect elements**: "Let me analyze your world's connections." → link (needs project-setup or credentials)
 
 **Exploring/discussing ideas**: Engage with their concept, route to modeling or schema as complexity emerges.
 
