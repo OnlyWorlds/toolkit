@@ -1,15 +1,15 @@
 # OnlyWorlds Schema Reference
 
 **Schema Version**: 2.2.x (matches @onlyworlds/sdk)
-**Last Verified**: 2026-01-27
+**Last Verified**: 2026-03-17 (live API audit against 1,604-element world)
 
 Complete field reference for all 22 element types.
 
 **WHITELIST RULE**: Only fields listed below exist. If a field isn't in this file, it will cause import failure. Don't invent plausible-sounding fields - check this list.
 
-Common hallucinations that DON'T exist: `age`, `titles`, `occupation`, `owner`, `status` (on Location), `background` (on Institution), `laws` (on Event), `location` (singular, except on Character/Creature).
-
 **Note on link field names**: Fields are listed by their canonical names (e.g., `birthplace`). When creating/updating via raw API, use `_id` suffix for single links (`birthplace_id`) and `_ids` for multi links (`species_ids`). The SDK 2.2+ handles this conversion automatically.
+
+**API response format**: GET list endpoints return plain JSON arrays (no pagination wrapper). GET detail returns a single object. FK fields return nested mini-objects `{id, name, supertype, subtype, image_url}`. M2M fields return arrays of the same shape.
 
 ---
 
@@ -509,4 +509,24 @@ characters, institutions, families, zones, locations, objects, constructs, laws,
 
 ---
 
-*Source: OnlyWorlds SDK types.ts - use this as authoritative field reference*
+## Link Direction Summary
+
+Some relationships are one-directional — only one type "owns" the link field:
+
+| Relationship | Direction | How to link |
+|-------------|-----------|-------------|
+| Character ↔ Ability | Character.abilities → Ability | PATCH Character (Ability has NO characters field) |
+| Character ↔ Species | Character.species → Species | PATCH Character |
+| Title → Character | Title.holders/characters → Character | PATCH Title |
+| Object → Location | Object.location → Location | PATCH Object |
+| Law → Institution | Law.author → Institution | PATCH Law (Law has NO institutions field) |
+| Event → everything | Event.*_ids → targets | POST/PATCH Event |
+| Construct → everything | Construct.*_ids → targets | POST/PATCH Construct (18 M2M fields) |
+
+**Most connected types** (by M2M field count): Construct (18), Narrative (18), Event (17), Relation (17), Title (14).
+
+---
+
+---
+
+*Source: OnlyWorlds SDK types.ts + live API audit 2026-03-17*

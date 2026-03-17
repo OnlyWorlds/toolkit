@@ -216,6 +216,17 @@ When sending data to the API directly (not standalone JSON), link fields need su
 
 ---
 
+## Python urllib Blocked by Cloudflare
+
+Python's `urllib.request` gets Cloudflare error 1010 (bot detection) due to its default User-Agent. This affects any script using `urllib` or `requests` without a custom User-Agent header.
+
+**Workaround options**:
+- Use `curl` via `subprocess.run()` instead of `urllib`
+- Add a browser-like User-Agent: `headers['User-Agent'] = 'Mozilla/5.0'`
+- Use `@filename` syntax with curl for long JSON payloads (avoids shell quoting issues on Windows)
+
+---
+
 ## Singular Endpoint Names
 
 All API endpoints use **singular** names. Plural forms redirect (301) or fail.

@@ -53,7 +53,8 @@ Check for `.ow/config.json` in current directory first:
 ```bash
 curl -s -X GET "https://www.onlyworlds.com/api/accounts/validate/" \
   -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Pin: {api_pin}" \
+  -H "User-Agent: Mozilla/5.0"
 ```
 
 Also fetch world info to confirm targeting the right world:
@@ -61,7 +62,8 @@ Also fetch world info to confirm targeting the right world:
 ```bash
 curl -s -X GET "https://www.onlyworlds.com/api/worldapi/world/" \
   -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Pin: {api_pin}" \
+  -H "User-Agent: Mozilla/5.0"
 ```
 
 ### Step 3: Perform Operations
@@ -73,18 +75,18 @@ curl -s -X GET "https://www.onlyworlds.com/api/worldapi/world/" \
 ```bash
 curl -s -X GET "https://www.onlyworlds.com/api/worldapi/{element_type}/" \
   -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Pin: {api_pin}" \
+  -H "User-Agent: Mozilla/5.0"
 ```
 
 **Element types** (lowercase): character, creature, species, family, collective, institution, location, zone, map, pin, marker, object, construct, title, ability, trait, language, law, event, narrative, phenomenon, relation
 
-**Response**: JSON array of all elements of that type.
+**Response**: JSON array of all elements of that type. No pagination — all elements returned at once.
 
 **Query parameters**:
-- `?search=name` — filter by name (partial match)
 - `?supertype=value` — filter by supertype category (e.g., `?supertype=schedule` for structured data Constructs)
 
-**Note**: SDK wraps this in `{count, next, previous, results}`. Raw curl returns plain array.
+**Note**: SDK wraps this in `{count, next, previous, results}`. Raw curl returns plain array. There is currently no name filtering on list endpoints — fetch all and filter client-side.
 
 **Link fields in GET responses** return nested objects: `"species": [{"id": "uuid", "name": "Puddle Moppet", ...}]`. The `_id`/`_ids` suffix convention is for **write operations only** (POST/PATCH).
 
@@ -93,7 +95,8 @@ curl -s -X GET "https://www.onlyworlds.com/api/worldapi/{element_type}/" \
 ```bash
 curl -s -X GET "https://www.onlyworlds.com/api/worldapi/{element_type}/{uuid}/" \
   -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Pin: {api_pin}" \
+  -H "User-Agent: Mozilla/5.0"
 ```
 
 ### Create Element
@@ -102,6 +105,7 @@ curl -s -X GET "https://www.onlyworlds.com/api/worldapi/{element_type}/{uuid}/" 
 curl -s -X POST "https://www.onlyworlds.com/api/worldapi/{element_type}/" \
   -H "API-Key: {api_key}" \
   -H "API-Pin: {api_pin}" \
+  -H "User-Agent: Mozilla/5.0" \
   -H "Content-Type: application/json" \
   -d '{"name": "Element Name", "description": "Description here"}'
 ```
@@ -114,6 +118,7 @@ curl -s -X POST "https://www.onlyworlds.com/api/worldapi/{element_type}/" \
 curl -s -X PATCH "https://www.onlyworlds.com/api/worldapi/{element_type}/{uuid}/" \
   -H "API-Key: {api_key}" \
   -H "API-Pin: {api_pin}" \
+  -H "User-Agent: Mozilla/5.0" \
   -H "Content-Type: application/json" \
   -d '{"description": "Updated description"}'
 ```
@@ -124,6 +129,7 @@ curl -s -X PATCH "https://www.onlyworlds.com/api/worldapi/{element_type}/{uuid}/
 curl -s -X PUT "https://www.onlyworlds.com/api/worldapi/{element_type}/{uuid}/" \
   -H "API-Key: {api_key}" \
   -H "API-Pin: {api_pin}" \
+  -H "User-Agent: Mozilla/5.0" \
   -H "Content-Type: application/json" \
   -d '{"name": "Element Name", "description": "Description"}'
 ```
@@ -135,7 +141,8 @@ If ID exists → updates. If not → creates with that ID.
 ```bash
 curl -s -X DELETE "https://www.onlyworlds.com/api/worldapi/{element_type}/{uuid}/" \
   -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Pin: {api_pin}" \
+  -H "User-Agent: Mozilla/5.0"
 ```
 
 Returns 204 No Content on success.
@@ -178,13 +185,17 @@ curl -s -X GET "https://www.onlyworlds.com/api/worldapi/character/" \
 
 ### Check for Duplicates
 
+Fetch all elements of the type and search client-side (no server-side name filtering):
+
 ```bash
-curl -s -X GET "https://www.onlyworlds.com/api/worldapi/character/?search=Thomas%20Oak" \
+curl -s -X GET "https://www.onlyworlds.com/api/worldapi/character/" \
   -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Pin: {api_pin}" \
+  -H "User-Agent: Mozilla/5.0"
+# Then search the JSON response for matching names
 ```
 
-If results found, consider updating instead of creating.
+If match found, consider updating instead of creating.
 
 ## Key Rules
 
@@ -201,5 +212,9 @@ If results found, consider updating instead of creating.
 | 401 | Wrong API-Key or API-Pin | Re-check credentials |
 | 403 | Key doesn't have permission | Verify key matches intended world. Also check: must use `www.onlyworlds.com` (non-www redirects and strips auth headers), and Python `urllib` needs an explicit `User-Agent` header |
 | 404 | Element or endpoint doesn't exist | Check type spelling (lowercase, singular) |
-| 400 | Invalid data format | Check field names against schema, verify `_id`/`_ids` suffixes |
+| 400/422 | Invalid data format | Check field names against schema, verify `_id`/`_ids` suffixes |
 | 429 | Rate limited | Wait, add delays between requests |
+
+## Schema Notes
+
+Some links are one-directional. Ability has no `characters` field — link via Character.abilities_ids. Law has no `institutions` field — use Law.author_id. See `schema-reference.md` Link Direction Summary for the full table.
