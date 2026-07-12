@@ -35,7 +35,7 @@ language, law, event, narrative, phenomenon, relation
 
 Skip: map, pin, marker (spatial, not narrative links).
 
-**CRITICAL**: Singular endpoints, `www.onlyworlds.com`, exact `API-Key`/`API-Pin` headers.
+**CRITICAL**: v2 endpoints (`/api/v2/{type}`), singular type names, `www.onlyworlds.com`, exact `API-Key`/`API-Pin` headers. v2 lists paginate — follow `next_cursor` until `has_more` is false. Link fields come back as flat UUID arrays.
 
 ### Step 3: Analyze the Web
 
@@ -89,33 +89,35 @@ For each recommendation, show:
 
 After user approves recommendations:
 
-**For link field updates** — PATCH existing elements:
+**For link field updates** — PATCH existing elements (bare field name, UUID value; no `_id`/`_ids` suffix on v2):
 ```bash
-curl -s -X PATCH "https://www.onlyworlds.com/api/worldapi/{type}/{uuid}/" \
+curl -s -X PATCH "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
   -H "API-Key: {key}" -H "API-Pin: {pin}" \
   -H "Content-Type: application/json" \
-  -d '{"location_id": "target-uuid"}'
+  -d '{"location": "target-uuid"}'
 ```
 
-**For new Relations** — POST new elements:
+**Read before PATCH**: PATCH *replaces* the field. To add to a multi-link array (e.g. `objects`), GET the current array first, append, and send the full list — a partial PATCH drops the rest.
+
+**For new Relations** — POST (mint your own UUID so you can set links in the same call):
 ```bash
-curl -s -X POST "https://www.onlyworlds.com/api/worldapi/relation/" \
+curl -s -X POST "https://www.onlyworlds.com/api/v2/relation" \
   -H "API-Key: {key}" -H "API-Pin: {pin}" \
   -H "Content-Type: application/json" \
-  -d '{"name": "Fluffington-Dampworth Rivalry", "description": "...", "intensity": 80}'
+  -d '{"id": "{your-uuidv7}", "name": "Fluffington-Dampworth Rivalry", "description": "...", "intensity": 80, "actor": "actor-uuid", "characters": ["other-party-uuid"]}'
 ```
 
-**Two-pass for Relations**: Create the Relation first, then PATCH the actor/target links using returned UUID.
+Relation has a single `actor` (the defining Character) plus multi-link "involves" fields (`characters`, `institutions`, `objects`, …) for the other parties. Because you mint the UUID, you can set these links in the create call — no second pass needed. (If a linked UUID doesn't exist you get an honest `400 invalid_link` naming the field; fix and resend.)
 
 Report results: N links added, N Relations created, N orphans resolved.
 
 ## Link Field Reference
 
-Read `../../knowledge/schema-reference.md` for which elements have which link fields. Key patterns:
+Read `../../knowledge/schema-reference.md` for which elements have which link fields. Key patterns (v2: bare field names holding UUIDs, no suffix):
 
-- Single links (`_id`): Character.location, Character.species, Event.location
-- Multi links (`_ids`): Character.objects, Character.institutions, Event.characters
-- Relation links: actor + target (any element types), with intensity, description
+- Single links: Character.location, Character.species, Event.location
+- Multi links: Character.objects, Character.institutions, Event.characters
+- Relation links: `actor` (single Character) + "involves" multi-links (characters, institutions, objects, …), with intensity, description
 
 ## What This Skill Does NOT Do
 

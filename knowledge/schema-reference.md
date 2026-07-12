@@ -1,15 +1,17 @@
 # OnlyWorlds Schema Reference
 
 **Schema Version**: 2.2.x (matches @onlyworlds/sdk)
-**Last Verified**: 2026-03-17 (live API audit against 1,604-element world)
+**Last Verified**: 2026-07-12 (live-API pass against the rebuilt v2 platform)
+
+The schema is now single-sourced from the canonical schema YAML — models, SDK, and docs are generated from it, so field lists here track that source. Field descriptors for any type are also available live at `GET /api/metadata/{type}/`.
 
 Complete field reference for all 22 element types.
 
 **WHITELIST RULE**: Only fields listed below exist. If a field isn't in this file, it will cause import failure. Don't invent plausible-sounding fields - check this list.
 
-**Note on link field names**: Fields are listed by their canonical names (e.g., `birthplace`). When creating/updating via raw API, use `_id` suffix for single links (`birthplace_id`) and `_ids` for multi links (`species_ids`). The SDK 2.2+ handles this conversion automatically.
+**Note on link field names**: Fields are listed by their canonical names (e.g., `birthplace`). On the modern **v2 / bulk** API these names are used as-is, holding UUIDs — no suffix, same in reads and writes. (The legacy **v1** dialect uses `_id`/`_ids` write suffixes — `birthplace_id`, `species_ids` — and expands links into nested objects on read; the SDK handles that conversion. See the `onlyworlds-api` skill for both dialects.)
 
-**API response format**: GET list endpoints return plain JSON arrays (no pagination wrapper). GET detail returns a single object. FK fields return nested mini-objects `{id, name, supertype, subtype, image_url}`. M2M fields return arrays of the same shape.
+**API response format (v2)**: list endpoints return `{data, has_more, next_cursor}` (paginated, opaque cursor); detail returns the bare element object; link fields are flat UUID arrays. (v1 returns plain arrays with no pagination and nested `{id, name, supertype, subtype, image_url}` link objects.)
 
 ---
 

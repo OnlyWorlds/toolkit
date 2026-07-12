@@ -190,51 +190,45 @@ These fields DON'T EXIST. Common hallucinations from Moppetopia chaos test:
 
 ---
 
-## API Link Field Suffixes (_id / _ids)
+## Link Field Names When Writing to the API (v2)
 
-When sending data to the API directly (not standalone JSON), link fields need suffixes:
-- Single links: `location` becomes `location_id`
-- Multi links: `species` becomes `species_ids`
+**Standalone JSON** (a parse result, or a Base Tool import) uses readable link field names holding element **names** — that's what the parsing rules above teach.
 
-**The silent failure**: Pydantic silently drops unknown fields. Sending `parent_location` instead of `parent_location_id` produces NO error — the field is just ignored. The element is created without the link.
+When you actually **upload** to the API, link fields hold **UUIDs**, not names. On the modern **v2 / bulk** dialect the field name stays bare — `location`, `species`, `friends` — the same in reads and writes. There is no `_id`/`_ids` suffix in v2. Resolve each name to the UUID of the element you created (mint your own UUIDv7 so you can point links at siblings in the same `/bulk` batch), then send bare fields holding UUID arrays.
 
-**Standalone JSON** (for Base Tool import) uses readable names without suffixes. Only add suffixes for direct API calls.
+**The #1 new-user error**: sending a v1-style suffix (`friends_ids`) to v2 or `/bulk`. It's a hard `422 Unknown field: friends_ids`. Use the bare name (`friends`). The suffix belongs to the legacy v1 dialect only (see below).
+
+**Honest errors, not silent drops**: if you send an unknown field, you get a `422` naming it; if a link points at a UUID that doesn't exist, you get a `400`/`invalid_link` naming the field. Nothing is silently ignored or nulled. Read the error envelope — it tells you the field and the fix. Full API mechanics live in the `onlyworlds-api` skill.
 
 ---
 
 ## Base URL and Headers
 
-**Base URL must include `www.`** — without it, you get a 301 redirect that drops authentication headers.
+**Base URL must include `www.`** — use `https://www.onlyworlds.com/api/v2/...`. Bare-domain redirect behavior differs; stick with `www`.
 
-- CORRECT: `https://www.onlyworlds.com/api/worldapi/...`
-- WRONG: `https://onlyworlds.com/api/worldapi/...` (301 → auth headers lost → 401)
-
-**Header names are exact**: `API-Key` and `API-Pin`. Wrong casing fails silently.
+**Header names are exact**: `API-Key` and `API-Pin`. Wrong casing → `401`.
 
 - CORRECT: `-H "API-Key: ..." -H "API-Pin: ..."`
-- WRONG: `-H "Api-Key: ..." -H "Pin: ..."` (401 Unauthorized)
+- WRONG: `-H "Api-Key: ..." -H "Pin: ..."`
 
----
-
-## Python urllib Blocked by Cloudflare
-
-Python's `urllib.request` gets Cloudflare error 1010 (bot detection) due to its default User-Agent. This affects any script using `urllib` or `requests` without a custom User-Agent header.
-
-**Workaround options**:
-- Use `curl` via `subprocess.run()` instead of `urllib`
-- Add a browser-like User-Agent: `headers['User-Agent'] = 'Mozilla/5.0'`
-- Use `@filename` syntax with curl for long JSON payloads (avoids shell quoting issues on Windows)
+Walled worlds require `API-Pin` on reads too; every write requires it regardless.
 
 ---
 
 ## Singular Endpoint Names
 
-All API endpoints use **singular** names. Plural forms redirect (301) or fail.
+All API endpoints use **singular** names, on both v2 and v1.
 
-- CORRECT: `/api/worldapi/character/`
-- WRONG: `/api/worldapi/characters/` (returns 301 redirect)
+- CORRECT: `/api/v2/character`
+- WRONG: `/api/v2/characters`
 
 Every element type is singular: `character`, `location`, `institution`, `species`, `phenomenon`, etc.
+
+---
+
+## Legacy v1 Dialect (older tools)
+
+If you're maintaining an integration written against the old `/api/worldapi/…` dialect, its link-write convention differs: single links take `_id` (`location_id`), multi links take `_ids` (`species_ids`), and reads return expanded `{id, name, …}` objects rather than flat UUIDs. Its GET-by-id needs a trailing slash (`/character/{uuid}/`) or you get a silent `301`. This is legacy only — write new code against v2. See the `onlyworlds-api` skill's Classic API section.
 
 ---
 
@@ -342,3 +336,4 @@ Often need BOTH: Law for the document, Event for the signing ceremony.
 *Major update from Moppetopia chaos test - 73→2 hallucinated field errors*
 *Added: ships, institution/location disambiguation, Event.triggers, treaties*
 *Added (Jan 27): Link fields require element names, Location.status, Institution.background, Event.laws, type confusion in links*
+*Updated (2026-07-12): API sections rewritten for the v2 platform — flat link fields (no `_ids`), honest 422/400 errors (silent-drop and Cloudflare-1010 gotchas removed), v1 dialect noted as legacy.*

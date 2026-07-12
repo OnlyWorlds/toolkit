@@ -44,7 +44,9 @@ Look for `.ow/` in current directory.
 
 ### Step 3: Get Credentials
 
-Ask for API-Key (from world settings) and API-Pin (from profile). If user doesn't have these, direct them to onlyworlds.com.
+Ask for API-Key (from world settings) and API-Pin (the world's PIN). If user doesn't have these, direct them to onlyworlds.com.
+
+The API-Key may be a **prefixed key** — `ow_w_…` (world-write) or `ow_r_…` (read-share) — or a **legacy 10-digit key** (still valid forever, no longer issued). Any of these works here; store it as-is. The API-Pin is required for writes, and for reads if the world is walled.
 
 Then ask credential storage preference:
 
@@ -54,39 +56,29 @@ Then ask credential storage preference:
 | **key-only** | API-Key only | PIN asked for write ops |
 | **manual** | Nothing | Both asked each session |
 
-### Step 4: Validate Credentials
+### Step 4: Validate Credentials + Fetch World Info
 
 ```bash
-curl -s -X GET "https://www.onlyworlds.com/api/accounts/validate/" \
+curl -s "https://www.onlyworlds.com/api/v2/world" \
   -H "API-Key: {api_key}" \
   -H "API-Pin: {api_pin}"
 ```
 
-If invalid, ask user to re-check credentials.
+A `200` with the world object confirms the credentials and gives you the world name and UUID in one call. On a `401`, read the error envelope (it names the problem — bad key, or missing PIN on a walled world) and ask the user to re-check.
 
-### Step 5: Fetch World Info
+### Step 5: Build World Cache
+
+Fetch existing elements for the local cache. Check world info for element counts per type, then page each type with count > 0:
 
 ```bash
-curl -s -X GET "https://www.onlyworlds.com/api/worldapi/world/" \
+curl -s "https://www.onlyworlds.com/api/v2/character?limit=100" \
   -H "API-Key: {api_key}" \
   -H "API-Pin: {api_pin}"
 ```
 
-Extract world name and UUID.
+v2 lists are paginated — the response is `{data, has_more, next_cursor}`. Follow `next_cursor` (`?limit=100&cursor={next_cursor}`) until `has_more` is false. Parse into a lightweight cache: name, uuid, type per element. Skip fetching for empty worlds.
 
-### Step 6: Build World Cache
-
-Fetch all existing elements for local cache. Check world info for element counts per type, then fetch each type with count > 0:
-
-```bash
-curl -s -X GET "https://www.onlyworlds.com/api/worldapi/character/" \
-  -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
-```
-
-Parse into lightweight cache: name, uuid, type per element. Skip fetching for empty worlds.
-
-### Step 7: Create Files
+### Step 6: Create Files
 
 **`.env`** (varies by credential mode):
 
@@ -122,11 +114,11 @@ ONLYWORLDS_WORLD_UUID=world-uuid
 }
 ```
 
-### Step 8: Update .gitignore
+### Step 7: Update .gitignore
 
 Append `.env` and `.ow/` only if not already listed. Create .gitignore if none exists.
 
-### Step 9: Confirm
+### Step 8: Confirm
 
 Report:
 ```

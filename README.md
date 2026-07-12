@@ -75,6 +75,7 @@ With a free OnlyWorlds account ([onlyworlds.com](https://onlyworlds.com)), you g
 
 - [Documentation](https://onlyworlds.github.io)
 - [API Reference](https://onlyworlds.com/api/docs)
+- [MCP Server](https://www.onlyworlds.com/mcp) — connect an MCP client (Claude Code/Desktop) to your world
 - [SDK](https://www.npmjs.com/package/@onlyworlds/sdk)
 - [Discord](https://discord.gg/twCjqvVBwb)
 

@@ -38,19 +38,23 @@ Each type has specific fields. Some have many (Character has 42), some have few 
 
 ## API Basics
 
-**Base URL**: `https://www.onlyworlds.com/api/worldapi/`
+**Base URL** (modern v2 dialect): `https://www.onlyworlds.com/api/v2/`
 
-**Authentication**: Two headers required
-- `API-Key`: World-specific key (from world settings)
-- `API-Pin`: User's personal PIN (from profile)
+**Authentication**:
+- `API-Key`: World-scoped key. May be a prefixed key (`ow_w_…` world-write, `ow_r_…` read-share) or a legacy 10-digit key (still valid forever, no longer issued). From world settings.
+- `API-Pin`: The world's PIN. Required on every **write**, and on **reads** if the world is walled. Unwalled/demo worlds read with the key alone.
 
-**Pattern**:
+**Pattern** (v2 — singular type names, envelope + flat UUID links):
 ```
-GET/POST     /api/worldapi/{element_type}/
-GET/PUT/DELETE /api/worldapi/{element_type}/{uuid}/
+GET/POST         /api/v2/{element_type}
+GET/PATCH/DELETE /api/v2/{element_type}/{uuid}
+POST             /api/v2/bulk        # batch upsert (standard upload path)
+GET              /api/v2/changes     # incremental sync cursor
 ```
 
-**Element types in URL** (lowercase): character, creature, species, location, object, etc.
+v2 list responses are enveloped and paginated (`{data, has_more, next_cursor}`); link fields are flat UUID arrays with bare names (no `_ids` suffix). The older `/api/worldapi/…` (v1) dialect still serves for legacy tools — see the `onlyworlds-api` skill's Classic API section.
+
+**Element types in URL** (lowercase, singular): character, creature, species, location, object, etc.
 
 **Getting credentials**:
 1. Sign in at onlyworlds.com
@@ -110,27 +114,37 @@ Each collection has: `.list()`, `.get(id)`, `.create(data)`, `.update(id, data)`
 
 ### Response Formats
 
-- `.list()` returns `{ count, next, previous, results: [...] }` (paginated)
-- `.get(id)` returns the element directly (not wrapped)
-- `.create(data)` returns the created element directly
+- `.list(options)` returns a paginated wrapper `{ count, results, next, previous }` — `results` is the element array, `next`/`previous` are page URLs. `.get(id)` returns the element directly; `.create(data)` returns the created element directly.
 
-### Link Fields
+**Dialect note:** the SDK (2.2.x) currently targets the classic **v1** dialect — its default base URL is `https://www.onlyworlds.com/api/worldapi`, and its list wrapper is the v1 `{count, results, next, previous}` shape (not v2's `{data, has_more, next_cursor}`). If you want the v2 surface, call the raw HTTP API directly (a v2 list GET returns `{ data: [...], has_more, next_cursor }` — follow `next_cursor` until `has_more` is false; a singular GET returns the bare element object), or check the SDK changelog for a v2 release.
 
-When creating/updating elements with relationships:
-- Single links use `_id` suffix: `birthplace_id: 'uuid'`
-- Multi links use `_ids` suffix: `species_ids: ['uuid1', 'uuid2']`
+### Link Fields (SDK)
+
+The SDK accepts link fields under their **bare** relationship names — single links as `birthplace: 'uuid'`, multi links as `species: ['uuid1', 'uuid2']` — and converts them to the v1 wire format (`birthplace_id`, `species_ids`) for you. You write bare names; the SDK adds the suffix.
+
+If you call the raw HTTP API instead of the SDK, the wire format depends on the dialect: **v2** uses bare field names holding UUID arrays with no suffix (`birthplace`, `species`); **v1** uses the `_id`/`_ids` suffix on writes. See the `onlyworlds-api` skill for both.
 
 ---
 
 ## MCP Server
 
-For AI assistants with MCP support (Claude Desktop, VSCode, etc.):
+OnlyWorlds runs an MCP server at **`https://www.onlyworlds.com/mcp`** — modern MCP over streamable HTTP, stateless. It exposes your world to any MCP client (Claude Code, Claude Desktop, the API connector) as a set of tools.
 
+**Connect from Claude Code:**
 ```bash
-npm install @onlyworlds/mcp-client
+claude mcp add --transport http onlyworlds https://www.onlyworlds.com/mcp \
+  --header "API-Key: <your key>" --header "API-Pin: <your pin>"
 ```
+The PIN is needed for writes and for reads on a walled world; a read-only key on an unwalled world needs no PIN.
 
-Provides schema lookups and API operations as MCP tools.
+**11 tools:**
+- **Schema (3, no key required):** `list_element_types`, `get_element_schema`, `search_schema` — public reference, work without credentials.
+- **Read (4):** `list_elements`, `get_element`, `search_elements`, `get_changes`.
+- **Write (4):** `create_element`, `update_element` (server-side read-merge — only the fields you pass change), `edit_links` (additive/subtractive link edits), `bulk_apply`.
+
+There is **no delete tool** by design — deletion stays on the REST API and the web portal.
+
+The claude.ai **web** connector is not supported in v1 (its UI is OAuth-only); header-based keys work in Claude Code, Claude Desktop, and the API connector. The old `@onlyworlds/mcp-client` npm package and `/mcp/messages/` endpoint are legacy — the old endpoint now answers with a pointer to this one.
 
 ---
 
@@ -144,7 +158,7 @@ A common pattern for OnlyWorlds tools:
 3. No backend needed
 4. Deploy to Cloudflare Pages, Vercel, or similar
 
-CORS is pre-configured for `*.pages.dev` domains.
+Browser apps call the API directly; a new browser origin needs its CORS grant added. The grant list is maintained server-side — to get your app's origin added, open an issue on the repo or ask on Discord.
 
 Other architectures work too (Node backends, Unity, Python, etc.) - this is just a lightweight starting point.
 
@@ -160,12 +174,12 @@ Never commit credentials to version control.
 
 ### Fetching Multiple Elements
 
-To fetch all elements of a type:
+To fetch elements of a type (v2, paginated):
 ```
-GET /api/worldapi/{element_type}/
+GET /api/v2/{element_type}?limit=100
 ```
 
-Returns array of all elements of that type in the world. Use this to build caches or display full lists.
+Returns `{data, has_more, next_cursor}`. Follow `next_cursor` until `has_more` is false to page through all elements. Use this to build caches or display full lists.
 
 ---
 
@@ -175,7 +189,7 @@ Returns array of all elements of that type in the world. Use this to build cache
 
 **Local apps can extend.** Your application can add custom properties, wrap OW data, or use creative conventions. Just don't expect the API to store non-schema fields.
 
-**IDs are UUIDv7.** Time-sortable. Don't generate your own for API uploads. Let the API assign IDs, or use Base Tool which handles this.
+**IDs are UUIDv7.** Time-sortable. On v2 you can (and for `/bulk` should) mint your own UUIDv7 per element before upload — this lets links point at siblings created in the same batch and makes retries idempotent. The API also assigns one if you omit it.
 
 ---
 

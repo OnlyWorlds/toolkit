@@ -35,12 +35,12 @@ Check for `.ow/config.json` in current directory first:
 | Yes | full | Load API-Key + API-Pin from `.env` |
 | Yes | key-only | Load API-Key from `.env`, ask user for PIN |
 | Yes | manual | Ask user for both |
-| No | — | Check `.env` for OW_API_KEY / OW_API_PIN, then ask user |
+| No | — | Check `.env` for ONLYWORLDS_API_KEY / ONLYWORLDS_API_PIN, then ask user |
 
 ### Step 2: Validate + Fetch World
 
 ```bash
-curl -s "https://www.onlyworlds.com/api/worldapi/world/" \
+curl -s "https://www.onlyworlds.com/api/v2/world" \
   -H "API-Key: {key}" -H "API-Pin: {pin}"
 ```
 
@@ -58,9 +58,9 @@ language, law, event, narrative, phenomenon, relation
 
 Skip: map, pin, marker (spatial data, not narrative content).
 
-Endpoint pattern: `GET https://www.onlyworlds.com/api/worldapi/{type}/`
+Endpoint pattern: `GET https://www.onlyworlds.com/api/v2/{type}?limit=100`
 
-**CRITICAL**: Endpoints are singular — `/character/`, not `/characters/`. Use `www.onlyworlds.com` (not bare domain). Headers are exactly `API-Key` and `API-Pin`.
+**CRITICAL**: Endpoints are singular — `/character`, not `/characters`. Use `www.onlyworlds.com` (not bare domain). Headers are exactly `API-Key` and `API-Pin`. v2 lists paginate: the response is `{data, has_more, next_cursor}` — follow `next_cursor` (`?cursor=…`) until `has_more` is false so you read the whole world, not just page one. Link fields come back as flat UUID arrays (resolve names via a UUID→element map you build while fetching).
 
 ### Step 4: Read the World
 

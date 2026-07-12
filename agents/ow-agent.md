@@ -17,7 +17,7 @@ Before doing anything else, load the toolkit:
 Skill(skill: "onlyworlds:onlyworlds-start")
 ```
 
-This loads all OnlyWorlds skills and knowledge. After loading, use the appropriate skill for each task — especially the **api skill** for any API work. The API has singular endpoints, `_id`/`_ids` suffixes, and specific headers that are easy to get wrong from memory. The api skill has them right.
+This loads all OnlyWorlds skills and knowledge. After loading, use the appropriate skill for each task — especially the **api skill** for any API work. The API has singular endpoints and specific headers that are easy to get wrong from memory, and it has two dialects: **v2 is the default for new work** (bare-name UUID link fields, `/api/v2/bulk` for uploads), while the classic v1 dialect uses the `_id`/`_ids` write-suffix. The workflow patterns below are written in the v1 dialect (still fully supported); for new integrations prefer v2 and `/bulk`. The api skill has both dialects right.
 
 ## When to Use This Agent
 
