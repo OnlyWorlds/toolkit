@@ -1,42 +1,63 @@
 # Atlas Conventions
 
-How Atlas (the flagship OnlyWorlds app) uses the schema — so an AI working alongside an Atlas user writes data Atlas understands. Most relevant when parsing session notes, prose, or lore for someone whose world lives in Atlas.
+How Atlas (the flagship OnlyWorlds app) uses the schema — so an AI working alongside an Atlas user writes data Atlas actually understands. Most relevant when parsing session notes, prose, or lore for someone whose world lives in Atlas.
 
 ---
 
 ## The folder is the world
 
-Atlas is local-first: the world is a folder of real JSON files on the user's disk (one file per element, `<slug>--<uuid-tail>.json`), synced to the OnlyWorlds API on demand. **You can read the folder directly** to learn a world's current state — it's plain JSON with schema field names. Tool-internal data lives in dot-folders; read to understand, never modify tool-internal files.
+Atlas is local-first: the world is a folder of real JSON files on the user's disk, synced to the OnlyWorlds API on demand. **You can read the folder directly** to learn a world's current state.
+
+- **Filenames are presentation; the `id` inside the file is identity.** Load every `*.json` in a type folder and key on the internal id — never parse a filename for meaning. Named elements look like `<slug>--<id-tail>.json`; unnamed ones are bare `<id>.json`.
+- **Never write into `.atlas/`** (sync state, tombstones, lock) **or the `api` block of `world.json`** — that's machinery. A lock file means Atlas may be LIVE on the folder; concurrent external writes while Atlas is open are undefined behavior.
+- If writing element files directly into a folder Atlas will reopen: **omit `local_updated_at`/`server_updated_at`** — Atlas stamps those and treats the element as locally new.
 
 ## Writing system (Narratives carry the prose)
 
-Atlas's writing room organizes long-form prose as a **Book → Chapter → Scene tree, where each unit is a Narrative element**:
+Atlas's writing room organizes long-form prose as a tree of **Narrative elements**:
 
-- **`Narrative.story` holds the prose itself, as portable markdown.** This is the load-bearing convention: text written in Atlas lands in `story`; anything that writes prose INTO a world for an Atlas user should put it there too.
-- **`description` stays the editorial overview** (what this chapter/scene is, not the prose itself). Keep the two roles separate.
-- In-prose element references use markdown links of the form `[Name](ow://type/uuid)` — Atlas renders these as mention chips. Plain text names also work; the `ow://` form is what survives cross-tool.
-- Atlas keeps a rich-text sidecar in `atlas_richtext_json` (local styling) — it strips on push and is not yours to write.
+- **Tier labels are user-configurable** — Book/Chapter/Scene/Draft are only the defaults. A Narrative is in the writing tree iff its `supertype` matches one of the world's configured tier labels. **Read existing narratives' supertypes to learn this world's actual labels; never hardcode "Book".**
+- Structure: `parent_narrative` (required below the top tier) + `order` (sequential integer among siblings).
+- **`Narrative.story` holds the prose itself, as portable markdown.** `description` stays the editorial overview. Leave `subtype` EMPTY on writing narratives — Atlas reserves it (knowledge uses it, below).
+- In-prose element references: `[Name](ow://type/uuid)` — Atlas renders these as mention chips. Plain names also work; the `ow://` form survives cross-tool.
+- `atlas_richtext_json` is Atlas's local rich-text sidecar — stripped on push, never yours to write.
 
-**Practical: parsing DM session notes for an Atlas user** → the session write-up becomes a Narrative (prose in `story`, summary in `description`), linked to the Characters/Locations/Events it involves; new entities become elements linked back into that Narrative.
+> **⚠ The one safety caveat**: writing prose into a **NEW** narrative is fully safe. **EDITING `story` on a narrative the user authored in Atlas is currently shadowed** — Atlas's editor prefers its rich-text sidecar, so your edit lands on the wire but the user keeps seeing their old prose in the writing room (a fix is planned, not shipped). Append a new scene/narrative instead, or tell the user the change lives in the raw field only.
+
+**Practical: parsing DM session notes for an Atlas user** → the session write-up becomes a new Narrative (prose in `story`, summary in `description`, supertype = the world's session/scene-tier label), linked to the Characters/Locations/Events it involves; new entities become elements linked back into it.
 
 ## Knowledge system ("who knows what")
 
-Atlas models **knowledge — which characters know which facts — via Narratives**: a piece of knowledge is Narrative-carried content, and character links express who holds it, with Atlas computing derived "knowing." When parsing content that distinguishes what *players/characters* know from what is *true* (session notes, GM secrets), keep those as separate Narratives rather than merging them into element descriptions — that separation is what the knowledge room reads.
+A knowledge entry is a **Narrative with `subtype: "knowledge"`**. The mechanics:
 
-*(This system is evolving — phase 1 is shipped, details like grouping/graph mode are in motion. When precision matters, check the user's Atlas or ask them how they're organizing knowledge before writing into it.)*
+- **`story` carries the knowledge text — and the text IS the knowledge.** Knowing an entry never auto-exposes any linked element's canonical fields.
+- **Held-by (who knows it)**: either `narrator` (exactly one Character — the lone-knower channel) **or** `collectives` (one or more knower-groups; members inherit).
+- **About (what it concerns)**: the ordinary involves multi-links (`characters`, `locations`, `objects`, `events`, `constructs`, …) — same as any narrative.
+- **Knowing is computed, never stored on the knower**: X knows K iff `K.narrator == X`, or some Collective in `K.collectives` lists X in its `characters`.
+- **Fidelity = separate entries**: the vague rumor and the true version are two knowledge narratives held by different groups — never per-link metadata.
+
+**⚠ The trap: on a knowledge narrative, `collectives` means HOLDERS, not subjects.** Linking a Collective as a *topic* of a knowledge entry silently grants that whole group knowledge of it. If knowledge is *about* a group, say it in the prose or use the `institutions` field.
+
+**Circles**: a Circle is simply a **Collective acting as a knower-group** — a role, not a type. Members inherit its knowledge via `Collective.characters`; an Institution "knows" via a Circle of its members (Collective with `operator` = the institution). Atlas may tag purpose-made circles `subtype: "circle"`, but that's organizational, never load-bearing. You only need Circles when writing knowledge data.
 
 ## Extension fields
 
-- Atlas namespaces its tool-specific data as **`atlas_*` fields** (e.g. `atlas_aliases`, `atlas_shape`). Some are wire-carried, some local-only.
-- The recognized extension namespaces are **`atlas_*`, `shadow_*`, `x_*`** — the API passes them through, Atlas preserves and even renders foreign ones as custom fields.
-- **Rules for you**: never invent `atlas_*` fields (that namespace is Atlas's); if YOUR tooling needs an extra field, use `x_*`; always **preserve** any extension field you encounter on round-trips — dropping foreign namespaced data is the cardinal interop sin.
+- Atlas namespaces its tool data as **`atlas_*`**; the recognized extension namespaces are **`atlas_*`, `shadow_*`, `x_*`** — the API passes them through and Atlas preserves foreign ones.
+- **Never invent `atlas_*` fields** (that namespace is Atlas's). Your own extra data goes in `x_*`.
+- **Always preserve extension fields on round-trips — including null-valued ones.** `null` is a tombstone (a deleted custom field record); `''` is live-but-empty. "Cleaning up" null keys destroys delete records.
+- One defensible external touch: `atlas_aliases` (`string[]`, any element) feeds Atlas's mention picker — appending genuine alternate names helps the user's linking. **Strictly append-only.**
+
+## Field-clearing convention
+
+To clear a field: `null` for relations/numbers, `''` for text. On PATCH, omitting a key means "no change" — never use omission to mean deletion.
 
 ## Quick reference
 
 | You're writing... | Put it... |
 |---|---|
-| Prose / session write-up / chapter text | Narrative `story` (markdown) |
+| Prose / session write-up / chapter text | A NEW Narrative: `story` (markdown), supertype = the world's tier label |
 | What the unit is about | Narrative `description` |
-| A fact only some characters know | Its own Narrative, linked to the knowers |
-| An in-prose reference to an element | `[Name](ow://type/uuid)` |
-| Custom data of your own | `x_*` field, preserved round-trip |
+| A fact only some characters know | Narrative `subtype: "knowledge"`; holders via `narrator` or `collectives`; topics via other involves links |
+| An in-prose reference | `[Name](ow://type/uuid)` |
+| Custom data of your own | `x_*` field, preserved round-trip (nulls included) |
+| An edit to Atlas-authored prose | **Don't** — append a new narrative instead (shadowing caveat above) |
