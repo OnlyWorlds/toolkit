@@ -78,22 +78,25 @@ Each has: `.list()`, `.get(id)`, `.create(data)`, `.update(id, data)`, `.delete(
 
 ### Link Field Patterns
 
+**Write link fields under their bare names** — single links as a UUID string, multi links as a UUID array. The SDK converts to the wire format for you (its 2.2.x transport targets the v1 dialect and adds the `_id`/`_ids` suffixes internally — you never write them). Raw v2 HTTP uses the same bare names natively.
+
 ```typescript
-// Single link — use _id suffix
+// Single link — bare name, UUID string
 await client.characters.create({
   name: 'Admiral Fluffington',
-  birthplace_id: 'location-uuid'
+  birthplace: 'location-uuid'
 });
 
-// Multi link — use _ids suffix
+// Multi link — bare name, UUID array
 await client.characters.create({
   name: 'Admiral Fluffington',
-  species_ids: ['species-uuid-1', 'species-uuid-2']
+  species: ['species-uuid-1', 'species-uuid-2']
 });
 
 // Pin coordinates must be integers
+// (element_type/element_id are literal Pin schema fields, not link suffixes)
 const pin = await client.pins.create({
-  map_id: 'map-uuid',
+  map: 'map-uuid',
   element_type: 'character',
   element_id: 'character-uuid',
   x: Math.round(450),
@@ -144,7 +147,8 @@ const apiPin = localStorage.getItem('ow_api_pin') || prompt('API PIN:');
 ```python
 import requests
 headers = {"API-Key": "key", "API-Pin": "pin"}
-chars = requests.get("https://www.onlyworlds.com/api/worldapi/character/", headers=headers).json()
+resp = requests.get("https://www.onlyworlds.com/api/v2/character?limit=100", headers=headers).json()
+chars = resp["data"]  # v2 lists are enveloped: {data, has_more, next_cursor}
 ```
 
 **Vite dev server** (for complex tools):

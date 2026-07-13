@@ -41,7 +41,7 @@ Every element has:
 
 - Single link: field name, links to one element
 - Multi link: field name, links to array of elements
-- **API writes**: single links use `_id` suffix, multi links use `_ids` suffix
+- **API writes**: bare field names holding UUIDs on the modern v2 dialect (`location`, `species`); the legacy v1 dialect suffixes writes with `_id`/`_ids` — see the api skill
 
 ### Number Ranges
 

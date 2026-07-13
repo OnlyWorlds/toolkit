@@ -278,7 +278,7 @@ claude mcp add --transport http onlyworlds https://www.onlyworlds.com/mcp \
 - **4 read tools** (`list_elements`, `get_element`, `search_elements`, `get_changes`) and **4 write tools** (`create_element`, `update_element` — server-side read-merge; `edit_links` — additive/subtractive; `bulk_apply`) need the key (and PIN for writes / walled reads).
 - **No delete tool** by design — deletion stays on REST (`DELETE /api/v2/{type}/{uuid}`) and the portal.
 
-The claude.ai **web** connector isn't supported in v1 (OAuth-only UI); header keys work in Claude Code / Desktop / the API connector. The old `@onlyworlds/mcp-client` npm package and `/mcp/messages/` endpoint are legacy. Full detail in `../../knowledge/onlyworlds-core.md`.
+The claude.ai **web** connector isn't supported yet (its UI is OAuth-only; OAuth support is planned); header keys work in Claude Code / Desktop / the API connector. The old `@onlyworlds/mcp-client` npm package and `/mcp/messages/` endpoint are legacy. Full detail in `../../knowledge/onlyworlds-core.md`.
 
 ---
 
@@ -297,7 +297,7 @@ The v1 dialect (`/api/worldapi/…`) still serves and will for years. You'll mee
 3. **`_ids` / `_id` write-suffix, expanded read.** This is the split that bites hardest when moving between dialects:
    - **Write** (POST/PATCH): link fields need a suffix — `_id` for single (`location_id`), `_ids` for multi (`species_ids`, `friends_ids`).
    - **Read** (GET): the field comes back under its **bare name** as **nested expanded objects**: `"species": [{"id": "…", "name": "Puddle Moppet", …}]` — not raw UUIDs.
-   - So v1 read shape ≠ v1 write shape, and *neither* matches v2 (which is flat UUIDs, bare names, both directions). Sending `friends_ids` to v2/bulk is a `422`; sending `friends` (bare) as a v1 *write* silently means the link (it's an unknown write field on v1 — send the suffixed form on v1).
+   - So v1 read shape ≠ v1 write shape, and *neither* matches v2 (which is flat UUIDs, bare names, both directions). Sending `friends_ids` to v2/bulk is a `422`; sending `friends` (bare) as a v1 *write* is likewise rejected as an unknown field (v1 answers with an honest `422` too) — send the suffixed form on v1.
 
 **v1 endpoints:** `GET/POST /api/worldapi/{type}/`, `GET/PATCH/PUT/DELETE /api/worldapi/{type}/{uuid}/` (trailing slash!). Names singular, same as v2.
 

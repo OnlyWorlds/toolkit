@@ -152,7 +152,7 @@ The PIN is needed for writes and for reads on a walled world; a read-only key on
 
 There is **no delete tool** by design — deletion stays on the REST API and the web portal.
 
-The claude.ai **web** connector is not supported in v1 (its UI is OAuth-only); header-based keys work in Claude Code, Claude Desktop, and the API connector. The old `@onlyworlds/mcp-client` npm package and `/mcp/messages/` endpoint are legacy — the old endpoint now answers with a pointer to this one.
+The claude.ai **web** connector is not supported yet (its UI is OAuth-only; OAuth support is planned); header-based keys work in Claude Code, Claude Desktop, and the API connector. The old `@onlyworlds/mcp-client` npm package and `/mcp/messages/` endpoint are legacy — the old endpoint now answers with a pointer to this one.
 
 ---
 
@@ -166,7 +166,7 @@ A common pattern for OnlyWorlds tools:
 3. No backend needed
 4. Deploy to Cloudflare Pages, Vercel, or similar
 
-Browser apps call the API directly; a new browser origin needs its CORS grant added. The grant list is maintained server-side — to get your app's origin added, open an issue on the repo or ask on Discord.
+Browser apps call the API directly. CORS is deliberately community-tool friendly: mainstream static hosts are pre-granted by wildcard (`*.pages.dev`, `*.netlify.app`, `*.vercel.app`, `*.github.io`, `*.gitlab.io`, `*.surge.sh`, `*.onrender.com`, `*.up.railway.app`) plus `localhost` on any port — deploy there and it just works. A **custom domain** needs its grant added server-side: open an issue on the repo or ask on Discord.
 
 Other architectures work too (Node backends, Unity, Python, etc.) - this is just a lightweight starting point.
 

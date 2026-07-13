@@ -108,7 +108,7 @@ When no appropriate element exists, leave the field empty - don't put descriptio
 
 **Family relationships need Family element**
 - BAD: Trying to link "Anna and Erik are siblings" directly between Characters
-- GOOD: Create Family element, then link both Characters to it via their `family_ids` field
+- GOOD: Create Family element, then link both Characters to it via their `family` field
 - Pattern: Characters don't link directly to each other for family - they link to a shared Family element
 - Example:
   ```json

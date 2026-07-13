@@ -17,7 +17,7 @@ Before doing anything else, load the toolkit:
 Skill(skill: "onlyworlds:onlyworlds-start")
 ```
 
-This loads all OnlyWorlds skills and knowledge. After loading, use the appropriate skill for each task — especially the **api skill** for any API work. The API has singular endpoints and specific headers that are easy to get wrong from memory, and it has two dialects: **v2 is the default for new work** (bare-name UUID link fields, `/api/v2/bulk` for uploads), while the classic v1 dialect uses the `_id`/`_ids` write-suffix. The workflow patterns below are written in the v1 dialect (still fully supported); for new integrations prefer v2 and `/bulk`. The api skill has both dialects right.
+This loads all OnlyWorlds skills and knowledge. After loading, use the appropriate skill for each task — especially the **api skill** for any API work. The API has singular endpoints and specific headers that are easy to get wrong from memory, and it has two dialects: **v2 is the default** (bare-name UUID link fields, `/api/v2/bulk` for uploads) and the workflow patterns below use it. The classic v1 dialect (`_id`/`_ids` write-suffix) survives for legacy integrations — the api skill has both dialects right.
 
 ## When to Use This Agent
 
@@ -129,23 +129,19 @@ Without revision, later passes produce correct new elements but leave earlier el
 4. For each UPDATE, include reasoning ("Day 3 reveals physical description not in current data")
 5. Generate reconciliation summary: CREATE / UPDATE / SKIP / CONFLICT counts
 
-### Phase 4: Resolve Link Dependencies
+### Phase 4: Resolve Links to UUIDs
 
-**CRITICAL**: Parsed JSON has human-readable names in link fields. API needs UUIDs with _id/_ids suffixes.
+**CRITICAL**: Parsed JSON has human-readable names in link fields. The API needs UUIDs (under the same bare field names on v2).
 
 For each element to be created:
 
 1. **Identify link fields**: species, location, rivals, etc.
 2. **For each linked name**:
    - Check cache: `"Puddle Moppet"` → UUID?
-   - If not cached, search API: `GET /species/?search=Puddle%20Moppet`
+   - If not cached, search API: `GET /api/v2/species?name__icontains=Puddle%20Moppet`
    - If found: add to registry
-   - If not found: mark as CREATE dependency
-3. **Build dependency graph**: Which elements must be created before others?
-4. **Sort into batches**:
-   - Batch 1: Elements with no dependencies (or all dependencies exist)
-   - Batch 2: Elements depending on Batch 1
-   - Batch N: Elements depending on Batch N-1
+   - If not found: it's a CREATE — **mint a UUIDv7 for it now** and add that to the registry
+3. **No dependency sorting is needed.** `/api/v2/bulk` accepts forward sibling references — an element may link to another element created later in the same batch, as long as the UUID is in the batch.
 
 Example:
 ```
@@ -153,17 +149,16 @@ Parsed:
   Character "Fluffington" links to Species "Puddle Moppet", Location "USS Fuzzball"
 
 Resolution:
-  - "Puddle Moppet" not in cache → CREATE needed
-  - "USS Fuzzball" not in cache → CREATE needed
+  - "Puddle Moppet" not in cache → CREATE; mint uuid-A
+  - "USS Fuzzball" not in cache → CREATE; mint uuid-B
+  - Fluffington → CREATE; mint uuid-C, with "species": ["uuid-A"], "location": "uuid-B"
 
-Batches:
-  Batch 1: Species "Puddle Moppet", Location "USS Fuzzball"
-  Batch 2: Character "Fluffington" (uses UUIDs from Batch 1)
+One /bulk batch carries all three — order inside the batch doesn't matter.
 ```
 
 ### Phase 5: Review
-1. Present batches to user with dependency explanation
-2. Show CREATE/UPDATE/SKIP per batch
+1. Present the planned batch to the user
+2. Show CREATE/UPDATE/SKIP counts
 3. For UPDATEs, show current vs proposed (side by side)
 4. For CONFLICTs, show both versions with recommendation
 5. **Flag judgment calls** — some elements need human decision, not mechanical CREATE/UPDATE. Examples:
@@ -173,20 +168,16 @@ Batches:
    Present analysis and recommendation, let the user decide.
 6. Get user approval (may modify decisions)
 
-### Phase 6: Execute in Order
-For each batch:
+### Phase 6: Execute
 
-1. **Transform names to UUIDs**: Replace link field names with _id/_ids + UUIDs
+1. **Transform link values from names to UUIDs** — field names stay bare on v2:
    ```
    Before: "species": ["Puddle Moppet"]
-   After:  "species_ids": ["abc123-uuid"]
+   After:  "species": ["<uuid-of-Puddle-Moppet>"]
    ```
-2. **POST creates** in this batch
-3. **Capture returned UUIDs** from API responses
-4. **Update name→UUID registry** for next batch
-5. **PATCH updates** in this batch
-
-Continue until all batches complete.
+2. **POST all creates in one `/api/v2/bulk` request** with an `Idempotency-Key` header (safe blind retry). Scan the per-item results; fix and resend any failures (the same key replays successes harmlessly).
+3. **PATCH updates** individually (read-before-PATCH: GET current state, merge, send full field values).
+4. **Update the name→UUID registry** from the results.
 
 ### Phase 7: Finalize
 1. Update .ow/world-cache.json with all new UUIDs
@@ -232,46 +223,35 @@ The agent uses these files (if project is set up):
 
 ## Link Field Transformation
 
-Parser outputs human names. API needs UUIDs with _id/_ids suffixes.
+Parser outputs human names. The v2 API needs UUIDs — **under the same bare field names** (no suffix).
 
-**Link field patterns:**
+**Link field patterns (v2):**
 
 | Parser Output | API Input | Cardinality |
 |---------------|-----------|-------------|
-| `"species": ["Name"]` | `"species_ids": ["uuid"]` | Many |
-| `"location": "Name"` | `"location_id": "uuid"` | One |
-| `"rivals": ["Name1", "Name2"]` | `"rivals_ids": ["uuid1", "uuid2"]` | Many |
-| `"parent": "Name"` | `"parent_id": "uuid"` | One |
+| `"species": ["Name"]` | `"species": ["uuid"]` | Many |
+| `"location": "Name"` | `"location": "uuid"` | One |
+| `"rivals": ["Name1", "Name2"]` | `"rivals": ["uuid1", "uuid2"]` | Many |
+| `"parent_location": "Name"` | `"parent_location": "uuid"` | One |
 
 **Transformation algorithm:**
 
 ```python
 def transform_links(element, name_to_uuid_registry):
-    """Convert parser output to API format"""
+    """Convert parser output (names) to v2 API format (UUIDs, bare names)"""
     transformed = element.copy()
 
-    # For each field in element
     for field, value in element.items():
         if field in LINK_FIELDS:
-            # Remove parser field
-            del transformed[field]
-
-            # Add API field with UUIDs
             if isinstance(value, list):
-                # Many-to-many: species → species_ids
-                api_field = f"{field}_ids"
-                transformed[api_field] = [
-                    name_to_uuid_registry[name] for name in value
-                ]
+                transformed[field] = [name_to_uuid_registry[name] for name in value]
             else:
-                # One-to-one: location → location_id
-                api_field = f"{field}_id"
-                transformed[api_field] = name_to_uuid_registry[value]
+                transformed[field] = name_to_uuid_registry[value]
 
     return transformed
 ```
 
-Use this transformation between reconciliation and API upload.
+Use this transformation between reconciliation and API upload. (Legacy note: only the old v1 dialect suffixes write fields with `_id`/`_ids` — see the api skill's Classic section if maintaining v1 code.)
 
 ## Cache Freshness
 
