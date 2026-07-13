@@ -24,6 +24,9 @@ Route users to the right OnlyWorlds capability.
 | "My elements aren't connected well" | link |
 | "Find orphaned elements / enrich links" | link |
 | "What is OnlyWorlds?" | Explain below, then ask what they're working on |
+| "Which tool should I use / what exists?" | Read `knowledge/ecosystem.md`, route from its table |
+| "How do Atlas / Obsidian / MCP fit together?" | Read `knowledge/ecosystem.md` |
+| "I found a bug / want a feature in a tool" | Point to github.com/OnlyWorlds/feedback |
 | "I have an idea for a world" | Discuss, then modeling or schema |
 
 ## Process

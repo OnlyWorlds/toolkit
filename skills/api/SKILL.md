@@ -15,6 +15,7 @@ Read and write world data via the OnlyWorlds REST API.
 |-----------|--------|----------|
 | Health check | GET | `/api/v2/health` |
 | Get world info | GET | `/api/v2/world` |
+| Update world meta (partial) | PATCH | `/api/v2/world` |
 | List elements by type | GET | `/api/v2/{type}` |
 | Get specific element | GET | `/api/v2/{type}/{uuid}` |
 | Create element | POST | `/api/v2/{type}` |
@@ -58,6 +59,10 @@ Check for `.ow/config.json` in the current directory first:
 
 - **API-Key**: World-scoped key. May be a prefixed key (`ow_w_…` world-write, `ow_r_…` read-share) or a legacy 10-digit key (grandfathered forever; still valid, but no longer issued). Get one from world settings on onlyworlds.com.
 - **API-Pin**: The world's PIN (Argon2 wall). Required on **every write**, and on **reads too if the world is walled**. Unwalled/demo worlds read without a PIN. See [PIN](#pin-the-world-wall).
+
+(A third credential exists for account-level automation: **account tokens** (`ow_a_…`, minted in the portal under Settings → Account, sent as `Authorization: Bearer` on `/api/v2/account/…` routes) — they list/create worlds and mint fresh world keys. Normal element work never needs one.)
+
+**World meta**: `PATCH /api/v2/world` updates the world's own fields (description, image_url, time settings) with the same key+PIN — partial like element PATCH, and an unknown field rejects the whole request.
 
 ### Step 2: Validate + Fetch World Info
 

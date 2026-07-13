@@ -29,10 +29,14 @@ Each type has specific fields. Some have many (Character has 42), some have few 
 | Resource | URL |
 |----------|-----|
 | Main site | https://onlyworlds.com |
+| Atlas (flagship app) | https://atlas.onlyworlds.com |
 | Documentation | https://onlyworlds.github.io |
-| API docs | https://onlyworlds.com/api/docs |
+| API docs | https://www.onlyworlds.com/api/v2/docs |
 | Discord | https://discord.gg/twCjqvVBwb |
 | GitHub (schema) | https://github.com/OnlyWorlds/OnlyWorlds |
+| Feedback tracker | https://github.com/OnlyWorlds/feedback |
+
+For the full surface map (Atlas, show pages, Obsidian plugin, MCP, portal — and how they wire together), see `ecosystem.md`.
 
 ---
 
@@ -62,6 +66,10 @@ v2 list responses are enveloped and paginated (`{data, has_more, next_cursor}`);
 3. Go to World Settings for the API Key
 
 Each API key is scoped to one world.
+
+**World meta is writable**: `PATCH /api/v2/world` updates the world's own fields (description, image_url, time settings) with the same key+PIN. Partial — send only what changes; an unknown field rejects the whole PATCH.
+
+**Account tokens** (`ow_a_…`): minted in the portal under Settings → Account, sent as a `Authorization: Bearer` header on `/api/v2/account/…` routes. They operate at account level — list your worlds, create new worlds, mint fresh world keys programmatically. Tokens are shown once at mint; a token can't re-view existing keys, but it can always mint new ones. Only needed for multi-world/account automation — normal world work uses the world key.
 
 ---
 
@@ -139,7 +147,7 @@ The PIN is needed for writes and for reads on a walled world; a read-only key on
 
 **11 tools:**
 - **Schema (3, no key required):** `list_element_types`, `get_element_schema`, `search_schema` — public reference, work without credentials.
-- **Read (4):** `list_elements`, `get_element`, `search_elements`, `get_changes`.
+- **Read (4):** `list_elements`, `get_element`, `search_elements`, `get_changes` (paged: default 25, max 1000 per call — cursor-walk for a full export).
 - **Write (4):** `create_element`, `update_element` (server-side read-merge — only the fields you pass change), `edit_links` (additive/subtractive link edits), `bulk_apply`.
 
 There is **no delete tool** by design — deletion stays on the REST API and the web portal.
@@ -197,7 +205,8 @@ Returns `{data, has_more, next_cursor}`. Follow `next_cursor` until `has_more` i
 
 - **Documentation**: onlyworlds.github.io
 - **Discord**: Community support and discussion
-- **API docs**: OpenAPI specification at /api/docs
+- **API docs**: OpenAPI specification at /api/v2/docs
+- **Bugs & feature requests**: github.com/OnlyWorlds/feedback — public tracker, all tools
 
 ---
 

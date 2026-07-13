@@ -198,7 +198,8 @@ const gameWorld = {
 
 ## Resources
 
-- **API docs**: https://onlyworlds.com/api/docs
+- **API docs**: https://www.onlyworlds.com/api/v2/docs
+- **Ecosystem map** (all surfaces + how they wire): `knowledge/ecosystem.md`
 - **Documentation**: https://onlyworlds.github.io
 - **Discord**: https://discord.gg/twCjqvVBwb
 - **SDK types**: Check @onlyworlds/sdk for full field definitions
