@@ -42,6 +42,8 @@ Read all four files before extracting — this ensures valid, importable output:
 3. **../../knowledge/decision-trees.md** — disambiguation for confusing cases
 4. **knowledge/common-errors.md** (in this skill's directory) — patterns that cause import failures
 
+Plus, **when the user's world lives in Atlas** (or you're parsing prose/session notes for an Atlas user): **../../knowledge/atlas-conventions.md** — where prose goes (Narrative `story`), the knowledge system, extension-field rules.
+
 If relative paths fail, use Glob to find these files: search for `schema-reference.md`, `element-types.md`, `decision-trees.md`, `common-errors.md` within the plugin/toolkit directory.
 
 CRITICAL: Without reading these, you WILL hallucinate fields that don't exist (e.g., `Character.age`, `Object.owner`, `Location.status`). Read them.
