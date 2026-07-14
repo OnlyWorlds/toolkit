@@ -1,18 +1,18 @@
 # Worldbuilding Toolkit
 
-A general worldbuilding companion for AI assistants. Bring whatever you have — messy notes, a novel, campaign docs, a folder of world files, or nothing yet — and structure, organize, explore, and build with it.
+A general worldbuilding companion for AI assistants. Bring whatever you have (messy notes, a novel, campaign docs, a folder of world files, or nothing yet) and structure, organize, explore, and build with it.
 
-No account required. [OnlyWorlds](https://onlyworlds.com) — an open standard for worldbuilding data — is the shared language underneath, and the optional power layer when you want one.
+No account required. [OnlyWorlds](https://onlyworlds.com), an open standard for worldbuilding data, is the shared language underneath and the optional power layer when you want one.
 
 Works with any AI that reads markdown. Optimized for Claude Code.
 
 ## What It Does
 
-**Structure** — Parse any text into world elements. Paste a paragraph, a chapter, upload files, point at folders. Out comes a structured world: standalone JSON, or a world folder you can open directly in [Atlas](https://atlas.onlyworlds.com).
+**Structure**: parse any text into world elements. Paste a paragraph, a chapter, upload files, point at folders. Out comes a structured world: standalone JSON, or a world folder you can open directly in [Atlas](https://atlas.onlyworlds.com).
 
-**Organize** — Work with worlds wherever they live. Survey a world and get a creative brief, find missing connections, design complex systems (magic, factions, timelines) — from files on disk or over the API, your choice.
+**Organize**: work with worlds wherever they live. Survey a world and get a creative brief, find missing connections, design complex systems (magic, factions, timelines). Files on disk or the API, your choice.
 
-**Build** — Use world data as a backend for tools, games, and AI agents. REST API, TypeScript SDK, a live MCP server, no infrastructure to manage.
+**Build**: use world data as a backend for tools, games, and AI agents. REST API, TypeScript SDK, a live MCP server, no infrastructure to manage.
 
 ## Install
 
@@ -44,12 +44,12 @@ Point at the knowledge files:
 
 | Skill | Purpose |
 |-------|---------|
-| **onlyworlds-start** | Entry point — understands your situation, routes you forward |
+| **onlyworlds-start** | Entry point: understands your situation, routes you forward |
 | **parsing** | Text, files, or folders → a structured world (JSON or an Atlas-openable folder) |
 | **modeling** | Design consultation for complex world systems |
 | **schema** | Field reference across all 22 types |
-| **survey** | Read a world — from a folder on disk or the API — and get a creative brief |
-| **link** | Find missing connections, enrich links, resolve orphans — folder or API |
+| **survey** | Read a world (folder on disk or API) and get a creative brief |
+| **link** | Find missing connections, enrich links, resolve orphans (folder or API) |
 | **api** | Fetch, create, update, delete, natural language CRUD |
 | **dev** | SDK integration, project scaffolding, deployment |
 | **council** | Browse and participate in schema governance |
@@ -74,24 +74,24 @@ Point at the knowledge files:
 
 Most of the toolkit runs on nothing but your files:
 
-- **Parsing, modeling, schema** work fully standalone — structured output you can use anywhere.
-- **Survey and link** read a world folder straight off disk — an Atlas world, converter output, or anything in the [world folder shape](knowledge/world-folder.md).
+- **Parsing, modeling, schema** work fully standalone: structured output you can use anywhere.
+- **Survey and link** read a world folder straight off disk: an Atlas world, converter output, or anything in the [world folder shape](knowledge/world-folder.md).
 - Parsing can emit that folder shape directly: your notes become a world Atlas opens, no account involved.
 
-With a free OnlyWorlds account ([onlyworlds.com](https://onlyworlds.com)), the same world gains cloud sync, API access, sharing, and the growing ecosystem of apps and games. The toolkit connects automatically — and everything stays exportable, always.
+With a free OnlyWorlds account ([onlyworlds.com](https://onlyworlds.com)), the same world gains cloud sync, API access, sharing, and the growing ecosystem of apps and games. The toolkit connects automatically, and everything stays exportable, always.
 
 ## For AI Builders
 
-OnlyWorlds is a typed, persistent, portable world-state layer for AI systems — the modeled-domain slot in a memory stack. Connect an agent through the [MCP server](https://www.onlyworlds.com/mcp), read a world folder as a clean typed corpus, or build on the API/SDK. See [ai-builders.md](knowledge/ai-builders.md) for honest positioning, connect surfaces, and patterns.
+OnlyWorlds is a typed, persistent, portable world-state layer for AI systems: the modeled-domain slot in a memory stack. Connect an agent through the [MCP server](https://www.onlyworlds.com/mcp), read a world folder as a clean typed corpus, or build on the API/SDK. See [ai-builders.md](knowledge/ai-builders.md) for honest positioning, connect surfaces, and patterns.
 
 ## Resources
 
 - [Documentation](https://onlyworlds.github.io)
 - [API Reference](https://www.onlyworlds.com/api/docs)
-- [MCP Server](https://www.onlyworlds.com/mcp) — connect an MCP client (Claude Code/Desktop) to your world
+- [MCP Server](https://www.onlyworlds.com/mcp): connect an MCP client (Claude Code/Desktop) to your world
 - [SDK](https://www.npmjs.com/package/@onlyworlds/sdk)
-- [Atlas](https://atlas.onlyworlds.com) — the flagship worldbuilding app (local-first: the folder is the world)
-- [Feedback](https://github.com/OnlyWorlds/feedback) — bugs & feature requests, all tools
+- [Atlas](https://atlas.onlyworlds.com): the flagship worldbuilding app (local-first: the folder is the world)
+- [Feedback](https://github.com/OnlyWorlds/feedback): bugs and feature requests, all tools
 - [Discord](https://discord.gg/twCjqvVBwb)
 
 ## License
