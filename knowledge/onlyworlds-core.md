@@ -31,7 +31,7 @@ Each type has specific fields. Some have many (Character has 42), some have few 
 | Main site | https://onlyworlds.com |
 | Atlas (flagship app) | https://atlas.onlyworlds.com |
 | Documentation | https://onlyworlds.github.io |
-| API docs | https://www.onlyworlds.com/api/v2/docs |
+| API docs | https://www.onlyworlds.com/api/docs |
 | Discord | https://discord.gg/twCjqvVBwb |
 | GitHub (schema) | https://github.com/OnlyWorlds/OnlyWorlds |
 | Feedback tracker | https://github.com/OnlyWorlds/feedback |
@@ -46,15 +46,18 @@ For the full surface map (Atlas, show pages, Obsidian plugin, MCP, portal — an
 
 **Authentication**:
 - `API-Key`: World-scoped key. May be a prefixed key (`ow_w_…` world-write, `ow_r_…` read-share) or a legacy 10-digit key (still valid forever, no longer issued). From world settings.
-- `API-Pin`: The world's PIN. Required on every **write**, and on **reads** if the world is walled. Unwalled/demo worlds read with the key alone.
+- `API-Pin`: The world's PIN. Required on every **write**. Reads: prefixed keys (`ow_r_`/`ow_w_`) always read PIN-less; only a legacy 10-digit write key on a private world needs the PIN for reads. Unwalled/demo worlds read with any key alone.
 
 **Pattern** (v2 — singular type names, envelope + flat UUID links):
 ```
 GET/POST         /api/v2/{element_type}
 GET/PATCH/DELETE /api/v2/{element_type}/{uuid}
+PUT              /api/v2/{element_type}/{uuid}   # upsert: 201 created / 200 replaced
 POST             /api/v2/bulk        # batch upsert (standard upload path)
 GET              /api/v2/changes     # incremental sync cursor
 ```
+
+PUT is the upsert -- and the answer to a 409 `id_conflict` when you mint your own UUIDs: PUT the same id to create-or-replace deterministically.
 
 v2 list responses are enveloped and paginated (`{data, has_more, next_cursor}`); link fields are flat UUID arrays with bare names (no `_ids` suffix). The older `/api/worldapi/…` (v1) dialect still serves for legacy tools — see the `onlyworlds-api` skill's Classic API section.
 
@@ -193,7 +196,7 @@ Returns `{data, has_more, next_cursor}`. Follow `next_cursor` until `has_more` i
 
 ## Key Constraints
 
-**API accepts schema fields only.** The 22 element types have defined fields. Custom fields won't save via API.
+**API accepts schema fields plus namespaced extensions.** The 22 element types have defined fields; unprefixed unknown fields 422. Fields prefixed `x_`/`atlas_`/`shadow_` DO save -- stored verbatim server-side and returned top-level on read. Your custom data goes in `x_*`; foreign namespaces are read-only to you.
 
 **Local apps can extend.** Your application can add custom properties, wrap OW data, or use creative conventions. Just don't expect the API to store non-schema fields.
 
@@ -205,7 +208,7 @@ Returns `{data, has_more, next_cursor}`. Follow `next_cursor` until `has_more` i
 
 - **Documentation**: onlyworlds.github.io
 - **Discord**: Community support and discussion
-- **API docs**: OpenAPI specification at /api/v2/docs
+- **API docs**: OpenAPI specification at /api/docs
 - **Bugs & feature requests**: github.com/OnlyWorlds/feedback — public tracker, all tools
 
 ---

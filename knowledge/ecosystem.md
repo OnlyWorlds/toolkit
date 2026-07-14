@@ -8,8 +8,8 @@ Every official surface, what it does, and how they wire together. Use this to ro
 
 | Surface | URL | What it is |
 |---------|-----|------------|
-| **Platform hub** | [onlyworlds.com](https://www.onlyworlds.com) | Account portal (worlds, API keys, PINs, account tokens, usage stats), element viewer, tools page — and the API host |
-| **API (v2)** | `www.onlyworlds.com/api/v2/` | The data surface. OpenAPI docs at [/api/v2/docs](https://www.onlyworlds.com/api/v2/docs). Legacy v1 dialect at `/api/worldapi/` serves older tools forever |
+| **Platform hub** | [onlyworlds.com](https://www.onlyworlds.com) | Account portal (worlds, API keys, PINs, account tokens), element viewer, tools page — and the API host |
+| **API (v2)** | `www.onlyworlds.com/api/v2/` | The data surface. OpenAPI docs at [/api/docs](https://www.onlyworlds.com/api/docs). Legacy v1 dialect at `/api/worldapi/` serves older tools forever |
 | **MCP server** | `www.onlyworlds.com/mcp` | Your world as tools for any MCP client (Claude Code, Claude Desktop) — 11 tools, header auth |
 | **Atlas** | [atlas.onlyworlds.com](https://atlas.onlyworlds.com) | Flagship worldbuilding app: maps, element editing, writing, knowledge, charts. **Local-first — the folder is the world**; syncs to the API when you want. Chromium browsers. Working alongside an Atlas user? Read `atlas-conventions.md` |
 | **Show pages** | show.onlyworlds.com | Published, shareable world pages (minted from Atlas) |

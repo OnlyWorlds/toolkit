@@ -265,7 +265,7 @@ Produce grouped JSON — this goes directly to Base Tool:
 
 No wrapper, no `parsed` key, no conflicts mixed in.
 
-**Field naming**: Use readable names (`location`, `objects`, `holders`) for standalone JSON. For direct API upload, link fields need `_id`/`_ids` suffixes. Default to readable names unless user is uploading via API.
+**Field naming**: Use readable names (`location`, `objects`, `holders`) everywhere -- the current v2 API takes bare link field names directly, so standalone JSON and API upload use the same shape. The `_id`/`_ids` suffix convention belongs to the legacy v1 dialect only (older integrations); never add suffixes for v2 upload.
 
 #### Reconciled Parse (existing world)
 

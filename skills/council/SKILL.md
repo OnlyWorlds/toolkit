@@ -34,7 +34,7 @@ Council data lives at `council.onlyworlds.com`. The toolkit browses via a public
 
 Browsing is free. Submitting requires:
 
-1. **An OnlyWorlds world** with an API key and PIN
+1. **An OnlyWorlds world** with an API key and PIN -- **submission requires the legacy 10-digit numeric key**: the council proposer validator rejects prefixed keys (`ow_w_...`/`ow_r_...`) with a 422. Migrated worlds show their 10-digit key in the portal; worlds that only have prefixed keys cannot submit yet (known limitation)
 2. **A delegate** — a Character from the user's world that has been committed as a council delegate at `council.onlyworlds.com` (costs 1000 tokens, one-time)
 3. **Tokens** — each submission stakes 100-1000 tokens, deducted from the user's daily quota
 

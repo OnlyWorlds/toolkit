@@ -202,7 +202,7 @@ const gameWorld = {
 
 ## Resources
 
-- **API docs**: https://www.onlyworlds.com/api/v2/docs
+- **API docs**: https://www.onlyworlds.com/api/docs
 - **Ecosystem map** (all surfaces + how they wire): `knowledge/ecosystem.md`
 - **Documentation**: https://onlyworlds.github.io
 - **Discord**: https://discord.gg/twCjqvVBwb

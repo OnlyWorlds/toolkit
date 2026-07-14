@@ -292,8 +292,10 @@ The OnlyWorlds API validates against the schema. Only defined fields save.
 
 **These fail:**
 - Invented field names (e.g., `mana_cost` on Ability)
-- Custom properties not in schema
+- Custom properties without a namespace prefix
 - Links to non-existent elements
+
+**The extension escape valve**: fields prefixed `x_`/`atlas_`/`shadow_` DO save and sync -- the server stores them verbatim in a per-element extensions store and returns them top-level on read. `x_mana_cost` round-trips today; only the unprefixed `mana_cost` fails with 422. Your own custom data goes in `x_*`; treat foreign namespaces (`atlas_*`, `shadow_*`) as read-only.
 
 ### What Local Apps Can Do
 
@@ -307,7 +309,7 @@ interface MyCharacter extends OWCharacter {
 }
 ```
 
-Store extended data locally. Sync only schema-compliant fields to OnlyWorlds.
+Store extended data locally, or sync it under the `x_*` namespace (the API stores prefixed extension fields verbatim). Unprefixed non-schema fields are rejected.
 
 **Convention pattern:**
 Encode custom data in description or use structured text in text fields:

@@ -7,7 +7,7 @@ The schema is now single-sourced from the canonical schema YAML — models, SDK,
 
 Complete field reference for all 22 element types.
 
-**WHITELIST RULE**: Only fields listed below exist. If a field isn't in this file, it will cause import failure. Don't invent plausible-sounding fields - check this list.
+**WHITELIST RULE**: Only fields listed below exist as schema fields. An unlisted, unprefixed field causes import failure (422) -- don't invent plausible-sounding fields, check this list. **Exception**: fields prefixed `x_`/`atlas_`/`shadow_` are extension fields -- the API stores and returns them verbatim (your custom data belongs in `x_*`; treat foreign namespaces as read-only).
 
 **Note on link field names**: Fields are listed by their canonical names (e.g., `birthplace`). On the modern **v2 / bulk** API these names are used as-is, holding UUIDs — no suffix, same in reads and writes. (The legacy **v1** dialect uses `_id`/`_ids` write suffixes — `birthplace_id`, `species_ids` — and expands links into nested objects on read; the SDK handles that conversion. See the `onlyworlds-api` skill for both dialects.)
 
@@ -92,7 +92,7 @@ Every element has these fields:
 - count (number) - Number of members
 - formation_date (number) - When formed
 - operator (single-link → Institution) - Managing institution
-- equipment (multi-link → Construct) - Tools/gear used
+- equipment (multi-link → Object) - Tools/gear used *(canonical YAML + live metadata say Object; some legacy production data linked Constructs -- known drift, resolved to Object)*
 
 **Dynamics:**
 - activity (text) - Primary behaviors or actions
@@ -525,10 +525,10 @@ Some relationships are one-directional — only one type "owns" the link field:
 | Event → everything | Event.*_ids → targets | POST/PATCH Event |
 | Construct → everything | Construct.*_ids → targets | POST/PATCH Construct (18 M2M fields) |
 
-**Most connected types** (by M2M field count): Construct (18), Narrative (18), Event (17), Relation (17), Title (14).
+**Most connected types** (by M2M field count): Construct (18), Narrative (18), Event (17), Relation (17), Title (15).
 
 ---
 
 ---
 
-*Source: OnlyWorlds SDK types.ts + live API audit 2026-03-17*
+*Source: canonical schema YAML via the generated SDK; verified against the live v2 platform 2026-07-14*

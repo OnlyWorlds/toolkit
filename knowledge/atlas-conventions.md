@@ -17,7 +17,7 @@ Atlas is local-first: the world is a folder of real JSON files on the user's dis
 Atlas's writing room organizes long-form prose as a tree of **Narrative elements**:
 
 - **Tier labels are user-configurable** — Book/Chapter/Scene/Draft are only the defaults. A Narrative is in the writing tree iff its `supertype` matches one of the world's configured tier labels. **Read existing narratives' supertypes to learn this world's actual labels; never hardcode "Book".**
-- Structure: `parent_narrative` (required below the top tier) + `order` (sequential integer among siblings).
+- Structure: `parent_narrative` (required for Chapter-under-Book and Scene-under-Chapter; Drafts carry no parent constraint) + `order` (sequential integer among siblings).
 - **`Narrative.story` holds the prose itself, as portable markdown.** `description` stays the editorial overview. Leave `subtype` EMPTY on writing narratives — Atlas reserves it (knowledge uses it, below).
 - In-prose element references: `[Name](ow://type/uuid)` — Atlas renders these as mention chips. Plain names also work; the `ow://` form survives cross-tool.
 - `atlas_richtext_json` is Atlas's local rich-text sidecar — stripped on push, never yours to write.
@@ -45,7 +45,16 @@ A knowledge entry is a **Narrative with `subtype: "knowledge"`**. The mechanics:
 - Atlas namespaces its tool data as **`atlas_*`**; the recognized extension namespaces are **`atlas_*`, `shadow_*`, `x_*`** — the API passes them through and Atlas preserves foreign ones.
 - **Never invent `atlas_*` fields** (that namespace is Atlas's). Your own extra data goes in `x_*`.
 - **Always preserve extension fields on round-trips — including null-valued ones.** `null` is a tombstone (a deleted custom field record); `''` is live-but-empty. "Cleaning up" null keys destroys delete records.
-- One defensible external touch: `atlas_aliases` (`string[]`, any element) feeds Atlas's mention picker — appending genuine alternate names helps the user's linking. **Strictly append-only.**
+- One defensible external touch: `atlas_aliases` (`string[]`, any element) feeds Atlas's mention picker — appending genuine alternate names helps the user's linking. **Strictly append-only, and folder-write only**: Atlas treats `atlas_aliases` as local-only over the wire (stripped from its pushes, preserved-from-local on pull), so an API write never reliably reaches an already-synced Atlas. Write it when producing world FOLDERS; skip it on API syncs.
+
+## Calendar system (a Construct carrying `atlas_calendar`)
+
+Atlas models a world's calendar as a **Construct** whose machine config lives in the **`atlas_calendar`** extension field (a nested JSON object: eras, months, week days, formatting tokens).
+
+- **Detect calendars by `atlas_calendar` field presence, never by type labels.** Atlas sets `supertype: "calendar"` on creation, but that's display convention only -- a valid config is a usable calendar on any element. (Same register as knowledge: subtype/supertype labels are conventions; the machinery keys are field presence. Match labels case-insensitively if you read them; never branch behavior on them.)
+- **Read both forms, write objects**: Atlas writes the config as a nested object and accepts object or JSON-string forms from other tools; prefer objects. Extension passthrough round-trips nested objects verbatim.
+- **Degrade gracefully**: a malformed config means "show bare numbers" -- never a broken surface. `date` fields stay numeric forever; formatted labels are derived, not stored.
+- **Legacy seed fields**: `time_format_names`/`time_format_equivalents` on World are seed-only legacy -- Atlas offers a one-time calendar mint from them, then clears both. Don't write them anymore.
 
 ## Field-clearing convention
 
