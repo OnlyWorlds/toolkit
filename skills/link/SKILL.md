@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-link
-description: Enrich connections between existing OnlyWorlds world elements. Use when the user wants to find missing links, connect orphaned elements, add Relations, improve element interconnections, audit link density, or says elements feel disconnected or unlinked. Works with worlds via API — reads all elements, analyzes the web, suggests and applies links.
+description: Enrich connections between existing world elements. Use when the user wants to find missing links, connect orphaned elements, add Relations, improve element interconnections, audit link density, or says elements feel disconnected or unlinked. Works on a world FOLDER on disk (Atlas world, converter output) or via the OnlyWorlds API — reads all elements, analyzes the web, suggests and applies links.
 ---
 
 # OnlyWorlds Link
@@ -19,11 +19,14 @@ Find and create missing connections between world elements.
 
 ## Instructions
 
-### Step 1: Get Credentials
+### Step 1: Pick the Source
 
-Check `.ow/config.json` first. If not found, ask user for API-Key and API-Pin.
+- **World folder** (no account needed): the user has an Atlas world folder or any OW-shaped folder on disk. Read world.json + every *.json under elements/*/, keyed on internal id (see knowledge/world-folder.md). Applying suggested links = editing the files in place (preserve every field you didn't change, including atlas_*/x_* extensions).
+- **API**: check `.ow/config.json` first; if not found, ask user for API-Key and API-Pin.
 
-### Step 2: Fetch World Data
+The analysis (Steps 3+) is identical for both sources.
+
+### Step 2: Fetch World Data (API source)
 
 Fetch all narrative element types in parallel:
 

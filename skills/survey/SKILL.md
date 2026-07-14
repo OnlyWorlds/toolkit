@@ -1,21 +1,24 @@
 ---
 name: survey
-description: Survey an OnlyWorlds world and produce a creative brief. Use when user says 'survey', 'survey world','read the world', 'feel the world', or wants an in-depth creative/emotional overview of a world's contents. Fetches all element types via API, synthesizes into a rich document that captures the soul of the world.  
+description: Survey a world and produce a creative brief. Use when user says 'survey', 'survey world', 'read the world', 'feel the world', or wants an in-depth creative/emotional overview of a world's contents. Reads all elements from a world FOLDER on disk (Atlas world, converter output -- no account needed) or via the OnlyWorlds API, synthesizes into a rich document that captures the soul of the world.
 ---
 
 # Survey
 
-Fetch an entire OnlyWorlds world via API and produce a creative brief — not a data dump, but a reading of the world's soul.
+Read an entire world -- from a folder on disk or via the API -- and produce a creative brief: not a data dump, but a reading of the world's soul.
 
 ## Quick Reference
 
 | Step | Action |
 |------|--------|
-| 1 | Get credentials (API-Key + API-Pin) |
-| 2 | Validate + fetch world info |
-| 3 | Fetch all element types (parallel) |
+| 0 | Pick the source: world FOLDER (path; no credentials) or API (credentials) |
+| 1 | Folder: read world.json + walk elements/*/ (see knowledge/world-folder.md). API: get credentials |
+| 2 | Validate source + world info |
+| 3 | Load all element types (folder read or parallel API fetch) |
 | 4 | Read, connect, synthesize |
 | 5 | Write the brief |
+
+**Folder source**: if the user has an Atlas world folder, converter output, or any OW-shaped folder, read it directly -- world.json for meta, every *.json under elements/*/, keyed on internal id (never the filename). Steps 4-5 are identical from there. No account, no network.
 
 | World Size | Brief Length | Approach |
 |-----------|-------------|----------|
@@ -26,9 +29,10 @@ Fetch an entire OnlyWorlds world via API and produce a creative brief — not a 
 
 ## Instructions
 
-### Step 1: Get Credentials
+### Step 1: Pick the Source
 
-Check for `.ow/config.json` in current directory first:
+- **World folder** (no credentials): the user has an Atlas world folder or any OW-shaped folder. Read `world.json` for meta, walk `elements/*/` keying on internal `id` (knowledge/world-folder.md) — then skip to Step 4.
+- **API**: check for `.ow/config.json` in current directory first:
 
 | Config Found | credential_mode | Action |
 |-------------|----------------|--------|

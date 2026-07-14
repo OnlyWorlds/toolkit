@@ -44,7 +44,7 @@ Read all four files before extracting — this ensures valid, importable output:
 
 Plus, **when the user's world lives in Atlas** (or you're parsing prose/session notes for an Atlas user): **../../knowledge/atlas-conventions.md** — where prose goes (Narrative `story`), the knowledge system, extension-field rules.
 
-If relative paths fail, use Glob to find these files: search for `schema-reference.md`, `element-types.md`, `decision-trees.md`, `common-errors.md` within the plugin/toolkit directory.
+If relative paths fail, use Glob to find these files: search for `schema-reference.md`, `element-types.md`, `decision-trees.md`, `common-errors.md` within the plugin/toolkit directory. **If the files still cannot be located after the Glob fallback, STOP and tell the user** — do not parse with unverified field names.
 
 CRITICAL: Without reading these, you WILL hallucinate fields that don't exist (e.g., `Character.age`, `Object.owner`, `Location.status`). Read them.
 
@@ -242,7 +242,7 @@ When uncertain: grep schema-reference.md for the field name. No match = hallucin
 
 #### Standalone Parse (no world)
 
-Produce grouped JSON — this goes directly to Base Tool:
+Produce grouped JSON — importable anywhere (Atlas import, /bulk upload, any OW-shaped consumer). Ask whether the user prefers this or the world-folder output below:
 
 ```json
 {
@@ -264,6 +264,8 @@ Produce grouped JSON — this goes directly to Base Tool:
 ```
 
 No wrapper, no `parsed` key, no conflicts mixed in.
+
+**Folder output (optional, offer it)**: instead of one JSON blob, write an OW world folder -- world.json + elements/<type>/<name-slug>--<id-tail8>.json, one file per element, minted UUIDs, links resolved to those ids (see knowledge/world-folder.md for the exact rules). The result opens directly in Atlas and can be pushed to an account later via /bulk without re-parsing. This is the best output for users who want a usable world rather than raw data.
 
 **Field naming**: Use readable names (`location`, `objects`, `holders`) everywhere -- the current v2 API takes bare link field names directly, so standalone JSON and API upload use the same shape. The `_id`/`_ids` suffix convention belongs to the legacy v1 dialect only (older integrations); never add suffixes for v2 upload.
 
@@ -295,7 +297,7 @@ If Step 4b was performed, separate output by action:
 - "The Soft Spot" (Location) — existing: "Area within the Snack Nebula where cookies..." vs extraction: "A known Bakerfolk ruin in the Crumblefields area."
 ```
 
-The CREATE JSON is directly importable to Base Tool. ENRICH and CONFLICT items need manual application or API PATCHing (see ow-agent.md for automated execution).
+The CREATE JSON is directly importable (Atlas import or /bulk upload). ENRICH and CONFLICT items need manual application or API PATCHing (see ow-agent.md for automated execution).
 
 #### Parsing Report
 

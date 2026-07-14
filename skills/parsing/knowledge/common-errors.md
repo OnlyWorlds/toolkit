@@ -192,7 +192,7 @@ These fields DON'T EXIST. Common hallucinations from Moppetopia chaos test:
 
 ## Link Field Names When Writing to the API (v2)
 
-**Standalone JSON** (a parse result, or a Base Tool import) uses readable link field names holding element **names** — that's what the parsing rules above teach.
+**Standalone JSON** (a parse result, or a tool import) uses readable link field names holding element **names** — that's what the parsing rules above teach.
 
 When you actually **upload** to the API, link fields hold **UUIDs**, not names. On the modern **v2 / bulk** dialect the field name stays bare — `location`, `species`, `friends` — the same in reads and writes. There is no `_id`/`_ids` suffix in v2. Resolve each name to the UUID of the element you created (mint your own UUIDv7 so you can point links at siblings in the same `/bulk` batch), then send bare fields holding UUID arrays.
 

@@ -1,17 +1,17 @@
 ---
 name: onlyworlds-start
-description: Entry point for OnlyWorlds worldbuilding toolkit. Use when the user asks what OnlyWorlds is, wants to organize or structure a fictional world, is new to the toolkit, or is unsure where to begin. Routes to the right skill based on user situation — parsing, modeling, schema, dev, api, survey, council, link, or project setup.
+description: Entry point for the worldbuilding toolkit. Use when the user wants to organize, structure, or make sense of ANY worldbuilding material (notes, novels, campaign docs, world folders), asks what OnlyWorlds is, is new to the toolkit, or is unsure where to begin. No account needed for most paths. Routes to the right skill — parsing, modeling, schema, dev, api, survey, council, link, or project setup.
 ---
 
 # OnlyWorlds Start
 
-Route users to the right OnlyWorlds capability.
+Route users to the right capability. The toolkit is a general worldbuilding companion: it works on whatever the user has (notes, manuscripts, folders, nothing yet), with no account required. OnlyWorlds is the shared language underneath -- and the optional power layer (cloud world, API, app ecosystem) when they want it.
 
 ## Quick Reference
 
 | User Says | Route To |
 |-----------|----------|
-| "I have notes/text/docs to structure" | project-setup (if world) → parsing |
+| "I have notes/text/docs to structure" | project-setup (only if they already have an OnlyWorlds world) → parsing |
 | "I want to organize/manage my world" | project-setup → api |
 | "I'm designing a magic system / factions / complex thing" | modeling |
 | "I want to build a tool/game with world data" | dev |
@@ -22,6 +22,8 @@ Route users to the right OnlyWorlds capability.
 | "The schema should have X / propose a change" | council |
 | "Are there motions about X?" | council |
 | "My elements aren't connected well" | link |
+| "I have an Atlas world folder / world files on disk" | survey or link (both read folders directly -- no credentials) |
+| "I'm building an AI agent / need world-state or memory for my AI" | Read knowledge/ai-builders.md; route to dev or the MCP connect line |
 | "Find orphaned elements / enrich links" | link |
 | "What is OnlyWorlds?" | Explain below, then ask what they're working on |
 | "Which tool should I use / what exists?" | Read `knowledge/ecosystem.md`, route from its table |
@@ -53,13 +55,15 @@ Structured data that works everywhere. Parse a novel, get queryable JSON. Build 
 
 Look for `.ow/` folder in current directory. If found, load world name from `.ow/config.json` and mention it: "I see you're connected to '{world_name}'."
 
+If BOTH a world folder on disk and API credentials are available and the user hasn't said which to use, ask — a local folder may be stale relative to a synced account, so the user picks the source of truth.
+
 ### 4. Route Forward
 
 CRITICAL: For users with an OnlyWorlds world who want parsing or API work, **project-setup must happen first** if `.ow/` doesn't exist. Without it, parsing creates duplicates.
 
 **Has text + has world**: "Let me set up your project first, then we'll parse your text." → project-setup → parsing
 
-**Has text, no world**: "Let's parse that to JSON — you can use it locally or create a world later." → parsing
+**Has text, no world**: "Let's parse that -- you can keep the result as files (a world folder Atlas can open) or create an OnlyWorlds world later." → parsing. Never make an account feel required.
 
 **Wants to organize/manage world**: "Let me connect to your world." → project-setup → api
 
@@ -67,11 +71,11 @@ CRITICAL: For users with an OnlyWorlds world who want parsing or API work, **pro
 
 **Wants to build tools**: "Let's scaffold a project." → dev
 
-**Wants to understand a world**: "Let me read your world and write you a brief." → survey (no project-setup needed — just credentials)
+**Wants to understand a world**: "Let me read your world and write you a brief." → survey (a world folder on disk needs NO credentials; the API path needs credentials)
 
 **Wants to propose schema changes**: "Let's check what's already been discussed." → council
 
-**Wants to connect elements**: "Let me analyze your world's connections." → link (needs project-setup or credentials)
+**Wants to connect elements**: "Let me analyze your world's connections." → link (a world folder on disk needs NO credentials; the API path needs project-setup or credentials)
 
 **Exploring/discussing ideas**: Engage with their concept, route to modeling or schema as complexity emerges.
 

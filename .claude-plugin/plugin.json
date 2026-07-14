@@ -1,7 +1,7 @@
 {
   "name": "onlyworlds",
-  "description": "Parse text into structured world data. Model systems. Build tools. Works with any AI, optimized for Claude Code, outputs OnlyWorlds format.",
-  "version": "2.1.1",
+  "description": "Worldbuilding companion: parse notes/novels/campaign docs into structured worlds, model systems, survey and link worlds from files or API, build tools and AI agents on world data. No account needed; OnlyWorlds format and ecosystem underneath.",
+  "version": "3.0.0",
   "author": {
     "name": "Titus Oosting",
     "url": "https://onlyworlds.com"
@@ -18,6 +18,10 @@
     "parsing",
     "claude",
     "fiction",
-    "lore"
+    "lore",
+    "notes",
+    "campaign",
+    "agents",
+    "mcp"
   ]
 }
