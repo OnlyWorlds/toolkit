@@ -1,7 +1,7 @@
 {
   "name": "onlyworlds",
   "description": "Worldbuilding companion: parse notes/novels/campaign docs into structured worlds, model systems, survey and link worlds from files or API, build tools and AI agents on world data. No account needed; OnlyWorlds format and ecosystem underneath.",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "author": {
     "name": "Titus Oosting",
     "url": "https://onlyworlds.com"

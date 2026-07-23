@@ -86,54 +86,43 @@ npm install @onlyworlds/sdk
 
 ### Basic Usage
 
+The SDK (3.x) is v2-native. `OwV2Client` is the client; types and constants are generated from the canonical schema.
+
 ```typescript
-import { OnlyWorldsClient } from '@onlyworlds/sdk';
+import { OwV2Client } from '@onlyworlds/sdk';
 
-const client = new OnlyWorldsClient({
-  apiKey: 'your-api-key',
-  apiPin: 'your-api-pin'
+const client = new OwV2Client({
+  apiKey: 'ow_w_your_world_key', // ow_w_ write / ow_r_ read / 10-digit legacy
+  apiPin: 'your-pin'             // needed for writes on a PIN-protected world
 });
 
-// List characters
-const characters = await client.characters.list();
+// World meta (the container, not one of the 22 types)
+const world = await client.getWorld();
 
-// Create a location
-const location = await client.locations.create({
-  name: 'Feltropolis',
-  description: 'Capital city of Moppetopia'
-});
+// List characters — v2 envelope {data, has_more, next_cursor}
+const page = await client.list('character', { limit: 100 });
 
-// Get specific element
-const character = await client.characters.get('uuid-here');
+// Or walk a whole type without touching cursors
+for await (const el of client.listAll('location')) { /* ... */ }
 
-// Update element
-await client.characters.update('uuid-here', {
-  description: 'Updated description'
-});
+// Get / create / patch / delete — one method each, type as the first argument
+const one = await client.get('character', 'uuid-here');
+const made = await client.create('location', { name: 'Feltropolis', description: 'Capital city of Moppetopia' });
+await client.patch('character', 'uuid-here', { description: 'Updated description' });
+await client.delete('character', 'uuid-here');
 
-// Delete element
-await client.characters.delete('uuid-here');
+// Sync feed + atomic bulk writes
+const changed = await client.changes({ since: cursor });
+await client.bulk(items, { atomic: true });
 ```
 
-### Available Collections
+The SDK also exports the canonical element metadata — `elementColor(type, mode)`, `ELEMENT_FAMILIES`, `ELEMENT_ICONS` — generated from the schema, so tools using them stay in sync for free.
 
-All 22 element types: `client.characters`, `client.creatures`, `client.species`, `client.families`, `client.collectives`, `client.institutions`, `client.locations`, `client.objects`, `client.constructs`, `client.abilities`, `client.traits`, `client.titles`, `client.languages`, `client.laws`, `client.events`, `client.narratives`, `client.phenomena`, `client.relations`, `client.maps`, `client.pins`, `client.markers`, `client.zones`
-
-Each collection has: `.list()`, `.get(id)`, `.create(data)`, `.update(id, data)`, `.delete(id)`
-
-**World** (special): `client.worlds.get()` returns the world for your API key. World is the container, not one of the 22 element types.
-
-### Response Formats
-
-- `.list(options)` returns a paginated wrapper `{ count, results, next, previous }` — `results` is the element array, `next`/`previous` are page URLs. `.get(id)` returns the element directly; `.create(data)` returns the created element directly.
-
-**Dialect note:** the SDK (2.2.x) currently targets the classic **v1** dialect — its default base URL is `https://www.onlyworlds.com/api/worldapi`, and its list wrapper is the v1 `{count, results, next, previous}` shape (not v2's `{data, has_more, next_cursor}`). If you want the v2 surface, call the raw HTTP API directly (a v2 list GET returns `{ data: [...], has_more, next_cursor }` — follow `next_cursor` until `has_more` is false; a singular GET returns the bare element object), or check the SDK changelog for a v2 release.
+*(An older resource-style v1 client, `OnlyWorldsClient`, remains exported and served — relevant only when maintaining pre-3.x code.)*
 
 ### Link Fields (SDK)
 
-The SDK accepts link fields under their **bare** relationship names — single links as `birthplace: 'uuid'`, multi links as `species: ['uuid1', 'uuid2']` — and converts them to the v1 wire format (`birthplace_id`, `species_ids`) for you. You write bare names; the SDK adds the suffix.
-
-If you call the raw HTTP API instead of the SDK, the wire format depends on the dialect: **v2** uses bare field names holding UUID arrays with no suffix (`birthplace`, `species`); **v1** uses the `_id`/`_ids` suffix on writes. See the `onlyworlds-api` skill for both.
+Link fields ride under their **bare** relationship names, both directions — single links as `birthplace: 'uuid'`, multi links as `species: ['uuid1', 'uuid2']`. Same names on read and write; no suffixes. The raw v2 HTTP API behaves identically. (The legacy v1 dialect's `_id`/`_ids` write suffixes are covered in the `onlyworlds-api` skill's Classic section, for legacy integrations only.)
 
 ---
 

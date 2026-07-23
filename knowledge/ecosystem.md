@@ -29,7 +29,7 @@ A world has two possible homes, and they sync:
 
 **One world, many doors.** An element edited in Atlas, in an Obsidian note, via MCP, or via this toolkit is the same element after sync — same UUID, same typed fields. Incremental sync rides `GET /api/v2/changes` (cursor-based).
 
-**Extension namespaces**: fields prefixed `atlas_*`, `shadow_*`, or `x_*` pass through the API and the folder format untouched — tools carry their own extra data without schema changes, and other tools must treat foreign namespaces as read-only.
+**Extension namespaces**: fields prefixed `atlas_*`, `shadow_*`, or `x_*` pass through the API and the folder format untouched — tools carry their own extra data without schema changes, and other tools must treat foreign namespaces as read-only. Conventions are registered as they prove out; this knowledge folder carries the tool-facing summaries (see `atlas-conventions.md`, `tangle-conventions.md`), and the canonical convention register lives in OnlyWorlds' schema roadmap and grows over time.
 
 ## Routing users
 

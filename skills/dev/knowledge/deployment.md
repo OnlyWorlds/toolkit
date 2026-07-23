@@ -141,7 +141,7 @@ Safest for shared tools. User enters their own API key and PIN.
 const apiKey = localStorage.getItem('ow_api_key') || prompt('API Key:');
 const apiPin = localStorage.getItem('ow_api_pin') || prompt('API PIN:');
 
-const client = new OnlyWorldsClient({ apiKey, apiPin });
+const client = new OwV2Client({ apiKey, apiPin });
 ```
 
 ### Build-Time Credentials
@@ -150,7 +150,7 @@ For personal tools or demos. Key baked into build.
 
 ```typescript
 // Vite
-const client = new OnlyWorldsClient({
+const client = new OwV2Client({
   apiKey: import.meta.env.VITE_ONLYWORLDS_API_KEY,
   apiPin: import.meta.env.VITE_ONLYWORLDS_API_PIN
 });

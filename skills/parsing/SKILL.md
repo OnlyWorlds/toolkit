@@ -44,6 +44,8 @@ Read all four files before extracting — this ensures valid, importable output:
 
 Plus, **when the user's world lives in Atlas** (or you're parsing prose/session notes for an Atlas user): **../../knowledge/atlas-conventions.md** — where prose goes (Narrative `story`), the knowledge system, extension-field rules.
 
+Plus, **when the user runs battles through Tactical Tangle**: **../../knowledge/tangle-conventions.md** — how Characters/Collectives/Titles double as officers and muster rolls, and how battle history lands as Events and Narratives.
+
 If relative paths fail, use Glob to find these files: search for `schema-reference.md`, `element-types.md`, `decision-trees.md`, `common-errors.md` within the plugin/toolkit directory. **If the files still cannot be located after the Glob fallback, STOP and tell the user** — do not parse with unverified field names.
 
 CRITICAL: Without reading these, you WILL hallucinate fields that don't exist (e.g., `Character.age`, `Object.owner`, `Location.status`). Read them.

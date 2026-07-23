@@ -41,61 +41,63 @@ Read for OnlyWorlds overview, URLs, SDK basics:
 npm install @onlyworlds/sdk
 ```
 
-```typescript
-import { OnlyWorldsClient } from '@onlyworlds/sdk';
+The SDK (3.x) is v2-native: `OwV2Client`, with types and constants generated from the canonical schema.
 
-const client = new OnlyWorldsClient({
-  apiKey: 'your-api-key',  // from world settings
-  apiPin: 'your-api-pin'   // from user profile
+```typescript
+import { OwV2Client } from '@onlyworlds/sdk';
+
+const client = new OwV2Client({
+  apiKey: 'ow_w_your_world_key', // ow_w_ write / ow_r_ read / 10-digit legacy
+  apiPin: 'your-pin'             // needed for writes on a PIN-protected world
 });
+
+const characters = await client.list('character');        // {data, has_more, next_cursor}
+const one = await client.get('character', 'uuid-here');
 ```
+
+The SDK also exports the canonical element palette and metadata: `elementColor(type, mode)`, `ELEMENT_FAMILIES`, `ELEMENT_ICONS` — generated from the schema, so tools that use them stay in sync for free.
 
 ### Common Operations
 
 ```typescript
-// List all characters
-const characters = await client.characters.list();
+// World meta (the container)
+const world = await client.getWorld();
 
-// Get specific element
-const character = await client.characters.get('uuid-here');
+// Walk a whole type without touching cursors
+for await (const el of client.listAll('character')) { /* ... */ }
 
-// Create element
-const location = await client.locations.create({
-  name: 'Feltropolis',
-  description: 'Capital city of Moppetopia'
-});
+// Create / patch / delete — type as the first argument
+const made = await client.create('location', { name: 'Feltropolis', description: 'Capital city of Moppetopia' });
+await client.patch('character', 'uuid-here', { description: 'Updated' });
+await client.delete('character', 'uuid-here');
 
-// Update element
-await client.characters.update('uuid-here', { description: 'Updated' });
-
-// Delete element
-await client.characters.delete('uuid-here');
+// Sync + atomic bulk
+const changed = await client.changes({ since: cursor });
+await client.bulk(items, { atomic: true });
 ```
 
-All collections: `client.characters`, `client.locations`, `client.objects`, `client.constructs`, `client.abilities`, `client.traits`, `client.events`, `client.narratives`, etc.
-
-Each has: `.list()`, `.get(id)`, `.create(data)`, `.update(id, data)`, `.delete(id)`
+*(A legacy v1 resource-style client, `OnlyWorldsClient`, stays exported for pre-3.x code — new tools should not use it.)*
 
 ### Link Field Patterns
 
-**Write link fields under their bare names** — single links as a UUID string, multi links as a UUID array. The SDK converts to the wire format for you (its 2.2.x transport targets the v1 dialect and adds the `_id`/`_ids` suffixes internally — you never write them). Raw v2 HTTP uses the same bare names natively.
+**Write link fields under their bare names** — single links as a UUID string, multi links as a UUID array. Same names on read and write; no suffixes, in the SDK and raw v2 HTTP alike.
 
 ```typescript
 // Single link — bare name, UUID string
-await client.characters.create({
+await client.create('character', {
   name: 'Admiral Fluffington',
   birthplace: 'location-uuid'
 });
 
 // Multi link — bare name, UUID array
-await client.characters.create({
+await client.create('character', {
   name: 'Admiral Fluffington',
   species: ['species-uuid-1', 'species-uuid-2']
 });
 
 // Pin coordinates must be integers
 // (element_type/element_id are literal Pin schema fields, not link suffixes)
-const pin = await client.pins.create({
+const pin = await client.create('pin', {
   map: 'map-uuid',
   element_type: 'character',
   element_id: 'character-uuid',
@@ -116,7 +118,7 @@ VITE_ONLYWORLDS_API_PIN=your-pin
 ```
 
 ```typescript
-const client = new OnlyWorldsClient({
+const client = new OwV2Client({
   apiKey: import.meta.env.VITE_ONLYWORLDS_API_KEY,
   apiPin: import.meta.env.VITE_ONLYWORLDS_API_PIN
 });
@@ -136,10 +138,10 @@ const apiPin = localStorage.getItem('ow_api_pin') || prompt('API PIN:');
 **Plain HTML + JS** (simplest):
 ```html
 <script type="module">
-  import { OnlyWorldsClient } from 'https://esm.sh/@onlyworlds/sdk';
-  const client = new OnlyWorldsClient({ apiKey: 'key', apiPin: 'pin' });
-  const chars = await client.characters.list();
-  console.log(chars);
+  import { OwV2Client } from 'https://esm.sh/@onlyworlds/sdk';
+  const client = new OwV2Client({ apiKey: 'key', apiPin: 'pin' });
+  const chars = await client.list('character');
+  console.log(chars.data);
 </script>
 ```
 
@@ -173,28 +175,28 @@ For a complete project structure ready to run, see **knowledge/scaffold.md**.
 
 ```typescript
 const [characters, locations, events] = await Promise.all([
-  client.characters.list(),
-  client.locations.list(),
-  client.events.list()
+  client.list('character'),
+  client.list('location'),
+  client.list('event')
 ]);
-renderTimeline(events);
-renderMap(locations);
+renderTimeline(events.data);
+renderMap(locations.data);
 ```
 
 ### Editor with Save
 
 ```typescript
-const character = await client.characters.get(id);
+const character = await client.get('character', id);
 // User edits in UI...
-await client.characters.update(id, { description: editedDescription });
+await client.patch('character', id, { description: editedDescription });
 ```
 
 ### Game Using World Data
 
 ```typescript
-const locations = await client.locations.list();
+const locations = await client.list('location');
 const gameWorld = {
-  rooms: locations.map(loc => ({
+  rooms: locations.data.map(loc => ({
     id: loc.id, name: loc.name, description: loc.description
   }))
 };

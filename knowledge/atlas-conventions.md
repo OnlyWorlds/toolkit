@@ -2,6 +2,8 @@
 
 How Atlas (the flagship OnlyWorlds app) uses the schema — so an AI working alongside an Atlas user writes data Atlas actually understands. Most relevant when parsing session notes, prose, or lore for someone whose world lives in Atlas.
 
+Conventions are registered as they prove out; this knowledge file carries the tool-facing summaries. The canonical convention register lives in OnlyWorlds' schema roadmap and grows over time.
+
 ---
 
 ## The folder is the world

@@ -38,19 +38,19 @@ export default defineConfig({
 ## src/main.ts
 
 ```typescript
-import { OnlyWorldsClient } from '@onlyworlds/sdk';
+import { OwV2Client } from '@onlyworlds/sdk';
 
-const client = new OnlyWorldsClient({
+const client = new OwV2Client({
   apiKey: prompt('API Key:') || '',
   apiPin: prompt('API PIN:') || ''
 });
 
 async function main() {
-  const world = await client.worlds.get();
+  const world = await client.getWorld();
   document.body.innerHTML = `<h1>Connected to: ${world.name}</h1>`;
 
-  const characters = await client.characters.list();
-  console.log('Characters:', characters.results);
+  const characters = await client.list('character');
+  console.log('Characters:', characters.data);
 }
 
 main();
