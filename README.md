@@ -91,7 +91,7 @@ OnlyWorlds is a typed, persistent, portable world-state layer for AI systems: th
 - [MCP Server](https://www.onlyworlds.com/mcp): connect an MCP client (Claude Code/Desktop) to your world
 - [SDK](https://www.npmjs.com/package/@onlyworlds/sdk)
 - [Atlas](https://atlas.onlyworlds.com): the flagship worldbuilding app (local-first: the folder is the world)
-- [Feedback](https://github.com/OnlyWorlds/feedback): bugs and feature requests, all tools
+- [Feedback](https://www.onlyworlds.com/feedback): bugs and feature requests, all tools
 - [Discord](https://discord.gg/twCjqvVBwb)
 
 ## License

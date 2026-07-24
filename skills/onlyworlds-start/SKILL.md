@@ -28,7 +28,7 @@ Route users to the right capability. The toolkit is a general worldbuilding comp
 | "What is OnlyWorlds?" | Explain below, then ask what they're working on |
 | "Which tool should I use / what exists?" | Read `knowledge/ecosystem.md`, route from its table |
 | "How do Atlas / Obsidian / MCP fit together?" | Read `knowledge/ecosystem.md` |
-| "I found a bug / want a feature in a tool" | Point to github.com/OnlyWorlds/feedback |
+| "I found a bug / want a feature in a tool" | Point to onlyworlds.com/feedback |
 | "I have an idea for a world" | Discuss, then modeling or schema |
 
 ## Process

@@ -34,7 +34,7 @@ Each type has specific fields. Some have many (Character has 42), some have few 
 | API docs | https://www.onlyworlds.com/api/docs |
 | Discord | https://discord.gg/twCjqvVBwb |
 | GitHub (schema) | https://github.com/OnlyWorlds/OnlyWorlds |
-| Feedback tracker | https://github.com/OnlyWorlds/feedback |
+| Feedback page | https://www.onlyworlds.com/feedback |
 
 For the full surface map (Atlas, show pages, Obsidian plugin, MCP, portal — and how they wire together), see `ecosystem.md`.
 
@@ -198,7 +198,7 @@ Returns `{data, has_more, next_cursor}`. Follow `next_cursor` until `has_more` i
 - **Documentation**: onlyworlds.github.io
 - **Discord**: Community support and discussion
 - **API docs**: OpenAPI specification at /api/docs
-- **Bugs & feature requests**: github.com/OnlyWorlds/feedback — public tracker, all tools
+- **Bugs & feature requests**: onlyworlds.com/feedback — submissions land on the public tracker (github.com/OnlyWorlds/feedback)
 
 ---
 

@@ -18,7 +18,7 @@ Every official surface, what it does, and how they wire together. Use this to ro
 | **This toolkit** | [github.com/OnlyWorlds/toolkit](https://github.com/OnlyWorlds/toolkit) | AI-assisted parsing, modeling, schema, API work — the surface you're reading |
 | **Docs** | [onlyworlds.github.io](https://onlyworlds.github.io) | Documentation, LLM guide, API error reference ([/api/errors](https://onlyworlds.github.io/api/errors)) |
 | **Council** | [council.onlyworlds.com](https://council.onlyworlds.com) | Schema governance — motions to change the 22 types themselves |
-| **Feedback** | [github.com/OnlyWorlds/feedback](https://github.com/OnlyWorlds/feedback) | Public tracker for bugs and feature requests across all tools |
+| **Feedback** | [onlyworlds.com/feedback](https://www.onlyworlds.com/feedback) | Bugs and feature requests across all tools; submissions land on the public tracker |
 
 ## How data flows
 
