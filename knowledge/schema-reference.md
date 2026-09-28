@@ -20,7 +20,7 @@ Complete field reference for all 22 element types. Shared rules: `principles.md`
 ## Base Fields (All Elements)
 
 Every element has these fields:
-- **id** (UUID; any RFC-4122, v7 recommended when minting) - optional on create (the server mints a v4 if omitted)
+- **id** (UUID; any RFC-4122, v7 recommended when minting) - optional on create (the server mints a v7 if omitted)
 - **name** (text) - Element's name [Required]
 - **description** (text) - Details about the element
 - **image_url** (text) - URL to an image representing the element

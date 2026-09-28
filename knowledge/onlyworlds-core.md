@@ -115,7 +115,7 @@ Credentials: keys and PINs load from a gitignored `.env`, never printed or commi
 
 **Custom data goes in extension fields** (`x_<tool>_...`); unprefixed unknown fields are rejected. The rule is principles §4; how the API stores them is in `schema-reference.md`.
 
-**IDs are UUIDs.** Any RFC-4122 UUID works; v7 is recommended when you mint your own, and ids the server assigns are v4. Minting ids before a `/bulk` upload lets links point at siblings in the same batch and makes retries safe.
+**IDs are UUIDs.** Any RFC-4122 UUID works; v7 is recommended when you mint your own, and ids the server assigns are v7. Minting ids before a `/bulk` upload lets links point at siblings in the same batch and makes retries safe.
 
 ---
 

@@ -41,7 +41,7 @@ Shared rules (read before write, verify after write, credentials, extension fiel
 1. **Change multi-links through the links route; read before any other PATCH.** `POST /api/v2/{type}/{uuid}/links/{field}` with `{"add": [...], "remove": [...]}` merges on the server in one atomic step, with no read needed (the REST twin of MCP `edit_links`). PATCH *replaces* the fields you send and does not merge: to append text or change a single link, GET the current value first, build the full new value, then PATCH it. Overwriting a field with a partial value is permanent data loss. A read-back body carries `type`, `created_at`, `updated_at` and `change_seq`; strip them before sending a body back (each one is a 422).
 2. **Verify after write.** GET the element back and confirm the fields landed (principles §5).
 3. **/bulk is the standard upload path** for parse results. One request, mixed types, per-item results, idempotent retry. Don't loop hundreds of individual POSTs; see [Bulk Upload](#bulk-upload-standard-for-parse-results).
-4. **Mint your own UUIDs on create.** IDs are UUIDs: any RFC-4122 UUID works, v7 is recommended for index locality, and ids the server assigns when you omit one are v4. Client-minted IDs let you reference an element you're creating in the *same* bulk batch (forward sibling refs are legal, so no topological pre-sorting is needed) and make retries idempotent. Generate one per element before upload.
+4. **Mint your own UUIDs on create.** IDs are UUIDs: any RFC-4122 UUID works, v7 is recommended for index locality, and ids the server assigns when you omit one are v7. Client-minted IDs let you reference an element you're creating in the *same* bulk batch (forward sibling refs are legal, so no topological pre-sorting is needed) and make retries idempotent. Generate one per element before upload.
 5. **Read the error envelope.** The API now tells you exactly what's wrong (unknown field, dangling link, bad credentials) with a `code`, `message`, `param`, and `doc_url`. Don't guess: read the message. See [Error Handling](#error-handling).
 
 ## Safety Notice
@@ -133,7 +133,7 @@ Loop, following `next_cursor`, until `has_more` is `false`.
 | `?fields=name,supertype` | Return only these fields |
 | `?limit=`, `?cursor=` | Page size (default 100, max 1000), next page |
 
-Any other param on a list returns `422 Unknown query parameter`. Lists always come in change order (least recently changed first); `?ordering=` is accepted but has no effect, so sort client-side.
+Any other param on a list returns `422 Unknown query parameter`. Lists always come in change order (least recently changed first); `?ordering=` returns `422` too, so sort client-side.
 
 **Link fields in v2 responses are flat UUID arrays**: `"species": ["0698c9df-…"]`, `"friends": ["uuid", "uuid"]`. Plain UUID strings, same names as you write. (v1 expands these into nested `{id, name, …}` objects, see `references/v1-classic.md`.)
 
