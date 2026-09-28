@@ -1,339 +1,124 @@
 ---
 name: onlyworlds-parsing
-description: Extract and structure worldbuilding elements from text into OnlyWorlds JSON. Use when the user wants to parse novels, manuscripts, campaign notes, TTRPG lore, wikis, or any fiction prose into Characters, Locations, Institutions, Objects, and other element types. Handles messy notes, avoids hallucinated fields, links elements together. Works without an account.
+description: Turn existing material into a structured world, once - novels, manuscripts, notes, documents, PDFs, a campaign bible, TTRPG lore, wikis - as OnlyWorlds elements in a world folder, JSON, or an existing world. Use for a one-off import or a larger parse project, including setting up the world's own modeling rules and taxonomy. For the repeating update after each played session, use the resolve skill. Avoids invented fields. Works without an account.
 ---
 
 # OnlyWorlds Parsing
 
-Convert worldbuilding text into structured OnlyWorlds JSON.
+Turn existing material into structured world elements. The source is canon that already exists (a book, a bible, a module, a stack of notes); the job is to capture it faithfully. The repeating after-each-session update is the resolve skill, which uses this skill's extraction rules for anything new a session introduces.
+
+Shared rules (identity, field kinds, propose-review-apply, checking your work) live in `../../knowledge/principles.md`.
 
 ## Quick Reference
 
-| Task | Approach |
-|------|----------|
-| Small text (<2k words) | Single-pass extraction |
-| Multiple documents | Document-by-document with running registry |
-| Large text (novel, campaign) | Multi-pass: Foundations → Organizations → Dynamics → Sweep |
-| Messy notes with contradictions | Parse facts, report conflicts separately |
-| User has OW world | Check `.ow/` setup first — enables reconciliation |
-| User has no account | Parse to standalone JSON — works great |
-| Second parse of same world | Revise earlier elements with new discoveries |
-| Ongoing project with existing world | Extract-first, then reconcile (Step 4b) — outputs CREATE/ENRICH/SKIP |
-| Enrich links on existing elements | Re-parse with element list in hand, focus on populating link fields |
+| Situation | Approach |
+|---|---|
+| A short text (under ~2k words) | One pass; the extraction file doubles as the registry |
+| Several documents | One document at a time, into a registry on disk |
+| A novel, a module, a large corpus | A parse project: source inventory + world rules file, then document by document |
+| Messy notes with contradictions | Parse what is decided; report the rest (Step 3) |
+| PDFs | Read in page ranges; scanned pages need OCR first; report unreadable pages |
+| No account | Output a world folder (opens in Atlas) |
+| An existing world (folder or API) | Reconcile before writing (Step 5) |
+| Campaigns or stories in a parsed world | Commit the parsed world as canon, branch per campaign (world-folder.md), then the resolve skill after each session |
+| After each played session | The resolve skill |
+| Designing a system the text only implies | The modeling skill |
 
 ## Key Rules
 
-1. **Load knowledge first** — read schema files before extracting
-2. **World-specific filter** — no elements for generic real-world things
-3. **Fields over elements** — use Character.physicality, not Trait "Tall"
-4. **Decompose structural splits** — one concept often needs multiple types (see below)
-5. **Schema strict** — only real OnlyWorlds fields (check schema-reference.md)
-6. **Sparse is valid** — a name and type alone make a valid element
-7. **Revise, don't just append** — later discoveries transform earlier elements
+1. **World-specific only.** "A sword" and "wolves" get no element; "a Voidsteel blade" and "the Marsh Saurians" do.
+2. **Schema-strict.** Only fields listed under that type in `../../knowledge/schema-reference.md`; custom data goes in `x_<name>` fields (principles §4).
+3. **Fields before elements.** A physical description is `physicality`, not a Trait called "Tall".
+4. **Decompose.** One concept often needs several linked types (Step 3).
+5. **A stub is cheap, a skip is forever.** Create an element for anything the source canonically introduces, even with only a name and a line. Ask "does the source introduce it?", never "is it important enough?"
+6. **Revise, don't pile up.** When later material corrects an earlier reading, update the element and note it. When the world itself changes over time (a death, a new ruler, a city razed), follow the field's kind instead: replace current state, append a dated line to history, retire rather than delete (principles §4).
+7. **Faithful to the source.** Keep tables, procedures, lists and numbers near-verbatim in the element's own text fields (a Law's `declaration`, a Construct's `rationale`); the summary goes in `description`. Where the source's words matter as a text of their own (a prophecy, a song, a rules block), give them a Narrative and put them in its `story`, the only type with that field.
+8. **Cite and log.** Every element's registry row carries a source pointer (chapter, section, page); to keep it in the world too, write it to `x_source`, never into `description`. Every report lists what was not extracted and why.
+9. **Code keeps the books.** The registry, the id index, and the coverage table live in files, not in the model's memory (principles §2).
+10. **Propose, then write.** Nothing is written into an existing world until the user has ruled on the change list. A new world folder is itself the proposal: write it, report, and let the user review it before anything builds on it.
 
 ## Instructions
 
-### Step 0: Load Knowledge First
+### Step 1: Diagnose
 
-Read all four files before extracting — this ensures valid, importable output:
+Ask only what isn't visible: What are the sources (kind, count, size, order)? Where should the world live (nowhere yet, a folder, an account world)? What is it for (reference, running a game, writing, a tool)? Is the source one person's canon, or several that may disagree, and which wins a conflict? When is the world's "now" (the end of the last book, a chosen chapter, the start of a campaign)?
 
-1. **../../knowledge/schema-reference.md** — field whitelist for all 22 types
-2. **../../knowledge/element-types.md** — the 22 types and when to use each
-3. **../../knowledge/decision-trees.md** — disambiguation for confusing cases
-4. **knowledge/common-errors.md** (in this skill's directory) — patterns that cause import failures
+State the plan in one line and proceed; ask more only when the source is large and ambiguous.
 
-Plus, **when the user's world lives in Atlas** (or you're parsing prose/session notes for an Atlas user): **../../knowledge/atlas-conventions.md** — where prose goes (Narrative `story`), the knowledge system, extension-field rules.
+### Step 2: Plan (skip for a short text)
 
-Plus, **when the user runs battles through Tactical Tangle**: **../../knowledge/tangle-conventions.md** — how Characters/Collectives/Titles double as officers and muster rolls, and how battle history lands as Events and Narratives.
+**The source inventory.** A file listing every source with its size, reading order, and status (not read / extracted / checked). It becomes the coverage table in Step 6: a document that contributed nothing is visible, never silently skipped.
 
-If relative paths fail, use Glob to find these files: search for `schema-reference.md`, `element-types.md`, `decision-trees.md`, `common-errors.md` within the plugin/toolkit directory. **If the files still cannot be located after the Glob fallback, STOP and tell the user** — do not parse with unverified field names.
+**The world rules file** (for anything bigger than a few documents). The schema says what the 22 types are; this file says how THIS world uses them. Keep it as `world-rules.md` beside the world folder (same git repo, outside `elements/`), with the inventory and the registry; the resolve skill and later parses read it first. Start it small and add to it as the parse makes decisions:
+- **What counts as an element here**: the filter, with this world's examples ("ships are Locations", "a named spell is an Ability, a school of magic a Construct").
+- **The taxonomy**: the supertype and subtype values this world uses, per type, so the same kind of thing is labelled the same way every time.
+- **Naming**: how titles, aliases, epithets and translations are handled; when a descriptor ("the old man") becomes an element.
+- **Conventions**: recurring shapes and how they are modeled (deaths, ranks, factions within factions).
+- **Time**: the calendar and units, and the point in the source that counts as now.
+- **Open questions**: rulings not yet made.
 
-CRITICAL: Without reading these, you WILL hallucinate fields that don't exist (e.g., `Character.age`, `Object.owner`, `Location.status`). Read them.
+Write a rule when the same call has come up twice. Stop changing the rules once a round of new material no longer breaks earlier output; from then on they can guide other hands (a helper agent, a later parse) without drifting. For a short text with no rules file: use the source's own words for names, and report any name you coin. For very large sources, a short **source map** per document first (cast, places, events, in order) makes the extraction faster and easier to check.
 
-### Step 1: Check Project Setup
+### Step 3: Extract
 
-**If user has an OnlyWorlds world**, check for `.ow/` folder:
+Work one document at a time, a unit you can read whole (a chapter, or a book taken chapter by chapter), or in passes for a long single source ( beings and places, then groups and things, then events and connections, then a sweep). Add every element to the **registry file**: name, type, aliases, id once minted, source pointer.
 
-```bash
-test -d .ow && echo "EXISTS" || echo "NOT_EXISTS"
-```
+- **Type**: from the definitions in `../../knowledge/element-types.md`; for close calls, `../../knowledge/decision-trees.md`; for this world, the world rules file.
+- **Decompose** what the text describes as one thing: a tradition practitioners learn is a Construct plus an Ability per technique; a ruled territory is a Zone plus an Institution; a treaty is a Law plus the Event of its signing; a kind of creature is a Species, a named one a Creature.
+- **Link by name** at this stage (names become ids in Step 7). Only link what is stated or clearly implied. If a link field does not exist on one side, check the other side (schema-reference shows who holds each link).
+- **Messy sources**: parse what the author decided ("going with", "this is canon now", plain statements); report brainstorming ("maybe", "what if", "???") separately. When sources contradict and the author never settled it, keep both versions for the user's ruling. The thing a question is about may still be an element even if its details are open.
+- **Revise**: when a later passage changes an earlier element (a "battle" turns out to be a massacre), update the element and note it.
 
-- **EXISTS**: Load cache from `.ow/world-cache.json`. After extraction, reconcile in Step 4b.
-- **NOT_EXISTS**: Stop. Invoke `Skill(skill: "onlyworlds:project-setup")` first — without it, parsing creates duplicates and breaks reconciliation. Resume parsing after setup completes.
-- **No world**: Skip this step. Parse to standalone JSON.
+### Step 4: Check
 
-### Step 2: Choose Strategy
+- **Schema, by type**: every field exists under that element's own type (a whole-file search passes `status` on Character because Creature has it). Known traps: `knowledge/common-errors.md`.
+- **Links**: every name in a link field matches an element; create the missing one or drop the link.
+- **Identity** (principles §3), within the parse and against any existing world: near-spellings, sound-alikes, the same person under a title and a name, two things sharing a name, a new element that duplicates the job of an existing one.
+- **Recall**: sample-read the output against the source; a clean schema check says nothing about missed or merged facts. For large sources, run a second independent pass and compare; the differences show where to read again.
 
-Based on text scope:
+### Step 5: Reconcile with an existing world
 
-- **Single-pass**: Small text (<2k words), extract everything at once
-- **Document-by-document**: Multiple docs, maintain running registry of extracted elements
-- **Multi-pass** (recommended for large/messy sources):
+Skip for a new world: a world this parse is building stays new until the user has reviewed it or someone else has edited it; after that, every further document goes through this step. Otherwise, for a folder, index every `elements/*/*.json` by id and name; for an API world, use the project-setup cache. Snapshot first (commit the folder in git, or export an account world to a folder: `../../knowledge/world-folder.md`).
 
-| Pass | Focus | What to Extract |
-|------|-------|-----------------|
-| 1. Foundations | Characters, Species, Locations | The beings and places — the world skeleton |
-| 2. Organizations | Institutions, Collectives, Objects, Constructs, Titles | Groups, things, systems that structure the world |
-| 3. Dynamics | Events, Relations, Phenomena, Laws, Narratives, Traits | What happened, what connects, what emerges |
-| 4. Sweep | Everything remaining | Fragments, contradictions, sparse mentions |
+Write the change list in the same row format the resolve skill uses, one line per change: **create** · **update** (in the field's own kind: replace a current-state field, append a dated line to a history field, never touch identity fields without a ruling) · **link** · **no change** (with a short reason) · **flag** (conflicts and identity questions, with both versions). A name match is a candidate until type plus one anchor (place, holder, role) agree. Then stop: the user rules on the list, and only approved rows are applied. In a folder, apply them per the world-folder writer rules (in a folder linked to an account, each edited file gets a fresh `local_updated_at`).
 
-**After each pass, revise earlier elements.** Pass 3 may completely transform the meaning of Pass 1 elements (a "battle" becomes a "massacre," a "natural spring" becomes "ancient technology"). Go back and update — don't just add new elements alongside stale ones.
+### Step 6: Report
 
-**For ongoing projects**: If the user has an existing world (`.ow/` folder), extract everything first (Steps 3-4), then reconcile in Step 4b. This produces safe CREATE/ENRICH/SKIP output instead of overwriting existing data. For full orchestration (UUID resolution, batch dependencies, API execution), see ow-agent.md.
+- **Coverage**: per source, what it contributed (counts by type), and anything unreadable.
+- **Not extracted**: generic things, speculation, connections no schema field can hold (schema-gap candidates).
+- **Judgment calls**: type decisions at close boundaries, with reasons; rules added to the world rules file.
+- **Conflicts and low-confidence elements.**
 
-#### Parsing Perspective
+### Step 7: Output
 
-Before extracting, consider the text's natural perspective:
+1. **Resolve names to ids.** Mint a UUID per new element (v7 recommended). Resolve every link name to an id, searching only the link's target type. A name with no match, or more than one, goes back to the user; never guess.
+2. **Write**:
+   - **World folder** (the default, no account needed): `world.json` + one file per element, per `../../knowledge/world-folder.md`. It opens in Atlas.
+   - **Account world**: new elements through `/bulk` (the api skill). Updates to existing elements go through PATCH on a freshly read element or the links route, never `/bulk`, where an item with an existing id replaces the whole element.
+   - **Grouped JSON with names** is only a review form; it is not uploadable as is.
+3. **Read back** what landed and compare it with the approved change list, or for a new folder with the extraction file (principles §5).
 
-| Perspective | When to Use | Effect on Output |
-|-------------|-------------|------------------|
-| **Character-centric** | Novels, POV chapters | Descriptions filtered through character experience |
-| **World-as-record** | Wikis, encyclopedias, campaign notes | Neutral, reusable descriptions. Elements stand alone |
-| **Hybrid** | Mixed sources | Extract characters subjectively, locations/systems objectively |
+## Example (Hyperion, the opening pages)
 
-Default to world-as-record for maximum reusability. Ask the user which perspective fits if the source is ambiguous.
+Source: the Consul, on his ship, receives a fatline message from Meina Gladstone on Tau Ceti Center: he has been chosen by the Church of the Shrike for the Shrike Pilgrimage, because the Time Tombs on Hyperion show signs of opening.
 
-Confirm strategy with user, then proceed.
+| Extracted | Type | Why |
+|---|---|---|
+| The Consul | Character | named only by his office |
+| Consul | Title, held by the Consul | the office is its own element |
+| The Consul's ship | Location | he lives aboard; `Character.location` points at it |
+| Meina Gladstone | Character | |
+| The Hegemony | Institution + Zone (its territory, "the Web") | a ruled territory: the power and its ground |
+| Tau Ceti Center | Location | |
+| Church of the Shrike | Institution | |
+| The Shrike Pilgrimage | Collective (the seven chosen) + Event (the journey) | one phrase, two things |
+| The Time Tombs | Location | the condition they are in (opening) goes in the description, dated |
+| Fatline | Construct | a technology, not a physical object |
 
-### Step 3: Extract Elements
+Not extracted: the Steinway, the Rachmaninov prelude, the glass of Scotch (real-world or generic). Stubbed: the Shrike, as a Creature for now (named and feared, nature not yet given); its type is a judgment call listed in the report.
 
-For each piece of text:
+## References
 
-1. **Apply world-specific filter** — only create elements for world-specific things:
-   - "a sword" → no element (generic)
-   - "a Voidsteel blade" → Construct: Voidsteel
-   - "wolves" → no element (generic animal)
-   - "Marsh Saurians" → Species: Marsh Saurian
-
-2. **Determine type** using the 22 OnlyWorlds types. Consult decision-trees.md for edge cases.
-
-3. **Decompose structural splits** — one concept often maps to multiple types. Don't flatten:
-   - A magical tradition practitioners *learn* → Construct (the system) + Ability (each learnable technique)
-   - A formal decree that *forbids/mandates* → Law (not just Construct)
-   - A ruled territory → Zone (the territory) + Institution (the ruling body)
-   - A material type prized for its properties → Construct (the concept), not Object (that's a specific instance)
-   - A type of creature → Species (the kind), not Creature (that's a named individual)
-   - A signed agreement → Law (the document) + optionally Event (the signing)
-
-   The text may describe one thing, but the structure implies multiple facets. Extract them all.
-
-4. **Populate fields** using only schema fields:
-   - Physical description → Character.physicality (NOT Trait)
-   - Mental description → Character.mentality (NOT Trait)
-   - Generic personality → Character fields (NOT separate elements)
-
-5. **Sparse elements are valid.** "Nibbles is a Cookie Pirates member" is enough to create a Character with name + description. Don't require full field population. Fields can be enriched later.
-
-#### Commonly Missed Type Decisions
-
-| Concept | Correct Type | NOT |
-|---------|-------------|-----|
-| Ships where characters live/work | Location | Object |
-| Named era/war (period) | Construct | Event |
-| Treaty document with articles | Law (+ optionally Event for signing) | Construct |
-| Cultural saying with world significance | Narrative | Character field |
-| Formal rank with holder | Title | Construct |
-| Empire/kingdom territory | Zone + Institution (both) | Just Institution |
-
-### Step 4: Link and Validate References
-
-After extraction:
-
-1. Link elements using NAMES (not UUIDs). Only link what's explicitly stated or clearly implied.
-2. Use existing fields first (friends, rivals, family) — Relation only when depth demands it.
-3. **Check link direction**: If Character→Event doesn't exist as a field, check Event→Characters instead. Schema-reference.md shows which type holds each link field.
-4. **Validate every reference**: every name in a link field must have a matching element. For each dangling reference: create the missing element, or remove the reference.
-
-Common dangling references:
-- Language references without Language element
-- Ability references but only Phenomenon created
-- Parent locations/zones never defined
-
-#### Link Enrichment Mode
-
-For existing worlds where elements are already created but link fields are sparse, re-run parsing focused on links:
-
-1. Load the existing element list (from JSON, `.ow/world-cache.json`, or API)
-2. Re-read source material with the element list in hand
-3. For each element, scan descriptions and source text for connections to other known elements
-4. Populate link fields — focus on `friends`, `rivals`, `species`, `location`, `institutions`, `events`, `characters`, `objects`, and other cross-reference fields
-5. Output as PATCH-ready JSON (element name/UUID + link fields to add)
-
-This is not a separate tool — it's parsing with a different focus. The same schema knowledge and validation rules apply.
-
-### Step 4b: Reconcile Against Existing World
-
-**Skip this step if no `.ow/` folder was found in Step 1.** For standalone parses (no world), go straight to Step 5.
-
-If you loaded a world cache in Step 1, compare every extracted element against it before generating output:
-
-#### 1. Name Matching
-
-For each extracted element, check the cache for matches:
-
-| Match Type | Example | Action |
-|------------|---------|--------|
-| Exact name | "Captain Snoot" = "Captain Snoot" | Existing element found |
-| Case-insensitive | "the crumbler" = "The Crumbler" | Existing element found |
-| Article-stripped | "The Soggy Sock" vs "Soggy Sock" | Existing element found |
-| No match | "Drizzle" not in cache | New element — CREATE |
-
-Do NOT auto-match on partial names or honorifics ("Admiral Fluffington" vs "Fluffington" could be different characters). Flag these for user review.
-
-#### 2. Field Comparison
-
-For each name match, compare the extraction against existing data:
-
-| Situation | Decision | Example |
-|-----------|----------|---------|
-| Extraction adds new fields not in existing | **ENRICH** | Existing has description only; extraction adds `physicality` |
-| Extraction adds new facts to a text field | **ENRICH** | Existing description: "Leader of Cookie Pirates." Extraction adds: "Sent message: 'We're coming home.'" |
-| Existing data is richer than extraction | **SKIP** | Existing: 5 populated fields. Extraction: just name + thin description |
-| Both have same field with different content | **CONFLICT** | Existing description vs extraction description — flag for user |
-| Extraction matches existing exactly | **SKIP** | No new information |
-
-**Enrichment over replacement**: When enriching text fields (description, background, etc.), the new info should be ADDED to existing content, not replace it. Present the new facts to append, not a replacement string.
-
-#### 3. Reconciliation Summary
-
-After comparing all elements, report counts:
-
-```
-Reconciliation: 8 CREATE, 2 ENRICH, 3 SKIP, 1 CONFLICT
-```
-
-List each SKIP and CONFLICT with reasoning so the user can override.
-
-### Step 5: Handle Messy Sources
-
-#### Speculation Markers
-
-| Signal | Action |
-|--------|--------|
-| "I think," "going with," "picking," "leaning toward" | **Parse it** — author has chosen |
-| Stated-as-fact prose | **Parse it** — even if sparse |
-| "maybe," "what if," "???," "brainstorming" | **Don't parse** — report separately |
-| Questions to self/others ("DECIDE," "need to figure out") | **Don't parse** — but the THING may exist even if details are open |
-| Author picks a final version ("This is canon now") | **Use it** — overrides all earlier contradictions |
-
-#### Contradictions
-
-When sources conflict:
-1. Check if the author resolved it anywhere ("going with option A," "This is canon now")
-2. If resolved: use the author's final word, note the contradiction existed
-3. If unresolved: pick the most detailed/recent version, report the conflict
-
-#### Dark/Late-Night Files
-
-Late-night brainstorming that seems speculative may be intentional worldbuilding. Cross-reference with other sources. If confirmed elsewhere, it's authorial intent — parse it.
-
-### Step 6: Schema Compliance Check
-
-Before generating JSON, verify every field against schema-reference.md.
-
-**These fields DON'T EXIST** — common hallucinations:
-- `age`, `titles`, `occupation` (Character)
-- `status` (Location — use `political_climate`)
-- `background` (Institution — use `description` or `doctrine`)
-- `owner`/`owners` (Object — use Character.objects instead)
-- `laws` (Event)
-
-When uncertain: grep schema-reference.md for the field name. No match = hallucination.
-
-### Step 7: Generate Output
-
-#### Standalone Parse (no world)
-
-Produce grouped JSON — importable anywhere (Atlas import, /bulk upload, any OW-shaped consumer). Ask whether the user prefers this or the world-folder output below:
-
-```json
-{
-  "Character": [
-    {
-      "name": "Thomas Oak",
-      "description": "Elderly mayor who governs Willowbrook",
-      "physicality": "elderly human with a gray beard",
-      "location": "Willowbrook"
-    }
-  ],
-  "Location": [
-    {
-      "name": "Willowbrook",
-      "description": "A village governed by Mayor Thomas Oak"
-    }
-  ]
-}
-```
-
-No wrapper, no `parsed` key, no conflicts mixed in.
-
-**Folder output (optional, offer it)**: instead of one JSON blob, write an OW world folder -- world.json + elements/<type>/<name-slug>--<id-tail8>.json, one file per element, minted UUIDs, links resolved to those ids (see knowledge/world-folder.md for the exact rules). The result opens directly in Atlas and can be pushed to an account later via /bulk without re-parsing. This is the best output for users who want a usable world rather than raw data.
-
-**Field naming**: Use readable names (`location`, `objects`, `holders`) everywhere -- the current v2 API takes bare link field names directly, so standalone JSON and API upload use the same shape. The `_id`/`_ids` suffix convention belongs to the legacy v1 dialect only (older integrations); never add suffixes for v2 upload.
-
-#### Reconciled Parse (existing world)
-
-If Step 4b was performed, separate output by action:
-
-**1. CREATE** — new elements, grouped by type (same format as standalone):
-```json
-{
-  "Character": [{ "name": "Drizzle", "description": "..." }],
-  "Event": [{ "name": "The Soggy Sock Incident", "description": "..." }]
-}
-```
-
-**2. ENRICH** — existing element name + only the new information:
-```
-- "Captain Snoot" (Character) — NEW FIELD physicality: "Wears an eyepatch". APPEND TO description: "Old friend of Drizzle. Discovered The Rolling Pin, a Bakerfolk ruin."
-- "The Crumbler" (Character) — APPEND TO description: "Sent message: 'We're coming home.'"
-```
-
-**3. SKIP** — name + reason:
-```
-- "Bakerfolk" (Species) — existing data richer, no new fields
-```
-
-**4. CONFLICT** — both versions for user decision:
-```
-- "The Soft Spot" (Location) — existing: "Area within the Snack Nebula where cookies..." vs extraction: "A known Bakerfolk ruin in the Crumblefields area."
-```
-
-The CREATE JSON is directly importable (Atlas import or /bulk upload). ENRICH and CONFLICT items need manual application or API PATCHing (see ow-agent.md for automated execution).
-
-#### Parsing Report
-
-Separate markdown summarizing:
-- **Judgment calls** — type decisions at ambiguity boundaries with reasoning
-- **Conflicts resolved** — which version picked, what was overridden
-- **Author notes not parsed** — speculation, indecision, brainstorming
-- **Low confidence elements** — extracted but uncertain (sparse mentions, placeholder names)
-
-Skip the report for clean, unambiguous sources.
-
-## CRITICAL: Schema Violation Examples
-
-### ❌ WRONG (hallucinated fields)
-```json
-{
-  "Character": [{ "name": "Admiral Fluff", "age": "90 years", "titles": ["Admiral"] }],
-  "Object": [{ "name": "USS Fuzzball", "owners": ["Admiral Fluff"] }]
-}
-```
-
-### ✅ CORRECT (real schema fields)
-```json
-{
-  "Character": [{ "name": "Admiral Fluff", "description": "~90 year old admiral", "objects": ["USS Fuzzball"] }],
-  "Object": [{ "name": "USS Fuzzball", "description": "Admiral Fluff's ship" }],
-  "Title": [{ "name": "Admiral", "holders": ["Admiral Fluff"] }]
-}
-```
-
-Age → description. Titles → separate Title element. Ownership → Character.objects (not Object.owners).
-
-## Complex Systems
-
-If the text contains a deep system (magic system, political hierarchy, economy, faction network), parsing extracts what's there. For deeper structural design — inventing elements the text implies but doesn't state, exploring alternative decompositions, or designing game mechanics — suggest the modeling skill:
-
-> "For deeper structural design of [the magic system / political hierarchy / etc], the modeling skill can help explore additional decompositions."
+- `knowledge/common-errors.md` (this skill): invented fields and other traps
+- `../../knowledge/schema-reference.md` · `element-types.md` · `decision-trees.md` · `world-folder.md` · `atlas-conventions.md` (when the user will write or keep knowledge entries in Atlas; opening a folder in Atlas does not need it)
+- The resolve skill (the after-each-session loop) · the modeling skill (systems the text only implies) · the link skill (enriching links in an existing world)

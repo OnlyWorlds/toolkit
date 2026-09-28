@@ -1,15 +1,17 @@
 # OnlyWorlds Schema Reference
 
-**Schema Version**: 00.30.00 (canonical VERSION; types generated into @onlyworlds/sdk 3.x)
-**Last Verified**: 2026-07-23 (against the canonical schema YAML + live v2 platform)
+**Schema Version**: 00.30.01 (canonical VERSION; distributed via github.com/OnlyWorlds/schema-dist; types generated into @onlyworlds/sdk 4.x)
+**Last Verified**: 2026-09-28 (against the canonical schema YAML + live v2 platform)
 
-The schema is now single-sourced from the canonical schema YAML — models, SDK, and docs are generated from it, so field lists here track that source. Field descriptors for any type are also available live at `GET /api/metadata/{type}/`.
+The schema is now single-sourced from the canonical schema YAML: models, SDK, and docs are generated from it, so field lists here track that source. Field descriptors for any type are also available live at `GET /api/metadata/{type}/`.
 
-Complete field reference for all 22 element types.
+Complete field reference for all 22 element types. Shared rules: `principles.md`.
 
-**WHITELIST RULE**: Only fields listed below exist as schema fields. An unlisted, unprefixed field causes import failure (422) -- don't invent plausible-sounding fields, check this list. **Exception**: fields prefixed `x_`/`atlas_`/`shadow_` are extension fields -- the API stores and returns them verbatim (your custom data belongs in `x_*`; treat foreign namespaces as read-only).
+**Types**: Ability · Character · Collective · Construct · Creature · Event · Family · Institution · Language · Law · Location · Map · Marker · Narrative · Object · Phenomenon · Pin · Relation · Species · Title · Trait · Zone (alphabetical, one `##` section each), then Key Reminders and the Link Direction Summary.
 
-**Note on link field names**: Fields are listed by their canonical names (e.g., `birthplace`). On the modern **v2 / bulk** API these names are used as-is, holding UUIDs — no suffix, same in reads and writes. (The legacy **v1** dialect uses `_id`/`_ids` write suffixes — `birthplace_id`, `species_ids` — and expands links into nested objects on read; the SDK handles that conversion. See the `onlyworlds-api` skill for both dialects.)
+**WHITELIST RULE**: Only fields listed below exist as schema fields. An unlisted, unprefixed field causes import failure (422). Don't invent plausible-sounding fields, check this list. Check under the element's own type (plus Base Fields): a field listed under another type does not exist on this one (`status` is on Creature, not Character). **Exception**: fields prefixed `x_`/`atlas_`/`shadow_` are extension fields (who writes which namespace: principles §4). API behaviour: they are stored verbatim on v2 writes and /bulk, and returned on v2 reads and the portal export (Atlas sync keeps them). PATCH merges extension keys (omitting one keeps it); PUT, and a /bulk item with an existing id, replace the whole element, extension fields included; the v1 dialect does not return them.
+
+**Note on link field names**: Fields are listed by their canonical names (e.g., `birthplace`). On the modern **v2 / bulk** API these names are used as-is, holding UUIDs: no suffix, same in reads and writes. (The legacy **v1** dialect uses `_id`/`_ids` write suffixes, such as `birthplace_id` and `species_ids`, and expands links into nested objects on read; the SDK handles that conversion. See the api skill for both dialects.)
 
 **API response format (v2)**: list endpoints return `{data, has_more, next_cursor}` (paginated, opaque cursor); detail returns the bare element object; link fields are flat UUID arrays. (v1 returns plain arrays with no pagination and nested `{id, name, supertype, subtype, image_url}` link objects.)
 
@@ -18,11 +20,16 @@ Complete field reference for all 22 element types.
 ## Base Fields (All Elements)
 
 Every element has these fields:
+- **id** (UUID; any RFC-4122, v7 recommended when minting) - optional on create (the server mints a v4 if omitted)
 - **name** (text) - Element's name [Required]
 - **description** (text) - Details about the element
 - **image_url** (text) - URL to an image representing the element
 - **supertype** (text) - Top level category
 - **subtype** (text) - Sub level category
+
+Rejected on write (422): `type` (reads include it), `created_at`, `updated_at`, `change_seq`. Strip them from a read-back body before PATCH, PUT or /bulk. `world` is ignored (the key decides the world).
+
+All numeric fields are integers in the world's own units (TIME / MASS / LENGTH / DISTANCE); fractions are truncated on write. Numeric ranges are advisory: the API stores out-of-range values; tools should clamp.
 
 ---
 
@@ -30,9 +37,9 @@ Every element has these fields:
 
 **Mechanics:**
 - activation (text) - Method or conditions for activation
-- duration (number) - How long it remains active
-- potency (number) - Relative force or power level (0-100)
-- range (number) - Effective reach or distance
+- duration (integer) - How long it remains active
+- potency (integer) - Relative force or power level (0-100)
+- range (integer) - Effective reach or distance
 - effects (multi-link → Phenomenon) - Resulting phenomena when used
 - challenges (text) - Difficulties in mastering or using
 - talents (multi-link → Trait) - Traits that enhance performance
@@ -53,8 +60,8 @@ Every element has these fields:
 **Constitution:**
 - physicality (text) - Visible physical features and attributes
 - mentality (text) - Mindset, emotional tone, thinking style
-- height (number) - Physical height
-- weight (number) - Physical weight
+- height (integer) - Physical height
+- weight (integer) - Physical weight
 - species (multi-link → Species) - Species/race belonged to
 - traits (multi-link → Trait) - Notable characteristics
 - abilities (multi-link → Ability) - Skills and powers they can perform
@@ -62,12 +69,12 @@ Every element has these fields:
 **Origins:**
 - background (text) - History, upbringing, formative experiences
 - motivations (text) - Core desires, goals, driving values
-- birth_date (number) - When born
+- birth_date (integer) - When born
 - birthplace (single-link → Location) - Where born
 - languages (multi-link → Language) - Languages they speak
 
 **World:**
-- reputation (text) - Current standing or how they're known
+- reputation (text) - Brief summary of current condition, role, or predicament
 - location (single-link → Location) - Current/present location
 - objects (multi-link → Object) - Key items they own
 - institutions (multi-link → Institution) - Affiliated organizations
@@ -81,7 +88,7 @@ Every element has these fields:
 - rivals (multi-link → Character) - Active opponents or competitors
 
 **TTRPG:**
-- level, hit_points, STR, DEX, CON, INT, WIS, CHA (all number)
+- level, hit_points, STR, DEX, CON, INT, WIS, CHA (all integer)
 
 ---
 
@@ -89,10 +96,10 @@ Every element has these fields:
 
 **Formation:**
 - composition (text) - Internal structure or demographic makeup
-- count (number) - Number of members
-- formation_date (number) - When formed
+- count (integer) - Number of members
+- formation_date (integer) - When formed
 - operator (single-link → Institution) - Managing institution
-- equipment (multi-link → Object) - Tools/gear used *(canonical YAML + live metadata say Object; some legacy production data linked Constructs -- known drift, resolved to Object)*
+- equipment (multi-link → Object) - Tools/gear used *(canonical YAML + live metadata say Object; some legacy production data linked Constructs: known drift, resolved to Object)*
 
 **Dynamics:**
 - activity (text) - Primary behaviors or actions
@@ -118,8 +125,8 @@ Every element has these fields:
 - history (text) - Historical development and context
 - status (text) - Present condition or operational status
 - reach (text) - Geographic/cultural/political extent
-- start_date (number) - When established
-- end_date (number) - When ceased
+- start_date (integer) - When established
+- end_date (integer) - When ceased
 - founder (single-link → Character) - Who conceived it
 - custodian (single-link → Institution) - Organization maintaining it
 
@@ -132,11 +139,11 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 
 **Biology:**
 - appearance (text) - Visual description
-- weight (number) - Physical mass
-- height (number) - Physical size
+- weight (integer) - Physical mass
+- height (integer) - Physical size
 - species (multi-link → Species) - What type of being
 
-**Behaviour:**
+**Behavior:**
 - habits (text) - Typical behaviors and recurring actions
 - demeanor (text) - Emotional tone or attitude conveyed
 - traits (multi-link → Trait) - Influencing characteristics
@@ -145,12 +152,12 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 
 **World:**
 - status (text) - Current situation or classification
-- birth_date (number) - When born/created
+- birth_date (integer) - When born/created
 - location (single-link → Location) - Current location
 - zone (single-link → Zone) - Inhabited region
 
 **TTRPG:**
-- challenge_rating, hit_points, armor_class, speed (all number)
+- challenge_rating, hit_points, armor_class, speed (all integer)
 - actions (multi-link → Ability) - Combat abilities
 
 ---
@@ -163,8 +170,8 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 - history (text) - Historical context and background
 - challenges (text) - Adversity faced during event
 - consequences (text) - Factual outcomes
-- start_date (number) - When began
-- end_date (number) - When concluded
+- start_date (integer) - When began
+- end_date (integer) - When concluded
 - triggers (multi-link → Event) - Events that caused this
 
 **Involves (multi-link fields):**
@@ -196,7 +203,7 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 
 **Foundation:**
 - doctrine (text) - Core belief, mission, or purpose
-- founding_date (number) - When established
+- founding_date (integer) - When established
 - parent_institution (single-link → Institution) - Governing body
 
 **Claims:**
@@ -233,7 +240,7 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 **Code:**
 - declaration (text) - Formal wording of the law
 - purpose (text) - Intent or justification
-- date (number) - When established
+- date (integer) - When established
 - parent_law (single-link → Law) - Derived from what law
 - penalties (multi-link → Construct) - Violation consequences
 
@@ -252,7 +259,7 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 **Setting:**
 - form (text) - Visual and environmental aspects
 - function (text) - Main use or purpose
-- founding_date (number) - When established
+- founding_date (integer) - When established
 - parent_location (single-link → Location) - Containing location
 - populations (multi-link → Collective) - Residing groups
 
@@ -290,7 +297,7 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 
 **Defense:**
 - defensibility (text) - Natural and constructed defenses
-- elevation (number) - Height relative to terrain
+- elevation (integer) - Height relative to terrain
 - fighters (multi-link → Construct) - Defending force types
 - defensive_objects (multi-link → Object) - Defense installations
 
@@ -299,10 +306,10 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 ## MAP
 
 - background_color (text) - Color around map when zoomed
-- hierarchy (number) - Association/differentiation level
-- width (number) - Width in pixels
-- height (number) - Height in pixels
-- depth (number) - Depth in pixels
+- hierarchy (integer) - Association/differentiation level
+- width (integer) - Width in pixels
+- height (integer) - Height in pixels
+- depth (integer) - Depth in pixels
 - parent_map (single-link → Map) - Containing map
 - location (single-link → Location) - Location represented
 
@@ -312,10 +319,10 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 
 - map (single-link → Map) - Map it's placed on
 - zone (single-link → Zone) - Zone it defines
-- x (number) - X coordinate
-- y (number) - Y coordinate
-- z (number) - Z coordinate
-- order (number) - Position in sequence
+- x (integer) - X coordinate
+- y (integer) - Y coordinate
+- z (integer) - Z coordinate
+- order (integer) - Position in sequence
 
 ---
 
@@ -326,9 +333,9 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 **Context:**
 - story (text) - The narrative content from a perspective
 - consequences (text) - Outcomes or legacy
-- start_date (number) - Beginning date
-- end_date (number) - Ending date
-- order (number) - Position in parent sequence
+- start_date (integer) - Beginning date
+- end_date (integer) - Ending date
+- order (integer) - Position in parent sequence
 - parent_narrative (single-link → Narrative) - Containing narrative
 - protagonist (single-link → Character) - Primary character
 - antagonist (single-link → Character) - Opposing character
@@ -344,8 +351,8 @@ events, characters, objects, locations, species, creatures, institutions, traits
 
 **Form:**
 - aesthetics (text) - Appearance and visual presentation
-- weight (number) - Physical mass
-- amount (number) - Number of identical units
+- weight (integer) - Physical mass
+- amount (integer) - Number of identical units
 - parent_object (single-link → Object) - Larger containing object
 - materials (multi-link → Construct) - What it's made from
 - technology (multi-link → Construct) - How it works/operates
@@ -369,7 +376,7 @@ events, characters, objects, locations, species, creatures, institutions, traits
 **Mechanics:**
 - expression (text) - How it manifests in the world
 - effects (text) - Primary outcomes or changes caused
-- duration (number) - How long it lasts
+- duration (integer) - How long it lasts
 - catalysts (multi-link → Object) - Objects that initiate it
 - empowerments (multi-link → Ability) - Related abilities
 
@@ -385,11 +392,10 @@ events, characters, objects, locations, species, creatures, institutions, traits
 ## PIN
 
 - map (single-link → Map) - Map it's placed on
-- element_type (text) - Type of element being pinned
-- element_id (single-link → any) - The element being marked
-- x (number) - X coordinate
-- y (number) - Y coordinate
-- z (number) - Z coordinate
+- element_type + element_id - the pinned element (the YAML's generic `element` link). Set both together; element_type is a lowercase type slug, e.g. "character"
+- x (integer) - X coordinate
+- y (integer) - Y coordinate
+- z (integer) - Z coordinate
 
 ---
 
@@ -399,9 +405,9 @@ events, characters, objects, locations, species, creatures, institutions, traits
 
 **Nature:**
 - background (text) - History and origin of relationship
-- start_date (number) - When began
-- end_date (number) - When ended
-- intensity (number) - Relationship strength (0-100)
+- start_date (integer) - When began
+- end_date (integer) - When ended
+- intensity (integer) - Relationship strength (0-100)
 - actor (single-link → Character) - Primary defining character
 - events (multi-link → Event) - Related events
 
@@ -414,8 +420,8 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 
 **Biology:**
 - appearance (text) - Typical physical features
-- life_span (number) - Average life expectancy
-- weight (number) - Average adult weight
+- life_span (integer) - Average life expectancy
+- weight (integer) - Average adult weight
 - nourishment (multi-link → Species) - Food sources
 - reproduction (multi-link → Construct) - Reproductive methods
 - adaptations (multi-link → Ability) - Special abilities
@@ -425,7 +431,7 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 - sociality (text) - Social behavior patterns
 - temperament (text) - Overall behavioral disposition
 - communication (text) - Interaction methods
-- aggression (number) - General aggressiveness (0-100)
+- aggression (integer) - General aggressiveness (0-100)
 - traits (multi-link → Trait) - Associated behavioral patterns
 
 **World:**
@@ -444,8 +450,8 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 **Mandate:**
 - authority (text) - Rights or powers granted by title
 - eligibility (text) - Conditions for holding
-- grant_date (number) - When granted
-- revoke_date (number) - When ended
+- grant_date (integer) - When granted
+- revoke_date (integer) - When ended
 - issuer (single-link → Institution) - Who creates the title
 - body (single-link → Institution) - Organization it functions within
 - superior_title (single-link → Title) - Higher authority
@@ -455,9 +461,7 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 **World:**
 - status (text) - Current state or condition
 - history (text) - Origin, evolution, significance
-
-**Involves (multi-link fields):**
-characters, institutions, families, zones, locations, objects, constructs, laws, collectives, creatures, phenomena, species, languages
+- multi-link fields: characters, institutions, families, zones, locations, objects, constructs, laws, collectives, creatures, phenomena, species, languages
 
 ---
 
@@ -484,8 +488,8 @@ characters, institutions, families, zones, locations, objects, constructs, laws,
 
 **Scope:**
 - role (text) - Functional purpose of the zone
-- start_date (number) - When becomes relevant
-- end_date (number) - When ceases meaning
+- start_date (integer) - When becomes relevant
+- end_date (integer) - When ceases meaning
 - phenomena (multi-link → Phenomenon) - Affecting phenomena
 - linked_zones (multi-link → Zone) - Associated zones
 
@@ -502,7 +506,7 @@ characters, institutions, families, zones, locations, objects, constructs, laws,
 **Fields that DON'T exist (common mistakes):**
 - Character has NO `titles` field → Create Title with `holders`
 - Object has NO `constructs` field → Construct links TO Object via `objects`
-- Location has NO `zones` field → Create separate Zone element
+- Location has no `zones` (plural). It links one Zone via `zone`; Zones reach Locations only through that field
 
 **Linking direction:**
 - Characters link TO Objects (via `objects` field)
@@ -513,7 +517,7 @@ characters, institutions, families, zones, locations, objects, constructs, laws,
 
 ## Link Direction Summary
 
-Some relationships are one-directional — only one type "owns" the link field:
+Some relationships are one-directional (only one type "owns" the link field):
 
 | Relationship | Direction | How to link |
 |-------------|-----------|-------------|
@@ -522,13 +526,11 @@ Some relationships are one-directional — only one type "owns" the link field:
 | Title → Character | Title.holders/characters → Character | PATCH Title |
 | Object → Location | Object.location → Location | PATCH Object |
 | Law → Institution | Law.author → Institution | PATCH Law (Law has NO institutions field) |
-| Event → everything | Event.*_ids → targets | POST/PATCH Event |
-| Construct → everything | Construct.*_ids → targets | POST/PATCH Construct (18 M2M fields) |
+| Event → everything | `Event.<links>` → targets | POST/PATCH Event |
+| Construct → everything | `Construct.<links>` → targets | POST/PATCH Construct (18 M2M fields) |
 
-**Most connected types** (by M2M field count): Construct (18), Narrative (18), Event (17), Relation (17), Title (15).
-
----
+**Most connected types** (by M2M field count): Construct (18), Narrative (18), Event (17), Relation (17), Location (16), Title (15).
 
 ---
 
-*Source: canonical schema YAML via the generated SDK; verified against the live v2 platform 2026-07-14*
+*Source: canonical schema YAML via the generated SDK; verified against the live v2 platform 2026-09-28*

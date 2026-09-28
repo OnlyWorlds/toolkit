@@ -1,6 +1,14 @@
 # OnlyWorlds Modeling Patterns
 
-How to think in OnlyWorlds. Compositional patterns for translating any system into the schema.
+How to think in OnlyWorlds. Compositional patterns for translating any system into the schema. Shared rules: `principles.md`.
+
+## Contents
+- OnlyWorlds as Language
+- Compositional Thinking
+- System Translation Patterns (magic, inventory, factions, maps and zones, schedules, historical periods)
+- Supertype/Subtype Conventions
+- Extension Boundaries
+- Common Modeling Questions (including time and state changes)
 
 ---
 
@@ -120,14 +128,14 @@ Maps are visual canvases. Pins place elements on them. Markers define zone bound
 | Element | Purpose | Links To |
 |---------|---------|----------|
 | Map | Visual canvas (image with dimensions) | parent_map, location |
-| Pin | Places any element on a map | map, element_id (the thing being pinned) |
+| Pin | Places any element on a map | map, element_type + element_id (the thing being pinned) |
 | Marker | Defines zone boundary points | map, zone |
 | Zone | Region defined by markers | linked_zones, populations, titles |
 | Location | The place itself (not visual) | zone, parent_location |
 
 **Key insight**: Location is the *place*, Map is the *picture of the place*. A Location can have multiple Maps (world map, city map, building floor plan). A Map can show multiple Locations via Pins.
 
-**Layered maps pattern** (used in Ecosystem Explorer):
+**Layered maps pattern**:
 ```
 World Map (parent)
   └── Continent Map (parent_map → World Map)
@@ -139,15 +147,17 @@ Each map links to its parent. Tools can let users drill down through layers.
 
 **Pin stacking**: Multiple Pins at identical (x, y, z) coordinates on the same Map. Tools should check for coordinate collisions and render as expandable stacks or clusters.
 
-**Zone boundaries via Markers**: Markers with `order: 1, 2, 3, 4...` define a zone boundary as a polygon. Connect them in order to draw the shape:
+**Zone boundaries via Markers**: Markers with `order: 0, 1, 2, 3...` (0 = first point) define a zone as a polygon or a line. Connect them in order to draw the shape:
 
 ```
-Marker 1 (order: 1) ──────── Marker 2 (order: 2)
+Marker 1 (order: 0) ──────── Marker 2 (order: 1)
      │                              │
      │         Zone area            │
      │                              │
-Marker 4 (order: 4) ──────── Marker 3 (order: 3)
+Marker 4 (order: 3) ──────── Marker 3 (order: 2)
 ```
+
+A Zone drawn by Markers is a closed polygon by default. Atlas records the shape in its own `atlas_shape` field; other writers leave that field to Atlas and mark an open line with supertype `line`, which Atlas also reads. Write it lowercase: Atlas reads it in any case since 1.5, but earlier versions matched only `line`. Always write order.
 
 **Visual overview**:
 
@@ -156,10 +166,10 @@ Marker 4 (order: 4) ──────── Marker 3 (order: 3)
 │           MAP (visual canvas)        │
 │  ┌─────────────────────────────┐    │
 │  │    ZONE (drawn region)       │    │
-│  │  • Marker (0,0) order:1      │    │
-│  │  • Marker (100,0) order:2    │    │
-│  │  • Marker (100,50) order:3   │    │
-│  │  • Marker (0,50) order:4     │    │
+│  │  • Marker (0,0) order:0      │    │
+│  │  • Marker (100,0) order:1    │    │
+│  │  • Marker (100,50) order:2   │    │
+│  │  • Marker (0,50) order:3     │    │
 │  │                              │    │
 │  │      📍 Pin → Location       │    │
 │  │      📍 Pin → Character      │    │
@@ -171,10 +181,10 @@ Marker 4 (order: 4) ──────── Marker 3 (order: 3)
 
 **Practical example**:
 - Map: "Moppetopia World Map" (width: 2000, height: 1500)
-- Pin: x: 450, y: 720, element_id → Feltropolis (Location)
-- Pin: x: 450, y: 720, element_id → Admiral Fluffington (Character) - same coords, stacked
-- Zone: "The Fluffium District"
-- Markers: 4 points at corners, order 1-4, all linking to the Zone
+- Pin: x: 450, y: 720, element_type: "location", element_id → Feltropolis
+- Pin: x: 450, y: 720, element_type: "character", element_id → Admiral Fluffington - same coords, stacked
+- Zone: "The Fluffium District" (a polygon, the default)
+- Markers: 4 points at corners, order 0-3, all linking to the Zone
 
 ### Schedules and Structured Data
 
@@ -186,10 +196,10 @@ For tabular or operational data (schedules, rules, formulas), use Construct. The
 Construct: "Weekly Schedule"
   supertype: schedule
   rationale: "| Hour | Mon | Tue | ... |"
-  custodian: [Institution]
+  custodian: <Institution>
 ```
 
-Query with `?supertype=schedule` to filter.
+A `?supertype=schedule` filter helps a person browse. A tool that keys on schedules marks them with its own extension field (see Extension Boundaries).
 
 ---
 
@@ -247,11 +257,11 @@ Object: Stuffing Cannon
   subtype: Siege
 ```
 
-Your tool can filter by supertype to show "all Weapons" or by subtype for "all Siege weapons."
+A person can browse by supertype ("all Weapons") or subtype ("all Siege weapons"). Tool logic keys on fields, not labels (principles §4).
 
 ### Multi-Purpose Categorization
 
-Subtype can encode multiple dimensions with conventions:
+Subtype can name more than one dimension for human readers:
 
 ```
 Character: Admiral Fluffington
@@ -259,7 +269,7 @@ Character: Admiral Fluffington
   subtype: Naval/Leadership
 ```
 
-Your application parses the `/` as multiple tags. OnlyWorlds doesn't enforce format; your convention does.
+Supertype and subtype are display vocabulary: tools should not parse them as data. Tags your tool keys on go in extension fields (see Extension Boundaries).
 
 ### Objects-for-Everything Pattern
 
@@ -283,7 +293,7 @@ This works if you want uniform handling in your tool. Trade-off: you lose specia
 
 ### What the API Accepts
 
-The OnlyWorlds API validates against the schema. Only defined fields save.
+The API validates unprefixed fields against the schema; x_*-prefixed extension fields save verbatim (below).
 
 **These work:**
 - All fields listed in schema-reference.md
@@ -295,7 +305,7 @@ The OnlyWorlds API validates against the schema. Only defined fields save.
 - Custom properties without a namespace prefix
 - Links to non-existent elements
 
-**The extension escape valve**: fields prefixed `x_`/`atlas_`/`shadow_` DO save and sync -- the server stores them verbatim in a per-element extensions store and returns them top-level on read. `x_mana_cost` round-trips today; only the unprefixed `mana_cost` fails with 422. Your own custom data goes in `x_*`; treat foreign namespaces (`atlas_*`, `shadow_*`) as read-only.
+**The extension escape valve**: `x_mana_cost` saves and round-trips where the unprefixed `mana_cost` fails with 422. Who writes which namespace: principles §4. API behaviour (PATCH, PUT, /bulk, v1): schema-reference.md.
 
 ### What Local Apps Can Do
 
@@ -309,23 +319,9 @@ interface MyCharacter extends OWCharacter {
 }
 ```
 
-Store extended data locally, or sync it under the `x_*` namespace (the API stores prefixed extension fields verbatim). Unprefixed non-schema fields are rejected.
+Store extended data locally, or sync it in `x_*` fields (above).
 
-**Convention pattern:**
-Encode custom data in description or use structured text in text fields:
-```
-description: "[[mana:50]] A powerful wizard..."
-```
-
-Your app parses the convention. OnlyWorlds stores the string.
-
-**Subtype encoding:**
-Pack structured info into subtype:
-```
-subtype: "mage/fire/level-5"
-```
-
-Your app knows how to parse this.
+**Machine-readable data → extension fields in your tool's namespace**: `x_mygame_mana: 50`, `x_mygame_level: 5`. Keep description and supertype/subtype for what humans read.
 
 ---
 
@@ -333,11 +329,7 @@ Your app knows how to parse this.
 
 ### "Should this be Object or Construct?"
 
-**Object**: A specific physical thing that exists in your world. The Vorpal Blade. The USS Fuzzball. Captain Buttons' hat.
-
-**Construct**: A concept, system, category, or blueprint. "Swords" as a weapon type. "Naval Vessels" as a class. "The Fluffium Standard" as an economic system.
-
-**Test**: Can you point at it? Object. Is it an idea that multiple things instantiate? Construct.
+Can you point at it? Object. Is it an idea that several things instantiate? Construct. Reasoning and examples: `decision-trees.md`, Object vs Construct.
 
 ### "Where do I put character attributes like age?"
 
@@ -345,7 +337,7 @@ Character has no `age` field. Options:
 
 1. **Description**: "Admiral Fluffington, approximately 90 years old..."
 2. **Birth date**: Use `birth_date` field, calculate age in your app
-3. **Convention**: Encode in a text field your app understands
+3. **Extension field**: x_age: 90 when your tool needs it as data
 
 Don't fight the schema. Work with it.
 
@@ -365,46 +357,15 @@ Often both: Species for the beings, Construct for cultural groupings or racial p
 
 ### "How do I represent time-based state changes?"
 
-This is one of the deeper challenges in worldbuilding data. OnlyWorlds currently captures *structure*, not *simulation state*. A world is a snapshot.
-
-**The core tension:** Some information is static (Character name, Species biology), some is fluid (Character location, Institution status, who holds a Title). How do you represent "Feltropolis before vs after the war"?
-
-**Current patterns:**
-
-1. **Event as change marker**: The Event "Fall of Feltropolis" captures *that* something changed, with `consequences` describing the shift.
-
-2. **Narrative as state description**: A Narrative can describe the state of things at a point in time, with `start_date`/`end_date` scoping when it was true.
-
-3. **Multiple elements**: Create "Old Feltropolis" and "New Feltropolis" as separate Locations, linked via Relation. Each represents a distinct state.
-
-4. **Description conventions**: Encode temporal info in text: "Pre-war: thriving port. Post-war: ruins." Your app can parse this.
-
-5. **Application-side state**: Track mutable state in your app, sync only the structural skeleton to OnlyWorlds.
-
-**The git-like vision:** Imagine worlds as snapshots with branching timelines. "What if the war never happened?" becomes a fork. Fields could be tagged as static vs fluid. Time-queries could return "state of world at date X."
-
-This isn't built yet, but the schema is designed with temporal fields (`start_date`, `end_date` on many elements) that point toward it. Events, Narratives, and Constructs all have date ranges to accomodate. 
-
-**Practical advice for now:** Pick the pattern that matches your use case:
-- Writing a novel? Multiple elements or description conventions work fine.
-- Building a game with save states? Application-side state, sync structure only.
-- Simulating history? You may need a layer on top of OnlyWorlds that manages temporal queries.
-
-The schema captures *what exists*. Your application decides *when it exists*.
+- **Time lives in dated fields and Events.** `start_date`/`end_date`, `founding_date`, `birth_date` place things in time; an Event ("Fall of Feltropolis", with `consequences`) records that something changed.
+- **State that changes over sessions** is the resolve skill. Each field has a kind (principles §4): *replaced* (current state such as `location`), *appended* (a history that grows a dated line), or *never touched* (identity and canon).
+- **History and alternate timelines** ("what if the war never happened?") are a world folder in git: commits are the history, branches are timelines (world-folder.md, "Keeping history").
 
 ### "My system has deeply nested hierarchies"
 
 Use parent links: `parent_location`, `parent_object`, `parent_institution`, etc.
 
 For very deep trees, consider whether the depth is structural (keep it) or presentational (flatten for OW, nest in your UI).
-
----
-
-## Moppetopia Examples Throughout
-
-The examples in this file use Moppetopia because it's absurd enough to stress-test patterns while remaining illustrative. Felt puppets with naval warfare and magical substance trade cover most modeling scenarios.
-
-When you hit a modeling question, ask: "How would this work for Admiral Fluffington's fleet?" If the pattern handles googly-eyed admirals and consciousness-stealing Fluffium, it handles your world.
 
 ---
 

@@ -2,18 +2,18 @@
   "name": "onlyworlds",
   "owner": {
     "name": "Titus Oosting",
-    "email": "contact@onlyworlds.com"
+    "email": "info@onlyworlds.com"
   },
   "metadata": {
-    "description": "Worldbuilding toolkit for AI assistants. Parse text into structured data, design world systems, build tools.",
-    "version": "3.0.2"
+    "description": "Worldbuilding toolkit for AI assistants. Structure a world, grow it, keep AI sessions in sync with it, build on it.",
+    "version": "4.0.0"
   },
   "plugins": [
     {
       "name": "toolkit",
       "source": "./",
-      "description": "Parse text into structured world data. Model systems. Build tools. Works with any AI, optimized for Claude Code, outputs OnlyWorlds format.",
-      "version": "3.0.2",
+      "description": "Worldbuilding companion for AI: structure notes, novels and campaign docs into a world, grow it, keep AI sessions in sync with it, and build tools and agents on it. Works on a world folder, no account needed; OnlyWorlds format underneath.",
+      "version": "4.0.0",
       "author": {
         "name": "Titus Oosting"
       },

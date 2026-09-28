@@ -2,6 +2,16 @@
 
 Hosting patterns for OnlyWorlds tools. Static frontends calling the OnlyWorlds API.
 
+## Contents
+1. Architecture Pattern
+2. Cloudflare Pages
+3. Vercel
+4. GitHub Pages
+5. Credential Handling Patterns
+6. Project Structure
+7. CORS Notes
+8. Deployment Checklist
+
 ---
 
 ## Architecture Pattern
@@ -18,7 +28,7 @@ Most OnlyWorlds tools follow this architecture:
 
 - **No backend needed.** Your tool is static HTML/JS/CSS.
 - **API handles data.** OnlyWorlds stores and serves world data.
-- **CORS configured.** OnlyWorlds allows requests from `*.pages.dev` and common hosts.
+- **CORS configured.** The API accepts browser requests from common static hosts (including `*.pages.dev`) and from localhost. A custom domain is not pre-approved; see [CORS Notes](#cors-notes).
 
 ---
 
@@ -45,17 +55,20 @@ Your tool is live at `your-project.pages.dev`
 In Cloudflare Pages dashboard → Settings → Environment variables:
 
 ```
-VITE_ONLYWORLDS_API_KEY=your-key
-VITE_ONLYWORLDS_API_PIN=your-pin
+VITE_ONLYWORLDS_API_KEY=ow_r_...
 ```
 
-Note: These are build-time variables. For client-side apps, consider whether you want keys in the bundle or prompted from users.
+These are build-time variables: Vite compiles every `VITE_` variable into the public bundle. Only a read key (`ow_r_...`) belongs here, and only for a world anyone may read. Never set a PIN or a write key (`ow_w_...`, legacy 10-digit) as a build variable; a tool that writes asks the user at runtime (see Credential Handling below).
+
+If the build fails on an old Node version, set `NODE_VERSION` to `22` in the same place.
 
 ### Custom Domains
 
 1. Add domain in Cloudflare Pages settings
 2. Set CNAME record pointing to `your-project.pages.dev`
 3. Cloudflare handles SSL automatically
+
+A custom domain is **not** on the API's CORS allowlist, so browser calls from it are refused until it is added. Request that at https://www.onlyworlds.com/feedback, or keep the tool on its `*.pages.dev` address.
 
 ---
 
@@ -78,9 +91,10 @@ Similar to Cloudflare Pages. Slightly different setup.
 Vercel dashboard → Settings → Environment Variables
 
 ```
-VITE_ONLYWORLDS_API_KEY=your-key
-VITE_ONLYWORLDS_API_PIN=your-pin
+VITE_ONLYWORLDS_API_KEY=ow_r_...
 ```
+
+Same rule as Cloudflare: a read key at most, never a PIN.
 
 ### Result
 
@@ -116,129 +130,98 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
       - run: npm ci
       - run: npm run build
-      - uses: peaceiris/actions-gh-pages@v3
+      - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
 ```
 
+A project site is served under `/<repo-name>/`, so set `base: '/<repo-name>/'` in `vite.config.ts` or the built asset paths break.
+
 ---
 
 ## Credential Handling Patterns
 
-### User-Provided Credentials
+The rule: a PIN never goes into a build (`../../../knowledge/principles.md` §6). Anything in a static site's bundle is readable by every visitor.
 
-Safest for shared tools. User enters their own API key and PIN.
+### User-Provided Credentials (tools that write)
+
+The user enters their own key and PIN when the session starts; the tool keeps them in memory only.
 
 ```typescript
-// Prompt or load from localStorage
-const apiKey = localStorage.getItem('ow_api_key') || prompt('API Key:');
-const apiPin = localStorage.getItem('ow_api_pin') || prompt('API PIN:');
+const apiKey = prompt('OnlyWorlds API key:') ?? '';
+const apiPin = prompt('World PIN (needed to save changes):') ?? '';
 
 const client = new OwV2Client({ apiKey, apiPin });
 ```
 
-### Build-Time Credentials
+A real UI uses a password field rather than `prompt()`. Do not save the PIN to `localStorage`: any script on the page can read it, and it outlives the tab. If the tool remembers a credential between sessions, make it a read key.
 
-For personal tools or demos. Key baked into build.
+### Build-Time Read Key (read-only tools)
+
+For a viewer of a world that is meant to be public. Only a read key goes into the build.
 
 ```typescript
-// Vite
-const client = new OwV2Client({
-  apiKey: import.meta.env.VITE_ONLYWORLDS_API_KEY,
-  apiPin: import.meta.env.VITE_ONLYWORLDS_API_PIN
-});
+// Vite: VITE_ONLYWORLDS_API_KEY=ow_r_...
+const client = new OwV2Client({ apiKey: import.meta.env.VITE_ONLYWORLDS_API_KEY });
 ```
 
-**Warning**: Anyone inspecting your JS bundle can see these credentials. Only use for your own worlds.
+Anyone inspecting the bundle can use this key to read the world, and nothing more: read keys cannot write, and prefixed keys read without a PIN.
 
 ### Hybrid Pattern
 
-Build-time default with override capability:
+A built-in read key for browsing, with the user's own credentials asked for only when they choose to edit:
 
 ```typescript
-const apiKey = localStorage.getItem('ow_api_key')
-  || import.meta.env.VITE_ONLYWORLDS_API_KEY;
-const apiPin = localStorage.getItem('ow_api_pin')
-  || import.meta.env.VITE_ONLYWORLDS_API_PIN;
+let client = new OwV2Client({ apiKey: import.meta.env.VITE_ONLYWORLDS_API_KEY });
+
+function enableEditing() {
+  const apiKey = prompt('Your write key (ow_w_...):') ?? '';
+  const apiPin = prompt('World PIN:') ?? '';
+  client = new OwV2Client({ apiKey, apiPin });
+}
 ```
 
 ---
 
-## Project Structure Recommendations
+## Project Structure
 
-### Minimal TypeScript Project
+Let `npm create vite` write the project, so its Vite, React and TypeScript versions are current. It needs a current Node LTS (20 or 22). The `--template` flag skips the interactive prompts:
 
-```
-my-ow-tool/
-├── src/
-│   ├── main.ts
-│   └── index.html
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── .gitignore
+```bash
+npm create vite@latest my-app -- --template react-ts   # or vanilla-ts for no framework
+cd my-app && npm install && npm install @onlyworlds/sdk
 ```
 
-**package.json essentials**:
-```json
-{
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build"
-  },
-  "dependencies": {
-    "@onlyworlds/sdk": "latest"
-  },
-  "devDependencies": {
-    "vite": "^5.0.0",
-    "typescript": "^5.0.0"
-  }
-}
-```
-
-### With React
+`npm install @onlyworlds/sdk` records the current major (`^4.x`) in `package.json`; keep it pinned to a major, not `latest`.
 
 ```
-my-ow-tool/
+my-app/
+├── index.html          # at the project root, not in src/
 ├── src/
 │   ├── App.tsx
-│   ├── main.tsx
-│   └── index.html
+│   └── main.tsx
 ├── package.json
 ├── tsconfig.json
 └── vite.config.ts
-```
-
-Add React deps:
-```json
-{
-  "dependencies": {
-    "@onlyworlds/sdk": "latest",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
-  }
-}
 ```
 
 ---
 
 ## CORS Notes
 
-OnlyWorlds API accepts requests from:
+The API accepts browser requests from an allowlist of common static hosts, over HTTPS:
 
-- `*.pages.dev` (Cloudflare)
-- `*.vercel.app` (Vercel)
-- `*.netlify.app` (Netlify)
-- `localhost:*` (development)
+- `*.pages.dev` (Cloudflare), `*.vercel.app`, `*.netlify.app`, `*.github.io`, `*.gitlab.io`, `*.surge.sh`, `*.onrender.com`, `*.up.railway.app`, `*.fly.dev`, `*.web.app` / `*.firebaseapp.com`, `*.amplifyapp.com`, `*.herokuapp.com`, and a few online sandboxes
+- `http://localhost` and `http://127.0.0.1` on any port (development)
 
-If deploying elsewhere, requests should still work for most common patterns. If you hit CORS issues, the OnlyWorlds Discord can help.
+A **custom domain is not pre-approved**: browser calls from it are refused until it is added server-side. Request it at https://www.onlyworlds.com/feedback. Scripts and servers are not affected by CORS.
 
 ---
 
@@ -253,7 +236,8 @@ If deploying elsewhere, requests should still work for most common patterns. If 
   ```
   Dev server behavior differs from production. Runtime fetches, paths, and bundling can break in dist. Always verify locally first.
 - [ ] No credentials in committed code
-- [ ] Environment variables set in hosting platform
+- [ ] No PIN or write key in any `VITE_` variable or build setting: the host's build variables hold at most an `ow_r_` key, and `grep -r "ow_w_" dist/` finds nothing (that grep cannot see a legacy 10-digit key or a PIN, so check the variables themselves)
+- [ ] Environment variables set in hosting platform (a read key at most)
 - [ ] Test API connection after deploy
 - [ ] Verify CORS works from deployed URL
 

@@ -1,6 +1,6 @@
 # Common Parsing Errors
 
-Mistakes to avoid when parsing text into OnlyWorlds elements.
+Mistakes to avoid when parsing text into OnlyWorlds elements. Shared rules: `../../../knowledge/principles.md`. Type reasoning lives in `../../../knowledge/decision-trees.md`; this file keeps the error examples.
 
 ## Table of Contents
 
@@ -11,6 +11,7 @@ Mistakes to avoid when parsing text into OnlyWorlds elements.
 - [Relationship Errors](#relationship-errors)
 - [Schema Errors - Hallucinated Fields](#schema-errors---hallucinated-fields)
 - [Other Schema Errors](#other-schema-errors)
+- [Uploading](#uploading)
 - [Type Confusion](#type-confusion)
 - [Messy Source Handling](#messy-source-handling)
 - [Ships: Object vs Location](#ships-object-vs-location)
@@ -35,7 +36,7 @@ Multi-link and single-link fields ALWAYS expect element NAMES, never descriptive
 ```json
 "nourishment": ["Swamp Algae", "Cave Moss"]  // if those Species exist
 "effects": ["Healing Surge", "Stamina Restoration"]  // if those Phenomena exist
-"equipment": []  // leave empty if no Constructs exist
+"equipment": []  // leave empty if no Objects exist
 ```
 
 **The rule**: If a field type says `(multi-link → Type)` or `(single-link → Type)`, every value MUST be the exact name of an element of that type in your JSON.
@@ -74,9 +75,9 @@ When no appropriate element exists, leave the field empty - don't put descriptio
 - BAD: Title "Blacksmith", Title "Apprentice"
 - GOOD: Construct (if world-specific) or just Character.background
 
-**Title without holder**
-- BAD: Title "Mayor" when no one holds it in the text
-- GOOD: Only create Title when specific holder exists or is implied
+**Title for a generic role**
+- BAD: Title "Mayor" from "the village needs a mayor" (a generic idea, no office established)
+- GOOD: Create a Title for a formal office the text establishes, whether or not anyone holds it now; link `holders` when they are named
 
 ---
 
@@ -123,12 +124,13 @@ When no appropriate element exists, leave the field empty - don't put descriptio
 
 ## Schema Errors - Hallucinated Fields
 
-These fields DON'T EXIST. Common hallucinations from Moppetopia chaos test:
+These fields DON'T EXIST on the type named. Several exist on another type, so a grep of the whole schema-reference passes them: check the type's own section. This list is the one home for known hallucinations; other files point here. Common hallucinations:
 
 ### Character
 - BAD: `Character.age` → use description or birth_date
 - BAD: `Character.titles` → link via Title.holders instead
 - BAD: `Character.occupation` → use background field
+- BAD: `Character.status` → not a field (Creature has one); mark a death with a `[Deceased] ` prefix on `physicality`, with the date (until a Character status field lands)
 
 ### Location
 - BAD: `Location.location` → use `parent_location`
@@ -138,42 +140,31 @@ These fields DON'T EXIST. Common hallucinations from Moppetopia chaos test:
 ### Institution
 - BAD: `Institution.background` → use description or doctrine
 
-### Event
-- BAD: `Event.laws` → Event has no laws field; put in description
-
 ### Object
 - BAD: `Object.owner` or `Object.owners` → use Character.objects on the Character
 - Note: Ownership flows Character → Object, not Object → Character
 
 ### Species
 - BAD: `Species.physicality`, `Species.diet`, `Species.abilities`, `Species.mentality`
-- GOOD: Put all this in Species.description
+- GOOD: use `appearance`, `temperament`, `instincts`, `adaptations` (→ Ability), `nourishment` (→ Species)
 
 ### Collective
-- BAD: `Collective.members` → use Character.collectives on each Character
-- BAD: `Collective.location` → use Collective.locations (plural) or description
+- BAD: `Collective.members` → use `Collective.characters`
+- BAD: `Collective.location` → link from `Location.populations` (or `Zone.populations`)
 
 ### Event
-- BAD: `Event.participants` → link from Character.events on each Character
+- BAD: `Event.laws` → Event has no laws field; put in description
+- BAD: `Event.participants` → use `Event.characters`
 - BAD: `Event.year` → use Event.start_date
 
 ### Other
 - BAD: `Trait.holders` → use Character.traits on the Character
-- BAD: `Ability.species` → link from Species.abilities or Character.abilities
+- BAD: `Ability.species` → use `Species.adaptations` or `Character.abilities`
 - BAD: `Law.effects` → use description
 - BAD: `Construct.location` → use Construct.locations (plural)
-- BAD: `Phenomenon.location` → use Phenomenon.locations (plural)
+- BAD: `Phenomenon.location` → use `Phenomenon.environments`
 
-### The Pattern
-**Links go FROM the "many" side TO the "one" side:**
-- Character.objects lists Objects (not Object.owner)
-- Character.traits lists Traits (not Trait.holders)
-- Character.collectives lists Collectives (not Collective.members)
-- Location.parent_location points to parent (not parent.locations listing children)
-
-**Singular vs Plural:**
-- Most link fields are PLURAL: `locations`, `characters`, `objects`
-- `parent_location` is singular (only one parent)
+**Link direction**: no general rule predicts which side holds a link (`Character.objects`, but `Event.characters` and `Title.holders`). Check the Link Direction Summary in `../../../knowledge/schema-reference.md`.
 
 ---
 
@@ -184,51 +175,19 @@ These fields DON'T EXIST. Common hallucinations from Moppetopia chaos test:
 - GOOD: Character.physicality for physical, Character.description for overview
 
 **Negative numbers in date fields**
-- BAD: birth_date: -12 (for "born 12 years before the calendar started")
-- GOOD: Omit the field entirely, or mention in description/background
-- Note: All number fields (birth_date, founding_date, start_date, etc.) must be POSITIVE. Schema doesn't support pre-calendar dates.
+- Legal: date fields (birth_date, founding_date, start_date, etc.) are plain integers, so `birth_date: -12` for "12 years before the calendar started" is valid.
+- Whether a given tool displays pre-calendar dates is up to that tool.
 
 ---
 
-## Link Field Names When Writing to the API (v2)
+## Uploading
 
-**Standalone JSON** (a parse result, or a tool import) uses readable link field names holding element **names** — that's what the parsing rules above teach.
+A parse result holds element **names** in link fields; an upload holds **UUIDs** under the same bare field names (`location`, `species`, `friends`) on v2 and /bulk. Resolve names to ids first (parsing Step 7).
 
-When you actually **upload** to the API, link fields hold **UUIDs**, not names. On the modern **v2 / bulk** dialect the field name stays bare — `location`, `species`, `friends` — the same in reads and writes. There is no `_id`/`_ids` suffix in v2. Resolve each name to the UUID of the element you created (mint your own UUIDv7 so you can point links at siblings in the same `/bulk` batch), then send bare fields holding UUID arrays.
+- **The #1 new-user error**: a v1-style suffix (`friends_ids`) on v2 or /bulk is a hard `422 Unknown field: friends_ids`. Use the bare name. The suffix belongs to the legacy v1 dialect only.
+- **Errors are honest**: an unknown field is a `422` naming it; a link to a UUID that doesn't exist is a `400 invalid_link` naming the field. Read the error envelope.
 
-**The #1 new-user error**: sending a v1-style suffix (`friends_ids`) to v2 or `/bulk`. It's a hard `422 Unknown field: friends_ids`. Use the bare name (`friends`). The suffix belongs to the legacy v1 dialect only (see below).
-
-**Honest errors, not silent drops**: if you send an unknown field, you get a `422` naming it; if a link points at a UUID that doesn't exist, you get a `400`/`invalid_link` naming the field. Nothing is silently ignored or nulled. Read the error envelope — it tells you the field and the fix. Full API mechanics live in the `onlyworlds-api` skill.
-
----
-
-## Base URL and Headers
-
-**Base URL must include `www.`** — use `https://www.onlyworlds.com/api/v2/...`. Bare-domain redirect behavior differs; stick with `www`.
-
-**Header names are exact**: `API-Key` and `API-Pin`. Wrong casing → `401`.
-
-- CORRECT: `-H "API-Key: ..." -H "API-Pin: ..."`
-- WRONG: `-H "Api-Key: ..." -H "Pin: ..."`
-
-Walled worlds require `API-Pin` on reads too; every write requires it regardless.
-
----
-
-## Singular Endpoint Names
-
-All API endpoints use **singular** names, on both v2 and v1.
-
-- CORRECT: `/api/v2/character`
-- WRONG: `/api/v2/characters`
-
-Every element type is singular: `character`, `location`, `institution`, `species`, `phenomenon`, etc.
-
----
-
-## Legacy v1 Dialect (older tools)
-
-If you're maintaining an integration written against the old `/api/worldapi/…` dialect, its link-write convention differs: single links take `_id` (`location_id`), multi links take `_ids` (`species_ids`), and reads return expanded `{id, name, …}` objects rather than flat UUIDs. Its GET-by-id needs a trailing slash (`/character/{uuid}/`) or you get a silent `301`. This is legacy only — write new code against v2. See the `onlyworlds-api` skill's Classic API section.
+Base URL, headers, endpoints, PINs and the v1 dialect: the api skill.
 
 ---
 
@@ -236,7 +195,7 @@ If you're maintaining an integration written against the old `/api/worldapi/…`
 
 **Link fields pointing to wrong element type**
 - BAD: `Character.objects: ["Princess Donut"]` when Donut is a Character/Creature
-- GOOD: Character.objects only accepts Object elements (swords, ships, items)
+- GOOD: Character.objects only accepts Object elements (a named sword, a key, a possession)
 - BAD: `Character.abilities: ["Necromancy"]` when Necromancy is created as Phenomenon
 - GOOD: Create Ability elements for things characters can DO, Phenomena for what HAPPENS
 
@@ -244,16 +203,13 @@ Pets/companions: Don't put them in `objects` field. Use description or create Re
 
 **Zone vs Location**
 - BAD: Location "Eastern March" for an abstract political territory
-- GOOD: Zone "Eastern March" - abstract regions, political boundaries, jurisdictions
-- Key test: Can you stand in a specific spot? → Location. Is it a conceptual area? → Zone
-- Examples:
-  - Zone: "The Cursed Lands", "Eastern March", "The Outer Rim"
-  - Location: "Thornhold garrison", "The Academy", "Worldspine Mountains"
+- GOOD: Zone "Eastern March": an area defined by its significance (jurisdiction, phenomena, culture), not its physical features
+- The test is in decision-trees.md, Location vs Zone
 
 **Empires/Kingdoms are BOTH Institution AND Zone**
-- BAD: Only creating Institution "Malazan Empire" (then Law.locations can't reference it)
+- BAD: Only creating Institution "Malazan Empire" (then Law.zones can't reference it)
 - GOOD: Create BOTH Institution "Malazan Empire" (the political entity) AND Zone "Malazan Empire" (the territory)
-- Why: Laws have `locations` field (→ Location/Zone), not institutions field. Empire-as-territory needs to exist for laws to reference where they're enforced.
+- Why: `Law.zones` needs a Zone to point at for where the law applies (and `Law.author` takes the Institution).
 - Same pattern applies to: kingdoms, nations, empires, federations, confederations
 
 ---
@@ -262,11 +218,11 @@ Pets/companions: Don't put them in `objects` field. Use description or create Re
 
 **Parsing author speculation as fact**
 - BAD: Creating Institution "Bakers Guild" from "wat if the pirates were descended from bakers?"
-- GOOD: Report as author_note, don't parse - questions aren't world facts
+- GOOD: List it in the report's speculation section (parsing Step 3), don't parse: questions aren't world facts
 
 **Parsing author indecision**
 - BAD: Location "Feltropolis" for Professor Fuzz when source says "Feltropolis? Or Puddleton? DECIDE"
-- GOOD: Leave location blank, report indecision in author_notes
+- GOOD: Leave location blank; list the open choice in the report's speculation section
 
 **Skipping sparse elements**
 - BAD: Not creating "The Crumbler" because we only know their name and role
@@ -274,22 +230,13 @@ Pets/companions: Don't put them in `objects` field. Use description or create Re
 
 **Ignoring contradictions silently**
 - BAD: Just picking one version without noting the conflict
-- GOOD: Pick best version (most detailed > most recent), report conflict so author knows
+- GOOD: Keep both versions in the conflict list for the author's ruling; never pick one silently, not even the most recent
 
 ---
 
 ## Ships: Object vs Location
 
-**The Ship Problem**: Ships are Objects (specific instances) but characters are ON them.
-
-- BAD: Create ship as Object, link Character.location to ship name → validation fails
-- GOOD Option A: Create ship as Location (it's where people are, scenes happen)
-- GOOD Option B: Create ship as Object, use Character.objects (ownership) not Character.location
-
-**Decision tree**:
-- Is the ship a PLACE in your story (crew lives there, scenes happen aboard)? → Location
-- Is the ship a POSSESSION (character owns/operates it)? → Object + Character.objects
-- Often both? Create as Location primarily, mention ownership in description
+- BAD: a ship created as an Object, then `Character.location` linked to it (that field targets Location). Reasoning and the Object case: decision-trees.md, Ships and Vehicles.
 
 ---
 
@@ -320,20 +267,4 @@ Use for causal chains: Event A triggered Event B. Both are Events.
 
 ## Treaty: Event vs Law
 
-**Treaty confusion**: Is a treaty an Event (signing ceremony) or a Law (the document)?
-
-- Event "Treaty of Soft Landings Signing" = the specific ceremony when it was signed
-- Law "Treaty of Soft Landings" = the actual document/agreement with articles
-
-If treaty has articles, provisions, rules → it's a Law
-If you're describing when/where it was signed → that's an Event
-
-Often need BOTH: Law for the document, Event for the signing ceremony.
-
----
-
-*Updated based on parsing skill testing (2026-01-27)*
-*Major update from Moppetopia chaos test - 73→2 hallucinated field errors*
-*Added: ships, institution/location disambiguation, Event.triggers, treaties*
-*Added (Jan 27): Link fields require element names, Location.status, Institution.background, Event.laws, type confusion in links*
-*Updated (2026-07-12): API sections rewritten for the v2 platform — flat link fields (no `_ids`), honest 422/400 errors (silent-drop and Cloudflare-1010 gotchas removed), v1 dialect noted as legacy.*
+- BAD: only an Event "Treaty of Soft Landings" for a treaty with articles. Reasoning: decision-trees.md, Event vs Construct.

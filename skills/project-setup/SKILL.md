@@ -1,96 +1,106 @@
 ---
 name: onlyworlds-project-setup
-description: Connect a local project to an OnlyWorlds world. Creates .env credentials, caches world data locally, configures .gitignore. Use when the user has an OnlyWorlds account and wants to set up their workspace for parsing or API access. Offers full, key-only, or manual credential modes.
+description: Connect a local project to an OnlyWorlds account world. Configures .gitignore, a .env the user fills with their key and PIN, and a local cache of the world. Use when the user has an OnlyWorlds account and wants API access for parsing or other skills. API worlds only; a world folder on disk needs no setup.
 ---
 
 # OnlyWorlds Project Setup
 
-Connect your project to your OnlyWorlds world.
+Connect a project folder to one world on onlyworlds.com.
 
-## CRITICAL: Confirm Location Before Creating Files
+Shared rules (credentials, checking your work) live in `../../knowledge/principles.md`; this skill applies them to connecting a project. A world folder on disk (`world.json` + `elements/`) needs none of this: skills read it directly (`../../knowledge/world-folder.md`).
 
-This skill writes files to disk (.env, .ow/, .gitignore). Show the user where setup will happen and get explicit confirmation before creating anything.
+## Quick Reference
+
+| Situation | Do |
+|-----------|----|
+| New setup | Steps 1-8 |
+| Already set up | Report the world, then check [Cache Freshness](#cache-freshness) |
+| Key or PIN changed | The user edits `.env`; rerun Step 5 |
+| A second world | A second project folder: one world per folder |
 
 ## What Gets Created
 
 ```
 project/
-├── .env                    # API credentials (gitignored)
+├── .env                    # API credentials, typed in by the user (gitignored)
 ├── .ow/                    # OnlyWorlds project data (gitignored)
 │   ├── config.json         # World info and settings
-│   ├── world-cache.json    # Cached elements (name, uuid, type)
-│   └── last-parse.md       # Last parse status
+│   └── world-cache.json    # Cached elements (name, uuid, type)
 └── .gitignore              # Updated to ignore .env and .ow/
 ```
 
 ## Instructions
 
-### Step 1: Confirm Location
+### Step 1: Location
 
-```bash
-pwd
-```
-
-Show user: "Setting up OnlyWorlds project in: {pwd}. This creates .ow/ folder, .env file, and updates .gitignore. Is this the right place?"
-
-Wait for explicit "yes" before proceeding. If they want a different location, they specify or `cd` there first.
+Run `pwd` and tell the user: "Setting up OnlyWorlds in: {pwd}. This adds `.ow/` and `.env` and updates `.gitignore`." Proceed unless they name another folder.
 
 ### Step 2: Check Existing Setup
 
-Look for `.ow/` in current directory.
+If `.ow/config.json` exists, the project is already connected: report the world name and run [Cache Freshness](#cache-freshness), unless the user asked for something else. Otherwise continue.
 
-- **Exists**: "Project already connected to '{world_name}'. Refresh cache / Add world / Continue?"
-- **Not exists**: Proceed with new setup.
+### Step 3: Choose the Credential Mode
 
-### Step 3: Get Credentials
+Use **full** unless the user does not want the PIN stored in the project.
 
-Ask for API-Key (from world settings) and API-Pin (the world's PIN). If user doesn't have these, direct them to onlyworlds.com.
+| Mode | Stored in `.env` | Writes |
+|------|------------------|--------|
+| **full** (default) | API-Key + API-Pin | Automated |
+| **key-only** | API-Key only | The user adds the PIN line to `.env` for a write session and removes it after |
+| **manual** | Nothing between sessions | The user fills `.env` at the start of each session and clears it after |
 
-The API-Key may be a **prefixed key** — `ow_w_…` (world-write) or `ow_r_…` (read-share) — or a **legacy 10-digit key** (still valid forever, no longer issued). Any of these works here; store it as-is. The API-Pin is required for writes, and for reads if the world is walled.
+**Credentials never go through chat** (principles §6). The user types them into `.env`; you never see, print, or repeat them.
 
-Then ask credential storage preference:
+### Step 4: Protect, Then Create `.env`
 
-| Mode | Stored in .env | Behavior |
-|------|---------------|----------|
-| **full** (default) | API-Key + API-Pin | Fully automated |
-| **key-only** | API-Key only | PIN asked for write ops |
-| **manual** | Nothing | Both asked each session |
+Ignore first, write second:
 
-### Step 4: Validate Credentials + Fetch World Info
+1. **Update `.gitignore`.** Append `.env` and `.ow/` only if not already listed. Create `.gitignore` if none exists.
+2. **Check that `.env` is not already tracked:** `git ls-files .env`. Ignoring a tracked file does nothing. If it prints `.env`, stop: the user runs `git rm --cached .env` and commits that, and any key already committed should be revoked and replaced (Account → your world → API keys).
+3. **Create `.env` with empty values.** If `.env` already exists, add only the lines it lacks. Leave out the PIN line in key-only mode.
+
+```
+ONLYWORLDS_API_KEY=
+ONLYWORLDS_API_PIN=
+```
+
+4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (Account → your world → API keys) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first.
+
+The API key may be a **prefixed key** (`ow_w_…` world-write, `ow_r_…` read-share) or a **legacy 10-digit key** (still valid, no longer issued); any of these works as-is. The PIN is required for writes. Prefixed keys read without it; only a legacy key reading a private world needs it.
+
+If the user pastes a credential into chat anyway, do not repeat it back; ask them to put it in `.env`.
+
+### Step 5: Validate Credentials + Fetch World Info
+
+Load `.env` without printing it (`set -a; . ./.env; set +a`). To confirm the values are present, test them without showing them: `[ -n "$ONLYWORLDS_API_KEY" ] && echo "key set"`. Then:
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/world" \
-  -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Key: $ONLYWORLDS_API_KEY"
 ```
 
-A `200` with the world object confirms the credentials and gives you the world name and UUID in one call. On a `401`, read the error envelope (it names the problem — bad key, or missing PIN on a walled world) and ask the user to re-check.
+A prefixed key reads without a PIN; a legacy 10-digit key on a private world also sends `-H "API-Pin: $ONLYWORLDS_API_PIN"`. A `200` with the world object confirms the key and gives you the world name and UUID in one call; append `ONLYWORLDS_WORLD_UUID=<uuid>` to `.env`. On a `401`, read the error envelope (it names the problem: bad or revoked key, or wrong PIN) and ask the user to re-check `.env`. With a prefixed key the PIN is checked only on writes, so this read proves the key, not the PIN.
 
-### Step 5: Build World Cache
+### Step 6: Build World Cache
 
-Fetch existing elements for the local cache. Check world info for element counts per type, then page each type with count > 0:
+First record where the world's change feed stands, so the cache has a true-as-of point:
+
+```bash
+curl -s "https://www.onlyworlds.com/api/v2/changes?head=true" \
+  -H "API-Key: $ONLYWORLDS_API_KEY"
+# → {"cursor": 1234, "changes": [], "has_more": false, "head": 1234}
+```
+
+Keep `head` for `.ow/config.json`. Then fetch existing elements. World info carries no element counts, so page all 22 types (an empty type costs one request):
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/character?limit=100" \
-  -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Key: $ONLYWORLDS_API_KEY"
 ```
 
-v2 lists are paginated — the response is `{data, has_more, next_cursor}`. Follow `next_cursor` (`?limit=100&cursor={next_cursor}`) until `has_more` is false. Parse into a lightweight cache: name, uuid, type per element. Skip fetching for empty worlds.
+v2 lists are paginated: the response is `{data, has_more, next_cursor}`. Follow `next_cursor` (`?limit=100&cursor={next_cursor}`) until `has_more` is false. Parse into a lightweight cache: name, uuid, type per element. Alternative: walk `GET /api/v2/changes` from zero (no `since`, then `?since={cursor}` until `has_more` is false; skip `delete` ops), which returns every element in one feed; keep the `head` from its last page. Record the per-type totals as `element_counts`.
 
-### Step 6: Create Files
-
-**`.env`** (varies by credential mode):
-
-```
-# full mode:
-ONLYWORLDS_API_KEY=your-api-key
-ONLYWORLDS_API_PIN=your-pin
-ONLYWORLDS_WORLD_UUID=world-uuid
-
-# key-only mode: omit PIN line
-# manual mode: omit KEY and PIN lines
-```
+### Step 7: Write the Cache Files
 
 **`.ow/config.json`**:
 ```json
@@ -99,7 +109,7 @@ ONLYWORLDS_WORLD_UUID=world-uuid
   "world_uuid": "uuid",
   "credential_mode": "full",
   "cached_at": "2026-02-04T12:00:00Z",
-  "last_backup": null,
+  "changes_head": 1234,
   "element_counts": {"Character": 45, "Location": 23}
 }
 ```
@@ -110,13 +120,10 @@ ONLYWORLDS_WORLD_UUID=world-uuid
   "elements": [
     {"name": "Marcus", "uuid": "abc123", "type": "Character"}
   ],
-  "cached_at": "2026-02-04T12:00:00Z"
+  "cached_at": "2026-02-04T12:00:00Z",
+  "changes_head": 1234
 }
 ```
-
-### Step 7: Update .gitignore
-
-Append `.env` and `.ow/` only if not already listed. Create .gitignore if none exists.
 
 ### Step 8: Confirm
 
@@ -130,26 +137,20 @@ Connected to: "World Name"
 
 ## Cache Freshness
 
-| Cache Age | Behavior |
-|-----------|----------|
-| < 1 hour | Use silently |
-| 1-24 hours | Note age, proceed |
-| > 24 hours | Prompt to refresh |
-| > 7 days | Strongly recommend refresh |
+Ask the world, not the clock. `GET /api/v2/changes?head=true` is one cheap request (no element bodies) that returns the world's current `head`. Compare it with `changes_head` in `.ow/config.json`:
 
-## Multi-World Support
+| Result | Behavior |
+|--------|----------|
+| Same `head` | Cache is current; use it |
+| Higher `head` | The world changed since caching. Refresh, or apply just the changes: `GET /api/v2/changes?since={changes_head}`, following `cursor` until `has_more` is false |
+| Lower `head` | The world was restored from a backup. Rebuild the cache from scratch |
 
-To add another world to an existing setup:
-
-1. Create `.ow/worlds/` if needed
-2. Create `.ow/active-world` file (default world name)
-3. Run setup, save to `.ow/worlds/{world-name}/`
-4. Switch with: update `.ow/active-world`
+World-meta edits (name, description) do not enter the change feed, so re-read `GET /api/v2/world` if those matter. Without network access, fall back to `cached_at` and tell the user how old the cache is.
 
 ## Integration
 
-After setup, other skills detect `.ow/` folder and:
+After setup, other skills detect the `.ow/` folder and:
 1. Check `credential_mode` in config
-2. Load credentials from `.env` (may be partial)
-3. Load cache from `world-cache.json`
+2. Load credentials from `.env` (may be partial; never print them)
+3. Check [Cache Freshness](#cache-freshness), then load `world-cache.json`
 4. Enable reconciliation automatically

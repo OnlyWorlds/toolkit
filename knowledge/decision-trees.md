@@ -1,6 +1,6 @@
 # OnlyWorlds Disambiguation Decision Trees
 
-Decision trees for choosing between confusing element types during parsing.
+Decision trees for choosing between confusing element types. This file is the one home for type disambiguation; other files carry one-line gists and point here. Shared rules: `principles.md`.
 
 ## Table of Contents
 
@@ -16,6 +16,8 @@ Decision trees for choosing between confusing element types during parsing.
 - [Relation (Use Sparingly)](#relation-use-sparingly)
 - [Event vs Construct (Historical Periods)](#event-vs-construct-historical-periods)
 - [Ships and Vehicles](#ships-and-vehicles-object-vs-location)
+- [Cultural Sayings and Catchphrases](#cultural-sayings-and-catchphrases-character-field-vs-narrative)
+- [Formal Ranks](#formal-ranks-title-vs-construct-vs-character-field)
 
 ---
 
@@ -32,7 +34,7 @@ Decision trees for choosing between confusing element types during parsing.
 
 ## Object vs Construct
 
-**The core question**: Is this a specific instance or a type/concept?
+**The core question**: Is this a specific instance or a type/concept? Can you point at it? Object. Is it an idea that several things instantiate (a weapon type, a class of vessel, an economic system)? Construct.
 
 ```
 "the ancient Steinway in the corner"
@@ -67,7 +69,7 @@ Decision trees for choosing between confusing element types during parsing.
 
 ## Title vs Construct
 
-**The core question**: Does this position have specific holder(s) in the text, or is it just the idea of a role?
+**The core question**: Is this a formal position that confers standing or authority in this world, or a trade, a life stage, or the bare idea of a role? A Title can exist with no current holder; link `holders` when they are named.
 
 ```
 "Mayor Thomas Oak"
@@ -75,7 +77,7 @@ Decision trees for choosing between confusing element types during parsing.
     └─ Title: "Mayor" (with holders: [Thomas Oak], locations: [Willowbrook])
 
 "the village needs a mayor"
-    └─ Is there a specific holder? → NO (just the concept)
+    └─ Does the text establish the office in this world? → NO (just the concept)
     └─ Is it world-specific? → NO (generic role)
     └─ NO element needed
 
@@ -91,23 +93,22 @@ Decision trees for choosing between confusing element types during parsing.
     └─ Or just mention in Character.background
 
 "The Archon of Whispers"
-    └─ Specific holder mentioned or implied? → YES (there IS one)
+    └─ A formal office in this world? → YES
     └─ Title: "Archon of Whispers"
-    └─ Even if holder unnamed, the title exists with a holder
+    └─ Holder unnamed or absent: the Title still exists
 ```
 
 **The key distinction**:
-- **Title**: A position that HAS specific holder(s) - the text tells us someone holds/held it
+- **Title**: A formal designation conferring standing or authority (holders optional, many allowed)
 - **Construct**: The abstract idea of a role, or an occupation without authority
 
 **Key signals for Title**:
-- Someone IS or WAS this thing (holder exists)
+- The world treats it as an office: someone is, was, or could be appointed to it
 - Formal authority (can command, judge, decree)
 - Often has issuer (Institution) and locations
 
 **Key signals for Construct**:
-- Many people can hold this role simultaneously
-- It's a trade, occupation, or life stage
+- A trade, occupation or life stage that confers no standing
 - No formal authority inherent to the role
 - Generic occupation: maybe no element needed at all
 
@@ -121,7 +122,7 @@ Decision trees for choosing between confusing element types during parsing.
 
 ## Collective vs Institution
 
-**The core question**: Is this a formal organization with structure, or a named group of individuals?
+**The core question**: Is this an organized body with purpose and structure (Institution), or a group of individuals that acts as a unit without formal governance (Collective)?
 
 ```
 "The King's Guard"
@@ -197,7 +198,7 @@ Decision trees for choosing between confusing element types during parsing.
 **Key signals for Creature**:
 - Proper name for a specific individual
 - Individual actions/personality
-- Non-sapient (sapient individuals → Character)
+- Lacks a Character's strategic reasoning, narrative focus or social complexity (otherwise → Character)
 
 **Note**: Generic real-world animals (wolves, horses, eagles) don't need Species elements unless the world gives them special significance.
 
@@ -325,7 +326,7 @@ Decision trees for choosing between confusing element types during parsing.
 - Mental description → mentality ("brave", "cunning")
 - Life story → background
 - Goals/desires → motivations
-- How others see them → reputation
+- Current condition, role, predicament → reputation
 
 **The threshold question**: Is this quality world-specific and significant enough to warrant its own element? Generic personality traits ("brave", "kind") go in Character fields. World-specific conditions ("Voidtouched", "Dragonblooded") become Trait elements.
 
@@ -335,7 +336,7 @@ Decision trees for choosing between confusing element types during parsing.
 
 **The core question**: Is this area defined by what's physically there, or by what's meaningful there?
 
-Zone is spatial but not geometric — it covers ground because of what's significant there (jurisdiction, phenomena, culture), not because of what's physically there. Both Locations and Zones occupy real space; the difference is what DEFINES them.
+Zone is spatial but not geometric: it covers ground because of what's significant there (jurisdiction, phenomena, culture), not because of what's physically there. Both Locations and Zones occupy real space; the difference is what DEFINES them.
 
 ```
 "The city of Ironhaven"
@@ -367,6 +368,7 @@ Zone is spatial but not geometric — it covers ground because of what's signifi
 - Has physical form (building, city, forest, mountain)
 - You can stand in a specific spot
 - Has architecture, infrastructure, buildings
+- Granularity floor is the room: a room can be a Location; furniture is an Object or goes in description. Choose supertype by the thing's intrinsic nature
 
 **Key signals for Zone**:
 - Abstract or political boundary
@@ -378,7 +380,7 @@ Zone is spatial but not geometric — it covers ground because of what's signifi
 - **Location**: Feltropolis (the space station), The Marionette Theatre, Admiral Fluffington's Quarters, USS Fuzzball (ship as place)
 - **Zone**: The Fluffium Mining District (territory), Moppetopia Proper (political boundary), The Soggy Sector (region)
 
-**The test**: "Can you point to it on a map?" → Both can. "What defines this area — its physical features or its significance?" Physical features (form, architecture, terrain) → Location. Significance (jurisdiction, phenomena, culture, history) → Zone.
+**The test**: "Can you point to it on a map?" → Both can. "What defines this area: its physical features or its significance?" Physical features (form, architecture, terrain) → Location. Significance (jurisdiction, phenomena, culture, history) → Zone.
 
 ---
 
@@ -407,6 +409,7 @@ Zone is spatial but not geometric — it covers ground because of what's signifi
 "The blood pact between House Stark and House Reed"
     └─ Is this more than just "allies"? → YES (specific pact with meaning)
     └─ Relation: "Stark-Reed Blood Pact"
+    └─ families: [House Stark, House Reed], no actor (actor must be a Character)
     └─ Could also be Construct if it's more about the tradition than the bond
 ```
 
@@ -497,7 +500,7 @@ Zone is spatial but not geometric — it covers ground because of what's signifi
 
 "We sail where the puddles flow"
     └─ World-specific phrase? → YES
-    └─ Said by one character only, personal quirk? → Could be Character.reputation
+    └─ Said by one character only, personal quirk? → Could be Character.mentality
     └─ Repeated by others, culturally significant? → YES
     └─ Does its meaning shift with world knowledge? → YES (coping narrative)
     └─ Narrative: "We Sail Where the Puddles Flow"
@@ -510,7 +513,7 @@ Zone is spatial but not geometric — it covers ground because of what's signifi
 - It functions as a story the society tells itself
 
 **Key signals for Character field**:
-- Personal quirk or habit (Character.reputation or Character.mentality)
+- Personal quirk or habit (Character.mentality)
 - No cultural significance beyond the individual
 - Generic catchphrase without world-specific meaning
 
@@ -518,7 +521,7 @@ Zone is spatial but not geometric — it covers ground because of what's signifi
 
 ## Formal Ranks: Title vs Construct vs Character Field
 
-**The core question**: Is the rank system world-specific AND does someone hold it?
+**The core question**: Is the rank world-specific, and does it confer standing? A holder is not required.
 
 ```
 "Admiral Fluffington"
@@ -544,4 +547,4 @@ Zone is spatial but not geometric — it covers ground because of what's signifi
 
 ---
 
-*Reference: OnlyWorlds SDK types.ts for complete field schemas*
+*Reference: schema-reference.md for complete field lists*

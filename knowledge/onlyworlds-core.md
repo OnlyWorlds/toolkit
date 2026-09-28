@@ -1,6 +1,6 @@
 # OnlyWorlds Core Reference
 
-Quick reference for OnlyWorlds integration. Overview, URLs, SDK patterns, credentials.
+What OnlyWorlds is, where a world lives, and where each detail is kept. The rules every skill follows are in `principles.md`.
 
 ---
 
@@ -12,16 +12,36 @@ OnlyWorlds is an open standard for worldbuilding data. 22 element types with def
 
 ---
 
+## Where a World Lives
+
+The same data, in one of two homes:
+
+- **A world folder on disk**: `world.json` plus one JSON file per element. No account, no credentials, no network. Atlas stores worlds this way, and every toolkit skill that reads a world can read a folder. Layout and rules: `world-folder.md`.
+- **An account world on onlyworlds.com**, reached through the REST API, the SDK, or the MCP server. It adds hosting, sync, and sharing.
+
+Start with a folder unless the user needs what an account adds (principles §1). An account world can be exported to a folder, and a folder can be taken online (`world-folder.md`).
+
+## The Four Stages
+
+| Stage | Skills |
+|---|---|
+| Structure it | parsing, modeling, schema |
+| Grow it | survey, link |
+| Play in it and keep it true | context, resolve |
+| Build on it | api, dev, council, project-setup |
+
+---
+
 ## The 22 Element Types
 
 Character, Creature, Species, Family, Collective, Institution, Location, Object, Construct, Ability, Trait, Title, Language, Law, Event, Narrative, Phenomenon, Relation, Map, Pin, Marker, Zone
 
-Each type has specific fields. Some have many (Character has 42), some have few (Pin has 6). See schema-reference.md for complete field lists.
+Each type has its own fields, from many (Character) to few (Pin). See schema-reference.md for complete field lists.
 
-**Base fields** (all elements): name, description, supertype, subtype
+**Base fields** (all elements): name, description, supertype, subtype, image_url
 
 **Relationships**: Single-link (one reference) and multi-link (array of references)
- 
+
 ---
 
 ## URLs
@@ -36,160 +56,66 @@ Each type has specific fields. Some have many (Character has 42), some have few 
 | GitHub (schema) | https://github.com/OnlyWorlds/OnlyWorlds |
 | Feedback page | https://www.onlyworlds.com/feedback |
 
-For the full surface map (Atlas, show pages, Obsidian plugin, MCP, portal — and how they wire together), see `ecosystem.md`.
+For the full surface map (Atlas, show pages, Obsidian plugin, MCP, portal, and how they wire together), see `ecosystem.md`.
 
 ---
 
-## API Basics
+## The API in Brief
 
-**Base URL** (modern v2 dialect): `https://www.onlyworlds.com/api/v2/`
+- **Base URL** `https://www.onlyworlds.com/api/v2/` (always `www.`). Endpoints are singular: `/api/v2/character`, `/api/v2/character/{uuid}`.
+- **Headers** `API-Key` and `API-Pin`, spelled exactly. A key is scoped to one world: a prefixed key (`ow_w_…` write, `ow_r_…` read) or a legacy 10-digit key. The PIN is required on writes; prefixed keys read without it. Keys: Account → your world → API keys. PIN: Account → Settings → World PIN (one PIN for every world you own).
+- **Shapes**: lists are paginated (`{data, has_more, next_cursor}`); link fields are flat UUID arrays under bare names; `/api/v2/bulk` uploads many elements at once; `/api/v2/changes` is the sync feed.
+- **The world's now**: `time_range_current` on the API, `time_current` in a folder's `world.json`.
 
-**Authentication**:
-- `API-Key`: World-scoped key. May be a prefixed key (`ow_w_…` world-write, `ow_r_…` read-share) or a legacy 10-digit key (still valid forever, no longer issued). From world settings.
-- `API-Pin`: The world's PIN. Required on every **write**. Reads: prefixed keys (`ow_r_`/`ow_w_`) always read PIN-less; only a legacy 10-digit write key on a private world needs the PIN for reads. Unwalled/demo worlds read with any key alone.
+Everything else (every route, bulk and its replace semantics, sync, errors, account tokens, the older v1 dialect) is in the api skill: `../skills/api/SKILL.md`.
 
-**Pattern** (v2 — singular type names, envelope + flat UUID links):
-```
-GET/POST         /api/v2/{element_type}
-GET/PATCH/DELETE /api/v2/{element_type}/{uuid}
-PUT              /api/v2/{element_type}/{uuid}   # upsert: 201 created / 200 replaced
-POST             /api/v2/bulk        # batch upsert (standard upload path)
-GET              /api/v2/changes     # incremental sync cursor
-```
-
-PUT is the upsert -- and the answer to a 409 `id_conflict` when you mint your own UUIDs: PUT the same id to create-or-replace deterministically.
-
-v2 list responses are enveloped and paginated (`{data, has_more, next_cursor}`); link fields are flat UUID arrays with bare names (no `_ids` suffix). The older `/api/worldapi/…` (v1) dialect still serves for legacy tools — see the `onlyworlds-api` skill's Classic API section.
-
-**Element types in URL** (lowercase, singular): character, creature, species, location, object, etc.
-
-**Getting credentials**:
-1. Sign in at onlyworlds.com
-2. Go to Profile for your PIN
-3. Go to World Settings for the API Key
-
-Each API key is scoped to one world.
-
-**World meta is writable**: `PATCH /api/v2/world` updates the world's own fields (description, image_url, time settings) with the same key+PIN. Partial — send only what changes; an unknown field rejects the whole PATCH.
-
-**Account tokens** (`ow_a_…`): minted in the portal under Settings → Account, sent as a `Authorization: Bearer` header on `/api/v2/account/…` routes. They operate at account level — list your worlds, create new worlds, mint fresh world keys programmatically. Tokens are shown once at mint; a token can't re-view existing keys, but it can always mint new ones. Only needed for multi-world/account automation — normal world work uses the world key.
-
----
-
-## SDK Quick Start
-
-### Installation
+## SDK
 
 ```bash
 npm install @onlyworlds/sdk
 ```
 
-### Basic Usage
-
-The SDK (3.x) is v2-native. `OwV2Client` is the client; types and constants are generated from the canonical schema.
-
-```typescript
-import { OwV2Client } from '@onlyworlds/sdk';
-
-const client = new OwV2Client({
-  apiKey: 'ow_w_your_world_key', // ow_w_ write / ow_r_ read / 10-digit legacy
-  apiPin: 'your-pin'             // needed for writes on a PIN-protected world
-});
-
-// World meta (the container, not one of the 22 types)
-const world = await client.getWorld();
-
-// List characters — v2 envelope {data, has_more, next_cursor}
-const page = await client.list('character', { limit: 100 });
-
-// Or walk a whole type without touching cursors
-for await (const el of client.listAll('location')) { /* ... */ }
-
-// Get / create / patch / delete — one method each, type as the first argument
-const one = await client.get('character', 'uuid-here');
-const made = await client.create('location', { name: 'Feltropolis', description: 'Capital city of Moppetopia' });
-await client.patch('character', 'uuid-here', { description: 'Updated description' });
-await client.delete('character', 'uuid-here');
-
-// Sync feed + atomic bulk writes
-const changed = await client.changes({ since: cursor });
-await client.bulk(items, { atomic: true });
-```
-
-The SDK also exports the canonical element metadata — `elementColor(type, mode)`, `ELEMENT_FAMILIES`, `ELEMENT_ICONS` — generated from the schema, so tools using them stay in sync for free.
-
-*(An older resource-style v1 client, `OnlyWorldsClient`, remains exported and served — relevant only when maintaining pre-3.x code.)*
-
-### Link Fields (SDK)
-
-Link fields ride under their **bare** relationship names, both directions — single links as `birthplace: 'uuid'`, multi links as `species: ['uuid1', 'uuid2']`. Same names on read and write; no suffixes. The raw v2 HTTP API behaves identically. (The legacy v1 dialect's `_id`/`_ids` write suffixes are covered in the `onlyworlds-api` skill's Classic section, for legacy integrations only.)
+Version 4.x is ESM-only and v2-only; the client is `OwV2Client`. Setup, the common calls, and link-field patterns are in the dev skill: `../skills/dev/SKILL.md`.
 
 ---
 
 ## MCP Server
 
-OnlyWorlds runs an MCP server at **`https://www.onlyworlds.com/mcp`** — modern MCP over streamable HTTP, stateless. It exposes your world to any MCP client (Claude Code, Claude Desktop, the API connector) as a set of tools.
+OnlyWorlds runs an MCP server at **`https://www.onlyworlds.com/mcp`**: modern MCP over streamable HTTP, stateless. It exposes your world to any MCP client (Claude Code, Claude Desktop, the API connector) as a set of tools. It is listed in the MCP Registry as `com.onlyworlds/mcp`.
 
 **Connect from Claude Code:**
 ```bash
 claude mcp add --transport http onlyworlds https://www.onlyworlds.com/mcp \
-  --header "API-Key: <your key>" --header "API-Pin: <your pin>"
+  --header "API-Key: $ONLYWORLDS_API_KEY" --header "API-Pin: $ONLYWORLDS_API_PIN"
 ```
-The PIN is needed for writes and for reads on a walled world; a read-only key on an unwalled world needs no PIN.
+Load `.env` into the shell first; the shell fills in the values, so the key is never typed into the command. The PIN is needed for writes; prefixed keys read without it. Only a legacy 10-digit key reading a private world needs it for reads.
 
 **11 tools:**
-- **Schema (3, no key required):** `list_element_types`, `get_element_schema`, `search_schema` — public reference, work without credentials.
-- **Read (4):** `list_elements`, `get_element`, `search_elements`, `get_changes` (paged: default 25, max 1000 per call — cursor-walk for a full export).
-- **Write (4):** `create_element`, `update_element` (server-side read-merge — only the fields you pass change), `edit_links` (additive/subtractive link edits), `bulk_apply`.
+- **Schema (3, no key required):** `list_element_types`, `get_element_schema`, `search_schema`. Public reference; they work without credentials.
+- **Read (4):** `list_elements`, `get_element`, `search_elements`, `get_changes` (paged: default 25, max 1000 per call; walk the cursor for a full export).
+- **Write (4):** `create_element`, `update_element` (server-side read-merge: only the fields you pass change), `edit_links` (additive/subtractive link edits), `bulk_apply`.
 
-There is **no delete tool** by design — deletion stays on the REST API and the web portal.
+There is **no delete tool** by design: deletion stays on the REST API and the web portal.
 
-The claude.ai **web** connector is not supported yet (its UI is OAuth-only; OAuth support is planned); header-based keys work in Claude Code, Claude Desktop, and the API connector. The old `@onlyworlds/mcp-client` npm package and `/mcp/messages/` endpoint are legacy — the old endpoint now answers with a pointer to this one.
+The claude.ai **web** connector is not supported yet (its UI is OAuth-only; OAuth support is planned); header-based keys work in Claude Code, Claude Desktop, and the API connector. The old `@onlyworlds/mcp-client` npm package and `/mcp/messages/` endpoint are legacy; the old endpoint now answers with a pointer to this one.
 
 ---
 
-## Common Patterns
+## Building a Tool
 
-### Static Frontend + OW API
+A common shape: a static frontend (TypeScript, React, plain JS) that calls the API directly, with no backend, deployed to a static host. Other architectures (Node backends, Unity, Python) work too, and a local tool can read a world folder with no API at all.
 
-A common pattern for OnlyWorlds tools:
-1. Static frontend (TypeScript, React, vanilla JS)
-2. Calls OnlyWorlds API directly
-3. No backend needed
-4. Deploy to Cloudflare Pages, Vercel, or similar
+Browser calls are subject to CORS. The API accepts them from common static hosts (`*.pages.dev`, `*.netlify.app`, `*.vercel.app`, `*.github.io` and others) and from localhost on any port. A **custom domain is not pre-approved**: browser calls from it are refused until it is added server-side, which you can request at https://www.onlyworlds.com/feedback. The full host list and deploy steps are in `../skills/dev/knowledge/deployment.md`.
 
-Browser apps call the API directly. CORS is deliberately community-tool friendly: mainstream static hosts are pre-granted by wildcard (`*.pages.dev`, `*.netlify.app`, `*.vercel.app`, `*.github.io`, `*.gitlab.io`, `*.surge.sh`, `*.onrender.com`, `*.up.railway.app`) plus `localhost` on any port — deploy there and it just works. A **custom domain** needs its grant added server-side: open an issue on the repo or ask on Discord.
-
-Other architectures work too (Node backends, Unity, Python, etc.) - this is just a lightweight starting point.
-
-### Environment Variables
-
-Store credentials in `.env`:
-```
-ONLYWORLDS_API_KEY=your-api-key
-ONLYWORLDS_API_PIN=your-pin
-```
-
-Never commit credentials to version control.
-
-### Fetching Multiple Elements
-
-To fetch elements of a type (v2, paginated):
-```
-GET /api/v2/{element_type}?limit=100
-```
-
-Returns `{data, has_more, next_cursor}`. Follow `next_cursor` until `has_more` is false to page through all elements. Use this to build caches or display full lists.
+Credentials: keys and PINs load from a gitignored `.env`, never printed or committed, and a PIN never goes into a browser build (principles §6).
 
 ---
 
 ## Key Constraints
 
-**API accepts schema fields plus namespaced extensions.** The 22 element types have defined fields; unprefixed unknown fields 422. Fields prefixed `x_`/`atlas_`/`shadow_` DO save -- stored verbatim server-side and returned top-level on read. Your custom data goes in `x_*`; foreign namespaces are read-only to you.
+**Custom data goes in extension fields** (`x_<tool>_...`); unprefixed unknown fields are rejected. The rule is principles §4; how the API stores them is in `schema-reference.md`.
 
-**Local apps can extend.** Your application can add custom properties, wrap OW data, or use creative conventions. Just don't expect the API to store non-schema fields.
-
-**IDs are UUIDv7.** Time-sortable. On v2 you can (and for `/bulk` should) mint your own UUIDv7 per element before upload — this lets links point at siblings created in the same batch and makes retries idempotent. The API also assigns one if you omit it.
+**IDs are UUIDs.** Any RFC-4122 UUID works; v7 is recommended when you mint your own, and ids the server assigns are v4. Minting ids before a `/bulk` upload lets links point at siblings in the same batch and makes retries safe.
 
 ---
 
@@ -198,7 +124,7 @@ Returns `{data, has_more, next_cursor}`. Follow `next_cursor` until `has_more` i
 - **Documentation**: onlyworlds.github.io
 - **Discord**: Community support and discussion
 - **API docs**: OpenAPI specification at /api/docs
-- **Bugs & feature requests**: onlyworlds.com/feedback — submissions land on the public tracker (github.com/OnlyWorlds/feedback)
+- **Bugs & feature requests**: onlyworlds.com/feedback (submissions land on the public tracker, github.com/OnlyWorlds/feedback)
 
 ---
 

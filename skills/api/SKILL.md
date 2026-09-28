@@ -1,13 +1,13 @@
 ---
 name: onlyworlds-api
-description: Interact with the OnlyWorlds REST API — fetch, create, update, delete, or bulk-upload world elements. Use when the user wants to query their world, upload parsed data, browse existing elements, or perform any API operations. Prefer this skill over raw curl for all API work — provides credential handling, error patterns, and dialect guidance. Requires an API-Key header (and API-Pin for walled worlds / all writes). Base URL: onlyworlds.com/api/v2/. Teaches v2 (modern) and /bulk; a legacy section covers the v1 "classic" dialect for older tools.
+description: Read and write an OnlyWorlds world on onlyworlds.com through the REST API (fetch, create, update, delete, bulk-upload, sync). Use when the user wants to query an account world, upload parsed data, or do any API work; prefer it over improvised curl.
 ---
 
 # OnlyWorlds API
 
 Read and write world data via the OnlyWorlds REST API.
 
-**Teach v2.** Every fresh example here uses `/api/v2/` and `/api/v2/bulk`. The v2 surface returns real pagination, flat UUID link arrays, native creates, and honest Stripe-style errors that name the problem. The older v1 "classic" dialect still serves forever, but it has traps v2 doesn't — it lives in one clearly-marked [Classic API section](#classic-api-v1-dialect--legacy) at the end. If you're writing new code, stay in v2.
+Shared rules (read before write, verify after write, credentials, extension fields) live in `../../knowledge/principles.md`; this skill applies them to the API.
 
 ## Quick Reference (v2)
 
@@ -20,27 +20,34 @@ Read and write world data via the OnlyWorlds REST API.
 | Get specific element | GET | `/api/v2/{type}/{uuid}` |
 | Create element | POST | `/api/v2/{type}` |
 | Update element (partial) | PATCH | `/api/v2/{type}/{uuid}` |
+| Upsert element (full replace; 201 created, 200 replaced) | PUT | `/api/v2/{type}/{uuid}` |
+| **Add/remove multi-links (server-side merge)** | POST | `/api/v2/{type}/{uuid}/links/{field}` |
 | Delete element | DELETE | `/api/v2/{type}/{uuid}` |
 | **Bulk upsert (standard upload path)** | POST | `/api/v2/bulk` |
-| Sync changes since cursor | GET | `/api/v2/changes` |
+| Sync changes since cursor | GET | `/api/v2/changes?since={cursor}` |
+| Current feed tip (no bodies) | GET | `/api/v2/changes?head=true` |
 | Field descriptors for a type | GET | `/api/metadata/{type}/` |
 
-**Endpoint names are SINGULAR** — `/character`, `/location`, `/institution`. NOT plural.
+**Endpoint names are SINGULAR**: `/character`, `/location`, `/institution`. NOT plural.
 
-**Link fields are FLAT UUID arrays, both directions** — read AND write use the bare field name (`friends`, `species`, `objects`), holding raw UUID strings. There is no `_id`/`_ids` suffix in v2. (The suffix is a v1-only thing — see Classic section. Sending `friends_ids` to v2 or /bulk is a hard `422 Unknown field: friends_ids`, the #1 new-user error.)
+**Link fields are FLAT UUID arrays, both directions**: read AND write use the bare field name (`friends`, `species`, `objects`), holding raw UUID strings. There is no `_id`/`_ids` suffix in v2. (The suffix is a v1-only thing, see `references/v1-classic.md`. Sending `friends_ids` to v2 or /bulk is a hard `422 Unknown field: friends_ids`, the #1 new-user error.)
+
+**Teach v2.** Every fresh example here uses `/api/v2/` and `/api/v2/bulk`. The v2 surface returns real pagination, flat UUID link arrays, native creates, and honest Stripe-style errors that name the problem. The older v1 "classic" dialect keeps working indefinitely, but it has traps v2 doesn't; they are in `references/v1-classic.md`. If you're writing new code, stay in v2.
+
+**Credentials in examples.** Every example sends `$ONLYWORLDS_API_KEY` and `$ONLYWORLDS_API_PIN`. Load them from `.env` first (for example `set -a; . ./.env; set +a`); never print, echo, or paste a key or PIN into chat (principles §6). Reads with a prefixed key (`ow_w_`, `ow_r_`) need no PIN, so read examples send the key only; writes send both. A legacy 10-digit key reading a private world also needs the PIN.
 
 ## Critical Rules
 
-1. **Read before PATCH.** PATCH *replaces* the fields you send — for link arrays and text fields, it does not merge. To add a link or append text, GET the current value first, build the full new value, then PATCH it. GET is cheap; overwriting an array with a partial one is permanent data loss.
-2. **Verify after write.** GET the element back after a create or update and confirm the fields landed. Cheap insurance on any batch.
-3. **/bulk is the standard upload path** for parse results. One request, mixed types, per-item results, idempotent retry. Don't loop hundreds of individual POSTs — see [Bulk Upload](#bulk-upload-standard-for-parse-results).
-4. **Mint your own UUIDs on create.** IDs are UUIDv7 (time-sortable). Client-minted IDs let you reference an element you're creating in the *same* bulk batch (forward sibling refs are legal — no topological pre-sorting needed) and make retries idempotent. Generate a v7 UUID per element before upload.
-5. **Read the error envelope.** The API now tells you exactly what's wrong (unknown field, dangling link, bad credentials) with a `code`, `message`, `param`, and `doc_url`. Don't guess — read the message. See [Error Handling](#error-handling).
+1. **Change multi-links through the links route; read before any other PATCH.** `POST /api/v2/{type}/{uuid}/links/{field}` with `{"add": [...], "remove": [...]}` merges on the server in one atomic step, with no read needed (the REST twin of MCP `edit_links`). PATCH *replaces* the fields you send and does not merge: to append text or change a single link, GET the current value first, build the full new value, then PATCH it. Overwriting a field with a partial value is permanent data loss. A read-back body carries `type`, `created_at`, `updated_at` and `change_seq`; strip them before sending a body back (each one is a 422).
+2. **Verify after write.** GET the element back and confirm the fields landed (principles §5).
+3. **/bulk is the standard upload path** for parse results. One request, mixed types, per-item results, idempotent retry. Don't loop hundreds of individual POSTs; see [Bulk Upload](#bulk-upload-standard-for-parse-results).
+4. **Mint your own UUIDs on create.** IDs are UUIDs: any RFC-4122 UUID works, v7 is recommended for index locality, and ids the server assigns when you omit one are v4. Client-minted IDs let you reference an element you're creating in the *same* bulk batch (forward sibling refs are legal, so no topological pre-sorting is needed) and make retries idempotent. Generate one per element before upload.
+5. **Read the error envelope.** The API now tells you exactly what's wrong (unknown field, dangling link, bad credentials) with a `code`, `message`, `param`, and `doc_url`. Don't guess: read the message. See [Error Handling](#error-handling).
 
 ## Safety Notice
 
 Write operations can modify or delete world data.
-- Check `.ow/config.json` for `last_backup` — if > 7 days, recommend a backup before major operations.
+- Before a write session to an existing world, export it to a world folder (`../../knowledge/world-folder.md`, "Exporting an account world to a folder"). That folder is the rollback: re-uploading its elements with /bulk (read-only fields stripped) puts the old values back, but does not remove elements created since; delete those by id.
 - Test with a small batch first.
 - Read before PATCH (Critical Rule 1). Verify after write (Critical Rule 2).
 
@@ -53,16 +60,27 @@ Check for `.ow/config.json` in the current directory first:
 | Config Found | credential_mode | Action |
 |-------------|----------------|--------|
 | Yes | full | Load API-Key + API-Pin from `.env` |
-| Yes | key-only | Load API-Key from `.env`, ask user for PIN |
-| Yes | manual | Ask user for both |
-| No | — | Ask user for both |
+| Yes | key-only | Load API-Key from `.env`. For a write, the user adds the PIN line to `.env` first |
+| Yes | manual | The user fills `.env` for this session, then load it |
+| No | (none) | Check `.env` for `ONLYWORLDS_API_KEY`; if it is not there, run the project-setup skill |
 
-- **API-Key**: World-scoped key. May be a prefixed key (`ow_w_…` world-write, `ow_r_…` read-share) or a legacy 10-digit key (grandfathered forever; still valid, but no longer issued). Get one from world settings on onlyworlds.com.
-- **API-Pin**: The world's PIN (Argon2 wall). Required on **every write**, and on **reads too if the world is walled**. Unwalled/demo worlds read without a PIN. See [PIN](#pin-the-world-wall).
+**Credentials never go through chat.** The user types them into `.env` themselves (the project-setup skill shows the format); you load them from there and never see, print, or repeat them. If the user pastes one into chat anyway, do not repeat it back, and ask them to put it in `.env` instead.
 
-(A third credential exists for account-level automation: **account tokens** (`ow_a_…`, minted in the portal under Settings → Account, sent as `Authorization: Bearer` on `/api/v2/account/…` routes) — they list/create worlds and mint fresh world keys. Normal element work never needs one.)
+- **API-Key**: World-scoped key. May be a prefixed key (`ow_w_…` world-write, `ow_r_…` read-share) or a legacy 10-digit key (grandfathered forever; still valid, but no longer issued). Get one on onlyworlds.com under Account → your world → API keys.
+- **API-Pin**: The world's PIN (Argon2 wall). Required on **every write** when the world has one. Prefixed keys always read without it; only a legacy 10-digit key reading a private world needs it. See [PIN](#pin-the-world-wall).
 
-**World meta**: `PATCH /api/v2/world` updates the world's own fields (description, image_url, time settings) with the same key+PIN — partial like element PATCH, and an unknown field rejects the whole request.
+A third credential exists for account-level automation: **account tokens** (`ow_a_…`, minted in the portal under Settings → Account, shown once, sent as `Authorization: Bearer` on `/api/v2/account/…` routes). Normal element work never needs one.
+
+| Route (under `/api/v2/account`) | Does |
+|---|---|
+| `GET` / `PATCH` (the base route) | Read / edit your profile |
+| `GET` / `POST` `/worlds` | List your worlds / create one |
+| `GET` / `POST` `/worlds/{id}/keys` | List a world's keys (last 4 chars only) / mint a key |
+| `DELETE` `/worlds/{id}/keys/{key_id}` | Revoke a key |
+| `GET` / `POST` `/watched`, `DELETE` `/watched/{id}` | Watched worlds (other people's worlds you follow by read key) |
+| `GET` `/tokens`, `DELETE` `/tokens/{id}` | List / revoke account tokens |
+
+**World meta**: `PATCH /api/v2/world` updates the world's own fields (name, description, image_url, time settings) with the same key and PIN. It is partial like element PATCH, and an unknown field rejects the whole request. The world's current point in time is `time_range_current` on the API (a world folder's `world.json` calls it `time_current`). `GET /api/v2/world` returns an `ETag`; send it back as `If-None-Match` for a cheap `304` when nothing changed.
 
 ### Step 2: Validate + Fetch World Info
 
@@ -71,11 +89,10 @@ curl -s "https://www.onlyworlds.com/api/v2/health"
 # → {"status": "ok", "service": "keel"}
 
 curl -s "https://www.onlyworlds.com/api/v2/world" \
-  -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Key: $ONLYWORLDS_API_KEY"
 ```
 
-If credentials are bad you get a `401` with a Stripe-style envelope naming the problem (`invalid_credentials`) — read it rather than re-guessing.
+If credentials are bad you get a `401` with a Stripe-style envelope naming the problem (`invalid_credentials`); read it rather than re-guessing.
 
 ### Step 3: Perform Operations
 
@@ -85,8 +102,7 @@ If credentials are bad you get a `401` with a Stripe-style envelope naming the p
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100" \
-  -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}"
+  -H "API-Key: $ONLYWORLDS_API_KEY"
 ```
 
 **Response is enveloped and paginated:**
@@ -94,92 +110,121 @@ curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100" \
 { "data": [ {...}, {...} ], "has_more": true, "next_cursor": "eyJzIjog..." }
 ```
 
-- `data` — array of element objects for this page.
-- `has_more` — whether more pages exist.
-- `next_cursor` — opaque base64 token. Treat it as opaque (don't parse it). To get the next page, pass it back:
+- `data`: array of element objects for this page.
+- `has_more`: whether more pages exist.
+- `next_cursor`: opaque base64 token. Treat it as opaque (don't parse it). To get the next page, pass it back:
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100&cursor={next_cursor}" \
-  -H "API-Key: {api_key}" -H "API-Pin: {api_pin}"
+  -H "API-Key: $ONLYWORLDS_API_KEY"
 ```
 
 Loop, following `next_cursor`, until `has_more` is `false`.
 
 **Element types** (lowercase, singular): character, creature, species, family, collective, institution, location, zone, map, pin, marker, object, construct, title, ability, trait, language, law, event, narrative, phenomenon, relation
 
-**Filtering**:
-- `?name__icontains=value` — filter by name (case-insensitive partial match)
-- `?supertype=value` — filter by supertype category
+**Query params** (lists; `expand` and `fields` also work on a single GET):
 
-**Link fields in v2 responses are flat UUID arrays**: `"species": ["0698c9df-…"]`, `"friends": ["uuid", "uuid"]`. Plain UUID strings, same names as you write. (v1 expands these into nested `{id, name, …}` objects — see Classic section.)
+| Param | Effect |
+|-------|--------|
+| `?name__icontains=value` | Filter by name (case-insensitive partial match) |
+| `?supertype=value` / `?subtype=value` | Filter by exact supertype / subtype |
+| `?expand=friends,location` | Expand those link fields one level into stubs |
+| `?fields=name,supertype` | Return only these fields |
+| `?limit=`, `?cursor=` | Page size (default 100, max 1000), next page |
+
+Any other param on a list returns `422 Unknown query parameter`. Lists always come in change order (least recently changed first); `?ordering=` is accepted but has no effect, so sort client-side.
+
+**Link fields in v2 responses are flat UUID arrays**: `"species": ["0698c9df-…"]`, `"friends": ["uuid", "uuid"]`. Plain UUID strings, same names as you write. (v1 expands these into nested `{id, name, …}` objects, see `references/v1-classic.md`.)
 
 ### Get Element
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: {api_key}" -H "API-Pin: {api_pin}"
+  -H "API-Key: $ONLYWORLDS_API_KEY"
 ```
 
-Returns the **bare element object** (not enveloped — no `data` wrapper on a singular GET). The trailing slash is optional on v2 (it works with or without).
+Returns the **bare element object** (not enveloped: no `data` wrapper on a singular GET). The trailing slash is optional on v2 (it works with or without).
 
 ### Create Element
 
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/v2/{type}" \
-  -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}" \
+  -H "API-Key: $ONLYWORLDS_API_KEY" \
+  -H "API-Pin: $ONLYWORLDS_API_PIN" \
   -H "Content-Type: application/json" \
-  -d '{"id": "{your-uuidv7}", "name": "Element Name", "description": "...", "friends": ["{uuid}"]}'
+  -d '{"id": "{your-uuid}", "name": "Element Name", "description": "...", "friends": ["{uuid}"]}'
 ```
 
-Returns `200` with the flat element object, including echoed `created_at`/`updated_at` (ISO-8601 UTC). Mint the `id` yourself (Critical Rule 4) so you can reference it elsewhere and so retries are safe. Link fields use bare names holding UUID arrays.
+Returns `201` with the flat element object, including echoed `created_at`/`updated_at` (ISO-8601 UTC). Mint the `id` yourself (Critical Rule 4) so you can reference it elsewhere and so retries are safe. POSTing an id that already exists returns `409 id_conflict`; use PUT to upsert. Link fields use bare names holding UUID arrays. An `Idempotency-Key` header works here too (same rules as [bulk](#bulk-upload-standard-for-parse-results), kept 24h).
 
 ### Update Element (PATCH)
 
 ```bash
 curl -s -X PATCH "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}" \
+  -H "API-Key: $ONLYWORLDS_API_KEY" \
+  -H "API-Pin: $ONLYWORLDS_API_PIN" \
   -H "Content-Type: application/json" \
   -d '{"description": "Updated description"}'
 ```
 
-**PATCH replaces the fields you send.** To append to `description` or add to a link array, GET the current value first, combine, then send the full result (Critical Rule 1).
+**PATCH replaces the fields you send.** To append to `description` or change a single link, GET the current value first, combine, then send the full result (Critical Rule 1). For multi-link arrays use the links route instead.
+
+### Add or Remove Links
+
+```bash
+curl -s -X POST "https://www.onlyworlds.com/api/v2/{type}/{uuid}/links/{field}" \
+  -H "API-Key: $ONLYWORLDS_API_KEY" \
+  -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "Content-Type: application/json" \
+  -d '{"add": ["{uuid}"], "remove": ["{uuid}"]}'
+```
+
+Atomic server-side merge on one multi-link field: `add` skips ids already present, `remove` ignores ids not present, and each added target must exist (`invalid_link` otherwise). Returns the updated element. A single-link or unknown field returns `422`.
 
 ### Delete Element
 
 ```bash
 curl -s -X DELETE "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: {api_key}" -H "API-Pin: {api_pin}"
+  -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN"
 ```
 
-Returns `204 No Content`. (A `000` curl status is a dropped connection, not a server verdict — retry it.)
+Returns `204 No Content`. (A `000` curl status is a dropped connection, not a server verdict; retry it.)
+
+Delete is rarely the right tool: it also removes the element from every link that pointed at it. For something that died, left, or ended, retire it instead (mark and date it, principles §2), and delete only what a human approved.
 
 ## Bulk Upload (standard for parse results)
 
-`POST /api/v2/bulk` is the standard path for uploading parsed elements. One request, mixed element types, structured per-item results, idempotent retry. **No topological sorting needed** — an element may reference a sibling created later in the same batch (forward refs are legal).
+`POST /api/v2/bulk` is the standard path for uploading parsed elements. One request, mixed element types, structured per-item results, idempotent retry. **No topological sorting needed**: an element may reference a sibling created later in the same batch (forward refs are legal).
 
-**Request shape** — note the key is `items` (not `operations`), and each item wraps an `op`, a `type`, and the `element`:
+**Request shape**: the key is `items` (not `operations`), and each item wraps a `type` and the `element`:
 
 ```json
 {
   "items": [
-    { "op": "upsert", "type": "location", "element": { "id": "{uuid-A}", "name": "Feltropolis" } },
-    { "op": "upsert", "type": "character", "element": { "id": "{uuid-B}", "name": "Admiral Fluffington", "location": "{uuid-A}" } }
+    { "type": "location", "element": { "id": "{uuid-A}", "name": "Feltropolis" } },
+    { "type": "character", "element": { "id": "{uuid-B}", "name": "Admiral Fluffington", "location": "{uuid-A}" } }
   ]
 }
 ```
 
+- An element without an `id` is created; one with a new `id` is created under that id.
+- **An element whose `id` already exists replaces that element entirely, like PUT.** Every field you don't send is cleared, links and extension fields (`x_*`, `atlas_*`, `shadow_*`) included. Never send a partial element for an existing id: update existing elements with PATCH or the links route.
+- The element body holds writable fields only. `type` belongs on the item, not in the element, and `created_at`, `updated_at` and `change_seq` are rejected (422).
+- An `op` key is optional and ignored, and there is no delete op.
+- Max 1000 items per request.
+- Add `"atomic": true` at the top level to make the batch all-or-nothing: any failed item rolls back the whole batch.
+
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/v2/bulk" \
-  -H "API-Key: {api_key}" \
-  -H "API-Pin: {api_pin}" \
+  -H "API-Key: $ONLYWORLDS_API_KEY" \
+  -H "API-Pin: $ONLYWORLDS_API_PIN" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: {a-uuid-for-this-batch}" \
   -d @batch.json
 ```
 
-**Response** — enveloped, per-item:
+**Response** (enveloped, per item):
 ```json
 {
   "errors": false,
@@ -190,55 +235,63 @@ curl -s -X POST "https://www.onlyworlds.com/api/v2/bulk" \
 }
 ```
 
-- Top-level `errors` — `true` if *any* item failed. Committed items still land; failed items are reported per-item with a structured `error` (see below). The batch is not all-or-nothing at the response level, so scan every item's `status`.
-- Each item echoes its `id` (even on failure) plus `created_at`/`updated_at` on success.
+- Top-level `errors` is `true` if *any* item failed. Committed items still land; failed items are reported per-item with a structured `error` (see below). Without `atomic`, the batch is not all-or-nothing, so scan every item's `status`.
+- Results come back in request order. Each carries its `id` when one is known, plus `created_at`/`updated_at` on success. An item that failed validation, or a create sent without an id, has `"id": null`, so match results to items by array index.
 
-**Idempotency-Key retry pattern**: set an `Idempotency-Key` header (a UUID you pick for the batch). If the request times out or the connection drops, resend the *identical* body with the *same* key — the server replays the original result instead of double-creating. A replayed response carries an `idempotent-replay: true` header and identical timestamps. This makes bulk uploads safe to retry blindly.
+**Idempotency-Key retry pattern**: set an `Idempotency-Key` header (a UUID you pick for the batch). If the request times out or the connection drops, resend the *identical* body with the *same* key: the server replays the original result instead of double-creating. A replayed response carries an `idempotent-replay: true` header and identical timestamps. This makes bulk uploads safe to retry blindly. The same key with a *different* body returns `409 idempotency_error`, so a corrected batch needs a new key. Keys are kept 24h.
 
-**Link fields in /bulk use flat bare names** (`friends`, `location`) holding UUIDs — same as v2, never the `_ids` suffix.
+**Link fields in /bulk use flat bare names** (`friends`, `location`) holding UUIDs, same as v2, never the `_ids` suffix.
 
 ### Upload a parse: recommended flow
 
-1. Mint a UUIDv7 for every element up front (Critical Rule 4).
-2. Build one `items` array — all types, links already pointing at your minted UUIDs (forward refs are fine).
+1. Mint a UUID (v7 recommended) for every element up front (Critical Rule 4).
+2. Build one `items` array: all types, links already pointing at your minted UUIDs (forward refs are fine).
 3. POST to `/api/v2/bulk` with an `Idempotency-Key`.
-4. Scan the response: if `errors: true`, read each failing item's `error.message`/`param`, fix, and resend (the same key replays successes harmlessly).
+4. Scan the response: if `errors: true`, read each failing item's `error.message`/`param`, fix those items, and resend under a **new** Idempotency-Key. Items with ids replace, so resending the same full items that already succeeded is harmless; you can also send only the fixed items.
 5. Spot-check with a GET (Critical Rule 2).
 
-No two-pass dance is needed on v2 — the batch resolves sibling links itself.
+No two-pass dance is needed on v2: the batch resolves sibling links itself.
 
 ## Sync Changes
 
-`GET /api/v2/changes` returns everything that changed since a cursor — the basis for incremental sync.
+`GET /api/v2/changes` returns everything that changed since a cursor, the basis for incremental sync.
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/changes" \
-  -H "API-Key: {api_key}" -H "API-Pin: {api_pin}"
+  -H "API-Key: $ONLYWORLDS_API_KEY"
 ```
 
 ```json
 {
-  "cursor": "1:069ae78f-…",
+  "cursor": "…",
   "changes": [
     { "op": "upsert", "type": "location", "id": "…", "change_seq": 1, "updated_at": "…", "element": { …full element… } }
-  ]
+  ],
+  "has_more": false,
+  "head": 1
 }
 ```
 
-Store `cursor` and pass it back next time (`?cursor=…`) to get only newer changes. **This cursor is a plain `"<change_seq>:<uuid>"` string** — a different mechanism from the base64 list-pagination cursor. Don't conflate the two.
+- Store `cursor` and pass it back as **`?since={cursor}`** to get only newer changes. `?cursor=` is a `422 Unknown query parameter` here. Treat the cursor as opaque; it is a different mechanism from the list-pagination cursor.
+- Pages default to 500 ops (`?limit=`, max 1000). Loop until `has_more` is `false`. Walking from no `since` is a full export in one feed.
+- `?head=true` returns only the current tip as `cursor` (no ops, cheap). Use it to start following from now, or to check whether you are behind.
+- `head` on every page is the world's current tip. A stored cursor ahead of `head` means the world was restored from backup: re-sync from zero.
+- Deletes arrive as `"op": "delete"`. World-meta edits (`PATCH /api/v2/world`) never enter this feed.
 
 ## PIN (the world wall)
 
-The PIN is a property of the **world's wall**, not of any dialect. Argon2-hashed on the server. A world with a wall requires the PIN:
+The PIN is a property of the **world's wall**, not of any dialect. Argon2-hashed on the server.
 
-- **On writes**: always (both dialects, walled or not — writing always demands the PIN on a walled world).
-- **On reads**: only if the world is walled. Walled world + no PIN → `401`. Unwalled/demo worlds read with the key alone.
+- **On writes**: required whenever the world has a PIN (both dialects).
+- **On reads**: prefixed keys (`ow_w_`, `ow_r_`) always read without a PIN. Only a legacy 10-digit key reading a private world needs it.
 
-Send it as the `API-Pin` header alongside `API-Key`. When in doubt, send it — it's never wrong to include on a walled world.
+Send it as the `API-Pin` header alongside `API-Key`, from `$ONLYWORLDS_API_PIN`. On a prefixed-key read it is ignored, so sending it there does no harm.
+
+Wrong PINs are throttled per key: after 3 failures each retry must wait longer, and 10 failures lock the key for 15 minutes (`429 rate_limited` with a `Retry-After` header).
 
 ## Error Handling
 
-The API reports errors honestly — it names the field or credential at fault. **Read the envelope; don't guess.** v2 and /bulk use a Stripe-style envelope; each error carries a `doc_url` into `onlyworlds.github.io/api/errors#<code>`.
+The API reports errors honestly: it names the field or credential at fault. **Read the envelope; don't guess.** v2 and /bulk use a Stripe-style envelope; each error carries a `doc_url` into `onlyworlds.github.io/api/errors#<code>`.
 
 **v2 / bulk error envelope:**
 ```json
@@ -253,54 +306,32 @@ The API reports errors honestly — it names the field or credential at fault. *
 
 | Situation | What you get (v2 / bulk) | Fix |
 |-----------|--------------------------|-----|
-| Bad / missing key | `401` `authentication_error` / `invalid_credentials`, `"No valid API-Key."` | Check API-Key; on a walled world send API-Pin too |
+| Bad / missing key, or wrong PIN | `401` `authentication_error` / `invalid_credentials`, `"No valid API-Key."` or `"Incorrect PIN."` | Check API-Key; on a write send the right API-Pin |
+| Revoked key | `401` `key_revoked` | Get a new key (Account → your world → API keys) |
+| Read-only key on a write route | `403` `permission_error` | Use an `ow_w_` key for writes |
+| Element not found | `404` `not_found` | Check the type slug and UUID |
+| Malformed id in the path | `422` `"id must be a UUID."` | Send a full UUID |
 | Unknown field (typo, or v1 `_ids` suffix on v2) | `422` `invalid_request`, `"Unknown field: friends_ids"`, `param` names it | Use the bare canonical field name (no `_ids` in v2) |
+| Text too long | `422` `"{field} must be at most {cap} characters"` | Shorten it: `name` 255, `supertype`/`subtype` 128, `image_url` 1024 |
+| Unknown query param | `422` `"Unknown query parameter: X"` | Use a listed param (`since`, not `cursor`, on `/changes`) |
 | Dangling link (target UUID doesn't exist) | `400` / per-item `invalid_link`, message names the field + missing target | Point at a real UUID, or include the target in the same batch |
-| Bad bulk shape | `422` `"items must be an array."` | Top-level key must be `items`, each entry `{op, type, element}` |
-| Rate limited | `429` | Add a small delay between requests (~1s is comfortable) |
+| POST of an id that already exists | `409` `id_conflict` | Use PUT to upsert |
+| Idempotency-Key reused with a different body | `409` `idempotency_error` | Send the changed body under a new key |
+| Bad bulk shape | `422` `"items must be an array."` | Top-level key must be `items`, each entry `{type, element}` |
+| Too many wrong PINs on this key | `429` `rate_limited`, `Retry-After` header | Fix the PIN and wait `Retry-After` seconds (up to 15 min). Retrying sooner does not help |
 
-**These are honest errors — nothing is silently dropped.** An unknown field is rejected (not ignored), a dangling link is rejected (not nulled), a walled read without a PIN is rejected (not partially served). If a write returns `2xx`, the fields you sent are the fields that landed — but still verify (Critical Rule 2).
+**These are honest errors: nothing is silently dropped.** An unknown field is rejected (not ignored), a dangling link is rejected (not nulled), a write without the right PIN is rejected (not partially applied). If a write returns `2xx`, the fields you sent are the fields that landed, but still verify (Critical Rule 2).
 
 ## Schema Notes
 
-Some links are one-directional. Ability has no `characters` field — link via `Character.abilities`. Law has no `institutions` field — use `Law.author`. See `../../knowledge/schema-reference.md` "Link Direction Summary" for the full table. (In v2, all link fields are the bare name holding UUIDs — the direction table tells you which side owns the link.)
+Some links are one-directional. Ability has no `characters` field: link via `Character.abilities`. Law has no `institutions` field: use `Law.author`. See `../../knowledge/schema-reference.md` "Link Direction Summary" for the full table. (In v2, all link fields are the bare name holding UUIDs; the direction table tells you which side owns the link.)
 
 ### MCP Server
 
-For MCP clients (Claude Code, Claude Desktop, the API connector), OnlyWorlds runs an MCP server at **`https://www.onlyworlds.com/mcp`** — modern MCP over streamable HTTP, stateless. It's a separate integration path from raw REST: instead of curl you get 11 tools.
-
-```bash
-claude mcp add --transport http onlyworlds https://www.onlyworlds.com/mcp \
-  --header "API-Key: <your key>" --header "API-Pin: <your pin>"
-```
-
-- **3 schema tools** (`list_element_types`, `get_element_schema`, `search_schema`) work with **no key**.
-- **4 read tools** (`list_elements`, `get_element`, `search_elements`, `get_changes`) and **4 write tools** (`create_element`, `update_element` — server-side read-merge; `edit_links` — additive/subtractive; `bulk_apply`) need the key (and PIN for writes / walled reads).
-- **No delete tool** by design — deletion stays on REST (`DELETE /api/v2/{type}/{uuid}`) and the portal.
-
-The claude.ai **web** connector isn't supported yet (its UI is OAuth-only; OAuth support is planned); header keys work in Claude Code / Desktop / the API connector. The old `@onlyworlds/mcp-client` npm package and `/mcp/messages/` endpoint are legacy. Full detail in `../../knowledge/onlyworlds-core.md`.
+OnlyWorlds also runs an MCP server at `https://www.onlyworlds.com/mcp` (11 tools: schema, read and write; no delete tool). The connect command and tool list are in `../../knowledge/onlyworlds-core.md`.
 
 ---
 
-## Classic API (v1 dialect) — legacy
+## Classic API (v1)
 
-The v1 dialect (`/api/worldapi/…`) still serves and will for years. You'll meet it in **older tools and existing integrations** written before the platform rebuild. Prefer v2 for anything new — but if you're maintaining v1 code, these are its traps.
-
-**Base URL**: `https://www.onlyworlds.com/api/worldapi/{type}/`. Same `API-Key` / `API-Pin` headers.
-
-**v1 gotchas that don't exist in v2:**
-
-1. **Trailing slash is mandatory on singular GET.** `GET /api/worldapi/character/{uuid}` (no slash) → `301` redirect with an empty body; curl/requests don't auto-follow, so it looks like a failure. **Always add the trailing slash**: `/api/worldapi/character/{uuid}/`. (v2 doesn't care either way.)
-
-2. **No pagination — the full array dumps at once.** `?limit=` is silently ignored; a list endpoint returns every element as a **plain JSON array** (no `{data, has_more, …}` envelope). Fine for small worlds, memory-heavy for large ones. (v2 paginates properly.)
-
-3. **`_ids` / `_id` write-suffix, expanded read.** This is the split that bites hardest when moving between dialects:
-   - **Write** (POST/PATCH): link fields need a suffix — `_id` for single (`location_id`), `_ids` for multi (`species_ids`, `friends_ids`).
-   - **Read** (GET): the field comes back under its **bare name** as **nested expanded objects**: `"species": [{"id": "…", "name": "Puddle Moppet", …}]` — not raw UUIDs.
-   - So v1 read shape ≠ v1 write shape, and *neither* matches v2 (which is flat UUIDs, bare names, both directions). Sending `friends_ids` to v2/bulk is a `422`; sending `friends` (bare) as a v1 *write* is likewise rejected as an unknown field (v1 answers with an honest `422` too) — send the suffixed form on v1.
-
-**v1 endpoints:** `GET/POST /api/worldapi/{type}/`, `GET/PATCH/PUT/DELETE /api/worldapi/{type}/{uuid}/` (trailing slash!). Names singular, same as v2.
-
-**v1 error envelope** is the legacy shape, not Stripe-style: `{"detail": "Unauthorized", "error": {"code": "unauthorized", …}}` for auth, or a list of ninja `value_error` entries for validation. It still reports honestly — an unknown field on v1 now returns `422 "Unknown field 'X'. Check spelling…"`, and a dangling link returns `400 "Invalid FK: {field} — referenced {Type} with id '…' does not exist."` (v1 no longer silently drops unknown fields or nulls dangling links — that old behavior is gone on both dialects.)
-
-**Still true on both dialects:** must use `www.onlyworlds.com` (bare domain redirect behavior differs); header casing is exact (`API-Key`, `API-Pin`); read-before-PATCH; PIN rules as above.
+The legacy `/api/worldapi/` dialect (older tools only) and its traps: `references/v1-classic.md`.
