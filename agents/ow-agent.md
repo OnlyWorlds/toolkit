@@ -20,7 +20,7 @@ Check the current directory (or the folder the user names):
 
 | Found | Work this way |
 |---|---|
-| `world.json` + `elements/` | **A world folder.** Read and write the files directly per `../knowledge/world-folder.md` (the two laws, writer rules). No credentials. Ask the user to close Atlas before editing in place. |
+| `world.json` + `elements/` | **A world folder.** Read and write the files directly per `../knowledge/world-folder.md` (the two laws, writer rules). No credentials. Atlas can stay open while you write. |
 | `.ow/` | **An account world over the API.** Credentials and cache come from project-setup; every call follows the api skill. |
 | Neither, and the world is on onlyworlds.com | Run the project-setup skill first; without it, parsing creates duplicates. |
 | Neither, and no world yet | Parse into a new world folder; an account can come later. |

@@ -100,9 +100,8 @@ Apply only the approved items.
 #### World folder
 
 1. **Snapshot first**: commit the folder in git, or copy it (`../../knowledge/world-folder.md`, "Keeping history").
-2. **Ask the user to close the Atlas tab** (one writer at a time; switching worlds is not enough).
-3. **Edit per the world-folder writer rules**: change only the approved link fields; keep every other field, including `atlas_*`/`shadow_*`/`x_*` values and nulls, value for value; keep keys in their original order. In a folder linked to an account, set a fresh `local_updated_at` on every edited file (world-folder.md, writer rules), or Atlas never sends the edit. A new Relation is a new file: mint a UUID, name the file per the folder rules, and omit `local_updated_at`/`server_updated_at` (atlas-conventions.md).
-4. **Read back**: re-load each edited file and confirm every approved link landed and nothing else changed (principles §5).
+2. **Edit per the world-folder writer rules**: change only the approved link fields; keep every other field, including `atlas_*`/`shadow_*`/`x_*` values and nulls, value for value; keep keys in their original order. In a folder linked to an account, set a fresh `local_updated_at` on every edited file (world-folder.md, writer rules), or Atlas never sends the edit. A new Relation is a new file: mint a UUID, name the file per the folder rules, and omit `local_updated_at`/`server_updated_at` (atlas-conventions.md).
+3. **Read back**: re-load each edited file and confirm every approved link landed and nothing else changed (principles §5).
 
 #### API
 
