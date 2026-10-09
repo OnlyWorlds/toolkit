@@ -72,7 +72,7 @@ const world = await client.getWorld();
 for await (const el of client.listAll('character')) { /* ... */ }
 
 // Create / patch / delete — type as the first argument
-const made = await client.create('location', { name: 'Feltropolis', description: 'Capital city of Moppetopia' });
+const made = await client.create('location', { name: 'Feltropolis', description: 'Orbital station, seven levels' });
 await client.patch('character', 'uuid-here', { description: 'Updated' }); // replaces each field it sends
 await client.delete('character', 'uuid-here');
 

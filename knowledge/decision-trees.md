@@ -378,7 +378,7 @@ Zone is spatial but not geometric: it covers ground because of what's significan
 
 **Moppetopia examples**:
 - **Location**: Feltropolis (the space station), The Marionette Theatre, Admiral Fluffington's Quarters, USS Fuzzball (ship as place)
-- **Zone**: The Fluffium Mining District (territory), Moppetopia Proper (political boundary), The Soggy Sector (region)
+- **Zone**: The Crumblefields (territory), the Treaty Neutral Zone (political boundary), the Snack Nebula (region)
 
 **The test**: "Can you point to it on a map?" → Both can. "What defines this area: its physical features or its significance?" Physical features (form, architecture, terrain) → Location. Significance (jurisdiction, phenomena, culture, history) → Zone.
 

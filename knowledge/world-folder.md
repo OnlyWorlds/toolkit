@@ -11,7 +11,7 @@ A world can live entirely as files on disk. Atlas (the flagship app) stores ever
   world.json                    # world metadata (id, name, description, time settings; api block if linked)
   elements/
     character/
-      admiral-fluffington--0d2a8c2b.json   # one file per element
+      admiral-fluffington--295f8866.json   # one file per element
     location/
     map/
     ...                         # one subfolder per element type present (lowercase singular), all 22 types incl. map, pin, zone, marker

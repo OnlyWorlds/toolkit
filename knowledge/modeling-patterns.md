@@ -25,9 +25,9 @@ The 22 element types are building blocks. Combine them to represent anything. A 
 
 ## Compositional Thinking
 
-### Example: The Fluffium Trade (Moppetopia)
+### Example: The Fluffium Trade
 
-In Moppetopia, Fluffium is a magical substance that powers everything.
+Fluffium is an invented substance in an invented world: a magical material that powers everything.
 
 Naive approach: Create one Object called "Fluffium" and describe everything in the description field.
 
@@ -180,10 +180,10 @@ A Zone drawn by Markers is a closed polygon by default. Atlas records the shape 
 ```
 
 **Practical example**:
-- Map: "Moppetopia World Map" (width: 2000, height: 1500)
+- Map: "Moppetopia Space Map" (width: 2400, height: 1600)
 - Pin: x: 450, y: 720, element_type: "location", element_id → Feltropolis
 - Pin: x: 450, y: 720, element_type: "character", element_id → Admiral Fluffington - same coords, stacked
-- Zone: "The Fluffium District" (a polygon, the default)
+- Zone: "The Snack Nebula" (a polygon, the default)
 - Markers: 4 points at corners, order 0-3, all linking to the Zone
 
 ### Schedules and Structured Data

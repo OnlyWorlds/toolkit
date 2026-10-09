@@ -72,7 +72,7 @@ Skip: map, pin, marker (spatial, not narrative links). Follow the api skill's li
 ```markdown
 | Actor (Character) | Other parties | Type | Evidence |
 |-------------------|---------------|------|----------|
-| Fluffington | Dampworth | rivalry | Opposing descriptions, shared Events |
+| Fluffington | Captain Snoot | rivalry | Opposing descriptions, shared Events |
 | (none) | Moisture Merchants, Eternal Drip | dependence | Guild exists because of the Drip |
 ```
 
@@ -130,7 +130,7 @@ For non-ASCII names or descriptions, write the body to a file with ASCII-escaped
 curl -s -X POST "https://www.onlyworlds.com/api/v2/relation" \
   -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN" \
   -H "Content-Type: application/json" \
-  -d '{"id": "{your-uuidv7}", "name": "Fluffington-Dampworth Rivalry", "description": "...", "intensity": 80, "actor": "actor-uuid", "characters": ["other-party-uuid"]}'
+  -d '{"id": "{your-uuidv7}", "name": "Fluffington-Snoot Rivalry", "description": "...", "intensity": 85, "actor": "actor-uuid", "characters": ["other-party-uuid"]}'
 ```
 
 Relation has a single `actor` (the defining Character) plus multi-link "involves" fields (`characters`, `institutions`, `objects`, …) for the other parties. Because you mint the UUID, you can set these links in the create call. If a linked UUID doesn't exist you get a `400 invalid_link` naming the field; fix and resend.

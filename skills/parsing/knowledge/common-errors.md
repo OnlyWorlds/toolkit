@@ -256,7 +256,7 @@ When a field needs Institution (like `Construct.custodian`), don't link to Locat
 `Event.triggers` links to other Events (events that caused this event to happen).
 
 ```json
-"triggers": ["Declaration of War", "Assassination of Duke Fluffington"]
+"triggers": ["Declaration of War", "Assassination of Governor Dampworth"]
 ```
 
 Use for causal chains: Event A triggered Event B. Both are Events.
