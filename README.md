@@ -34,6 +34,11 @@ claude --plugin-dir ./toolkit
 
 ### Other AIs
 
+The skills CLI copies the skills into your project, for any agent that reads a skills folder (`--list` shows them without installing):
+```bash
+npx skills add OnlyWorlds/toolkit
+```
+
 Point at the knowledge files, in this order. A world is a folder of JSON files first; the API is the optional hosted case.
 
 - [principles.md](https://raw.githubusercontent.com/OnlyWorlds/toolkit/main/knowledge/principles.md): the shared rules

@@ -67,7 +67,7 @@ For the full surface map (Atlas, show pages, Obsidian plugin, MCP, portal, and h
 - **Shapes**: lists are paginated (`{data, has_more, next_cursor}`); link fields are flat UUID arrays under bare names; `/api/v2/bulk` uploads many elements at once; `/api/v2/changes` is the sync feed.
 - **The world's now**: `time_range_current` on the API, `time_current` in a folder's `world.json`.
 
-Everything else (every route, bulk and its replace semantics, sync, errors, account tokens, the older v1 dialect) is in the api skill: `../skills/api/SKILL.md`.
+Everything else (every route, bulk and its replace semantics, sync, errors, account tokens, the older v1 dialect) is in the api skill: `../skills/onlyworlds-api/SKILL.md`.
 
 ## SDK
 
@@ -75,7 +75,7 @@ Everything else (every route, bulk and its replace semantics, sync, errors, acco
 npm install @onlyworlds/sdk
 ```
 
-Version 4.x is ESM-only and v2-only; the client is `OwV2Client`. Setup, the common calls, and link-field patterns are in the dev skill: `../skills/dev/SKILL.md`.
+Version 4.x is ESM-only and v2-only; the client is `OwV2Client`. Setup, the common calls, and link-field patterns are in the dev skill: `../skills/onlyworlds-dev/SKILL.md`.
 
 ---
 
@@ -105,7 +105,7 @@ The claude.ai **web** connector is not supported yet (its UI is OAuth-only; OAut
 
 A common shape: a static frontend (TypeScript, React, plain JS) that calls the API directly, with no backend, deployed to a static host. Other architectures (Node backends, Unity, Python) work too, and a local tool can read a world folder with no API at all.
 
-Browser calls are subject to CORS. The API accepts them from common static hosts (`*.pages.dev`, `*.netlify.app`, `*.vercel.app`, `*.github.io` and others) and from localhost on any port. A **custom domain is not pre-approved**: browser calls from it are refused until it is added server-side, which you can request at https://www.onlyworlds.com/feedback. The full host list and deploy steps are in `../skills/dev/knowledge/deployment.md`.
+Browser calls are subject to CORS. The API accepts them from common static hosts (`*.pages.dev`, `*.netlify.app`, `*.vercel.app`, `*.github.io` and others) and from localhost on any port. A **custom domain is not pre-approved**: browser calls from it are refused until it is added server-side, which you can request at https://www.onlyworlds.com/feedback. The full host list and deploy steps are in `../skills/onlyworlds-dev/knowledge/deployment.md`.
 
 Credentials: keys and PINs load from a gitignored `.env`, never printed or committed, and a PIN never goes into a browser build (principles §6).
 

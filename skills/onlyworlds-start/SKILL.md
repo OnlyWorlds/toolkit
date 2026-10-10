@@ -7,7 +7,7 @@ description: Entry point for the worldbuilding toolkit. Use when the user wants 
 
 Route users to the right capability. The toolkit is a general worldbuilding companion for the whole life of a world: it works on whatever the user has (notes, manuscripts, folders, nothing yet), with no account required. OnlyWorlds is the shared language underneath, and the optional power layer (cloud world, API, app ecosystem) when they want it.
 
-Shared rules every skill follows: `../../knowledge/principles.md`.
+Shared rules every skill follows: `knowledge/principles.md`.
 
 ## Quick Reference
 
@@ -21,8 +21,8 @@ Route by the stage the user is in. A world folder on disk (`world.json` + `eleme
 | "I'm designing a magic system / factions / complex thing" | modeling |
 | "I have an idea for a world" | Discuss, then modeling or schema |
 | "What fields/types exist?" | schema |
-| "I have an Azgaar map / want my world in Foundry VTT" | The public converters (Azgaar in, Foundry VTT out); see `../../knowledge/ecosystem.md` |
-| "I work in Obsidian" | Obsidian plugin (works local-only, no account needed); see `../../knowledge/ecosystem.md` |
+| "I have an Azgaar map / want my world in Foundry VTT" | The public converters (Azgaar in, Foundry VTT out); see `knowledge/ecosystem.md` |
+| "I work in Obsidian" | Obsidian plugin (works local-only, no account needed); see `knowledge/ecosystem.md` |
 
 ### Grow it
 
@@ -34,7 +34,7 @@ Route by the stage the user is in. A world folder on disk (`world.json` + `eleme
 | "I have an Atlas world folder / world files on disk" | survey or link (both read folders directly, no credentials) |
 | "My elements aren't connected well" | link |
 | "Find orphaned elements / enrich links" | link |
-| "Keep my world's history / try an alternate timeline or what-if / back it up" | Read `../../knowledge/world-folder.md`, "Keeping history" (a world folder in git: commits for history, branches for timelines). An API world is exported to a folder first (same file) |
+| "Keep my world's history / try an alternate timeline or what-if / back it up" | Read `knowledge/world-folder.md`, "Keeping history" (a world folder in git: commits for history, branches for timelines). An API world is exported to a folder first (same file) |
 
 ### Play in it and keep it true
 
@@ -50,7 +50,7 @@ Route by the stage the user is in. A world folder on disk (`world.json` + `eleme
 |-----------|----------|
 | "I want to build a tool/game with world data" | dev |
 | "I need to sync/upload/fetch data" | project-setup (if no `.ow/`) → api |
-| "I'm building an AI agent / need world-state or memory for my AI" | Read `../../knowledge/ai-builders.md`; route to dev or the MCP connect line |
+| "I'm building an AI agent / need world-state or memory for my AI" | Read `knowledge/ai-builders.md`; route to dev or the MCP connect line |
 | "The schema should have X / propose a change" | council |
 | "Are there motions about X?" | council |
 
@@ -59,8 +59,8 @@ Route by the stage the user is in. A world folder on disk (`world.json` + `eleme
 | User Says | Route To |
 |-----------|----------|
 | "What is OnlyWorlds?" | Explain below, then ask what they're working on |
-| "Which tool should I use / what exists?" | Read `../../knowledge/ecosystem.md`, route from its table |
-| "How do Atlas / Obsidian / MCP fit together?" | Read `../../knowledge/ecosystem.md` |
+| "Which tool should I use / what exists?" | Read `knowledge/ecosystem.md`, route from its table |
+| "How do Atlas / Obsidian / MCP fit together?" | Read `knowledge/ecosystem.md` |
 | "I found a bug / want a feature in a tool" | Point to onlyworlds.com/feedback |
 
 **Parsing or resolve?** Parsing is a one-off import of existing material (a novel, a notes folder, a wiki, a backlog of old session notes). Resolve is the repeating loop after each session: what happened in play is written back into the world. A campaign with old notes starts with parsing, then uses resolve after every new session.
@@ -77,7 +77,7 @@ Listen for signals from the routing table above. Don't interrogate: one open que
 
 ### 2. Explain OnlyWorlds (When Needed)
 
-OnlyWorlds is an open standard for worldbuilding data: 22 element types (Characters, Locations, Institutions, Events, Narratives, and more) that any tool can read, free and open source. A world is a folder of JSON files, or a hosted world behind the API. The full picture is in `../../knowledge/onlyworlds-core.md`.
+OnlyWorlds is an open standard for worldbuilding data: 22 element types (Characters, Locations, Institutions, Events, Narratives, and more) that any tool can read, free and open source. A world is a folder of JSON files, or a hosted world behind the API. The full picture is in `knowledge/onlyworlds-core.md`.
 
 ### 3. Check for Existing Setup
 
@@ -106,7 +106,7 @@ CRITICAL: For users with an **API world** who want parsing or API work, **projec
 
 **Wants to connect elements**: "Let me analyze your world's connections." → link (a world folder on disk needs NO credentials; the API path needs project-setup or credentials)
 
-**Wants history, a backup, or an alternate timeline**: "Let's put your world folder under git." → read `../../knowledge/world-folder.md` "Keeping history" and walk them through it (it is a knowledge page, not a skill). In a folder linked to an account, turn on Stay offline in Atlas before switching away from the branch the account follows.
+**Wants history, a backup, or an alternate timeline**: "Let's put your world folder under git." → read `knowledge/world-folder.md` "Keeping history" and walk them through it (it is a knowledge page, not a skill). In a folder linked to an account, turn on Stay offline in Atlas before switching away from the branch the account follows.
 
 **Runs sessions with AI (campaign, roleplay, co-written story) and wants canon to hold**: "Let's work out what each session needs from your world." → context. Once sessions are running: "Let's work out how each session gets written back." → resolve. Both work on a folder, the user's own notes, or an API world.
 
