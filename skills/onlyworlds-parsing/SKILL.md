@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-parsing
-description: Turn existing material into a structured world, once - novels, manuscripts, notes, documents, PDFs, a campaign bible, TTRPG lore, wikis - as OnlyWorlds elements in a world folder, JSON, or an existing world. Use for a one-off import or a larger parse project, including setting up the world's own modeling rules and taxonomy. For the repeating update after each played session, use the resolve skill. Avoids invented fields. Works without an account.
+description: "Turn notes, a manuscript, PDFs, a campaign bible or a wiki into a structured world, once. Use when the user says 'import my notes', 'structure my lore', 'turn this book into a world'. Invents no fields. No account needed."
 ---
 
 # OnlyWorlds Parsing

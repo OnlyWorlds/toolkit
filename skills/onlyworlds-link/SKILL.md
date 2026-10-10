@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-link
-description: Enrich connections between existing world elements. Use when the user wants to find missing links, connect orphaned elements, add Relations, improve element interconnections, audit link density, or says elements feel disconnected or unlinked. Works on a world FOLDER on disk (Atlas world, converter output) or via the OnlyWorlds API; counts the web, suggests links with evidence, and applies them after approval. Adds links and Relations only; new elements come from the parsing skill.
+description: "Find the connections a world is missing: orphaned elements, characters with no relations, places nobody lives in. Use when the user says 'my elements feel disconnected', 'what links are missing'. Adds links only."
 ---
 
 # OnlyWorlds Link

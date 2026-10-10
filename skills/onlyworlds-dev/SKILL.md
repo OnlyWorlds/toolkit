@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-dev
-description: Build tools, games, apps, or AI agents on OnlyWorlds world data. Use when the user wants to set up the OnlyWorlds SDK (npm install @onlyworlds/sdk), scaffold a React/web app, fetch and display world data, read a world folder as a data source, connect an AI agent (MCP), or use OnlyWorlds as a headless backend. Covers SDK setup, credential handling, and deployment.
+description: "Build a tool, game, app or AI agent on world data. Use when the user says 'npm install @onlyworlds/sdk', 'a React app on my world', 'connect an agent to my world', or wants OnlyWorlds as a backend."
 ---
 
 # OnlyWorlds Tool Development

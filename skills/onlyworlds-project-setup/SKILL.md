@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-project-setup
-description: Connect a local project to an OnlyWorlds account world. Configures .gitignore, a .env the user fills with their key and PIN, and a local cache of the world. Use when the user has an OnlyWorlds account and wants API access for parsing or other skills. API worlds only; a world folder on disk needs no setup.
+description: "Connect a local project to an account world: a .env for the key and PIN, .gitignore, a local copy of the world. Use when the user has an OnlyWorlds account and wants API access from this folder."
 ---
 
 # OnlyWorlds Project Setup

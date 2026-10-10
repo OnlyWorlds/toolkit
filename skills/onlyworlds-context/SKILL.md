@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-context
-description: Design how a world gets loaded into an AI session - fresh, scoped, sourced context instead of one giant chat that forgets. Use when the user says their AI forgets details, loses canon, drifts, or compresses old chats; asks how to load their world, lore bible, notes or PDFs into a writing, tabletop, or roleplay session; wants a character played from what that character knows; or is designing session prep, context assembly, or retrieval for a long-running world. Works with or without OnlyWorlds.
+description: "Load a world into an AI session so it stops forgetting. Use when the user says 'my AI forgets my lore', 'the chat drifts from canon', 'play this character from what they know', or asks how to prep a writing or tabletop session."
 ---
 
 # World Context

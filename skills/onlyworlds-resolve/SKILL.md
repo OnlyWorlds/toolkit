@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-resolve
-description: Design the repeating update after each session, so what happened in play or on the page is written back into the world and canon persists. Use when the user wants each session's notes, recap, roleplay transcript, or new chapter turned into world updates; asks how to keep canon from drifting or being rewritten by AI; wants new characters, deaths, moves, or secrets learned in play to land in their world or campaign notes; or is designing write-back, review, or consistency checks. For a one-off import of existing documents, use the parsing skill. Works with or without OnlyWorlds.
+description: "Write each session back into the world so canon holds. Use when the user says 'update my world from these session notes', 'a character died in play', 'keep the AI from rewriting my lore'. For a first import use parsing."
 ---
 
 # World Resolve

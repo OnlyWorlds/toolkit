@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-council
-description: Browse and participate in OnlyWorlds schema governance. Use when the user encounters a schema limitation, wants to propose a change (motion), check existing motions or amendments, draft a precedent showing existing solutions, or discuss how the schema could evolve. Covers browsing, drafting, and submitting motions via the council proxy API.
+description: "Propose or discuss a change to the OnlyWorlds schema. Use when the user hits a limit of the 22 types, says 'there should be a field for X', or wants to read what has been proposed before."
 ---
 
 # OnlyWorlds Council

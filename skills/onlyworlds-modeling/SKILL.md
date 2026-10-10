@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-modeling
-description: Design and decompose complex worldbuilding systems using OnlyWorlds element types. Use when the user asks how to model or represent magic systems, political hierarchies, economies, factions, tech trees, religions, crafting systems, or any concept that needs structuring into linked elements. One concept often becomes multiple connected types.
+description: "Decide how to represent a magic system, a faction, an economy, a religion, a tech tree. Use when the user asks 'how do I model X' or 'what type is this'. One idea usually becomes several linked elements."
 ---
 
 # OnlyWorlds Modeling

@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-start
-description: Entry point for the worldbuilding toolkit. Use when the user wants to organize, structure, or make sense of ANY worldbuilding material (notes, novels, campaign docs, world folders), asks what OnlyWorlds is, is new to the toolkit, or is unsure where to begin. Also use when the user wants to keep a world's history, back it up, or try an alternate timeline or what-if without breaking the main one. No account needed for most paths. Routes by stage (structure it, grow it, play in it and keep it true, build on it) to parsing, modeling, schema, survey, link, context, resolve, api, dev, council, or project setup.
+description: "Where to begin with worldbuilding material: notes, a novel, campaign docs, a world folder. Use when the user asks what OnlyWorlds is, wants their world organized, or does not know which skill fits. Routes to the right one."
 ---
 
 # OnlyWorlds Start

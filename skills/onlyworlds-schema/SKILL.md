@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-schema
-description: OnlyWorlds schema reference. Look up fields, validate element structure, check if fields exist, disambiguate between element types (e.g. Trait vs Ability, Institution vs Collective). Use when the user asks about OnlyWorlds fields, types, or data structure. Covers all 22 element types.
+description: "The 22 element types and their fields. Use when the user asks 'is there a field for X', 'Trait or Ability?', 'Institution or Collective?', or wants an element's structure checked."
 ---
 
 # OnlyWorlds Schema Reference

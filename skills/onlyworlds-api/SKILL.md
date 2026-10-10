@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-api
-description: Read and write an OnlyWorlds world on onlyworlds.com through the REST API (fetch, create, update, delete, bulk-upload, sync). Use when the user wants to query an account world, upload parsed data, or do any API work; prefer it over improvised curl.
+description: "Read and write an onlyworlds.com world through its API: fetch, create, update, bulk upload, sync. Use when the user says 'upload this to my world', 'pull my world', or any API work. Better than hand-written curl."
 ---
 
 # OnlyWorlds API

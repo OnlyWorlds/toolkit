@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-survey
-description: Survey a fictional world's elements and produce a creative brief. Use when the user says 'survey my world', 'survey this world folder', 'read my world', 'feel the world', 'give me a creative brief of my world', or wants an in-depth creative/emotional overview of what their world contains. Reads a world FOLDER on disk (Atlas world or converter output, no account needed) or via the OnlyWorlds API; counts the web by script first, then reads the elements that carry the most weight.
+description: "Read a whole world and say what it contains and what carries weight: a creative brief. Use when the user says 'survey my world', 'read my world', 'what do I actually have'. A world folder or an account world."
 ---
 
 # Survey
