@@ -64,6 +64,8 @@ Check for `.ow/config.json` in the current directory first:
 | Yes | manual | The user fills `.env` for this session, then load it |
 | No | (none) | Check `.env` for `ONLYWORLDS_API_KEY`; if it is not there, run the project-setup skill |
 
+A task that spans several worlds, or a throwaway test world, needs no project setup: the user puts each world's key and PIN in `.env` under names you agree on (for example `WORLD_A_API_KEY`), and each call sends its own world's pair.
+
 **Credentials never go through chat.** The user types them into `.env` themselves (the project-setup skill shows the format); you load them from there and never see, print, or repeat them. If the user pastes one into chat anyway, do not repeat it back, and ask them to put it in `.env` instead.
 
 - **API-Key**: World-scoped key. May be a prefixed key (`ow_w_…` world-write, `ow_r_…` read-share) or a legacy 10-digit key (grandfathered forever; still valid, but no longer issued). Get one on onlyworlds.com under Account → your world → API keys.
@@ -122,6 +124,8 @@ curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100&cursor={next_cursor}
 Loop, following `next_cursor`, until `has_more` is `false`.
 
 **Element types** (lowercase, singular): character, creature, species, family, collective, institution, location, zone, map, pin, marker, object, construct, title, ability, trait, language, law, event, narrative, phenomenon, relation
+
+**Fields per type**: `../../knowledge/schema-reference.md`, or `GET /api/metadata/{type}/`. The spatial types carry fields no other type has: Map has `width`, `height`, `depth`, `hierarchy`, `parent_map`, `location` and `background_color`; a Pin names its `map`, the pinned element as `element_type` + `element_id`, and `x`, `y`, `z`; a Marker names its `map` and `zone`, with `x`, `y`, `z` and `order`.
 
 **Query params** (lists; `expand` and `fields` also work on a single GET):
 

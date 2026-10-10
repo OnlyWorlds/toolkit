@@ -264,6 +264,15 @@ Decision trees for choosing between confusing element types. This file is the on
 "the red death" (a plague)
     └─ Natural/physical process? → YES
     └─ Phenomenon: "The Red Death"
+
+"the Soggy Years" (what people call the run of floods and departures since the war)
+    └─ A force acting beyond normal rules? → NO: a name people put on scattered things
+    └─ Construct: "The Soggy Years" (the label and how it is read)
+    └─ The floods and departures themselves: Events and character descriptions
+
+"the Eternal Drip's slow failure" (an ancient machine losing a fraction each year)
+    └─ Natural process, or a system? → NEITHER: a course with a start, a measured rate, and consequences
+    └─ Event: "Failure of the Eternal Drip" (start_date, consequences); the Drip keeps its own element
 ```
 
 **Key signals for Phenomenon**:
@@ -280,6 +289,7 @@ Decision trees for choosing between confusing element types. This file is the on
 - Human-created system, pattern, tradition
 - Technology, methodology, ideology
 - Custom or tradition (not enforced like Law)
+- A name people give a pattern they see (a bad era, a run of bad luck nobody can point at): the effects are already Events and descriptions. Reserve Phenomenon for what acts in the world beyond normal rules (a curse that acts IS a Phenomenon, whoever cast it)
 
 ---
 

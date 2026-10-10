@@ -106,7 +106,7 @@ CRITICAL: For users with an **API world** who want parsing or API work, **projec
 
 **Wants to connect elements**: "Let me analyze your world's connections." → link (a world folder on disk needs NO credentials; the API path needs project-setup or credentials)
 
-**Wants history, a backup, or an alternate timeline**: "Let's put your world folder under git." → read `../../knowledge/world-folder.md` "Keeping history" and walk them through it (it is a knowledge page, not a skill). Close Atlas before switching branches.
+**Wants history, a backup, or an alternate timeline**: "Let's put your world folder under git." → read `../../knowledge/world-folder.md` "Keeping history" and walk them through it (it is a knowledge page, not a skill). In a folder linked to an account, turn on Stay offline in Atlas before switching away from the branch the account follows.
 
 **Runs sessions with AI (campaign, roleplay, co-written story) and wants canon to hold**: "Let's work out what each session needs from your world." → context. Once sessions are running: "Let's work out how each session gets written back." → resolve. Both work on a folder, the user's own notes, or an API world.
 

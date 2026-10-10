@@ -361,6 +361,10 @@ Often both: Species for the beings, Construct for cultural groupings or racial p
 - **State that changes over sessions** is the resolve skill. Each field has a kind (principles §4): *replaced* (current state such as `location`), *appended* (a history that grows a dated line), or *never touched* (identity and canon).
 - **History and alternate timelines** ("what if the war never happened?") are a world folder in git: commits are the history, branches are timelines (world-folder.md, "Keeping history").
 
+### "A character has named goals they pursue"
+
+A short goal lives in `Character.motivations`. When a goal needs to be found, listed, or tracked on its own (it has a target, a state, an end), make it a Construct with supertype `Goal`: `founder` is the pursuer, the involves-fields (`characters`, `objects`, `locations`) hold the target, `status` says how it stands, `end_date` when it was met or dropped. It is not a Narrative (nobody tells it) and not an Event (an ongoing intention, not a change).
+
 ### "My system has deeply nested hierarchies"
 
 Use parent links: `parent_location`, `parent_object`, `parent_institution`, etc.
