@@ -2,7 +2,7 @@
 
 A general worldbuilding companion for AI assistants. Bring whatever you have (messy notes, a novel, campaign docs, a folder of world files, or nothing yet) and structure, organize, explore, and build with it.
 
-No account required. [OnlyWorlds](https://onlyworlds.com), an open standard for worldbuilding data, is the shared language underneath and the optional power layer when you want one.
+No account required. [OnlyWorlds](https://www.onlyworlds.com), an open standard for worldbuilding data, is the shared language underneath and the optional power layer when you want one.
 
 Works with any AI that reads markdown. Optimized for Claude Code.
 
@@ -94,7 +94,7 @@ Most of the toolkit runs on nothing but your files:
 - Parsing can emit that folder shape directly: your notes become a world Atlas opens, no account involved.
 - **Context and resolve** work with whatever holds your world: a folder, your own notes, or an OnlyWorlds world.
 
-With a free OnlyWorlds account ([onlyworlds.com](https://onlyworlds.com)), the same world gains cloud sync, API access, sharing, and the growing ecosystem of apps and games. The toolkit connects automatically, and everything stays exportable, always.
+With a free OnlyWorlds account ([onlyworlds.com](https://www.onlyworlds.com)), the same world gains cloud sync, API access, sharing, and the growing ecosystem of apps and games. The toolkit connects automatically, and everything stays exportable, always.
 
 ## For AI Builders
 
