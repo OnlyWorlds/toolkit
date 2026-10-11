@@ -43,6 +43,7 @@ Route by the stage the user is in. A world folder on disk (`world.json` + `eleme
 | "I run a campaign, roleplay, or story with AI and it loses canon" | context (load the world fresh each session), then resolve (write each session back) |
 | "My AI forgets / how do I load my world into a session?" | context |
 | "Update my world after a session / turn session notes or a recap into canon" | resolve |
+| "Does my world contradict itself / continuity check / does this timeline add up?" | consistency |
 
 ### Build on it
 
