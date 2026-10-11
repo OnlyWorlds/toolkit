@@ -48,7 +48,7 @@ Each type has its own fields, from many (Character) to few (Pin). See schema-ref
 
 | Resource | URL |
 |----------|-----|
-| Main site | https://onlyworlds.com |
+| Main site | https://www.onlyworlds.com |
 | Atlas (flagship app) | https://atlas.onlyworlds.com |
 | Documentation | https://onlyworlds.github.io |
 | API docs | https://www.onlyworlds.com/api/docs |
