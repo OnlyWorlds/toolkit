@@ -127,6 +127,8 @@ const pin = await client.create('pin', {
 
 A read key in a public bundle lets anyone who finds it read that world, so use one only for a world meant to be public. The browser patterns (build-time read key, runtime prompt, read-then-edit hybrid, why the PIN never goes in `localStorage`) are in **knowledge/deployment.md**, "Credential Handling Patterns".
 
+**Code a person will run does not declare itself an agent.** Leave out `agent: true` (`@onlyworlds/sdk` 4.26.0+), `agent=True` (Python `onlyworlds` 0.3.0+) and the `X-OW-Agent` header: what a client does by default, every person using the app does, so each of their edits would be recorded as agent-made. Set it only in code that is itself an AI agent writing to the world.
+
 ### Step 5: Local Development
 
 **Plain HTML + JS** (simplest):

@@ -70,6 +70,7 @@ A task that spans several worlds, or a throwaway test world, needs no project se
 
 - **API-Key**: World-scoped key. May be a prefixed key (`ow_w_…` world-write, `ow_r_…` read-share) or a legacy 10-digit key (grandfathered forever; still valid, but no longer issued). Get one on onlyworlds.com under Account → your world → API keys.
 - **API-Pin**: The world's PIN (Argon2 wall). Required on **every write** when the world has one. Prefixed keys always read without it; only a legacy 10-digit key reading a private world needs it. See [PIN](#pin-the-world-wall).
+- **X-OW-Agent**: as an AI agent, send `X-OW-Agent: 1` on every request (the examples below do), so OnlyWorlds records your writes as agent-made (`changed_via: declared`); only its presence counts. An agent seat's key and the MCP server are recorded as agents without it. Reads show who last changed an element (`changed_by`, `changed_via`; read-only, dropped from a write body), and a delete in `/changes` carries `deleted_by`, `deleted_via`. Code you write for a person's app leaves it off (the dev skill).
 
 A third credential exists for account-level automation: **account tokens** (`ow_a_…`, minted in the portal under Settings → Account, shown once, sent as `Authorization: Bearer` on `/api/v2/account/…` routes). Normal element work never needs one.
 
@@ -91,7 +92,7 @@ curl -s "https://www.onlyworlds.com/api/v2/health"
 # → {"status": "ok", "service": "keel"}
 
 curl -s "https://www.onlyworlds.com/api/v2/world" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: $ONLYWORLDS_API_KEY" -H "X-OW-Agent: 1"
 ```
 
 If credentials are bad you get a `401` with a Stripe-style envelope naming the problem (`invalid_credentials`); read it rather than re-guessing.
@@ -104,7 +105,7 @@ If credentials are bad you get a `401` with a Stripe-style envelope naming the p
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: $ONLYWORLDS_API_KEY" -H "X-OW-Agent: 1"
 ```
 
 **Response is enveloped and paginated:**
@@ -118,7 +119,7 @@ curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100" \
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100&cursor={next_cursor}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: $ONLYWORLDS_API_KEY" -H "X-OW-Agent: 1"
 ```
 
 Loop, following `next_cursor`, until `has_more` is `false`.
@@ -145,7 +146,7 @@ Any other param on a list returns `422 Unknown query parameter`. Lists always co
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: $ONLYWORLDS_API_KEY" -H "X-OW-Agent: 1"
 ```
 
 Returns the **bare element object** (not enveloped: no `data` wrapper on a singular GET). The trailing slash is optional on v2 (it works with or without).
@@ -156,6 +157,7 @@ Returns the **bare element object** (not enveloped: no `data` wrapper on a singu
 curl -s -X POST "https://www.onlyworlds.com/api/v2/{type}" \
   -H "API-Key: $ONLYWORLDS_API_KEY" \
   -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "X-OW-Agent: 1" \
   -H "Content-Type: application/json" \
   -d '{"id": "{your-uuid}", "name": "Element Name", "description": "...", "friends": ["{uuid}"]}'
 ```
@@ -168,6 +170,7 @@ Returns `201` with the flat element object, including echoed `created_at`/`updat
 curl -s -X PATCH "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
   -H "API-Key: $ONLYWORLDS_API_KEY" \
   -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "X-OW-Agent: 1" \
   -H "Content-Type: application/json" \
   -d '{"description": "Updated description"}'
 ```
@@ -180,6 +183,7 @@ curl -s -X PATCH "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
 curl -s -X POST "https://www.onlyworlds.com/api/v2/{type}/{uuid}/links/{field}" \
   -H "API-Key: $ONLYWORLDS_API_KEY" \
   -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "X-OW-Agent: 1" \
   -H "Content-Type: application/json" \
   -d '{"add": ["{uuid}"], "remove": ["{uuid}"]}'
 ```
@@ -190,7 +194,7 @@ Atomic server-side merge on one multi-link field: `add` skips ids already presen
 
 ```bash
 curl -s -X DELETE "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN"
+  -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN" -H "X-OW-Agent: 1"
 ```
 
 Returns `204 No Content`. (A `000` curl status is a dropped connection, not a server verdict; retry it.)
@@ -223,6 +227,7 @@ Delete is rarely the right tool: it also removes the element from every link tha
 curl -s -X POST "https://www.onlyworlds.com/api/v2/bulk" \
   -H "API-Key: $ONLYWORLDS_API_KEY" \
   -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "X-OW-Agent: 1" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: {a-uuid-for-this-batch}" \
   -d @batch.json
@@ -262,7 +267,7 @@ No two-pass dance is needed on v2: the batch resolves sibling links itself.
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/changes" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: $ONLYWORLDS_API_KEY" -H "X-OW-Agent: 1"
 ```
 
 ```json

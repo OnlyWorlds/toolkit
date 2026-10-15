@@ -64,6 +64,7 @@ For the full surface map (Atlas, show pages, Obsidian plugin, MCP, portal, and h
 
 - **Base URL** `https://www.onlyworlds.com/api/v2/` (always `www.`). Endpoints are singular: `/api/v2/character`, `/api/v2/character/{uuid}`.
 - **Headers** `API-Key` and `API-Pin`, spelled exactly. A key is scoped to one world: a prefixed key (`ow_w_…` write, `ow_r_…` read) or a legacy 10-digit key. The PIN is required on writes; prefixed keys read without it. Keys: Account → your world → API keys. PIN: Account → Settings → World PIN (one PIN for every world you own).
+- **Agents declare themselves**: as an AI agent, send `X-OW-Agent: 1` on every request, so OnlyWorlds records your writes as agent-made (`changed_via: declared`). An agent seat's key and the MCP server are recorded as agents without it. Reads show who last changed an element (`changed_by`, `changed_via`). In the SDKs: `new OwV2Client({ ..., agent: true })` (@onlyworlds/sdk 4.26.0+), `Client(key, pin, agent=True)` (Python `onlyworlds` 0.3.0+). Code you write for a person's app leaves it off.
 - **Shapes**: lists are paginated (`{data, has_more, next_cursor}`); link fields are flat UUID arrays under bare names; `/api/v2/bulk` uploads many elements at once; `/api/v2/changes` is the sync feed.
 - **The world's now**: `time_range_current` on the API, `time_current` in a folder's `world.json`.
 
