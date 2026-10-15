@@ -159,6 +159,8 @@ Marker 4 (order: 3) ──────── Marker 3 (order: 2)
 
 A Zone drawn by Markers is a closed polygon by default. Atlas records the shape in its own `atlas_shape` field; other writers leave that field to Atlas and mark an open line with supertype `line`, which Atlas also reads. Write it lowercase: Atlas reads it in any case since 1.5, but earlier versions matched only `line`. Always write order.
 
+**Routes and itineraries**: the path itself is a Zone with supertype `line`, drawn by Markers in `order`. The stops are Pins as usual. Pin has no order field, so when the sequence of stops matters, give each Pin an extension field such as `x_order` (0 = first) and name it in the world's rules; dated Events at the stops carry the same sequence in time.
+
 **Visual overview**:
 
 ```
@@ -358,6 +360,7 @@ Often both: Species for the beings, Construct for cultural groupings or racial p
 ### "How do I represent time-based state changes?"
 
 - **Time lives in dated fields and Events.** `start_date`/`end_date`, `founding_date`, `birth_date` place things in time; an Event ("Fall of Feltropolis", with `consequences`) records that something changed.
+- **A date is one whole number in the world's time unit** (`time_basic_unit` in the world's settings, Year by default). A source date finer than the unit (23 April, in a world counted in years) keeps the year in the field and the full date in the text. Count in days only when the world needs to compute with them; then every date field counts days from the same zero.
 - **State that changes over sessions** is the resolve skill. Each field has a kind (principles §4): *replaced* (current state such as `location`), *appended* (a history that grows a dated line), or *never touched* (identity and canon).
 - **History and alternate timelines** ("what if the war never happened?") are a world folder in git: commits are the history, branches are timelines (world-folder.md, "Keeping history").
 

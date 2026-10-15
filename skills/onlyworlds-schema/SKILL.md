@@ -66,7 +66,7 @@ Known non-fields (`Character.age`, `Character.titles`, `Character.status`, `Obje
 
 ### Marking a Dead Character (until a Character status field lands)
 
-This is the one home of the convention; other skills point here. Prefix `physicality` with `[Deceased] ` and keep the rest of the text, and add a line with the date to `background` (when, and how if known). Retire with the date, never delete: the past stays answerable (`knowledge/principles.md` §2). When a Character `status` field lands, it replaces this prefix.
+This is the one home of the convention; other skills point here. Prefix `physicality` with `[Deceased] ` and keep the rest of the text, and add a line with the date to `background` (when, and how if known). Retire with the date, never delete: the past stays answerable (`knowledge/principles.md` §2). The prefix says the character is dead at the world's now (`time_current`): a death the source places later is not marked yet. Its dated line goes in `background` all the same, and the prefix is added when the world's now passes it. When a Character `status` field lands, it replaces this prefix.
 
 ### Link Direction
 
