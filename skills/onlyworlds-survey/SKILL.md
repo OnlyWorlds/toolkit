@@ -38,7 +38,7 @@ Shared rules every skill follows: `knowledge/principles.md` (here especially §2
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/world" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN" -H "X-OW-Agent: 1"
+  -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN"
 ```
 
 Report: world name and description. The element count comes from Step 4 (the distribution table in Step 6).
