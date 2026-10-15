@@ -1,13 +1,13 @@
 ---
 name: onlyworlds-council
-description: "Propose or discuss a change to the OnlyWorlds schema. Use when the user hits a limit of the 22 types, says 'there should be a field for X', or wants to read what has been proposed before."
+description: "Propose or discuss a change to the OnlyWorlds schema. Use when the user hits a limit of the 22 types, says 'there should be a field for X', or wants to read, vote on or back what has been proposed before."
 ---
 
 # OnlyWorlds Council
 
-Browse, discuss, and participate in schema governance.
+Browse, discuss, and take part in schema governance.
 
-Shared rules (credentials above all) live in `knowledge/principles.md`; this skill applies them to council submissions.
+Shared rules (credentials above all) live in `knowledge/principles.md`; this skill applies them to council requests.
 
 ## Quick Reference
 
@@ -18,7 +18,10 @@ Shared rules (credentials above all) live in `knowledge/principles.md`; this ski
 | "This already works with Construct" | Draft a precedent |
 | "I want to propose a change" | Draft a motion |
 | "What motions exist for Character?" | Browse by element type |
-| "Submit my motion" | Submit via proxy endpoint |
+| "Submit my motion" | `POST submit/` |
+| "Vote for that motion" / "I back this" | `POST vote/` or `POST endorse/` |
+| "Make my character a delegate" | `POST delegate/` |
+| "Ask someone to second my motion" | `POST dispatch/` |
 
 | Item Type | Purpose |
 |-----------|---------|
@@ -28,19 +31,25 @@ Shared rules (credentials above all) live in `knowledge/principles.md`; this ski
 
 ## What Is Council?
 
-The OnlyWorlds Council is where worldbuilders propose and discuss schema changes. Characters from across all worlds serve as **delegates**: committed representatives who submit motions on behalf of their world.
+The OnlyWorlds Council is where worldbuilders propose and discuss schema changes. Characters from across all worlds serve as **delegates**: committed representatives who act on behalf of their world.
 
-Council data lives at `council.onlyworlds.com`. The toolkit browses via a public proxy and submits via an authenticated one.
+The council app is `council.onlyworlds.com`. Its data is one world on onlyworlds.com, read and written through the council API: `https://www.onlyworlds.com/api/council/`. The same routes also answer at `/api/worldapi/council/` (the older address); use `/api/council/` for anything new.
 
-## Prerequisites for Submitting
+## Prerequisites
 
-Browsing is free. Submitting requires:
+Browsing is free and needs nothing. Everything else needs:
 
-1. **An OnlyWorlds world** with an API key and PIN. Submission accepts either the legacy 10-digit numeric key or a prefixed **write** key (`ow_w_...`). A bare read key (`ow_r_...`) is rejected: submission needs write scope
-2. **A delegate**: a Character from the user's world that has been committed as a council delegate at `council.onlyworlds.com` (costs 1000 tokens, one-time)
-3. **Tokens**: each submission stakes 100-1000 tokens, deducted from the user's daily quota
+1. **An OnlyWorlds world** with its API key and PIN: the legacy 10-digit key or a prefixed **write** key (`ow_w_...`). A read key (`ow_r_...`) is refused, and so is a key minted for a member of someone else's world: council acts use a key the world's owner holds. Demo worlds cannot take part.
+2. **A delegate**: a Character from the user's world committed as a council delegate (1000 tokens, once). Commit one in the app (log in at `council.onlyworlds.com`, Quarters) or with `POST delegate/` (Step 6).
+3. **Tokens**: every act spends from the account's token rating for the day. What is left is the rating minus what was spent today; it resets at midnight UTC. The server sets each price.
 
-If the user hasn't committed a delegate yet, direct them to `council.onlyworlds.com` → log in → Quarters → Commit a Character. They cannot submit via the toolkit until a delegate exists.
+| Act | Cost |
+|---|---|
+| Submit a motion, amendment or precedent | the stake, 100-1000 |
+| Vote | 1 per vote, 1-1000 votes at a time |
+| Endorse | 1 |
+| Commit a delegate | 1000 (a repeat commit is free) |
+| Ask a delegate to second (dispatch) | 25 |
 
 ## Instructions
 
@@ -49,17 +58,17 @@ If the user hasn't committed a delegate yet, direct them to `council.onlyworlds.
 Before drafting anything, check what already exists.
 
 ```bash
-curl -s "https://www.onlyworlds.com/api/worldapi/council/browse/"
+curl -s "https://www.onlyworlds.com/api/council/browse/"
 ```
 
 Response JSON contains:
-- `motions[]`: each with `id`, `name`, `description` (human text, metadata stripped), `supertype` (Motion/Precedent/Amendment), `subtype` (element type), `meta` (author fields, `votes`, `stake`, seconder fields, `field`, `parentMotionId`; no status), `created_at`
-- `delegates[]`: each with `id`, `name`, `description`, `supertype` (`CouncilCharacter`), `image_url`. The `description` is raw: it ends in a `<!-- council_char:{...} -->` block whose JSON includes `sourceWorldId` (the delegate's home world) and `isDelegate`
+- `motions[]`: each with `id`, `name`, `description` (human text, metadata stripped), `supertype` (Motion/Precedent/Amendment), `subtype` (element type, or `core`), `meta`, `created_at`. `meta` holds the author fields (`authorName`, `authorWorld`, `authorId`, `authorImage`), `votes`, `stake`, `field`, `parentMotionId`, `amendmentType`, the seconder fields when seconded (`seconderId`, `seconderName`, ...) and the endorsers (`endorserIds`, `endorserNames`); no status.
+- `delegates[]`: each with `id`, `name`, `description`, `supertype` (`CouncilCharacter`), `image_url`. These are the council's copies of characters; the `description` is raw and ends in a `<!-- council_char:{...} -->` block whose JSON includes `sourceWorldId` (the home world), `sourceCharacterId` (the character in it) and `isDelegate`. Only those with `isDelegate: true` are committed delegates.
 - `total_motions`, `total_delegates`
 
-Browse is capped: it returns the newest 200 motions (amendments and precedents included) and the first 100 delegates by name. `total_motions` and `total_delegates` count what was returned, so at 200 or 100 they are not true totals, and an older motion may be missing from the list. Say so when reporting "no motion exists".
+Browse is capped: it returns the newest 200 motions (amendments and precedents included) and the first 100 council characters by name. `total_motions` and `total_delegates` count what was returned, so at 200 or 100 they are not true totals, and an older motion may be missing from the list. Say so when reporting "no motion exists".
 
-Browse is public, no auth needed. Rate limited to 100/hour per IP, cached 5 minutes.
+Public, no auth. Rate limited to 100 requests per hour per IP (429), cached for 5 minutes.
 
 ### Step 2: Analyze Results
 
@@ -69,17 +78,17 @@ Present motions readably, grouped by element type (`subtype`), most votes first.
 ## Character Motions (3)
 
 ### "Characters need a death_date field"
-- **Votes**: 47 · **Stake**: 100
+- **Votes**: 47 · **Stake**: 100 · **Endorsements**: 2
 - **Author**: Admiral Fluffington of Moppetopia
 - **Amendments**: 1
 - **Precedents**: 0
 ```
 
-Link amendments/precedents to their parent motions via `meta.parentMotionId`.
+Link amendments and precedents to their parent motions via `meta.parentMotionId`.
 
 ### Step 3: Draft Content
 
-Draft in the exact format the submit endpoint expects.
+Draft in the exact format `submit/` expects.
 
 **Motion** (a schema limitation or question):
 ```json
@@ -120,32 +129,35 @@ Draft in the exact format the submit endpoint expects.
 }
 ```
 
-Validation rules:
-- `type`: motion, amendment, or precedent (lowercase)
+Validation rules (a failure is a 422 `{"detail": [...]}`):
+- `type`: motion, amendment, or precedent
 - `title`: 5-200 characters
-- `description`: 10-2000 characters, must not contain `<!-- council:` markers
-- `element_type`: one of the 22 element types or `core`
-- `stake`: 100-1000 (tokens deducted from user's daily quota)
-- `parent_motion_id` (required for precedent and amendment): UUID of the parent motion
+- `description`: 10-2000 characters, must not contain `<!-- council:`
+- `element_type`: one of the 22 element types (lowercase) or `core`
+- `field`: optional, the field the item is about
+- `stake`: 100-1000, default 100
+- `parent_motion_id` (required for precedent and amendment): the UUID of a **Motion** (not of another amendment or precedent)
 - `amendment_type` (required for amendment): `new_field`, `rename_field`, `remove_field`, `new_type`, `rename_type`
+- `proposer_world_name`: optional, the world name shown as the author's world (default: the world's own name)
+- No other keys: an unknown key is a 422.
 
 **Always show the draft to the user before submitting.**
 
 ### Step 4: Gather Credentials
 
-To submit, collect two things:
+Every request except browse carries:
 
-1. **World API key + PIN**: the same credentials the api skill uses, loaded from `.env`. If they are not there, the user types them into `.env` (the project-setup skill shows how); never ask for them in chat.
-2. **Delegate ID**: UUID of a committed delegate Character in the council world. In the `/browse/` response's `delegates[]`, find the ones whose `council_char` block has `sourceWorldId` equal to the user's world id (from `GET /api/v2/world`) and `isDelegate: true`; or ask the user for their delegate's name and match it.
+1. **`proposer_key` and `proposer_pin`**: the world's API key and 4-digit PIN, the same ones the api skill uses, loaded from `.env`. If they are not there, the user types them into `.env` (the project-setup skill shows how); never ask for them in chat. Wrong PINs back off and then lock the key for a while (429, from 2026-10-15).
+2. **`delegate_id`** (submit, vote, endorse, dispatch): the UUID of the user's committed delegate. In the `browse/` response's `delegates[]`, find the ones whose `council_char` block has `sourceWorldId` equal to the user's world id (from `GET /api/v2/world`) and `isDelegate: true`; or ask the user for their delegate's name and match it; or commit one (Step 6), whose answer gives the id.
 
-If none appears, either they have not committed one yet (do it at `council.onlyworlds.com`) or their delegate is past the 100-delegate cap; ask the user for the delegate's UUID before concluding the first.
+If none appears, either they have not committed one yet or their delegate is past the 100-character cap; ask the user for the delegate's UUID before concluding the first.
 
 ### Step 5: Submit
 
 The key and PIN travel in the JSON body. Load them from `.env` (`set -a; . ./.env; set +a`) and let the shell fill them in; never print, echo, or paste them into chat (`knowledge/principles.md` §6). The unquoted heredoc expands `$` variables, so a literal `$` or backtick in the text needs escaping.
 
 ```bash
-curl -s -X POST "https://www.onlyworlds.com/api/worldapi/council/submit/" \
+curl -s -X POST "https://www.onlyworlds.com/api/council/submit/" \
   -H "Content-Type: application/json" \
   -d @- <<EOF
 {
@@ -162,7 +174,7 @@ curl -s -X POST "https://www.onlyworlds.com/api/worldapi/council/submit/" \
 EOF
 ```
 
-**Success response** (201):
+**Success** (201):
 ```json
 {
   "motion_id": "uuid",
@@ -174,36 +186,66 @@ EOF
 }
 ```
 
-Report the token balance to the user. Suggest visiting `council.onlyworlds.com` to see it live.
+Report the token balance to the user. Suggest visiting `council.onlyworlds.com` to see it live. A world can submit 10 times a day.
 
-**Error responses**:
+### Step 6: Vote, Endorse, Commit, Dispatch (from 2026-10-15)
 
-| Code | Error | Meaning |
+Each is a `POST` to the council API with `proposer_key` and `proposer_pin` in the body, sent like Step 5. The act and its cost happen together: a refused act spends nothing.
+
+| Route | Body (plus key and PIN) | Success |
+|---|---|---|
+| `vote/` | `motion_id`, `amount` (1-1000), `delegate_id` | 200 `{motion_id, votes, tokens_deducted, tokens_remaining, message}`; `votes` is the new total |
+| `endorse/` | `motion_id`, `delegate_id` | 200 `{motion_id, endorsements, tokens_deducted, tokens_remaining, message}` |
+| `delegate/` | `character_id`: a Character in the user's own world | 201 `{delegate_id, character_id, name, already_delegate, tokens_deducted, tokens_remaining, message}`; a repeat answers 200 with `already_delegate: true` and spends nothing |
+| `dispatch/` | `motion_id` (the user's world's own Motion), `delegate_id` (the sender), `to_delegate_id`, `message` (optional, up to 200 characters) | 201 `{dispatch_id, motion_id, to_delegate_id, tokens_deducted, tokens_remaining, message}` |
+
+- `vote/` and `endorse/` take a Motion, Amendment or Precedent; `dispatch/` only a Motion. No world votes on, or endorses, its own world's item, whichever of its delegates wrote it.
+- A delegate endorses an item once.
+- A dispatch asks a committed delegate of another world to second the motion. It cannot go to the motion's author, to the user's own world's delegates, or for a motion that already has a second; one dispatch per delegate and motion can be pending (48 hours).
+- **Retrying a vote**: send an `Idempotency-Key` header (a unique string, up to 200 characters) with the vote. A retry with the same key and body answers the first result again (header `Idempotent-Replay: true`) and spends nothing; the same key with a different body, or while the first is still in flight, is a 409.
+
+Always confirm the act and its cost with the user before sending it.
+
+### Errors
+
+Refusals are `{"error": "...", "detail": "..."}`; validation failures are 422 `{"detail": [...]}`.
+
+| Code | `error` | Meaning |
 |------|-------|---------|
-| 400 | Invalid delegate | delegate_id not found in the council world |
-| 400 | Not a delegate | Character exists but was never committed as a delegate (1000 tokens in council) |
-| 400 | Invalid parent motion | parent_motion_id does not match a motion |
-| 403 | Invalid credentials | Wrong key/PIN combo |
+| 400 | Invalid delegate | `delegate_id` is not a council character, or its metadata is unreadable |
+| 400 | Not a delegate | The character was never committed as a delegate |
+| 400 | Invalid parent motion | submit: `parent_motion_id` is not a Motion in the council |
+| 400 | Invalid motion | `motion_id` is not a readable item in the council (a dispatch needs a Motion) |
+| 400 | Invalid character | delegate: `character_id` is not a Character in the user's world |
+| 400 | Invalid recipient | dispatch: `to_delegate_id` is not a committed delegate of another world |
+| 400 | Invalid Idempotency-Key | vote: the header's value is too long |
+| 403 | Invalid credentials | Wrong key or PIN, or a read key |
+| 403 | Member keys cannot submit motions / act in the council | A member's key; use a key the world's owner holds |
+| 403 | Demo worlds cannot submit motions / act in the council | Demo worlds are read-only here |
 | 403 | No token profile | The world has no owner account with tokens; log in to onlyworlds.com first |
-| 403 | Delegate ownership mismatch | Delegate doesn't belong to user's world |
-| 403 | Insufficient tokens | Not enough daily tokens for the stake |
-| 403 | Demo worlds cannot submit | Demo/public world keys blocked |
-| 422 | `{"detail": [...]}` | Field validation failed (length, stake range, amendment type) |
-| 429 | Rate limit exceeded | 10 submissions per world per day |
-| 503 | Council unavailable | Council world not configured on the server; try later |
-
-Rate limit: 10 submissions per world per day.
+| 403 | Delegate ownership mismatch | The delegate belongs to another world |
+| 403 | Insufficient tokens | Not enough left today for this act; `detail` says how many are available |
+| 403 | Own contribution | vote, endorse: the item is the user's own world's |
+| 403 | Not your motion | dispatch: the motion is not the user's world's |
+| 409 | Already endorsed | This delegate endorsed it before |
+| 409 | Already seconded | dispatch: the motion has a second |
+| 409 | Dispatch pending | dispatch: one to this delegate for this motion is still pending |
+| 409 | Idempotency conflict | vote: the key was used with another body, or is still in flight |
+| 429 | Rate limit exceeded | browse: 100 an hour per IP; submit: 10 a day per world |
+| 429 | Too many failed PIN attempts | The key is locked after wrong PINs; `detail` says when to retry (from 2026-10-15) |
+| 503 | Council unavailable | The council world is not set up on the server; try later |
+| 503 | Failed to create motion / Council write failed | An unexpected server error; nothing was spent |
 
 ## Motion Status
 
-The browse response carries votes, stake and seconder fields but no status. Motion status is shown on `council.onlyworlds.com`; send the user there rather than deriving one.
+The browse response carries votes, endorsements, stake and seconder fields but no status. Motion status is shown on `council.onlyworlds.com`; send the user there rather than deriving one.
 
 ## Conversational Use
 
 When the user hits a genuine schema boundary that `knowledge/decision-trees.md` doesn't resolve:
 
 1. Browse council for related motions on that element type
-2. If found: surface it ("there's a council motion about this")
+2. If found: surface it ("there's a council motion about this"), and offer to vote or endorse
 3. If not: suggest drafting one ("this might be worth a council motion")
 
 This bridges individual worldbuilding work and collective schema evolution.
