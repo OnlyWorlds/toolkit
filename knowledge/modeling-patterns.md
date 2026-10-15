@@ -315,7 +315,9 @@ Your application can extend freely:
 
 **Wrapping pattern:**
 ```typescript
-interface MyCharacter extends OWCharacter {
+import type { OwElement } from '@onlyworlds/sdk';
+
+interface MyCharacter extends OwElement {
   customField: string;
   gameStats: { hp: number; mp: number };
 }
