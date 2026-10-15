@@ -7,6 +7,7 @@ Decision trees for choosing between confusing element types. This file is the on
 - [World-Specific vs Generic](#core-principle-world-specific-vs-generic)
 - [Object vs Construct](#object-vs-construct)
 - [Title vs Construct](#title-vs-construct)
+- [Institution vs Construct](#institution-vs-construct)
 - [Collective vs Institution](#collective-vs-institution)
 - [Species vs Creature](#species-vs-creature)
 - [Event vs Narrative](#event-vs-narrative)
@@ -117,6 +118,28 @@ Decision trees for choosing between confusing element types. This file is the on
 - `body` → Institution the title belongs to
 - `holders` → Characters who hold/held the title
 - `locations` → Places where title has authority
+
+---
+
+## Institution vs Construct
+
+**The core question**: Does it act (hold property, have an operator or members, a status that changes hands)? Institution. Is it the terms that bind parties? Construct, or Law when a jurisdiction enforces it.
+
+```
+"the Yuma ferry company"
+    └─ Acts, owns the boat, has an operator and a take? → YES
+    └─ Institution: "The Ferry Company" (operator, zones, allies, adversaries)
+
+"Glanton's scalp contract with the governor"
+    └─ Terms that bind two parties? → YES
+    └─ Construct: "The Scalp Bounty Terms" (rationale, founder, custodian, status)
+    └─ Enforced by a jurisdiction with penalties? → then Law, with the governor's office as author
+
+"a trading house and its charter"
+    └─ Both: the Institution that trades, plus a Construct for the charter it trades under
+```
+
+**Key signals**: an Institution has a doctrine, zones, allies and adversaries and does things; a Construct has a rationale, a founder and a custodian and is the thing done by. A business is often the pair.
 
 ---
 
@@ -265,6 +288,11 @@ Decision trees for choosing between confusing element types. This file is the on
     └─ Natural/physical process? → YES
     └─ Phenomenon: "The Red Death"
 
+"systemic violence" (the scalp bounties, the raids, the reprisals: nobody's plan, everyone's weather)
+    └─ An ongoing or emergent condition that acts on the world, with no one intending it? → YES
+    └─ Phenomenon: "Systemic Violence" (expression, effects; the bounty law and the gangs link to it as catalysts and wielders)
+    └─ The bounty terms themselves → Construct or Law; the gang → Collective; each raid → Event
+
 "the Soggy Years" (what people call the run of floods and departures since the war)
     └─ A force acting beyond normal rules? → NO: a name people put on scattered things
     └─ Construct: "The Soggy Years" (the label and how it is read)
@@ -289,7 +317,7 @@ Decision trees for choosing between confusing element types. This file is the on
 - Human-created system, pattern, tradition
 - Technology, methodology, ideology
 - Custom or tradition (not enforced like Law)
-- A name people give a pattern they see (a bad era, a run of bad luck nobody can point at): the effects are already Events and descriptions. Reserve Phenomenon for what acts in the world beyond normal rules (a curse that acts IS a Phenomenon, whoever cast it)
+- A name people give a pattern they see (a bad era, a run of bad luck nobody can point at): the effects are already Events and descriptions. Phenomenon is for a condition that acts in or on the world without anyone intending it, natural or social (the standard's words: "ongoing or emergent conditions... not defined by intent or agency"), so systemic violence, a famine, a panic are Phenomena; a label with nothing acting behind it is a Construct (a curse that acts IS a Phenomenon, whoever cast it)
 
 ---
 
