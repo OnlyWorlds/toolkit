@@ -42,7 +42,7 @@ A name match is a **candidate**, never a conclusion.
 - **Field presence over labels.** Tools recognise data by which fields are present, not by `supertype` or `subtype` text, which are for humans. The exception is a value a convention reserves: Atlas marks knowledge entries with Narrative subtype `knowledge` (see `atlas-conventions.md`). Honour reserved values; do not invent new ones.
 - **Custom data goes in extension fields.** Unprefixed fields must be schema fields. Anything else goes in `x_<name>`: stored verbatim, returned by the API, kept by Atlas sync and export. A tool prefixes its own fields with its name (`x_mytool_...`) and writes only its own namespace; `atlas_*` and `shadow_*` belong to those tools. Fields a machine writes are never hand-edited.
 - **Numbers are data.** Numeric schema fields are integers in the world's own units (state the unit somewhere the reader will find it). A tool, or a simulation, can only read what is a field; prose is for people.
-- **Keep the source voice apart from the summary.** A Narrative's `story` holds verbatim text (the only type with that field); `description` holds the editorial overview everywhere. Provenance (where a fact came from) goes in a side record or a citation, not inside descriptions.
+- **Keep the source voice apart from the summary.** A Narrative's `story` holds verbatim text (the only type with that field); `description` holds the editorial overview everywhere. Provenance (where a fact came from) goes in a side record or a citation, not inside descriptions. Attribution is different: when a world or an element rests on someone else's published work, name the work where readers will see it (the parsing skill, sources).
 
 ## 5. Checking your work
 
