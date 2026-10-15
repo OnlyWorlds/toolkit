@@ -18,7 +18,8 @@ Shared rules (credentials, read before write, verify after write, extension fiel
 | Deployment | See knowledge/deployment.md |
 | Personal tool (runs on your machine) | Credentials in a gitignored `.env`, read at runtime; never hardcoded |
 | Shared or deployed tool | Read key (`ow_r_...`) for reading; the user enters key and PIN at runtime for writing. A PIN never goes into a build |
-| Python/Node script | Direct API calls with curl or requests, credentials from `.env` |
+| Node script | The SDK (Node 18+), credentials from `.env` |
+| Python script | Direct API calls with requests, credentials from `.env` |
 
 ## Instructions
 
@@ -79,10 +80,18 @@ await client.delete('character', 'uuid-here');
 // Add or remove multi-links: atomic server-side merge, no read needed
 await client.editLinks('character', 'uuid-here', 'friends', { add: ['uuid-a'], remove: ['uuid-b'] });
 
-// Sync + atomic bulk
-const changed = await client.changes({ since: cursor });
+// Sync: changesAll walks the feed from a saved cursor to now (no cursor = full export);
+// changes() returns one page
+const feed = client.changesAll(cursor);
+let step;
+while (!(step = await feed.next()).done) applyChange(step.value); // ops in order: upsert or delete
+cursor = step.value.cursor;                                       // save it for the next pull
+
+// Atomic bulk: all or nothing
 await client.bulk(items, { atomic: true });
 ```
+
+Also on the client: `upsert` (PUT under your own id), `uploadImage` / `removeImage` (an element's picture), `changesHead()` (a cheap "anything new?" poll), `me()` and `members()` (who this key is, who is in the world). Beyond the client: `readWorldFile` / `writeWorldFile` (a world as one `.zip`, no account) and `lookupWorld` (the elements a question is about, no model). The full list is in the package README.
 
 *(The legacy v1 client `OnlyWorldsClient` was removed in 4.0. Pin `@onlyworlds/sdk@3` only to keep old code running.)*
 
@@ -132,7 +141,7 @@ A read key in a public bundle lets anyone who finds it read that world, so use o
 **Plain HTML + JS** (simplest):
 ```html
 <script type="module">
-  import { OwV2Client } from 'https://esm.sh/@onlyworlds/sdk';
+  import { OwV2Client } from 'https://esm.sh/@onlyworlds/sdk@4';
   const client = new OwV2Client({ apiKey: prompt('Read key (ow_r_...):') ?? '' });
   for await (const ch of client.listAll('character')) console.log(ch.name);
 </script>
@@ -172,7 +181,7 @@ For a complete project structure ready to run, see **knowledge/scaffold.md**.
 
 ### Map Viewer
 
-A Map's picture is its `image_url`; `width` and `height` are its size in pixels. Each Pin names its `map` and the pinned element (`element_type` + `element_id`), at integer pixel coordinates `x`, `y` measured from the map's **bottom-left** corner. Lists cannot filter by link, so fetch the pins and filter client-side.
+A Map's picture is its `image_url`; `width` and `height` are its size in pixels. Each Pin names its `map` and the pinned element (`element_type` + `element_id`), at integer pixel coordinates `x`, `y` measured from the map's **bottom-left** corner. A list cannot filter pins by map (the only link filter is `characters`, on the types that have that link), so fetch the pins and filter client-side.
 
 ```typescript
 async function all(type: string) {           // list() returns one page; listAll walks them all
@@ -196,7 +205,9 @@ If a Map has no `width`/`height`, use the image's natural size. Zone outlines ar
 ```typescript
 const character = await client.get('character', id);
 // User edits in UI, starting from the value just read...
-await client.patch('character', id, { description: editedDescription });
+// ifMatch: saves only if nobody changed it since the read; otherwise nothing is written and
+// it throws OwPreconditionFailedError, whose `current` is the element as it is now
+await client.patch('character', id, { description: editedDescription }, { ifMatch: character.change_seq });
 const saved = await client.get('character', id); // verify what landed (principles §5)
 ```
 
@@ -207,4 +218,4 @@ const saved = await client.get('character', id); // verify what landed (principl
 - **Ecosystem map** (all surfaces + how they wire): `knowledge/ecosystem.md`
 - **Documentation**: https://onlyworlds.github.io
 - **Discord**: https://discord.gg/twCjqvVBwb
-- **SDK types**: Check @onlyworlds/sdk for full field definitions
+- **Field definitions**: the SDK's `FIELD_SCHEMA` export and the `SCHEMA.md` it ships
