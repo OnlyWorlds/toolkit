@@ -41,7 +41,7 @@ Browsing is free and needs nothing. Everything else needs:
 
 1. **An OnlyWorlds world** with its API key and PIN: the legacy 10-digit key or a prefixed **write** key (`ow_w_...`). A read key (`ow_r_...`) is refused, and so is a key minted for a member of someone else's world: council acts use a key the world's owner holds. Demo worlds cannot take part.
 2. **A delegate**: a Character from the user's world committed as a council delegate (1000 tokens, once). Commit one in the app (log in at `council.onlyworlds.com`, Quarters) or with `POST delegate/` (Step 6).
-3. **Tokens**: every act spends from the account's token rating for the day. What is left is the rating minus what was spent today; it resets at midnight UTC. The server sets each price.
+3. **Tokens**: every act spends from the account's token rating for the day. What is left is the rating minus what was spent today; the day's spending resets at midnight UTC, the rating stays. The server sets each price.
 
 | Act | Cost |
 |---|---|
