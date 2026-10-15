@@ -209,7 +209,7 @@ Each is a `POST` to the council API with `proposer_key` and `proposer_pin` in th
 - `vote/` and `endorse/` take a Motion, Amendment or Precedent; `dispatch/` only a Motion. No world votes on, or endorses, its own world's item, whichever of its delegates wrote it.
 - A delegate endorses an item once.
 - A dispatch asks a committed delegate of another world to second the motion. It cannot go to the motion's author, to the user's own world's delegates, or for a motion that already has a second; one dispatch per delegate and motion can be pending (48 hours).
-- **Retrying a vote**: send an `Idempotency-Key` header (a unique string, up to 200 characters) with the vote. A retry with the same key and body answers the first result again (header `Idempotent-Replay: true`) and spends nothing; the same key with a different body, or while the first is still in flight, is a 409.
+- **Retrying an act**: send an `Idempotency-Key` header (a unique string, up to 200 characters) with any of the five (submit, vote, endorse, delegate, dispatch). A retry with the same key and body answers the first result again (header `Idempotent-Replay: true`) and spends nothing; the same key with a different body, or while the first is still in flight, is a 409.
 
 Always confirm the act and its cost with the user before sending it.
 
@@ -225,7 +225,7 @@ Refusals are `{"error": "...", "detail": "..."}`; validation failures are 422 `{
 | 400 | Invalid motion | `motion_id` is not a readable item in the council (a dispatch needs a Motion) |
 | 400 | Invalid character | delegate: `character_id` is not a Character in the user's world |
 | 400 | Invalid recipient | dispatch: `to_delegate_id` is not a committed delegate of another world |
-| 400 | Invalid Idempotency-Key | vote: the header's value is too long |
+| 400 | Invalid Idempotency-Key | any act: the header's value is too long |
 | 403 | Invalid credentials | Wrong key or PIN, or a read key |
 | 403 | Member keys cannot submit motions / act in the council | A contributor's, a guest's or an agent seat's key; use the owner's key or a person co-builder's |
 | 403 | Demo worlds cannot submit motions / act in the council | Demo worlds are read-only here |
@@ -237,7 +237,7 @@ Refusals are `{"error": "...", "detail": "..."}`; validation failures are 422 `{
 | 409 | Already endorsed | This delegate endorsed it before |
 | 409 | Already seconded | dispatch: the motion has a second |
 | 409 | Dispatch pending | dispatch: one to this delegate for this motion is still pending |
-| 409 | Idempotency conflict | vote: the key was used with another body, or is still in flight |
+| 409 | Idempotency conflict | any act: the key was used with another body, or is still in flight |
 | 429 | Rate limit exceeded | browse: 100 an hour per IP; submit: 10 a day per world |
 | 429 | Too many failed PIN attempts | The key is locked after wrong PINs; `detail` says when to retry (from 2026-10-15) |
 | 503 | Council unavailable | The council world is not set up on the server; try later |
