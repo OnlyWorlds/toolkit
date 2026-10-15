@@ -1,7 +1,7 @@
 # OnlyWorlds Schema Reference
 
-**Schema Version**: 00.30.01 (canonical VERSION; distributed via github.com/OnlyWorlds/schema-dist; types generated into @onlyworlds/sdk 4.x)
-**Last Verified**: 2026-09-28 (against the canonical schema YAML + live v2 platform)
+**Schema Version**: 00.32.00 (canonical VERSION; distributed via github.com/OnlyWorlds/schema-dist, release v0.32.0-dist.23; types generated into @onlyworlds/sdk 4.x)
+**Last Verified**: 2026-10-15 (every field, its kind and its link target, all 22 types, against schema-dist's walk at 00.32.00; the live v2 platform last 2026-09-28)
 
 The schema is now single-sourced from the canonical schema YAML: models, SDK, and docs are generated from it, so field lists here track that source. Field descriptors for any type are also available live at `GET /api/metadata/{type}/`.
 
