@@ -18,7 +18,7 @@ Shared rules (credentials, read before write, verify after write, extension fiel
 | Deployment | See knowledge/deployment.md |
 | Personal tool (runs on your machine) | Credentials in a gitignored `.env`, read at runtime; never hardcoded |
 | Shared or deployed tool | Read key (`ow_r_...`) for reading; the user enters key and PIN at runtime for writing. A PIN never goes into a build |
-| Node script | The SDK (Node 18+), credentials from `.env` |
+| Node script | The SDK, credentials from `.env` |
 | Python script | Direct API calls with requests, credentials from `.env` |
 
 ## Instructions
@@ -87,11 +87,11 @@ let step;
 while (!(step = await feed.next()).done) applyChange(step.value); // ops in order: upsert or delete
 cursor = step.value.cursor;                                       // save it for the next pull
 
-// Atomic bulk: all or nothing
+// Atomic bulk (per the 4.23.0 types): all or nothing
 await client.bulk(items, { atomic: true });
 ```
 
-Also on the client: `upsert` (PUT under your own id), `uploadImage` / `removeImage` (an element's picture), `changesHead()` (a cheap "anything new?" poll), `me()` and `members()` (who this key is, who is in the world). Beyond the client: `readWorldFile` / `writeWorldFile` (a world as one `.zip`, no account) and `lookupWorld` (the elements a question is about, no model). The full list is in the package README.
+Also on the client: `changesHead()` (a cheap "anything new?" poll), `me()` and `members()` (who this key is, who is in the world); and, per the 4.23.0 types, the writes `upsert` (PUT under your own id) and `uploadImage` / `removeImage` (an element's picture). Beyond the client: `readWorldFile` / `writeWorldFile` (a world as one `.zip`, no account) and `lookupWorld` (the elements a question is about, no model). The full list is in the package README.
 
 *(The legacy v1 client `OnlyWorldsClient` was removed in 4.0. Pin `@onlyworlds/sdk@3` only to keep old code running.)*
 
@@ -205,8 +205,8 @@ If a Map has no `width`/`height`, use the image's natural size. Zone outlines ar
 ```typescript
 const character = await client.get('character', id);
 // User edits in UI, starting from the value just read...
-// ifMatch: saves only if nobody changed it since the read; otherwise nothing is written and
-// it throws OwPreconditionFailedError, whose `current` is the element as it is now
+// ifMatch (per the 4.23.0 types): saves only if nobody changed it since the read; otherwise
+// nothing is written and it throws OwPreconditionFailedError, whose `current` is the element now
 await client.patch('character', id, { description: editedDescription }, { ifMatch: character.change_seq });
 const saved = await client.get('character', id); // verify what landed (principles §5)
 ```
