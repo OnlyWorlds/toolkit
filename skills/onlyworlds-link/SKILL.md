@@ -24,7 +24,7 @@ Shared rules (identity, code counts, propose-review-apply, merge-don't-overwrite
 ### Step 1: Pick the Source
 
 - **World folder** (no account needed): an Atlas world folder or any OW-shaped folder on disk. Use the current directory if it holds `world.json`, else the folder the user names (for Atlas, the world's own subfolder, not the `onlyworlds-atlas/` wrapper). Read `world.json` and every `*.json` under `elements/*/`, keyed on the internal id (`knowledge/world-folder.md`). For an Atlas world, also read `knowledge/atlas-conventions.md`: on a knowledge entry (Narrative with subtype `knowledge`), `collectives` are the groups who HOLD the knowledge, not its topics, so never add a Collective there because the entry mentions it.
-- **API**: load credentials from `.env`, as the project-setup skill writes it (principles §6). If there are none, ask the user to type the key and PIN into `.env` themselves (the project-setup skill shows the format); never ask for them in chat. Calls send `$ONLYWORLDS_API_KEY` and `$ONLYWORLDS_API_PIN` after loading `.env` (`set -a; . ./.env; set +a`; fill an unset `ONLYWORLDS_*` name from its `OW_*` twin: `ONLYWORLDS_API_KEY=${ONLYWORLDS_API_KEY:-$OW_API_KEY}`, likewise the PIN).
+- **API**: load credentials from `.env`, as the project-setup skill writes it (principles §6). If there are none, ask the user to type the key and PIN into `.env` themselves (the project-setup skill shows the format); never ask for them in chat. Calls send `$OW_API_KEY` and `$OW_API_PIN` after loading `.env` (`set -a; . ./.env; set +a`; fill an unset `OW_*` name from its older `ONLYWORLDS_*` twin: `OW_API_KEY=${OW_API_KEY:-$ONLYWORLDS_API_KEY}`, likewise the PIN).
 
 The analysis (Steps 3-4) is identical for both sources.
 
@@ -108,7 +108,7 @@ Apply only the approved items.
 **For multi-link fields** (`objects`, `characters`, `friends`, …): use the links endpoint. It adds and removes atomically on the server, skips ids already linked, tolerates removing ids that aren't there, and returns `400 invalid_link` if an added target doesn't exist:
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/v2/{type}/{uuid}/links/{field}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
   -H "Content-Type: application/json" \
   -d '{"add": ["target-uuid-1", "target-uuid-2"], "remove": []}'
 ```
@@ -117,7 +117,7 @@ MCP-connected users: the `edit_links` tool does the same.
 **For single-link fields** (`location`, `parent_location`, `birthplace`): PATCH (bare field name, UUID value; no `_id`/`_ids` suffix on v2):
 ```bash
 curl -s -X PATCH "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
   -H "Content-Type: application/json" \
   -d '{"location": "target-uuid"}'
 ```
@@ -128,7 +128,7 @@ For non-ASCII names or descriptions, write the body to a file with ASCII-escaped
 **For new Relations**: POST (mint your own UUID so you can set links in the same call):
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/v2/relation" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
   -H "Content-Type: application/json" \
   -d '{"id": "{your-uuidv7}", "name": "Fluffington-Snoot Rivalry", "description": "...", "intensity": 85, "actor": "actor-uuid", "characters": ["other-party-uuid"]}'
 ```

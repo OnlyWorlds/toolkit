@@ -86,7 +86,7 @@ OnlyWorlds runs an MCP server at **`https://www.onlyworlds.com/mcp`**: modern MC
 **Connect from Claude Code:**
 ```bash
 claude mcp add --transport http onlyworlds https://www.onlyworlds.com/mcp \
-  --header "API-Key: ${ONLYWORLDS_API_KEY:-$OW_API_KEY}" --header "API-Pin: ${ONLYWORLDS_API_PIN:-$OW_API_PIN}"
+  --header "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" --header "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}"
 ```
 Load `.env` into the shell first; the shell fills in the values, so the key is never typed into the command. The PIN is needed for writes; prefixed keys read without it. Only a legacy 10-digit key reading a private world needs it for reads.
 

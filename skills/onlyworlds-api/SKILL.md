@@ -34,7 +34,7 @@ Shared rules (read before write, verify after write, credentials, extension fiel
 
 **Teach v2.** Every fresh example here uses `/api/v2/` and `/api/v2/bulk`. The v2 surface returns real pagination, flat UUID link arrays, native creates, and honest Stripe-style errors that name the problem. The older v1 "classic" dialect keeps working indefinitely, but it has traps v2 doesn't; they are in `references/v1-classic.md`. If you're writing new code, stay in v2.
 
-**Credentials in examples.** Every example sends `$ONLYWORLDS_API_KEY` and `$ONLYWORLDS_API_PIN`. Load them from `.env` first (for example `set -a; . ./.env; set +a`; if a name is unset, fill it from its `OW_*` twin: `ONLYWORLDS_API_KEY=${ONLYWORLDS_API_KEY:-$OW_API_KEY}`, likewise the PIN); never print, echo, or paste a key or PIN into chat (principles §6). Reads with a prefixed key (`ow_w_`, `ow_r_`) need no PIN, so read examples send the key only; writes send both. A legacy 10-digit key reading a private world also needs the PIN.
+**Credentials in examples.** Every example sends `OW_API_KEY` and `OW_API_PIN` (older setups: `ONLYWORLDS_API_KEY`, `ONLYWORLDS_API_PIN`, which the examples fall back to). Load them from `.env` first (for example `set -a; . ./.env; set +a`; if an `OW_*` name is unset, fill it from its older `ONLYWORLDS_*` twin: `OW_API_KEY=${OW_API_KEY:-$ONLYWORLDS_API_KEY}`, likewise the PIN); never print, echo, or paste a key or PIN into chat (principles §6). Reads with a prefixed key (`ow_w_`, `ow_r_`) need no PIN, so read examples send the key only; writes send both. A legacy 10-digit key reading a private world also needs the PIN.
 
 ## Critical Rules
 
@@ -62,7 +62,7 @@ Check for `.ow/config.json` in the current directory first:
 | Yes | full | Load API-Key + API-Pin from `.env` |
 | Yes | key-only | Load API-Key from `.env`. For a write, the user adds the PIN line to `.env` first |
 | Yes | manual | The user fills `.env` for this session, then load it |
-| No | (none) | Check `.env` for `ONLYWORLDS_API_KEY` (or `OW_API_KEY`); if it is not there, run the project-setup skill |
+| No | (none) | Check `.env` for `OW_API_KEY` (older setups: `ONLYWORLDS_API_KEY`); if it is not there, run the project-setup skill |
 
 A task that spans several worlds, or a throwaway test world, needs no project setup: the user puts each world's key and PIN in `.env` under names you agree on (for example `WORLD_A_API_KEY`), and each call sends its own world's pair.
 
@@ -91,7 +91,7 @@ curl -s "https://www.onlyworlds.com/api/v2/health"
 # → {"status": "ok", "service": "keel"}
 
 curl -s "https://www.onlyworlds.com/api/v2/world" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 ```
 
 If credentials are bad you get a `401` with a Stripe-style envelope naming the problem (`invalid_credentials`); read it rather than re-guessing.
@@ -104,7 +104,7 @@ If credentials are bad you get a `401` with a Stripe-style envelope naming the p
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 ```
 
 **Response is enveloped and paginated:**
@@ -118,7 +118,7 @@ curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100" \
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/{type}?limit=100&cursor={next_cursor}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 ```
 
 Loop, following `next_cursor`, until `has_more` is `false`.
@@ -145,7 +145,7 @@ Any other param on a list returns `422 Unknown query parameter`. Lists always co
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 ```
 
 Returns the **bare element object** (not enveloped: no `data` wrapper on a singular GET). The trailing slash is optional on v2 (it works with or without).
@@ -154,8 +154,8 @@ Returns the **bare element object** (not enveloped: no `data` wrapper on a singu
 
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/v2/{type}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" \
-  -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" \
+  -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
   -H "Content-Type: application/json" \
   -d '{"id": "{your-uuid}", "name": "Element Name", "description": "...", "friends": ["{uuid}"]}'
 ```
@@ -166,8 +166,8 @@ Returns `201` with the flat element object, including echoed `created_at`/`updat
 
 ```bash
 curl -s -X PATCH "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" \
-  -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" \
+  -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
   -H "Content-Type: application/json" \
   -d '{"description": "Updated description"}'
 ```
@@ -178,8 +178,8 @@ curl -s -X PATCH "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
 
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/v2/{type}/{uuid}/links/{field}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" \
-  -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" \
+  -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
   -H "Content-Type: application/json" \
   -d '{"add": ["{uuid}"], "remove": ["{uuid}"]}'
 ```
@@ -190,7 +190,7 @@ Atomic server-side merge on one multi-link field: `add` skips ids already presen
 
 ```bash
 curl -s -X DELETE "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" -H "API-Pin: $ONLYWORLDS_API_PIN"
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}"
 ```
 
 Returns `204 No Content`. (A `000` curl status is a dropped connection, not a server verdict; retry it.)
@@ -221,8 +221,8 @@ Delete is rarely the right tool: it also removes the element from every link tha
 
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/v2/bulk" \
-  -H "API-Key: $ONLYWORLDS_API_KEY" \
-  -H "API-Pin: $ONLYWORLDS_API_PIN" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" \
+  -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: {a-uuid-for-this-batch}" \
   -d @batch.json
@@ -262,7 +262,7 @@ No two-pass dance is needed on v2: the batch resolves sibling links itself.
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/changes" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 ```
 
 ```json
@@ -289,7 +289,7 @@ The PIN is a property of the **world's wall**, not of any dialect. Argon2-hashed
 - **On writes**: required whenever the world has a PIN (both dialects).
 - **On reads**: prefixed keys (`ow_w_`, `ow_r_`) always read without a PIN. Only a legacy 10-digit key reading a private world needs it.
 
-Send it as the `API-Pin` header alongside `API-Key`, from `$ONLYWORLDS_API_PIN`. On a prefixed-key read it is ignored, so sending it there does no harm.
+Send it as the `API-Pin` header alongside `API-Key`, from `$OW_API_PIN` (older setups: `$ONLYWORLDS_API_PIN`). On a prefixed-key read it is ignored, so sending it there does no harm.
 
 Wrong PINs are throttled per key: after 3 failures each retry must wait longer, and 10 failures lock the key for 15 minutes (`429 rate_limited` with a `Retry-After` header).
 

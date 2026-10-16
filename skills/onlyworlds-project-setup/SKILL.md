@@ -60,28 +60,28 @@ Ignore first, write second:
 3. **Create `.env` with empty values.** If `.env` already exists, add only the lines it lacks. Leave out the PIN line in key-only mode.
 
 ```
-ONLYWORLDS_API_KEY=
-ONLYWORLDS_API_PIN=
+OW_API_KEY=
+OW_API_PIN=
 ```
 
 4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (Account → your world → API keys) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first.
 
 The API key may be a **prefixed key** (`ow_w_…` world-write, `ow_r_…` read-share) or a **legacy 10-digit key** (still valid, no longer issued); any of these works as-is. The PIN is required for writes. Prefixed keys read without it; only a legacy key reading a private world needs it.
 
-A folder may instead hold the names an OnlyWorlds agent invite writes: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`. The skills accept either. If the `ONLYWORLDS_*` name is unset, use the `OW_*` one (in shell, `${ONLYWORLDS_API_KEY:-$OW_API_KEY}`). Keep whichever names a folder already uses.
+`OW_API_KEY`, `OW_API_PIN` and `OW_WORLD` are the names (an OnlyWorlds agent invite writes the same). A folder may instead hold the older names `ONLYWORLDS_API_KEY`, `ONLYWORLDS_API_PIN`, `ONLYWORLDS_WORLD_UUID`; they still work: the skills read `OW_*` first and fall back to them (in shell, `${OW_API_KEY:-$ONLYWORLDS_API_KEY}`). Keep whichever names a folder already uses.
 
 If the user pastes a credential into chat anyway, do not repeat it back; ask them to put it in `.env`.
 
 ### Step 5: Validate Credentials + Fetch World Info
 
-Load `.env` without printing it (`set -a; . ./.env; set +a`), then fill any unset `ONLYWORLDS_*` name from its `OW_*` twin: `ONLYWORLDS_API_KEY=${ONLYWORLDS_API_KEY:-$OW_API_KEY}; ONLYWORLDS_API_PIN=${ONLYWORLDS_API_PIN:-$OW_API_PIN}`. To confirm the values are present, test them without showing them: `[ -n "$ONLYWORLDS_API_KEY" ] && echo "key set"`. Then test the key with `GET https://www.onlyworlds.com/api/v2/me`: a 401 means the key text is wrong, often the short `ow_w_…abcd` form the key list shows instead of the full key shown once. Then:
+Load `.env` without printing it (`set -a; . ./.env; set +a`), then fill any unset `OW_*` name from its older `ONLYWORLDS_*` twin: `OW_API_KEY=${OW_API_KEY:-$ONLYWORLDS_API_KEY}; OW_API_PIN=${OW_API_PIN:-$ONLYWORLDS_API_PIN}`. To confirm the values are present, test them without showing them: `[ -n "$OW_API_KEY" ] && echo "key set"`. Then test the key with `GET https://www.onlyworlds.com/api/v2/me`: a 401 means the key text is wrong, often the short `ow_w_…abcd` form the key list shows instead of the full key shown once. Then:
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/world" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 ```
 
-A prefixed key reads without a PIN; a legacy 10-digit key on a private world also sends `-H "API-Pin: $ONLYWORLDS_API_PIN"`. A `200` with the world object confirms the key and gives you the world name and UUID in one call; append `ONLYWORLDS_WORLD_UUID=<uuid>` to `.env`. On a `401`, read the error envelope (it names the problem: bad or revoked key, or wrong PIN) and ask the user to re-check `.env`. With a prefixed key the PIN is checked only on writes, so this read proves the key, not the PIN.
+A prefixed key reads without a PIN; a legacy 10-digit key on a private world also sends `-H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}"`. A `200` with the world object confirms the key and gives you the world name and UUID in one call; append `OW_WORLD=<uuid>` to `.env` (older setups: `ONLYWORLDS_WORLD_UUID`). On a `401`, read the error envelope (it names the problem: bad or revoked key, or wrong PIN) and ask the user to re-check `.env`. With a prefixed key the PIN is checked only on writes, so this read proves the key, not the PIN.
 
 ### Step 6: Build World Cache
 
@@ -89,7 +89,7 @@ First record where the world's change feed stands, so the cache has a true-as-of
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/changes?head=true" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 # → {"cursor": 1234, "changes": [], "has_more": false, "head": 1234}
 ```
 
@@ -97,7 +97,7 @@ Keep `head` for `.ow/config.json`. Then fetch existing elements. World info carr
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/character?limit=100" \
-  -H "API-Key: $ONLYWORLDS_API_KEY"
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 ```
 
 v2 lists are paginated: the response is `{data, has_more, next_cursor}`. Follow `next_cursor` (`?limit=100&cursor={next_cursor}`) until `has_more` is false. Parse into a lightweight cache: name, uuid, type per element. Alternative: walk `GET /api/v2/changes` from zero (no `since`, then `?since={cursor}` until `has_more` is false; skip `delete` ops), which returns every element in one feed; keep the `head` from its last page. Record the per-type totals as `element_counts`.

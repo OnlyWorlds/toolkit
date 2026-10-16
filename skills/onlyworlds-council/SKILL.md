@@ -155,8 +155,8 @@ curl -s -X POST "https://www.onlyworlds.com/api/worldapi/council/submit/" \
   "element_type": "character",
   "field": "death_date",
   "stake": 100,
-  "proposer_key": "${ONLYWORLDS_API_KEY:-$OW_API_KEY}",
-  "proposer_pin": "${ONLYWORLDS_API_PIN:-$OW_API_PIN}",
+  "proposer_key": "${OW_API_KEY:-$ONLYWORLDS_API_KEY}",
+  "proposer_pin": "${OW_API_PIN:-$ONLYWORLDS_API_PIN}",
   "delegate_id": "{delegate_uuid}"
 }
 EOF
