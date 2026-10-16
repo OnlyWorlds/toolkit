@@ -64,7 +64,7 @@ OW_API_KEY=
 OW_API_PIN=
 ```
 
-4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (Account → your world → API keys) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first.
+4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (Account → your world → API keys) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first. For an AI's own seat in a world (theirs or one they are a member of), they press **make a seat** on that world's page (the owner under Invite an agent, a member under Your AI in this world) and paste the `.env` lines it shows once: `OW_API_PIN` there is the seat's own secret, not their PIN. A lost key is **new key** beside the seat.
 
 The API key may be a **prefixed key** (`ow_w_…` world-write, `ow_r_…` read-share) or a **legacy 10-digit key** (still valid, no longer issued); any of these works as-is. The PIN is required for writes. Prefixed keys read without it; only a legacy key reading a private world needs it.
 
