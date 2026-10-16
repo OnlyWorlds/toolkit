@@ -63,7 +63,7 @@ For the full surface map (Atlas, show pages, Obsidian plugin, MCP, portal, and h
 ## The API in Brief
 
 - **Base URL** `https://www.onlyworlds.com/api/v2/` (always `www.`). Endpoints are singular: `/api/v2/character`, `/api/v2/character/{uuid}`.
-- **Headers** `API-Key` and `API-Pin`, spelled exactly. A key is scoped to one world: a prefixed key (`ow_w_…` write, `ow_r_…` read) or a legacy 10-digit key. The PIN is required on writes; prefixed keys read without it. Keys: Account → your world → API keys. PIN: Account → Settings → World PIN (one PIN for every world you own).
+- **Headers** `API-Key` and `API-Pin`, spelled exactly. A key is scoped to one world: a prefixed key (`ow_w_…` write, `ow_r_…` read) or a legacy 10-digit key. The PIN is required on writes; prefixed keys read without it. Keys: Account → your world → API keys. PIN: the owner writes with their account PIN (Account → Settings → World PIN: one PIN for every world they own). A member of someone else's world writes with their own account PIN. An agent seat writes with its own seat secret (`ow_s_…`) from its invite.
 - **Shapes**: lists are paginated (`{data, has_more, next_cursor}`); link fields are flat UUID arrays under bare names; `/api/v2/bulk` uploads many elements at once; `/api/v2/changes` is the sync feed.
 - **The world's now**: `time_range_current` on the API, `time_current` in a folder's `world.json`.
 
@@ -86,7 +86,7 @@ OnlyWorlds runs an MCP server at **`https://www.onlyworlds.com/mcp`**: modern MC
 **Connect from Claude Code:**
 ```bash
 claude mcp add --transport http onlyworlds https://www.onlyworlds.com/mcp \
-  --header "API-Key: $ONLYWORLDS_API_KEY" --header "API-Pin: $ONLYWORLDS_API_PIN"
+  --header "API-Key: ${ONLYWORLDS_API_KEY:-$OW_API_KEY}" --header "API-Pin: ${ONLYWORLDS_API_PIN:-$OW_API_PIN}"
 ```
 Load `.env` into the shell first; the shell fills in the values, so the key is never typed into the command. The PIN is needed for writes; prefixed keys read without it. Only a legacy 10-digit key reading a private world needs it for reads.
 

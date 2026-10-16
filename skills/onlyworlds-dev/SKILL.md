@@ -52,8 +52,8 @@ import { OwV2Client } from '@onlyworlds/sdk';
 
 // Node: load .env first (e.g. `node --env-file=.env`, Node 20.6+); never hardcode keys
 const client = new OwV2Client({
-  apiKey: process.env.ONLYWORLDS_API_KEY!, // ow_w_ write / ow_r_ read / 10-digit legacy
-  apiPin: process.env.ONLYWORLDS_API_PIN   // writes only; leave unset for a read-only tool
+  apiKey: (process.env.ONLYWORLDS_API_KEY ?? process.env.OW_API_KEY)!, // ow_w_ write / ow_r_ read / 10-digit legacy
+  apiPin: process.env.ONLYWORLDS_API_PIN ?? process.env.OW_API_PIN   // writes only; leave unset for a read-only tool
 });
 
 const page = await client.list('character');   // ONE page (100 by default): {data, has_more, next_cursor}
@@ -141,7 +141,7 @@ A read key in a public bundle lets anyone who finds it read that world, so use o
 **Python script** (load `.env` first, with python-dotenv or `set -a; . ./.env; set +a`):
 ```python
 import os, requests
-headers = {"API-Key": os.environ["ONLYWORLDS_API_KEY"]}  # add "API-Pin" only for writes
+headers = {"API-Key": os.environ.get("ONLYWORLDS_API_KEY") or os.environ["OW_API_KEY"]}  # add "API-Pin" only for writes
 url, params, chars = "https://www.onlyworlds.com/api/v2/character", {"limit": 100}, []
 while True:
     page = requests.get(url, headers=headers, params=params).json()  # {data, has_more, next_cursor}

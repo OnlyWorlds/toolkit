@@ -34,7 +34,7 @@ Shared rules (read before write, verify after write, credentials, extension fiel
 
 **Teach v2.** Every fresh example here uses `/api/v2/` and `/api/v2/bulk`. The v2 surface returns real pagination, flat UUID link arrays, native creates, and honest Stripe-style errors that name the problem. The older v1 "classic" dialect keeps working indefinitely, but it has traps v2 doesn't; they are in `references/v1-classic.md`. If you're writing new code, stay in v2.
 
-**Credentials in examples.** Every example sends `$ONLYWORLDS_API_KEY` and `$ONLYWORLDS_API_PIN`. Load them from `.env` first (for example `set -a; . ./.env; set +a`); never print, echo, or paste a key or PIN into chat (principles §6). Reads with a prefixed key (`ow_w_`, `ow_r_`) need no PIN, so read examples send the key only; writes send both. A legacy 10-digit key reading a private world also needs the PIN.
+**Credentials in examples.** Every example sends `$ONLYWORLDS_API_KEY` and `$ONLYWORLDS_API_PIN`. Load them from `.env` first (for example `set -a; . ./.env; set +a`; if a name is unset, fill it from its `OW_*` twin: `ONLYWORLDS_API_KEY=${ONLYWORLDS_API_KEY:-$OW_API_KEY}`, likewise the PIN); never print, echo, or paste a key or PIN into chat (principles §6). Reads with a prefixed key (`ow_w_`, `ow_r_`) need no PIN, so read examples send the key only; writes send both. A legacy 10-digit key reading a private world also needs the PIN.
 
 ## Critical Rules
 
@@ -62,7 +62,7 @@ Check for `.ow/config.json` in the current directory first:
 | Yes | full | Load API-Key + API-Pin from `.env` |
 | Yes | key-only | Load API-Key from `.env`. For a write, the user adds the PIN line to `.env` first |
 | Yes | manual | The user fills `.env` for this session, then load it |
-| No | (none) | Check `.env` for `ONLYWORLDS_API_KEY`; if it is not there, run the project-setup skill |
+| No | (none) | Check `.env` for `ONLYWORLDS_API_KEY` (or `OW_API_KEY`); if it is not there, run the project-setup skill |
 
 A task that spans several worlds, or a throwaway test world, needs no project setup: the user puts each world's key and PIN in `.env` under names you agree on (for example `WORLD_A_API_KEY`), and each call sends its own world's pair.
 

@@ -68,11 +68,13 @@ ONLYWORLDS_API_PIN=
 
 The API key may be a **prefixed key** (`ow_w_…` world-write, `ow_r_…` read-share) or a **legacy 10-digit key** (still valid, no longer issued); any of these works as-is. The PIN is required for writes. Prefixed keys read without it; only a legacy key reading a private world needs it.
 
+A folder may instead hold the names an OnlyWorlds agent invite writes: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`. The skills accept either. If the `ONLYWORLDS_*` name is unset, use the `OW_*` one (in shell, `${ONLYWORLDS_API_KEY:-$OW_API_KEY}`). Keep whichever names a folder already uses.
+
 If the user pastes a credential into chat anyway, do not repeat it back; ask them to put it in `.env`.
 
 ### Step 5: Validate Credentials + Fetch World Info
 
-Load `.env` without printing it (`set -a; . ./.env; set +a`). To confirm the values are present, test them without showing them: `[ -n "$ONLYWORLDS_API_KEY" ] && echo "key set"`. Then:
+Load `.env` without printing it (`set -a; . ./.env; set +a`), then fill any unset `ONLYWORLDS_*` name from its `OW_*` twin: `ONLYWORLDS_API_KEY=${ONLYWORLDS_API_KEY:-$OW_API_KEY}; ONLYWORLDS_API_PIN=${ONLYWORLDS_API_PIN:-$OW_API_PIN}`. To confirm the values are present, test them without showing them: `[ -n "$ONLYWORLDS_API_KEY" ] && echo "key set"`. Then test the key with `GET https://www.onlyworlds.com/api/v2/me`: a 401 means the key text is wrong, often the short `ow_w_…abcd` form the key list shows instead of the full key shown once. Then:
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/world" \

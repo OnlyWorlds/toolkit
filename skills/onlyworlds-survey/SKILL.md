@@ -32,7 +32,7 @@ Shared rules every skill follows: `knowledge/principles.md` (here especially §2
 ### Step 1: Pick the Source
 
 - **World folder** (no account, no network): the user has an Atlas world folder, converter output, or any OW-shaped folder. Read `world.json` for meta, walk `elements/*/` keying on internal `id`, never the filename (`knowledge/world-folder.md`), then skip to Step 4.
-- **API**: check for `.ow/config.json` in the current directory first. `credential_mode` full: load API-Key + API-Pin from `.env`. key-only: load API-Key and proceed; a PIN is needed only if a read returns 401 (legacy key on a private world). No config: check `.env` for ONLYWORLDS_API_KEY / ONLYWORLDS_API_PIN. Anything missing (or manual mode): ask the user to add it to `.env` themselves, as project-setup does, rather than paste it into chat. Never print a credential.
+- **API**: check for `.ow/config.json` in the current directory first. `credential_mode` full: load API-Key + API-Pin from `.env`. key-only: load API-Key and proceed; a PIN is needed only if a read returns 401 (legacy key on a private world). No config: check `.env` for ONLYWORLDS_API_KEY / ONLYWORLDS_API_PIN (or the `OW_API_KEY` / `OW_API_PIN` an agent invite writes; use them when the `ONLYWORLDS_*` name is unset). Anything missing (or manual mode): ask the user to add it to `.env` themselves, as project-setup does, rather than paste it into chat. Never print a credential.
 
 ### Step 2: Validate + Fetch World
 

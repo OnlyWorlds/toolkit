@@ -24,7 +24,7 @@ Shared rules (identity, code counts, propose-review-apply, merge-don't-overwrite
 ### Step 1: Pick the Source
 
 - **World folder** (no account needed): an Atlas world folder or any OW-shaped folder on disk. Use the current directory if it holds `world.json`, else the folder the user names (for Atlas, the world's own subfolder, not the `onlyworlds-atlas/` wrapper). Read `world.json` and every `*.json` under `elements/*/`, keyed on the internal id (`knowledge/world-folder.md`). For an Atlas world, also read `knowledge/atlas-conventions.md`: on a knowledge entry (Narrative with subtype `knowledge`), `collectives` are the groups who HOLD the knowledge, not its topics, so never add a Collective there because the entry mentions it.
-- **API**: load credentials from `.env`, as the project-setup skill writes it (principles §6). If there are none, ask the user to type the key and PIN into `.env` themselves (the project-setup skill shows the format); never ask for them in chat. Calls send `$ONLYWORLDS_API_KEY` and `$ONLYWORLDS_API_PIN` after loading `.env` (`set -a; . ./.env; set +a`).
+- **API**: load credentials from `.env`, as the project-setup skill writes it (principles §6). If there are none, ask the user to type the key and PIN into `.env` themselves (the project-setup skill shows the format); never ask for them in chat. Calls send `$ONLYWORLDS_API_KEY` and `$ONLYWORLDS_API_PIN` after loading `.env` (`set -a; . ./.env; set +a`; fill an unset `ONLYWORLDS_*` name from its `OW_*` twin: `ONLYWORLDS_API_KEY=${ONLYWORLDS_API_KEY:-$OW_API_KEY}`, likewise the PIN).
 
 The analysis (Steps 3-4) is identical for both sources.
 
