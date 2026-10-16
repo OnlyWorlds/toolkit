@@ -57,7 +57,7 @@ Ignore first, write second:
 
 1. **Update `.gitignore`.** Append `.env` and `.ow/` only if not already listed. Create `.gitignore` if none exists.
 2. **Check that `.env` is not already tracked:** `git ls-files .env`. Ignoring a tracked file does nothing. If it prints `.env`, stop: the user runs `git rm --cached .env` and commits that, and any key already committed should be revoked and replaced (Account → your world → API keys).
-3. **Create `.env` with empty values.** If `.env` already exists, add only the lines it lacks. Leave out the PIN line in key-only mode.
+3. **Create `.env` with empty values.** If `.env` already exists, add only the lines it lacks; a `.env` that already holds the older `ONLYWORLDS_*` names lacks nothing, so leave it as it is. Leave out the PIN line in key-only mode.
 
 ```
 OW_API_KEY=
