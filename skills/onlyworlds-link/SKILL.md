@@ -108,7 +108,7 @@ Apply only the approved items.
 **For multi-link fields** (`objects`, `characters`, `friends`, …): use the links endpoint. It adds and removes atomically on the server, skips ids already linked, tolerates removing ids that aren't there, and returns `400 invalid_link` if an added target doesn't exist:
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/v2/{type}/{uuid}/links/{field}" \
-  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" -H "X-OW-Agent: 1" \
   -H "Content-Type: application/json" \
   -d '{"add": ["target-uuid-1", "target-uuid-2"], "remove": []}'
 ```
@@ -117,7 +117,7 @@ MCP-connected users: the `edit_links` tool does the same.
 **For single-link fields** (`location`, `parent_location`, `birthplace`): PATCH (bare field name, UUID value; no `_id`/`_ids` suffix on v2):
 ```bash
 curl -s -X PATCH "https://www.onlyworlds.com/api/v2/{type}/{uuid}" \
-  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" -H "X-OW-Agent: 1" \
   -H "Content-Type: application/json" \
   -d '{"location": "target-uuid"}'
 ```
@@ -128,7 +128,7 @@ For non-ASCII names or descriptions, write the body to a file with ASCII-escaped
 **For new Relations**: POST (mint your own UUID so you can set links in the same call):
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/v2/relation" \
-  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" \
+  -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" -H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}" -H "X-OW-Agent: 1" \
   -H "Content-Type: application/json" \
   -d '{"id": "{your-uuidv7}", "name": "Fluffington-Snoot Rivalry", "description": "...", "intensity": 85, "actor": "actor-uuid", "characters": ["other-party-uuid"]}'
 ```
