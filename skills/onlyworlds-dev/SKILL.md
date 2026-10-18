@@ -19,7 +19,7 @@ Shared rules (credentials, read before write, verify after write, extension fiel
 | Personal tool (runs on your machine) | Credentials in a gitignored `.env`, read at runtime; never hardcoded |
 | Shared or deployed tool | Read key (`ow_r_...`) for reading; the user enters key and PIN at runtime for writing. A PIN never goes into a build |
 | Node script | The SDK, credentials from `.env` |
-| Python script | Direct API calls with requests, credentials from `.env` |
+| Python script | The `onlyworlds` package (`pip install onlyworlds`, Python 3.12+, its v2 `Client`), key and PIN from `.env`; raw `requests` works too |
 
 ## Instructions
 
@@ -53,8 +53,8 @@ import { OwV2Client } from '@onlyworlds/sdk';
 
 // Node: load .env first (e.g. `node --env-file=.env`, Node 20.6+); never hardcode keys
 const client = new OwV2Client({
-  apiKey: (process.env.OW_API_KEY ?? process.env.ONLYWORLDS_API_KEY)!, // ow_w_ write / ow_r_ read / 10-digit legacy
-  apiPin: process.env.OW_API_PIN ?? process.env.ONLYWORLDS_API_PIN   // writes only; leave unset for a read-only tool
+  apiKey: (process.env.OW_API_KEY ?? process.env.ONLYWORLDS_API_KEY)!, // ow_w_ write / ow_r_ read / ow_a_ account token (account methods) / 10-digit legacy
+  apiPin: process.env.OW_API_PIN ?? process.env.ONLYWORLDS_API_PIN   // writes only (an agent seat's ow_s_ secret goes here); leave unset for a read-only tool
 });
 
 const page = await client.list('character');   // ONE page (100 by default): {data, has_more, next_cursor}
@@ -87,11 +87,12 @@ let step;
 while (!(step = await feed.next()).done) applyChange(step.value); // ops in order: upsert or delete
 cursor = step.value.cursor;                                       // save it for the next pull
 
-// Atomic bulk (per the 4.23.0 types): all or nothing
-await client.bulk(items, { atomic: true });
+// Atomic bulk (read from the 4.31.0 source, not run on the demo key): all or nothing. It does not throw on a failed item; check `errors`
+const res = await client.bulk(items, { atomic: true });
+if (res.errors) console.warn(res.items.filter((s) => s.status >= 400)); // nothing was written; the other slots still read 201, so record no ids from them
 ```
 
-Also on the client: `changesHead()` (a cheap "anything new?" poll), `me()` and `members()` (who this key is, who is in the world); and, per the 4.23.0 types, the writes `upsert` (PUT under your own id) and `uploadImage` / `removeImage` (an element's picture). Beyond the client: `readWorldFile` / `writeWorldFile` (a world as one `.zip`, no account) and `lookupWorld` (the elements a question is about, no model). The full list is in the package README.
+Also on the client: `changesHead()` (a cheap "anything new?" poll), `me()` and `members()` (who this key is, who is in the world); the writes `upsert` (PUT under your own id) and `uploadImage` / `removeImage` (an element's picture), all read from the 4.31.0 source, not run on the demo key; and `signInWithPassword({ email, password, tokenName })` (`username` instead of `email` works too), which turns an account's password into a new `ow_a_` token on a client with no key; a refusal is an `OwSignInError` with a `reason`. For an AI agent that writes, give it its own seat (`createSeat` on an `ow_a_` token returns the seat's write key and an `ow_s_` secret to pass as `apiPin`), or pass `agent: true` in the client config so keel records its writes as agent-made (never set it in a tool people use). Invite links are `createWorldLink` / `listWorldLinks` / `revokeWorldLink` (account token) and `redeemJoin` (no key). Beyond the client: `readWorldFile` / `writeWorldFile` (a world as one `.zip`, no account) and `lookupWorld` (the elements a question is about, no model). The README covers the common calls; every method is typed in the package's `dist/index.d.ts` (class `OwV2Client`).
 
 *(The legacy v1 client `OnlyWorldsClient` was removed in 4.0. Pin `@onlyworlds/sdk@3` only to keep old code running.)*
 
@@ -205,7 +206,7 @@ If a Map has no `width`/`height`, use the image's natural size. Zone outlines ar
 ```typescript
 const character = await client.get('character', id);
 // User edits in UI, starting from the value just read...
-// ifMatch (per the 4.23.0 types): saves only if nobody changed it since the read; otherwise
+// ifMatch (read from the 4.31.0 source, not run on the demo key): saves only if nobody changed it since the read; otherwise
 // nothing is written and it throws OwPreconditionFailedError, whose `current` is the element now
 await client.patch('character', id, { description: editedDescription }, { ifMatch: character.change_seq });
 const saved = await client.get('character', id); // verify what landed (principles §5)
