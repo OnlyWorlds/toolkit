@@ -1,7 +1,7 @@
 # OnlyWorlds Schema Reference
 
-**Schema Version**: 00.32.00 (canonical VERSION; distributed via github.com/OnlyWorlds/schema-dist, release v0.32.0-dist.23; types generated into @onlyworlds/sdk 4.x)
-**Last Verified**: 2026-10-15 (every field, its kind and its link target, all 22 types, against schema-dist's walk at 00.32.00; the live v2 platform last 2026-09-28)
+**Schema Version**: 00.32.02 (canonical VERSION; distributed via github.com/OnlyWorlds/schema-dist, release v0.32.2-dist.33; types generated into @onlyworlds/sdk 4.x)
+**Last Verified**: 2026-10-20 (every field, its kind and its link target, all 22 types, against the schema YAML at 00.32.02; the live v2 platform last 2026-09-28)
 
 The schema is now single-sourced from the canonical schema YAML: models, SDK, and docs are generated from it, so field lists here track that source. Field descriptors for any type are also available live at `GET /api/metadata/{type}/`.
 
@@ -110,7 +110,7 @@ All numeric fields are integers in the world's own units (TIME / MASS / LENGTH /
 
 **World:**
 - species (multi-link → Species) - Types of beings in group
-- characters (multi-link → Character) - Notable individual members
+- characters (multi-link → Character) - Members of the collective
 - creatures (multi-link → Creature) - Associated creatures
 - phenomena (multi-link → Phenomenon) - Influencing phenomena
 
@@ -176,6 +176,8 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 
 **Involves (multi-link fields):**
 characters, objects, locations, species, creatures, institutions, traits, collectives, zones, abilities, phenomena, languages, families, relations, titles, constructs
+
+`characters` are the Characters who know about the event: they were present, aware of it, or involved in it.
 
 ---
 
@@ -333,8 +335,8 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 **Context:**
 - story (text) - The narrative content from a perspective
 - consequences (text) - Outcomes or legacy
-- start_date (integer) - Beginning date
-- end_date (integer) - Ending date
+- start_date (integer) - When it is first told or recorded; the span it recounts lives on its events
+- end_date (integer) - When it stops being told; empty while it is still told
 - order (integer) - Position in parent sequence
 - parent_narrative (single-link → Narrative) - Containing narrative
 - protagonist (single-link → Character) - Primary character
@@ -455,7 +457,7 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 - issuer (single-link → Institution) - Who creates the title
 - body (single-link → Institution) - Organization it functions within
 - superior_title (single-link → Title) - Higher authority
-- holders (multi-link → Character) - Current/past holders
+- holders (multi-link → Character) - Who currently holds or represents it
 - symbols (multi-link → Object) - Authorizing objects
 
 **World:**
