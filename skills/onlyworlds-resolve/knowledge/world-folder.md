@@ -16,12 +16,15 @@ A world can live entirely as files on disk. Atlas (the flagship app) stores ever
     map/
     ...                         # one subfolder per element type present (lowercase singular), all 22 types incl. map, pin, zone, marker
   media/                        # optional local media (never synced to the API)
+  records/                      # optional world data that is not elements (below)
   .atlas/                       # Atlas-private state. Never write here or rely on its contents
 ```
 
 Each element file is plain JSON: the element's schema fields. `id` is required (a file without one is skipped and left on disk). `name` is expected. `type` may be absent, so take it from the directory unless the file declares one. Link fields are bare names holding UUID (single) or UUID arrays (multi), the same shape as the v2 API.
 
-A file may carry every field of its type or only the ones that are set: both are valid and read the same. An absent field means unset, like `""` for text, `null` for a number or a single link, `[]` for a multi-link (schema-dist's rulings `nullable-by-default` and `string-empty-is-unset`). A new file can hold just what the element has; an existing file keeps every key it already has.
+A file may carry every field of its type or only the ones that are set: both are valid and read the same. An absent field means unset, like `""` for text, `null` for a number or a single link, `[]` for a multi-link (schema-dist's rulings `nullable-by-default` and `string-empty-is-unset`). A new file can hold just what the element has; an existing file keeps every key it already has. The one exception is a known-of stub (`known_of: true`, writer rules below): there an absent field is unknown, not empty.
+
+`records/` holds world data that is not elements: a simulation's receipts, an app's logs, a build's own files. One directory per producer, in that producer's own format, and a manifest `records/RECORDS.json`, a JSON array with one entry per producer (`producer`, `format`, `version`, `deltas`, optional `writers`). Records are never elements: none is canon, pushed to the API, or served as an element, and what crosses a line becomes an ordinary Event. A reader ignores `records/` unless it knows the producer; a tool that rewrites the folder copies it through byte for byte.
 
 ## The two laws
 
@@ -43,7 +46,7 @@ When parsing produces elements and the user wants a folder (openable in Atlas, p
 
 - Mint a UUID per element (any RFC-4122 UUID; v7 recommended); resolve all links to those ids.
 - Filename: `<name-slug>--<last-8-of-id>.json` (lowercase ASCII slug, non-alphanumeric runs to single `-`, capped at 40 chars). Unnamed elements: `<full-id>.json`. Exact naming is a courtesy; consumers key on the internal id regardless.
-- Write `world.json` with at least `{ "id": <minted uuid>, "name": ..., "format_version": "0.3.7" }`, plus `"description"` when known, and the time settings and units when the source gives them.
+- Write `world.json` with at least `{ "id": <minted uuid>, "name": ..., "format_version": "0.3.12" }`, plus `"description"` when known, and the time settings and units when the source gives them.
 - Check it before anyone builds on it: schema-dist's folder check, `python walk/lint_folder.py <folder>` (github.com/OnlyWorlds/schema-dist, Python 3 with PyYAML), names every key that is not a field of its type, every link that does not resolve or points at the wrong type, and every value of the wrong shape. Its last line is the count it checked, so a clean run still says what it read. It checks structure, not facts.
 - Tell the user: this folder opens directly in Atlas (atlas.onlyworlds.com: pick the folder, done; folder mode needs a Chromium browser such as Chrome, Edge or Brave), and can later become an account world without re-parsing: Atlas can take it online, or a script can send the files to an empty world through `/bulk` (each file an item, with Atlas's non-schema keys stripped as below; an item whose id already exists replaces that element whole).
 
@@ -62,6 +65,7 @@ Some steps (a backup before a write session, versioning in git) need a folder co
 - Write `format_version` only when you create the folder. Never add one to a folder you did not create.
 - Never create or edit a `.gitignore` in a folder you did not create.
 - Keep each file's key spellings as they are. Reading or editing a file never renames its keys.
+- **Known-of stubs.** A reader of someone else's world (a guest, a player) is handed some elements only as known of: a stub marked `known_of: true` that keeps `id`, `type`, `name`, `description`, `supertype`, `subtype`, `image_url`, `created_at`, `updated_at`, `change_seq` and any field the platform marks public. Write a stub as it is: `known_of: true` and only those keys, never the unset fields as `""`, `null` or `[]`. Never push a stub (no PUT, PATCH or bulk item from a `known_of` file; the API refuses `known_of` in a write with a 422). A stub that later arrives whole is written whole, and `known_of` goes.
 - Atlas can stay open while you write: it keeps outside edits when it saves, and shows changed, new and removed files when the user comes back to its window. Never write `.atlas/` or `atlas_richtext_json`; editing `story` alone is safe. A `.atlas/lock` file is Atlas's own tab-to-tab lock; it is not a signal to any other tool, and it can be left in place.
 - **Editing a folder linked to an account** (its `world.json` has an `api` block): on every existing element file you change, set `local_updated_at` to the current UTC time in ISO 8601 (for example `2026-09-28T14:05:00.000Z`) and leave `server_updated_at` as it is. That stamp is how Atlas knows the file changed; without it the edit is never sent, and the next change made online overwrites it. New files carry neither stamp. The alternative for a linked world is to write through the API instead.
 - **Reading Atlas-written files**: pins and markers may spell their links `map_id` / `zone_id` (older Atlas worlds, and new ones until Atlas writes bare names); accept both spellings. Atlas files also carry keys that are not schema fields: `local_updated_at`, `server_updated_at`, `image_media_id`, and `created_at`, `type`, `change_seq` from the wire. Strip these, and rename `map_id` -> `map`, `zone_id` -> `zone`, before sending files to `/bulk`.
@@ -83,4 +87,4 @@ A world folder is plain files, so git gives it history, comparison, and alternat
 
 ## Who speaks this format
 
-Atlas (reference implementation, read+write) · the public converters: [Azgaar](https://github.com/OnlyWorlds/azgaar-converter) in, [Foundry VTT](https://github.com/OnlyWorlds/foundry-converter) out · this toolkit · Obsidian plugin (import and export of world folders). The formal spec (OW Folder Format, v0.3.7) has its core rules settled; this page carries them.
+Atlas (reference implementation, read+write) · the public converters: [Azgaar](https://github.com/OnlyWorlds/azgaar-converter) in, [Foundry VTT](https://github.com/OnlyWorlds/foundry-converter) out · this toolkit · Obsidian plugin (import and export of world folders). The formal spec (OW Folder Format, v0.3.12) has its core rules settled; this page carries them.

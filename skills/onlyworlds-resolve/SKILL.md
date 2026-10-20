@@ -59,10 +59,10 @@ Write each answer into a file in their project (e.g. `resolve-procedure.md`). Th
 4. **The passes**, in this order:
    - new entries first (so later rows can link to them)
    - where everyone ended up (every present character's final place against their location field)
-   - what happened (events: who, where, when in the world)
+   - what happened (events: who, where, when in the world). A tool that writes play back puts every participant on each Event it mints and stamps `start_date` in the world's own time unit; finer ordering stays in the tool. The reason: in a parsed Curse of Strahd, 78% of the "was there" links already mean "knows", and only 2% of the Events carry a date, so no reader can say what happened before what.
    - what changed (in each field's own kind: replace, append a dated line, or flag)
    - threads: advanced only when their next step actually happened, not when they were mentioned
-   - who learned what: a first telling, a witnessed secret, a discovery becomes knowledge held by that character or group (a group needs a knower-group first, e.g. a party Collective with the player characters as members)
+   - who learned what: a first telling, a witnessed secret, a discovery becomes knowledge held by that character or group (a group needs a knower-group first, e.g. a party Collective with the player characters as members). An entry inferred rather than witnessed (she was at the battle, so she knows who won) links its `events` to the Events it was inferred from, so a reader can trace it back to them
    - what finished (the dead, the departed, the resolved): retired with a date so context stops picking them by default
 5. **The row format**: one line per change, from a small fixed set of operations (create · update · append · link · retire · event · knowledge · flag), with target, old and new value, and evidence (a quote or a pointer into the session). Keep a short list of what was deliberately NOT proposed, and why.
 6. **Identity before names.** Before an existing element's name goes into a row, confirm it is the same thing (principles §3). A different referent is a collision note, never an edit.
@@ -122,7 +122,7 @@ NOT PROPOSED: the storm, the carrion-breed pack (background, no recurrence)
 | canon status, custom state | `x_*` extension fields |
 | verbatim vs editorial | a Narrative's `story` (the only type with that field) vs any element's `description` |
 
-Every-line happenings (each exchange, each roll) go in a log beside the world, not in elements (principles §1). To write: edit files in a world folder (see **knowledge/world-folder.md**, writer rules; in a folder linked to an account, every edited file gets a fresh `local_updated_at`), or use the API or MCP (the api skill; **knowledge/ai-builders.md**); multi-link changes go through the links route, and anything else is read before it is written.
+Every-line happenings (each exchange, each roll) go in a log beside the world, not in elements (principles §1). That log points at element ids, never copies of element text; a tool that follows the change feed (`/changes`) applies its delete rows, so an element gone from the world goes from the tool. To write: edit files in a world folder (see **knowledge/world-folder.md**, writer rules; in a folder linked to an account, every edited file gets a fresh `local_updated_at`), or use the API or MCP (the api skill; **knowledge/ai-builders.md**); multi-link changes go through the links route, and anything else is read before it is written.
 
 ## References
 
