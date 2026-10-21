@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Worldbuilding toolkit for AI assistants. Structure a world, grow it, keep AI sessions in sync with it, build on it.",
-    "version": "4.3.1"
+    "version": "4.4.0"
   },
   "plugins": [
     {
       "name": "toolkit",
       "source": "./",
       "description": "Worldbuilding companion for AI: structure notes, novels and campaign docs into a world, grow it, keep AI sessions in sync with it, and build tools and agents on it. Works on a world folder, no account needed; OnlyWorlds format underneath.",
-      "version": "4.3.1",
+      "version": "4.4.0",
       "author": {
         "name": "Titus Oosting"
       },
