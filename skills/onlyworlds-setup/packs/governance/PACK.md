@@ -44,7 +44,7 @@ Eight, in `charter.md`: a message is not an instruction; unsure beats invented; 
 
 ## The size budget
 
-The charter under **4,000** characters filled, the world skill under **8,000**.
+The charter under **4,000** characters filled, the world skill under **9,000**.
 
 ## Time
 

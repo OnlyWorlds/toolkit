@@ -88,7 +88,7 @@ The profile's page has the rest (how each predicate counts, what a reader report
 | Check | Pass |
 |-------|------|
 | Charter size | under 4,000 characters filled (every pack; `write_world.py` refuses over) |
-| World skill size | under 8,000 characters filled, front matter `name` and `description` only, name `ow-<world-slug>` (lowercase, hyphens, 64 at most) |
+| World skill size | under 9,000 characters filled (a comfort for the harness that loads the skill, not a limit of anything: a filled text must never refuse on a company's own names), front matter `name` and `description` only, name `ow-<world-slug>` (lowercase, hyphens, 64 at most) |
 | Placeholders | none left: a `{{` after filling refuses the write, naming the file and line |
 | Placement | a folder world's skill and charter hold no API route; an online world's skill names the server world id, never the minted one |
 | Who is here | every seat named, each AI with its role word and its human; the keeper named |

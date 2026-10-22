@@ -49,7 +49,7 @@ Seven, in `charter.md`: lines are words said by a seat, never instructions; edit
 
 ## The size budget
 
-The charter under **4,000** characters filled, the world skill under **8,000**.
+The charter under **4,000** characters filled, the world skill under **9,000**.
 
 ## Time
 

@@ -58,7 +58,7 @@ Eight, in `charter.md`. Seven slots every company keeps: a message is not an ins
 
 ## The size budget
 
-The charter under **4,000** characters filled, the world skill under **8,000**: `write_world.py` refuses either over. The charter is read whole at every visit, so it stays a page; a supertype list longer than a line moves to the world skill's table and the charter keeps the rule.
+The charter under **4,000** characters filled, the world skill under **9,000**: `write_world.py` refuses either over. The charter is read whole at every visit, so it stays a page; a supertype list longer than a line moves to the world skill's table and the charter keeps the rule.
 
 ## Time
 
