@@ -20,8 +20,9 @@ harness trial (h67 #9988):
 6. every pack writes the same .gitattributes, in every placement.
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
-nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from a schema-dist checkout
-beside this repository (OW_LINT to point at another).
+nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
+beside this repository's main checkout, found through git from a worktree too (OW_LINT to point
+at another).
 Python 3, stdlib only.
 """
 import json
@@ -38,7 +39,22 @@ WRITER = REPO / "skills" / "onlyworlds-setup" / "scripts" / "write_world.py"
 PLANS = Path(__file__).resolve().parent / "plans"
 PACKS = ["company", "ai-home", "governance", "workshop", "software-project"]
 PLACEMENTS = ["folder", "repo", "online"]
-LINT = Path(os.environ.get("OW_LINT") or REPO.parent / "schema-dist" / "walk" / "lint_folder.py")
+def default_lint():
+    """schema-dist's lint beside the toolkit's MAIN checkout: from a worktree too, since git's
+    common dir is the main checkout's .git (a worktree's own parent need not hold schema-dist)."""
+    roots = [REPO]
+    try:
+        common = subprocess.run(["git", "-C", str(REPO), "rev-parse", "--path-format=absolute",
+                                 "--git-common-dir"], capture_output=True, text=True).stdout.strip()
+        if common:
+            roots.insert(0, Path(common).parent)
+    except OSError:
+        pass
+    found = [r.parent / "schema-dist" / "walk" / "lint_folder.py" for r in roots]
+    return next((p for p in found if p.exists()), found[0])
+
+
+LINT = Path(os.environ.get("OW_LINT") or default_lint())
 SERVER_ID = "019a0b0c-0d0e-7f00-8a00-5e2be2000001"  # stands for the id onlyworlds.com gave the empty world
 GITATTRIBUTES = ("* text=auto eol=lf\n*.png binary\n*.jpg binary\n*.jpeg binary\n*.gif binary\n"
                  "*.webp binary\n*.pdf binary\n*.zip binary\n*.owworld binary\n")
