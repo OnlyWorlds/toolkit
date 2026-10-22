@@ -88,4 +88,4 @@ A world folder is plain files, so git gives it history, comparison, and alternat
 
 ## Who speaks this format
 
-Atlas (reference implementation, read+write) · the public converters: [Azgaar](https://github.com/OnlyWorlds/azgaar-converter) in, [Foundry VTT](https://github.com/OnlyWorlds/foundry-converter) out · this toolkit · Obsidian plugin (import and export of world folders). The formal spec (OW Folder Format, v0.3.14: the archive `.owworld` in §4.7 with its public fixture set, the producer line in §4.2) has its core rules settled; this page carries them.
+Atlas (reference implementation, read+write) · the public converters: [Azgaar](https://github.com/OnlyWorlds/azgaar-converter) in, [Foundry VTT](https://github.com/OnlyWorlds/foundry-converter) out · this toolkit · Obsidian plugin (import and export of world folders). The formal spec (OW Folder Format, v0.3.15: the archive `.owworld` in §4.7 with its public fixture set, the producer line in §4.2) has its core rules settled; this page carries them.
