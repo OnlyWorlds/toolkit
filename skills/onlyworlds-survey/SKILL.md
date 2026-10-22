@@ -70,6 +70,8 @@ Counting is a job for a short script or query over the folder or the fetched dat
 - **Bridges**: elements that connect two clusters, or whose removal splits one.
 - **Text weight**: characters of `description` plus `story` per element.
 
+**Leave the room out unless the user asks.** A room element (`knowledge/principles.md` §4: the room profile's pair and its mark `x_room_of`) is the world's work about itself, its lines, boards, hearts, votes, sittings, specs and members, not its lore: drop room elements from the id map before counting, so distribution, degree, orphans and clusters exclude them and their links, and say once, in the brief's Not read line, how many were left out. A folder lint still counts them; that is the lint's job.
+
 Save the numbers in a small table or file. The brief cites them; the model does not recount them.
 
 ### Step 5: Read the World
@@ -90,7 +92,7 @@ From what you read, find:
 
 ```markdown
 True as of: {when the data was read} from {folder path or API world name}
-Not read: {M} of {N} elements read in full; the rest known only by their counts. Skipped: {map, pin, marker, test zones}
+Not read: {M} of {N} elements read in full; the rest known only by their counts. Skipped: {map, pin, marker, test zones}; the room left out: {R} elements
 ```
 
 **Element Distribution Table**: include before prose. Quick snapshot of what exists:

@@ -42,7 +42,7 @@ Skip: map, pin, marker (spatial, not narrative links). Follow the api skill's li
 
 ### Step 3: Analyze the Web
 
-**Count with code, not by reading** (principles §2). A small script or query builds the id map and computes, per element, links out, links in (backlinks) and degree, as the survey skill does. A link is any field whose value is an id, or a list of ids, found in the id map. Orphans and near-orphans come from these counts, never from a hand tally.
+**Count with code, not by reading** (principles §2). A small script or query builds the id map and computes, per element, links out, links in (backlinks) and degree, as the survey skill does. A link is any field whose value is an id, or a list of ids, found in the id map. Orphans and near-orphans come from these counts, never from a hand tally. **Leave the room out unless the user asks**: a room element (principles §4: the room profile's pair and its mark `x_room_of`; its lines, boards, hearts, votes, sittings, specs and members) is the world's work about itself, not its lore, so it is dropped from the id map before counting and is never a source, a target or evidence for a suggested link; say once how many were left out.
 
 **Evidence for new links**, in order of strength:
 1. **Narrative `story`** (chapter, scene and session prose). An in-prose mention `[Name](ow://type/uuid)` is an exact reference; a script can list them per Narrative. An element mentioned in a Narrative's story is evidence for that Narrative's involves-fields (`characters`, `locations`, ...), and elements that share scenes are candidates for Relations.
