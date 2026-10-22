@@ -32,21 +32,24 @@ Shared rules: `knowledge/principles.md`. The folder: `knowledge/world-folder.md`
 | 5 | Who keeps the world: accepts proposals, tidies, adds supertypes | you | the Keeper Title, `{{keeper}}` |
 | 6 | The pack's own seed question (each `PACK.md` names it) | the pack's default | the seed rows |
 | 7 | A folder only, or also online on onlyworlds.com? | the folder now, online when ready | step 6 |
-| 8 | Where the AI's copy of the world skill lands: this project, or your home folder for every session? And a one-line `AGENTS.md`? | this project; yes | step 4's copies |
+| 8 | Where the AI's copy of the world skill lands: the project folder the AI runs in, or your home folder for every session? And a one-line `AGENTS.md` there? | the folder the AI runs in; yes | step 4's copies |
 
 ## What gets created
 
 ```
-<world-folder>/
-├── world.json                         # id, name, description, "charter": <the Law's id>, time in days
-├── elements/
-│   ├── law/charter.json               # the charter: Law, supertype Charter
-│   ├── object/<slug>-skill.json       # the world skill: Object, supertype Skill, its description the SKILL.md text
-│   └── <type>/<name>--<id8>.json      # the seed
-├── .agents/skills/ow-<slug>/SKILL.md  # the harness copies (or under the user's home); never part of the world
+<project>/                             # the folder the AI runs in (or the user's home, for every session)
+├── .agents/skills/ow-<slug>/SKILL.md  # the harness copies of the world skill
 ├── .claude/skills/ow-<slug>/SKILL.md
-└── AGENTS.md                          # one line, only on the user's yes; the user's file
+├── AGENTS.md                          # one line, on the user's yes; appended if the file exists (the user's file)
+└── <world-folder>/                    # the world itself; it may also BE the project folder
+    ├── world.json                     # id, name, description, "charter": <the Law's id>, time in days
+    └── elements/
+        ├── law/charter.json           # the charter: Law, supertype Charter
+        ├── object/<slug>-skill.json   # the world skill: Object, supertype Skill, its description the SKILL.md text
+        └── <type>/<name>--<id8>.json  # the seed
 ```
+
+**Where the copies go.** Every harness reads `.agents/skills/` and `.claude/skills/` from the folder it runs in up to the repository root, never from a sub-folder: so the copies go to the root the AI works in, and into the world folder only when the world folder is that root. `.agents/` and `.claude/` are dot-folders: a world-folder reader ignores them and an `.owworld` writer leaves them out, so a snapshot of the world never carries the copies. **The copies are the path that reaches every harness; the `AGENTS.md` line is a courtesy.** Two harness facts: Claude Code reads `AGENTS.md` only when no `CLAUDE.md` exists (where one does, the line goes there too); Gemini CLI reads `GEMINI.md` unless configured otherwise.
 
 The software-project pack adds `.gitattributes` and a `.gitignore` that ignores every dot-folder except `.agents/` and `.claude/`, and keeps the folder unlinked (no `api` block): the key lives in each person's environment, never in the repository.
 
@@ -55,7 +58,7 @@ The software-project pack adds `.gitattributes` and a `.gitignore` that ignores 
 1. **Interview.** One message with the questions still open, defaults shown. A user who says "just do it" gets every default.
 2. **Read the pack**: `packs/<pack>/PACK.md` first (who is in such a world, which types and supertypes and why, the size budget), then `charter.md`, `skill.md`, `seed.md`. Fill the placeholders from the answers. Seed only the rows the answers fill; list the rest as "left out".
 3. **Show the plan, then write** (principles §2: propose, review, apply). Show the charter text whole, the seed as a table, the skill's name and where its copies land. Write nothing until the user says yes.
-4. **Write the folder** with `scripts/write_world.py` (the plan's shape is in its header): it mints the ids, fills the id placeholders, writes every file by the writer rules, refuses an unfilled `{{placeholder}}`, checks the size budget, and writes the harness copies. It never writes into a folder that already holds files.
+4. **Write the folder** with `scripts/write_world.py` (the plan's shape is in its header): it mints the ids, fills the id placeholders, writes every file by the writer rules, refuses an unfilled `{{placeholder}}`, checks the size budget, and writes the harness copies to the root the plan names (`"copies"`: a path, `"world"`, or `"none"`), with the `AGENTS.md` line beside them (appended to an existing `AGENTS.md`, and to a `CLAUDE.md` there; printed for the user when the root is their home). It never writes into a world folder that already holds files, and never overwrites a copy.
 5. **Check**: schema-dist's folder lint (`python walk/lint_folder.py <folder>`, `knowledge/world-folder.md`); its last line is the count it read. Then read the charter file back whole. The seed elements were approved in step 3, so they are written settled (no proposed mark).
 6. **Online** (an account, and the user wants it): the user makes an empty world on onlyworlds.com; the project-setup skill connects a `.env` (the user types the key; never in chat); the api skill's Bulk Upload sends the elements (`write_world.py --bulk <file>` writes its body); `PATCH /api/v2/world` sets the time settings from `world.json` (`time_current` goes as `time_range_current`; the `charter` key stays in the folder, the server has no place for it) and `owner_character` to the owner's Person. Read back `GET /api/v2/law?supertype=Charter`.
 7. **Invites, made by the user on the world's page** (the screen's own words):

@@ -1,0 +1,15 @@
+{
+  "id": "01a16120-e752-71c2-b51c-f0462358e750",
+  "name": "Fernhollow Systems - Port of Greyhaven berth feed",
+  "supertype": "Integration",
+  "subtype": "in talks",
+  "description": "Source: Ada Varga (setup interview) · as of 2026-10-22\nReading the port's berth schedule into Tidetable. Open: the data agreement. Next: Odile's answer on the format.",
+  "actor": "01a16120-e752-7e28-a339-3c885f629b25",
+  "characters": [
+    "01a16120-e752-7df4-a218-5f3485628eb9"
+  ],
+  "institutions": [
+    "01a16120-e752-703e-bb43-cfb282616301",
+    "01a16120-e752-7fa8-8918-d552f953720b"
+  ]
+}

@@ -608,7 +608,7 @@
    }
   }
  ],
- "copies": "project",
+ "copies": "shape",
  "agents_md": true,
  "repo": false
 }

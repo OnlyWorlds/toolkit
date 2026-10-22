@@ -1,9 +1,0 @@
-{
-  "id": "01a16115-232d-7c6b-b4dd-b344dc692f75",
-  "name": "Contact Nine",
-  "supertype": "Contact",
-  "description": "Source: shape fixture · as of 2026-10-22\nA contact at the organisation they belong to.",
-  "institutions": [
-    "01a16115-232d-7561-8483-ba223b837b82"
-  ]
-}

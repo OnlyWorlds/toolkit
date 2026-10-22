@@ -1,0 +1,13 @@
+{
+  "id": "01a16120-ea68-7181-9eea-e7163c5f1442",
+  "name": "Company A - Board K pilot",
+  "supertype": "Pilot",
+  "description": "Source: shape fixture · as of 2026-10-22\nA line of kind Pilot, status paused: the state, the last contact and the next step.",
+  "subtype": "paused",
+  "actor": "01a16120-ea68-71b2-9f51-ae080e2cd2d7",
+  "characters": [],
+  "institutions": [
+    "01a16120-ea68-774e-9f8f-1f716313fd38",
+    "01a16120-ea68-7bbb-9dd1-6ce65b8dcece"
+  ]
+}

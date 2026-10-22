@@ -1,0 +1,21 @@
+{
+  "id": "01a16120-ea68-7363-a3f3-a04d7d16ea0d",
+  "name": "Shape Fixture",
+  "description": "A company world with the shape of a real company's package (the same types, supertypes and house-rule slots) and none of its content.",
+  "format_version": "0.3.12",
+  "charter": "01a16120-ea68-75d6-9477-1eff93d4082e",
+  "time_basic_unit": "Day",
+  "time_format_names": [
+    "Day",
+    "Week",
+    "Year"
+  ],
+  "time_format_equivalents": [
+    1,
+    7,
+    365
+  ],
+  "time_range_min": 0,
+  "time_range_max": 47481,
+  "time_current": 20748
+}

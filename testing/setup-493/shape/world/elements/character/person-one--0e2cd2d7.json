@@ -1,0 +1,10 @@
+{
+  "id": "01a16120-ea68-71b2-9f51-ae080e2cd2d7",
+  "name": "Person One",
+  "supertype": "Person",
+  "description": "Source: shape fixture · as of 2026-10-22\nFounder; holds the partner lines.",
+  "institutions": [
+    "01a16120-ea68-774e-9f8f-1f716313fd38",
+    "01a16120-ea68-741f-8497-f8379b86dd2a"
+  ]
+}

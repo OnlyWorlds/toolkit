@@ -1,0 +1,10 @@
+{
+  "id": "01a16120-ea68-7c0a-b7bd-d0349575a407",
+  "name": "Keeper",
+  "supertype": "Role",
+  "description": "Source: shape fixture · as of 2026-10-22\nKeeps this world: accepts or declines what is proposed, tidies, adds supertypes.",
+  "holders": [
+    "01a16120-ea68-71b2-9f51-ae080e2cd2d7"
+  ],
+  "body": "01a16120-ea68-774e-9f8f-1f716313fd38"
+}

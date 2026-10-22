@@ -1,0 +1,11 @@
+{
+  "id": "01a16120-ea68-7fce-b29f-5326e69703f1",
+  "name": "Keeper: Person One",
+  "supertype": "Tenure",
+  "description": "Source: shape fixture · as of 2026-10-22\nKeeps the world from 2026-10-22.",
+  "start_date": 20748,
+  "actor": "01a16120-ea68-71b2-9f51-ae080e2cd2d7",
+  "titles": [
+    "01a16120-ea68-7c0a-b7bd-d0349575a407"
+  ]
+}

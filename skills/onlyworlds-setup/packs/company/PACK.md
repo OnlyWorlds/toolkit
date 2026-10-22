@@ -48,4 +48,4 @@ The charter under **4,000** characters filled, the world skill under **8,000**: 
 
 ## Time
 
-Date fields count days from 1970-01-01 (the setup day 2026-10-22 is 20748); `world.json` sets the unit to Day. Every description also writes its dates in ISO in the text. There is no calendar element: OnlyWorlds' calendar extension counts years from day 0 and has one leap rule, so it cannot print a real calendar's years.
+Date fields count days from 1970-01-01 (the setup day 2026-10-22 is 20748); `world.json` sets the unit to Day. Every description also writes its dates in ISO in the text. There is no calendar element: OnlyWorlds' calendar extension can print a real year but not a real date, because its leap rule is one period counted from day 0, with no phase and no century rule (2026-10-22 prints as October 21). So the day number is the date, and the ISO text is how a person reads it.

@@ -22,8 +22,10 @@ The plan (JSON):
          "fields": {"name": "...", "supertype": "Company", "description": "..."},
          "links": {"parent_institution": "other-key", "characters": ["a", "b"]}}
       ],
-      "copies": "project",                     # "project" (beside world.json), "none", or a folder (a home)
-      "agents_md": true,                       # write the one-line AGENTS.md (never over an existing one)
+      "copies": "C:/work/acme",                # the root the agent runs in (a project, or the home folder),
+                                               # "world" when the world folder IS that root, or "none"
+      "agents_md": true,                       # the one-line AGENTS.md beside the copies (appended to an
+                                               # existing one, and to a CLAUDE.md there; printed for a home)
       "repo": false                            # true: .gitattributes and .gitignore for a shared repository
     }
 
@@ -198,8 +200,11 @@ def main(argv):
         head = fm.group(0)
         copy_text = (head + f"<!-- copied from the world: Object {skill_id}; updated_at none yet "
                      f"(made by the set-up skill on {today}) -->\n" + skill_text[len(head):])
-    copies = plan.get("copies", "project")
-    copy_root = None if copies == "none" else (out if copies == "project" else Path(copies))
+    # Harnesses read .agents/skills/ and .claude/skills/ from the directory they run in up to the
+    # repository root, never from a sub-folder: the copies go to that root, and into the world folder
+    # only when the world folder is that root ("world").
+    copies = plan.get("copies", "none")
+    copy_root = None if copies == "none" else (out if copies == "world" else Path(copies))
     copy_paths = []
     if copy_root is not None:
         for harness in (".agents", ".claude"):
@@ -207,10 +212,17 @@ def main(argv):
             if p.exists():
                 problems.append(f"{p} exists: a copy is the user's; not overwritten")
             copy_paths.append(p)
-    if plan.get("agents_md"):
-        files["AGENTS.md"] = (f"This folder holds the {w['name']} world (OnlyWorlds): read its charter first "
-                              f"(elements/law/charter.json, or GET /law?supertype=Charter online), "
-                              f"then load the {skill_name} skill.\n")
+    line, line_files, line_print = None, [], None
+    if plan.get("agents_md") and copy_root is not None:
+        rel_charter = os.path.relpath(out / "elements" / "law" / "charter.json", copy_root).replace(os.sep, "/")
+        line = (f"This folder works in the {w['name']} world (OnlyWorlds): read its charter first "
+                f"({rel_charter}, or GET /law?supertype=Charter online), then load the {skill_name} skill.")
+        if copy_root.resolve() == Path.home().resolve():
+            line_print = line  # no harness reads a home AGENTS.md as a project's: the user places the line
+        else:
+            line_files.append(copy_root / "AGENTS.md")
+            if (copy_root / "CLAUDE.md").exists():  # Claude Code reads AGENTS.md only when no CLAUDE.md exists
+                line_files.append(copy_root / "CLAUDE.md")
     if plan.get("repo"):
         files[".gitattributes"] = "* text=auto eol=lf\n"
         files[".gitignore"] = ".*/\n!.agents/\n!.claude/\n.env\n.env.*\n"
@@ -225,6 +237,21 @@ def main(argv):
         write(out / rel, text)
     for p in copy_paths:
         write(p, copy_text)
+    line_done = []
+    for p in line_files:  # the user's own file: never overwritten, the line appended once
+        if not p.exists():
+            write(p, line + "\n")
+            line_done.append(f"{p}: written")
+            continue
+        with open(p, encoding="utf-8", newline="") as fh:
+            old = fh.read()
+        if line in old:
+            line_done.append(f"{p}: holds the line already")
+            continue
+        nl = "\r\n" if "\r\n" in old else "\n"
+        with open(p, "a", encoding="utf-8", newline="") as fh:
+            fh.write(("" if not old or old.endswith("\n") else nl) + line + nl)
+        line_done.append(f"{p}: the line appended")
     if bulk:
         items = [{"type": rel.split("/")[1], "element": json.loads(text)}
                  for rel, text in files.items() if rel.startswith("elements/")]
@@ -237,6 +264,10 @@ def main(argv):
           f"world skill {len(skill_text)} of under {SKILL_MAX}; skill name {skill_name}")
     for p in copy_paths:
         print(f"copy: {p}")
+    for d in line_done:
+        print(f"agents line: {d}")
+    if line_print:
+        print(f"agents line, for the user to place (the copies went to a home folder): {line_print}")
     if bulk:
         print(f"bulk body: {bulk} ({n} items)")
     return 0

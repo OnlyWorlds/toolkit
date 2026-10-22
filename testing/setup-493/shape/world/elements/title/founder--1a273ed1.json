@@ -1,0 +1,14 @@
+{
+  "id": "01a16120-ea68-7b97-9feb-158a1a273ed1",
+  "name": "Founder",
+  "supertype": "Role",
+  "description": "Source: shape fixture · as of 2026-10-22\nThe only role filed so far.",
+  "holders": [
+    "01a16120-ea68-71b2-9f51-ae080e2cd2d7"
+  ],
+  "body": "01a16120-ea68-774e-9f8f-1f716313fd38",
+  "institutions": [
+    "01a16120-ea68-774e-9f8f-1f716313fd38",
+    "01a16120-ea68-741f-8497-f8379b86dd2a"
+  ]
+}
