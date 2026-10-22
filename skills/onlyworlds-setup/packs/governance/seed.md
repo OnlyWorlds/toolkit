@@ -5,7 +5,8 @@ What a fresh governance world starts with, as rows of the plan `write_world.py` 
 | Key | Type | supertype | subtype | name | Links | Fills it | Example |
 |-----|------|-----------|---------|------|-------|----------|---------|
 | `body` | institution | `Board` (or `Council`, `Committee`) | | `{{body}}` | `parent_institution` for a committee | question 2 | Lantern Row Allotment Board |
-| `member-<n>` | character | `Member` | | each member | | question 3 | Hal Brennick, Sunniva Dale, Joss Ferrer |
+| `member-<n>` | character | `Member` | | each member | seat `owner` (the user) or `contributor` | question 3 | Hal Brennick, Sunniva Dale, Joss Ferrer |
+| `ai-<n>` | character | `Agent` | | each member's AI | seat `contributor`, `ai_of` its member | question 4; **a folder world only** | Ledger (Sunniva Dale's AI) |
 | `office-<n>` | title | `Office` | | each office | `body`: `body`, `holders`: [the current holder] | question 6 | Chair, Secretary, Treasurer |
 | `tenure-<n>` | relation | `Tenure` | | `<office>: <holder>` | `actor`, `titles`: [`office-<n>`]; `start_date`: `day:<since>` | question 6 | Chair: Hal Brennick, from 2025-01-15 |
 | `membership-<n>` | relation | `Membership` | | `<member>: {{body}}` | `actor`, `institutions`: [`body`]; `start_date` | question 6, when the dates are known | Sunniva Dale: Lantern Row Allotment Board |
@@ -16,6 +17,8 @@ What a fresh governance world starts with, as rows of the plan `write_world.py` 
 
 The charter's own links, in the plan's `charter.links`: `author` = `body`, `adjudicators` = [`keeper-title`].
 
-**Never seeded**: past meetings, decisions, motions and votes (they enter as the minutes do, drafted as proposed and settled by the keeper), a member's AI's Character (its seat makes it).
+**Seats** (questions 3 and 4): a Character row carries `"seat": {"role": ...}` (`owner`, `co_builder`, `contributor`, `guest`), and an AI's also `"ai_of"`, its human's key. The file gets it as `x_seat`; the charter's "Who is here" lists them. An AI's row is written in a folder world only: online, its seat makes its Character, and nothing may link the row.
+
+**Never seeded**: past meetings, decisions, motions and votes (they enter as the minutes do, drafted as proposed and settled by the keeper), an online world's AI Character (its seat makes it).
 
 **Naming**: a tenure `<office>: <holder>`, a vote `<voter> on <motion>`, a decision `<motion>: <outcome>`, the minutes `Minutes <YYYY-MM-DD>`. Relations cannot be filtered by what they link, so the name carries the lookup.

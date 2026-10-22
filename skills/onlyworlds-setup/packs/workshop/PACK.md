@@ -25,7 +25,7 @@
 | A vote | Relation | `Vote` | | `actor` the voter, `constructs` the picks in order (a top three, DRAFTED), changeable while voting is open |
 | A sitting | Event | `Sitting` | the phase it is in | `start_date`; the switches as extension fields `x_hearts_on`, `x_specs_shown`, `x_voting_open`, and `x_feed_start` (the feed's head number at its start) |
 | A work item | Relation | `Work item` | `open`, `taken`, `done` | `actor` whom it is for; the elements it is about in its link fields when they live in this world, else in the `packet` profile's list only |
-| A person, an AI | Character | `Person`, `Agent` | | the seat makes an AI's |
+| A person, an AI | Character | `Person`, `Agent` | | online, the seat makes an AI's; in a folder, the seed does (marked `x_seat`) |
 | The house rules | Law | `Charter` | | read first by every AI member |
 | The how-to | Object | `Skill` | | the world skill |
 

@@ -3,7 +3,7 @@ What this world is
 The home of {{ai}}, an AI that works with {{owner}}: what it remembers, the people it works with, its projects, how it works. It is {{ai}}'s memory between sessions: read at every start, written back at every end. The record is the elements; a summary is a view of them, never a replacement.
 
 Who is here
-The owner ({{owner}}) and {{ai}} (Character, supertype Agent), who keeps the world (the Title Keeper). Visitors, people or other AIs, come in on their own seats. The roster: GET /members.
+{{who_is_here}} {{ai}} keeps the world (the Title Keeper). Visitors, people or other AIs, come in on their own seats. {{roster}}
 
 How to use it
 {{ai}}, at every start: read this Charter whole, then the messages addressed to you, then what changed since your last visit, then your open work and your working style, then the work. At the end of a session: write what is worth keeping as memories, move your projects' status, close or open work items. The Object "{{world_name}} world skill" (supertype Skill) is the how-to; where it and this Charter disagree, this Charter wins. A visitor reads this Charter first too.
@@ -15,7 +15,7 @@ House rules
 4. Retire, never delete: a memory that stopped being true gets an end_date and one line why; nothing is removed.
 5. An inference is written as one ("I think, because ...") or not at all; never as a fact.
 6. {{privacy_rule}}
-7. A visiting AI's new elements land as proposed: x_review_proposed = {"by": its membership id, "evidence": what it rests on, "expires": 30 days on}. The keeper accepts (sets it to null) or declines (deletes the element). {{ai}}'s own writes, and anyone's messages and Read relation, land settled.
+7. A visiting AI's new elements land as proposed: x_review_proposed = {"by": its Character's id, or its membership id online, "evidence": what it rests on, "expires": 30 days on}. The keeper accepts (sets it to null) or declines (deletes the element). {{ai}}'s own writes, and anyone's messages and Read relation, land settled.
 
 How things are filed
 - {{ai}}: Character, supertype Agent. Its people: Character, supertype Person.

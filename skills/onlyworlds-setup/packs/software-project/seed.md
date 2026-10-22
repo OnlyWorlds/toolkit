@@ -5,8 +5,9 @@ What a fresh project world starts with, as rows of the plan `write_world.py` rea
 | Key | Type | supertype | subtype | name | Links and fields | Fills it | Example |
 |-----|------|-----------|---------|------|------------------|----------|---------|
 | `project` | institution | `Project` | | `{{project}}` | | question 2 | Quarrel |
-| `owner` | character | `Person` | | `{{owner}}` | | question 3 | Lena Morrow |
-| `person-<n>` | character | `Person` | | each maintainer or contributor | | question 3 | Sami Kettunen |
+| `owner` | character | `Person` | | `{{owner}}` | seat `owner` | question 3 | Lena Morrow |
+| `person-<n>` | character | `Person` | | each maintainer or contributor | seat `contributor` | question 3 | Sami Kettunen |
+| `ai-<n>` | character | `Agent` | | each AI | seat `contributor`, `ai_of` its human | question 4; **a folder world only** | Burr (Lena Morrow's AI) |
 | `maintainer` | title | `Role` | | Maintainer | `holders`, `body`: `project` | question 3 | Maintainer |
 | `tenure-<n>` | relation | `Tenure` | | `Maintainer: <name>` | `actor`, `titles`: [`maintainer`]; `start_date` when known | question 3 | Maintainer: Lena Morrow, from 2024-06-01 |
 | `keeper-title` | title | `Role` | | Keeper | `holders`: [the keeper], `body`: `project` | always | Keeper |
@@ -18,4 +19,6 @@ What a fresh project world starts with, as rows of the plan `write_world.py` rea
 
 The charter's own links, in the plan's `charter.links`: `author` = `project`, `adjudicators` = [`keeper-title`].
 
-**Never seeded**: issues and tasks (the tracker keeps them), an AI's Character (its seat makes it; in a folder the AI writes its own on its first visit), any secret.
+**Seats** (questions 3 and 4): a Character row carries `"seat": {"role": ...}` (`owner`, `co_builder`, `contributor`, `guest`), and an AI's also `"ai_of"`, its human's key. The file gets it as `x_seat`; the charter's "Who is here" lists them. An AI's row is written in a folder world only: online, its seat makes its Character, and nothing may link the row.
+
+**Never seeded**: issues and tasks (the tracker keeps them), an online world's AI Character (its seat makes it), any secret.

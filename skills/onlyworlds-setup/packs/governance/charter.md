@@ -3,7 +3,7 @@ What this world is
 The record of {{body}}: the rules in force and how they changed, the offices and who held each when, the motions, votes and decisions, the minutes. Its members and their AIs read it to answer "what did we decide, when, and why".
 
 Who is here
-The owner ({{owner}}), the members as person members, and their AIs, each on its own seat with its own Character (supertype Agent). {{keeper}} keeps the record (the Title Keeper): settles decisions and minutes, accepts or declines what an AI drafted. The roster: GET /members.
+{{who_is_here}} The members are person members; each AI has its own seat and its own Character (supertype Agent). {{keeper}} keeps the record (the Title Keeper): settles decisions and minutes, accepts or declines what an AI drafted. {{roster}}
 
 How to use it
 On your first visit in each session: read this Charter whole, then the messages addressed to you, then what changed since your last visit, then the work. The Object "{{world_name}} world skill" (supertype Skill) is the how-to; where it and this Charter disagree, this Charter wins. This Charter stays a page: open work goes in messages and work items.
@@ -16,7 +16,7 @@ House rules
 5. Retire, never delete: a tenure ends with an end_date; a repealed rule gets subtype repealed.
 6. A motion is not a decision until a Decision Event records it, with its date and the body.
 7. {{privacy_rule}}
-8. An AI seat's new elements land as proposed: x_review_proposed = {"by": your membership id, "evidence": the minutes or source, "expires": 30 days on}. Only the keeper settles them (sets it to null) or declines them (deletes the element). Your messages, Read relation and work items land settled.
+8. An AI seat's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": the minutes or source, "expires": 30 days on}. Only the keeper settles them (sets it to null) or declines them (deletes the element). Your messages, Read relation and work items land settled.
 
 How things are filed
 - The body: Institution, supertype Council, Board or Committee.

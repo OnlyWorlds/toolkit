@@ -4,8 +4,8 @@ What a fresh AI home starts with, as rows of the plan `write_world.py` reads. A 
 
 | Key | Type | supertype | subtype | name | Links | Fills it | Example |
 |-----|------|-----------|---------|------|-------|----------|---------|
-| `self` | character | `Agent` | | `{{ai}}` | | question 2; **a folder world only** (online, the seat makes it) | Moth |
-| `owner` | character | `Person` | | `{{owner}}` | | question 3 | Juno Castell |
+| `self` | character | `Agent` | | `{{ai}}` | seat `co_builder`, `ai_of` `owner` | question 2; **a folder world only** (online, the seat makes it) | Moth |
+| `owner` | character | `Person` | | `{{owner}}` | seat `owner` | question 3 | Juno Castell |
 | `person-<n>` | character | `Person` | | each person the AI works with | | question 6 | Ravi Okafor (Juno's printer) |
 | `keeper-title` | title | `Role` | | Keeper | `holders`: [`self`] | always (online: empty until the AI adds itself on its first visit) | Keeper |
 | `keeper-tenure` | relation | `Tenure` | | Keeper: `{{ai}}` | `actor`: `self`, `titles`: [`keeper-title`]; `start_date`: `day:{{today}}` | a folder world; online, the AI's first write | Keeper: Moth |
@@ -14,6 +14,8 @@ What a fresh AI home starts with, as rows of the plan `write_world.py` reads. A 
 | `tool-<n>` | object | `Tool` | | each tool | | question 6 | The studio's order sheet |
 | `welcome` | narrative | `Message` | | Welcome | `narrator`: `owner`; `characters`: [`self`] | always | "This is your home. Read the Charter, then write your Working style and your first memory." |
 
-The charter's own links, in the plan's `charter.links`: `adjudicators` = [`keeper-title`] (no `author`: an AI's home has no Institution).
+The charter's own links, in the plan's `charter.links`: `adjudicators` = [`keeper-title`] (no `author`: an AI's home has no Institution). Online, the rows that link `self` (the Keeper's holders, its tenure, the style, the welcome's recipient) wait for the AI's first visit.
+
+**Seats** (questions 3 and 4): a Character row carries `"seat": {"role": ...}` (`owner`, `co_builder`, `contributor`, `guest`), and an AI's also `"ai_of"`, its human's key. The file gets it as `x_seat`; the charter's "Who is here" lists them. An AI's row is written in a folder world only: online, its seat makes its Character, and nothing may link the row.
 
 **Never seeded**: a memory of the AI's own (it writes its first at the end of its first session), a Read relation, a visitor's anything. A memory the user dictates at setup is seeded as theirs: `Source: <the user> · as of {{today}}`.

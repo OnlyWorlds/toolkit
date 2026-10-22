@@ -3,7 +3,7 @@ What this world is
 The context of {{project}} ({{repo_url}}): what an agent new to the codebase should know and cannot read off the code. The components and what each depends on, the decisions and why, who maintains what, the services it relies on, the releases. {{tracker}} keeps the work and the code keeps the code: point at them, never copy them.
 
 Who is here
-The maintainers and contributors, and their AIs, each on its own seat with its own Character (supertype Agent). {{keeper}} keeps the world (the Title Keeper): accepts or declines what is proposed, tidies, adds supertypes. The world folder is committed with the code; the hosted copy, if any, is refreshed into it by export.
+{{who_is_here}} Maintainers and contributors are person members; each AI has its own seat and its own Character (supertype Agent). {{keeper}} keeps the world (the Title Keeper): accepts or declines what is proposed, tidies, adds supertypes. {{roster}} The world folder is committed with the code; the hosted copy, if any, is refreshed into it by export.
 
 How to use it
 On your first visit in each session: read this Charter whole, then the messages addressed to you, then what changed since your last visit (in the repository: git log on the world folder), then the work. The Object "{{world_name}} world skill" (supertype Skill) is the how-to; where it and this Charter disagree, this Charter wins. Open work lives in {{tracker}}, never here.
@@ -15,7 +15,7 @@ House rules
 4. A decision is never rewritten. A new decision supersedes it through parent_law; the old one's subtype becomes superseded.
 5. The code wins. A description that disagrees with the code is a message to the component's maintainer, never a guess written in.
 6. No secrets in the world, ever: it is committed. No key in world.json, no token in a description.
-7. An AI seat's new elements land as proposed: x_review_proposed = {"by": your membership id, or your Character's id in a folder, "evidence": a commit or a path, "expires": 30 days on}. The keeper accepts (sets it to null) or declines (deletes the element). Your messages, Read relation and work items land settled.
+7. An AI seat's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": a commit or a path, "expires": 30 days on}. The keeper accepts (sets it to null) or declines (deletes the element). Your messages, Read relation and work items land settled.
 
 How things are filed
 - The project: Institution, supertype Project.

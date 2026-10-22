@@ -6,9 +6,9 @@
 
 **It lives in the repository.** The world folder is committed with the code, so everyone who pulls has it and every harness that opens the repository finds the skill. That makes it the portable copy of the folder format:
 - `world.json` carries **no `api` block**: the key lives in each person's environment (a `.env` the repository ignores), never in a tracked file.
-- `.gitattributes` forces LF (`* text=auto eol=lf`).
+- `.gitattributes` forces LF (`* text=auto eol=lf`, binaries marked): every pack's world folder gets the same one; the repository adds the `.gitignore`.
 - Every tool's dot-folder is ignored **except `.agents/` and `.claude/`**, so the skill's copy reaches everyone who pulls. They are the repository's, not the world's: no tool packs them into a world archive.
-- Two layouts: the world folder is the repository (a world repository; `write_world.py` writes `.gitattributes` and `.gitignore` with `"repo": true`, and the copies and the `AGENTS.md` line go in it with `"copies": "world"`), or a `world/` folder inside a code repository (then `"copies"` names the repository root, where every harness looks; the `AGENTS.md` line is appended to the root's own file, and to its `CLAUDE.md` if there is one; the root's `.gitignore` gets the two un-ignore lines by the user's hand). Harnesses never read the copies from a sub-folder.
+- Two layouts: the world folder is the repository (a world repository; `write_world.py` writes the `.gitignore` with `"repo": true`, and the copies and the `AGENTS.md` line go in it with `"copies": "world"`), or a `world/` folder inside a code repository (then `"copies"` names the repository root, where every harness looks; the `AGENTS.md` line is appended to the root's own file, and to its `CLAUDE.md` if there is one; the root's `.gitignore` gets the two un-ignore lines by the user's hand). Harnesses never read the copies from a sub-folder.
 
 A linked folder (one with an `api` block) is never committed. Online, the world is the hosted copy and the folder in the repository is refreshed from it by export; pick one as the source of truth and say which in the charter.
 
