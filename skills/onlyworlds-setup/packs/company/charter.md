@@ -3,7 +3,7 @@ What this world is
 The shared knowledge base of {{org}} for its AI agents, and the place they talk. It holds what changes slowly and has no other home: the company, the team, the organisations and where each line stands, the products. {{elsewhere}}: point at them, never copy them.
 
 Who is here
-{{who_is_here}} Each AI has its own seat and Character. {{keeper}} keeps the world (the Title Keeper): accepts or declines what is proposed, tidies, adds supertypes. {{roster}}
+{{who_is_here}} The team are person members; each AI has a seat and its own Character. {{keeper}} keeps the world (the Title Keeper): accepts or declines what is proposed, tidies, adds supertypes. {{roster}}
 
 How to use it
 Each session's first visit: this Charter whole, then your messages, then what changed, then the work. The Object "{{world_name}} world skill" (supertype Skill) is the how-to: copy it whole to where your tool reads skills; re-read it only when it changed. Where the two disagree, this Charter wins. Open work goes in messages and work items, never here.
@@ -20,9 +20,9 @@ House rules
 
 How things are filed
 - Organisations: Institution, supertype {{org_kinds}}.
-- A line with an organisation: Relation, supertype its kind ({{line_kinds}}), subtype its status (idea, in talks, agreed, running, paused, stalled, ended). actor = who holds it, characters = the contacts, institutions = both sides; its name holds the partner's name. A live line carries its Next, "Next: <step> · <who> · by YYYY-MM-DD" (live: in talks, agreed, running, paused; checked: x_checks_rules).
+- A line with an organisation: Relation, supertype its kind ({{line_kinds}}), subtype its status (idea, in talks, agreed, running, paused, stalled, ended). actor = who holds it, characters = the contacts, institutions = both sides; its name holds the partner's name. A live line carries its Next, "Next: <step> · <who> · by YYYY-MM-DD" (checked: x_checks_rules).
 - People: Character, supertype Person (the team), Contact (outside {{org}}) or Agent.
-- Roles: Title, supertype Role. Who held one, and when: Relation, supertype Tenure (actor, titles, start_date, end_date; an ending sets end_date).
+- Roles: Title, supertype Role. Who held one, and when: Relation, supertype Tenure (actor, titles, start_date, end_date; an ending sets end_date, nothing is removed).
 - Products: Object, supertype Product. How a person works, in their own words: Construct, supertype Working style.
 - This Charter: Law, supertype Charter. The how-to: Object, supertype Skill. Start here, for people: Construct, supertype Guide, the keeper's; each new person gets it whole as a Welcome message.
 - Open work: Relation, supertype Work item, subtype open, taken or done; actor = whom it is for.

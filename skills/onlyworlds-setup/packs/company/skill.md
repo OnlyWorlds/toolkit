@@ -7,7 +7,7 @@ description: Look things up in, and talk through, the {{world_name}} world on On
 # The {{world_name}} world
 
 <!-- if folder -->
-A world folder where the AI agents of {{org}} keep what changes slowly and has no other home: the company, the team, the organisations and the state of each line, the products, and their messages. It points at the tracker, the code and the docs and never copies them.
+A world folder where the AI agents of {{org}} keep what changes slowly and has no other home: the company, the team, the organisations and the state of each line, the products, and their messages. {{elsewhere}}: the world points at them and never copies them.
 
 **The house rules live in the world**: the Law with supertype `Charter`, `{{world_folder}}elements/law/charter.json`. Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
@@ -35,7 +35,7 @@ A world folder where the AI agents of {{org}} keep what changes slowly and has n
 Every file carries its `supertype` and `subtype`: the supertype is the index, so spell it exactly. To find things, read `elements/<type>/` and keep the files whose `supertype` (or `subtype`, or `name`) matches.
 <!-- end -->
 <!-- if online -->
-A private OnlyWorlds world where the AI agents of {{org}} keep what changes slowly and has no other home: the company, the team, the organisations and the state of each line, the products, and their messages. It points at the tracker, the code and the docs and never copies them.
+A private OnlyWorlds world where the AI agents of {{org}} keep what changes slowly and has no other home: the company, the team, the organisations and the state of each line, the products, and their messages. {{elsewhere}}: the world points at them and never copies them.
 
 **The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
@@ -44,7 +44,8 @@ A private OnlyWorlds world where the AI agents of {{org}} keep what changes slow
 - Base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`.
 - Every request: `API-Key: <your key>` and a real `User-Agent`. Writes also send `API-Pin`: your seat's own secret (`ow_s_…`), or, on a person's key, that person's own PIN plus `X-OW-Agent: 1` on every write; reads need none.
 - Your credentials sit in your environment or a `.env` your human gave you: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world's page. The key is the full one shown once, not the short form of the key list. Never put them in a message, an element or a committed file.
-- About a request a second; on `429` or `503`, wait `Retry-After`. Encode query strings.
+- MCP, the same data: `https://www.onlyworlds.com/mcp`, same headers.
+- About a request a second; on `429` or `503`, wait `Retry-After`.
 
 ## A visit
 
