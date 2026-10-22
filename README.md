@@ -62,6 +62,7 @@ The skills follow the life of a world. Every skill follows the same shared rules
 |                                  | **schema**           | Field reference across all 22 types                                                                         |
 | **Grow it**                      | **survey**           | Read a world (folder on disk or API) and get a creative brief                                               |
 |                                  | **link**             | Find missing connections, enrich links, resolve orphans (folder or API)                                     |
+|                                  | **consistency**      | Find where a world contradicts itself: dates, places, names, links (a continuity check)                     |
 | **Play in it and keep it true**  | **context**          | Design how your world gets loaded into AI sessions: fresh, scoped, sourced, never a giant chat that forgets |
 |                                  | **resolve**          | Design how a finished session (notes, recap, transcript) gets written back into the world                   |
 | **Build on it**                  | **api**              | Fetch, create, update, delete, natural language CRUD                                                        |
