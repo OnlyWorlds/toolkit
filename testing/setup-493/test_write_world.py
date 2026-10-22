@@ -348,11 +348,11 @@ class SetupWriter(unittest.TestCase):
             self.assertEqual(len(charters[0]["x_checks_rules"]), 1, placement)
 
     def test_9e_format_version_is_the_spec_current(self):
-        """The writer's FORMAT_VERSION is the folder spec's current (0.3.14, the package's own): no older-format finding."""
+        """The writer's FORMAT_VERSION is the folder spec's current (0.3.15, the package's own): no older-format finding."""
         src = read(WRITER)
-        self.assertIn('FORMAT_VERSION = "0.3.14"', src)
+        self.assertIn('FORMAT_VERSION = "0.3.15"', src)
         for placement in PLACEMENTS:
-            self.assertEqual(RUNS["company", placement].world_json["format_version"], "0.3.14", placement)
+            self.assertEqual(RUNS["company", placement].world_json["format_version"], "0.3.15", placement)
 
     def test_9c_plan_replaces_the_pack_rule(self):
         plan = json.loads(read(PLANS / "company.json"))
