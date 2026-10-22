@@ -56,6 +56,7 @@ The skills follow the life of a world. Every skill follows the same shared rules
 | Stage                            | Skill                | Purpose                                                                                                     |
 |----------------------------------|----------------------|-------------------------------------------------------------------------------------------------------------|
 | Start                            | **onlyworlds-start** | Entry point: understands your situation, routes you forward                                                 |
+|                                  | **setup**            | Set up a world for work (a company, a team, an AI's home, a council, a workshop, a software project) from a starter pack |
 | **Structure it**                 | **parsing**          | Text, files, or folders → a structured world (JSON or an Atlas-openable folder)                             |
 |                                  | **modeling**         | Design consultation for complex world systems                                                               |
 |                                  | **schema**           | Field reference across all 22 types                                                                         |

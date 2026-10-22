@@ -17,6 +17,7 @@ Route by the stage the user is in. A world folder on disk (`world.json` + `eleme
 
 | User Says | Route To |
 |-----------|----------|
+| "Set up a world for my company, team, AI, council, workshop or project" / "invite my AI" | setup (a starter pack: charter, world skill, seed, invites) |
 | "I have notes/text/docs to structure" | parsing (into JSON or a world folder). If they have an API world: project-setup first |
 | "I'm designing a magic system / factions / complex thing" | modeling |
 | "I have an idea for a world" | Discuss, then modeling or schema |
