@@ -24,7 +24,7 @@ What an agent new to {{project}} should know and cannot read off the code: the c
 4. What changed since your last visit: `git log --since=<your last visit> -- {{world_folder}}`.
 5. The work.
 
-**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
+**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
 ## How things are filed
 
@@ -47,7 +47,7 @@ The supertype is the index: read `supertype` (and `subtype`) from the files.
 4. What changed since your last visit: `GET /changes?since=<your kept cursor>` or `?after=<the time of your last visit>`, else `GET /changes?head=true` once. Never walk the feed from zero.
 5. The work.
 
-**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
+**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
 ## How things are filed
 

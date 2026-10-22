@@ -2,7 +2,7 @@
 
 What a fresh company world starts with, as rows of the plan `write_world.py` reads (`key`, `type`, `fields`, `links` by key, `seat` on a Character). A row the answers do not fill is left out and named in the report. The example column is a fictional company, Fernhollow Systems, which makes timetabling software for small ferry operators.
 
-Every description opens `Source: <who said it> · as of {{today}}`, then one or two neutral sentences.
+Every description opens `Source: <who said it> · as of {{today}}`, then one or two neutral sentences. A live line's description (`line-<n>`) also carries its Next line: `Next: <step> · <who> · by YYYY-MM-DD`.
 
 | Key | Type | supertype | subtype | name | Links | Fills it | Example |
 |-----|------|-----------|---------|------|-------|----------|---------|

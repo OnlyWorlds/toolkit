@@ -48,7 +48,7 @@
      "links": {"actor": "owner", "titles": ["keeper-title"]}},
     {"key": "line-saltmere", "type": "relation",
      "fields": {"name": "Fernhollow Systems - Saltmere customer", "supertype": "Customer", "subtype": "running",
-                "description": "Source: Ada Varga (setup interview) · as of {{today}}\nTidetable live on all Saltmere routes."},
+                "description": "Source: Ada Varga (setup interview) · as of {{today}}\nTidetable live on all Saltmere routes.\nNext: the winter timetable · Ada Varga · by 2026-11-15"},
      "links": {"actor": "owner", "characters": ["wren"], "institutions": ["org", "saltmere"]}},
     {"key": "tidetable", "type": "object",
      "fields": {"name": "Tidetable", "supertype": "Product",

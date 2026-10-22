@@ -19,8 +19,10 @@ harness trial (h67 #9988):
 5. the AGENTS.md line and the world skill's courtesy line are one sentence;
 6. every pack writes the same .gitattributes, in every placement;
 7. every pack's world skill holds the daily sweep, word for word, and the
-   charter-order sentence with its reason, once each (OW Industry #552);
-8. the company pack writes the Guide "Start here" and a Welcome message to a person.
+   charter-order sentence with its reason, once each (OW Industry #552); only the company pack,
+   whose lines keep a Next line, keeps the sweep's clause about stale lines;
+8. the company pack writes the Guide "Start here", a Welcome message to a person, and the
+   charter's Next-line sentence.
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -70,6 +72,7 @@ DAILY_SWEEP = (
     "Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same "
     "digest, then offers to go deeper: query the elements the new messages touch, read enough to see "
     "the whole picture, and talk it through with your human before writing anything.")
+LINES_CLAUSE = "which of the lines they keep are over two weeks old or past their `Next: ... by` date, "
 ORDER = ("This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line "
          "or a skill is read first.")
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
@@ -285,9 +288,13 @@ class SetupWriter(unittest.TestCase):
             text = run.skill()
             self.assertEqual(text.count(ORDER), 1, "the charter-order sentence, once")
             sweep = DAILY_SWEEP
+            if run.pack != "company":  # only the company pack keeps lines with a Next line: the clause is cut
+                self.assertIn(LINES_CLAUSE, sweep)
+                sweep = sweep.replace(LINES_CLAUSE, "")
             if run.pack == "ai-home":  # the pack names the AI's human by the owner's name
                 sweep = sweep.replace("your human", run.plan["values"]["owner"])
             self.assertEqual(text.count(sweep), 1, "the daily sweep, word for word, once")
+            self.assertEqual(text.count("`Next: <step> · <who> · by YYYY-MM-DD`"), 1 if run.pack == "company" else 0)
         self.each(check)
 
     def test_8_company_start_here(self):
@@ -303,7 +310,8 @@ class SetupWriter(unittest.TestCase):
                             and len(b.get("characters") or []) == 1]
                 self.assertTrue(welcomes and all(w["characters"][0] in people for w in welcomes),
                                 "a Welcome message to a person")
-                self.assertIn("Construct, supertype Guide, named Start here", run.charter())
+                self.assertIn("Start here, for people: Construct, supertype Guide", run.charter())
+                self.assertIn('A live line keeps a Next line: "Next: <step> · <who> · by YYYY-MM-DD"', run.charter())
 
 
 if __name__ == "__main__":

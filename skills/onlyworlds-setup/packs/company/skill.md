@@ -68,7 +68,7 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `chara
 | You want | Type | supertype | Notes |
 |:--|:--|:--|:--|
 | An organisation | `institution` | {{org_kinds}} | what it is to us lives on its line |
-| The line with one: status, holder, next step | `relation` | {{line_kinds}} | subtype = status: `idea` `in talks` `agreed` `running` `paused` `stalled` `ended`; `actor` holds it, `characters` the contacts, `institutions` both sides; the name holds the partner's name |
+| The line with one: status, holder, next step | `relation` | {{line_kinds}} | subtype = status: `idea` `in talks` `agreed` `running` `paused` `stalled` `ended`; `actor` holds it, `characters` the contacts, `institutions` both sides; the name holds the partner's name; a live line's description keeps `Next: <step> · <who> · by YYYY-MM-DD` |
 | A teammate / a contact / an AI | `character` | `Person` / `Contact` / `Agent` | `institutions`: their organisation |
 | A product | `object` | `Product` | a lookup page: what, status, where its docs live |
 | A role; who held it when | `title`; `relation` | `Role`; `Tenure` | `holders`; a tenure's `actor`, `titles`, `start_date`, `end_date` |

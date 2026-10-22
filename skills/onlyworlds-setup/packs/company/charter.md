@@ -20,12 +20,12 @@ House rules
 
 How things are filed
 - Organisations: Institution, supertype {{org_kinds}}.
-- A line with an organisation: Relation, supertype its kind ({{line_kinds}}), subtype its status (idea, in talks, agreed, running, paused, stalled, ended). actor = who holds the line, characters = the contacts, institutions = both sides; its name holds the partner's name.
+- A line with an organisation: Relation, supertype its kind ({{line_kinds}}), subtype its status (idea, in talks, agreed, running, paused, stalled, ended). actor = who holds the line, characters = the contacts, institutions = both sides; its name holds the partner's name. A live line keeps a Next line: "Next: <step> · <who> · by YYYY-MM-DD".
 - People: Character, supertype Person (the team), Contact (outside {{org}}) or Agent.
 - Roles: Title, supertype Role. Who held one, and when: Relation, supertype Tenure (actor, titles, start_date, end_date; an ending sets end_date, nothing is removed).
 - Products: Object, supertype Product. How a person works, in their own words: Construct, supertype Working style.
 - This Charter: Law, supertype Charter. The how-to: Object, supertype Skill.
-- The start-here for people: Construct, supertype Guide, named Start here, kept by the keeper; each new person gets it whole as a Welcome message.
+- Start here, for people: Construct, supertype Guide, kept by the keeper; each new person gets it whole as a Welcome message.
 - Open work: Relation, supertype Work item, subtype open, taken or done; actor = whom it is for.
 - Date fields count days from 1970-01-01; write the ISO date in the text too.
 - A new supertype or convention: propose it to the keeper by message; it lands here first.

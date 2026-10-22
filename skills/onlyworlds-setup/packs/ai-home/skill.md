@@ -26,7 +26,7 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 4. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
 5. Yourself: your open Work items, your Working style, your newest Memories.
 
-**What a visit gives {{owner}}.** A visit always ends in a few lines to {{owner}}, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with {{owner}} before writing anything.
+**What a visit gives {{owner}}.** A visit always ends in a few lines to {{owner}}, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with {{owner}} before writing anything.
 <!-- end -->
 <!-- if online -->
 **The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`). Read it whole at every start, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
@@ -45,7 +45,7 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 4. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
 5. Yourself, in one read: `GET /character/<OW_CHARACTER>/context?mode=act&as_of=<today's day number>&components=self,role,work,style,knowledge,recent&since=<the same cursor>` (days since 1970-01-01; the world's own clock is not kept current).
 
-**What a visit gives {{owner}}.** A visit always ends in a few lines to {{owner}}, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with {{owner}} before writing anything.
+**What a visit gives {{owner}}.** A visit always ends in a few lines to {{owner}}, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with {{owner}} before writing anything.
 <!-- end -->
 
 ## At the end
