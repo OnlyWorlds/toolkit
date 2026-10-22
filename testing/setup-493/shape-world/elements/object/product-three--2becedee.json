@@ -1,0 +1,7 @@
+{
+  "id": "01a16115-232d-75d2-b104-b8a52becedee",
+  "name": "Product Three",
+  "supertype": "Product",
+  "description": "Source: shape fixture · as of 2026-10-22\nA lookup page: what it is, its status, where its docs live.",
+  "utility": "What it is for, in one line."
+}

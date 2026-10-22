@@ -1,0 +1,15 @@
+{
+  "id": "01a16115-232d-712d-bcfb-ef1d13c9a598",
+  "name": "Company A - College E pilot",
+  "supertype": "Pilot",
+  "description": "Source: shape fixture · as of 2026-10-22\nA line of kind Pilot, status in talks: the state, the last contact and the next step.",
+  "subtype": "in talks",
+  "actor": "01a16115-232d-7991-b0aa-73fe3c54aab7",
+  "characters": [
+    "01a16115-232d-7459-9145-856dbe6525a2"
+  ],
+  "institutions": [
+    "01a16115-232d-79c9-9f69-2f9b702d5736",
+    "01a16115-232d-7f02-94a2-22655545d9f1"
+  ]
+}

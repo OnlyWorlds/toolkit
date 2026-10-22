@@ -1,0 +1,6 @@
+{
+  "id": "01a16115-2086-7e01-853c-0ff8d2720ec5",
+  "name": "Tidechart Data",
+  "supertype": "Company",
+  "description": "Source: Ada Varga (setup interview) · as of 2026-10-22\nSells tide and weather feeds; Tidetable's forecast source."
+}

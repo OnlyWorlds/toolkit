@@ -1,0 +1,614 @@
+{
+ "pack": "company",
+ "today": "2026-10-22",
+ "world": {
+  "name": "Shape Fixture",
+  "slug": "shape-fixture",
+  "description": "A company world with the shape of a real company's package (the same types, supertypes and house-rule slots) and none of its content."
+ },
+ "values": {
+  "org": "Company A",
+  "owner": "Person One",
+  "keeper": "Person One",
+  "elsewhere": "The issue tracker keeps the work, the code host the code, the docs the specs",
+  "privacy_rule": "No student or pupil personal data, ever. Business contacts by name; nobody else from outside Company A.",
+  "org_kinds": "Company, School board, School, Higher education, Research lab or Sector body",
+  "line_kinds": "Pilot, Partnership, Customer, Certification, Integration, Selection"
+ },
+ "charter": {
+  "links": {
+   "author": "org",
+   "adjudicators": [
+    "keeper-title"
+   ]
+  }
+ },
+ "skill": {
+  "utility": "How an agent reaches this world, looks things up and finds its messages. Copy this description, whole, to where your harness reads skills, as SKILL.md."
+ },
+ "elements": [
+  {
+   "key": "org",
+   "type": "institution",
+   "fields": {
+    "name": "Company A",
+    "supertype": "Company",
+    "description": "Source: shape fixture · as of {{today}}\nThe company that owns this world."
+   },
+   "links": {}
+  },
+  {
+   "key": "sister",
+   "type": "institution",
+   "fields": {
+    "name": "Company A Studio",
+    "supertype": "Company",
+    "description": "Source: shape fixture · as of {{today}}\nA sister company sharing the founder and the name."
+   },
+   "links": {}
+  },
+  {
+   "key": "boardC",
+   "type": "institution",
+   "fields": {
+    "name": "Board C",
+    "supertype": "School board",
+    "description": "Source: shape fixture · as of {{today}}\nA board of schools."
+   },
+   "links": {}
+  },
+  {
+   "key": "schoolD",
+   "type": "institution",
+   "fields": {
+    "name": "School D",
+    "supertype": "School",
+    "description": "Source: shape fixture · as of {{today}}\nA school under Board C."
+   },
+   "links": {
+    "parent_institution": "boardC"
+   }
+  },
+  {
+   "key": "highE",
+   "type": "institution",
+   "fields": {
+    "name": "College E",
+    "supertype": "Higher education",
+    "description": "Source: shape fixture · as of {{today}}\nA college programme."
+   },
+   "links": {}
+  },
+  {
+   "key": "sectorF",
+   "type": "institution",
+   "fields": {
+    "name": "Body F",
+    "supertype": "Sector body",
+    "description": "Source: shape fixture · as of {{today}}\nA sector body that runs a quality mark."
+   },
+   "links": {}
+  },
+  {
+   "key": "partnerG",
+   "type": "institution",
+   "fields": {
+    "name": "Company G",
+    "supertype": "Company",
+    "description": "Source: shape fixture · as of {{today}}\nA partner that uses Company A's API."
+   },
+   "links": {}
+  },
+  {
+   "key": "schoolH",
+   "type": "institution",
+   "fields": {
+    "name": "School H",
+    "supertype": "School",
+    "description": "Source: shape fixture · as of {{today}}\nAn existing customer school."
+   },
+   "links": {}
+  },
+  {
+   "key": "sectorI",
+   "type": "institution",
+   "fields": {
+    "name": "Body I",
+    "supertype": "Sector body",
+    "description": "Source: shape fixture · as of {{today}}\nA sector body that runs a sign-on service."
+   },
+   "links": {}
+  },
+  {
+   "key": "labJ",
+   "type": "institution",
+   "fields": {
+    "name": "Lab J",
+    "supertype": "Research lab",
+    "description": "Source: shape fixture · as of {{today}}\nA research lab that funds co-creation projects."
+   },
+   "links": {}
+  },
+  {
+   "key": "boardK",
+   "type": "institution",
+   "fields": {
+    "name": "Board K",
+    "supertype": "School board",
+    "description": "Source: shape fixture · as of {{today}}\nA board in early talks."
+   },
+   "links": {}
+  },
+  {
+   "key": "p1",
+   "type": "character",
+   "fields": {
+    "name": "Person One",
+    "supertype": "Person",
+    "description": "Source: shape fixture · as of {{today}}\nFounder; holds the partner lines."
+   },
+   "links": {
+    "institutions": [
+     "org",
+     "sister"
+    ]
+   }
+  },
+  {
+   "key": "p2",
+   "type": "character",
+   "fields": {
+    "name": "Person Two",
+    "supertype": "Person",
+    "description": "Source: shape fixture · as of {{today}}\nTeammate 2; one neutral line on what they do."
+   },
+   "links": {
+    "institutions": [
+     "org"
+    ]
+   }
+  },
+  {
+   "key": "p3",
+   "type": "character",
+   "fields": {
+    "name": "Person Three",
+    "supertype": "Person",
+    "description": "Source: shape fixture · as of {{today}}\nTeammate 3; one neutral line on what they do."
+   },
+   "links": {
+    "institutions": [
+     "org"
+    ]
+   }
+  },
+  {
+   "key": "p4",
+   "type": "character",
+   "fields": {
+    "name": "Person Four",
+    "supertype": "Person",
+    "description": "Source: shape fixture · as of {{today}}\nTeammate 4; one neutral line on what they do."
+   },
+   "links": {
+    "institutions": [
+     "org"
+    ]
+   }
+  },
+  {
+   "key": "p5",
+   "type": "character",
+   "fields": {
+    "name": "Person Five",
+    "supertype": "Person",
+    "description": "Source: shape fixture · as of {{today}}\nTeammate 5; one neutral line on what they do."
+   },
+   "links": {
+    "institutions": [
+     "org"
+    ]
+   }
+  },
+  {
+   "key": "p6",
+   "type": "character",
+   "fields": {
+    "name": "Person Six",
+    "supertype": "Person",
+    "description": "Source: shape fixture · as of {{today}}\nTeammate 6; one neutral line on what they do."
+   },
+   "links": {
+    "institutions": [
+     "org"
+    ]
+   }
+  },
+  {
+   "key": "c1",
+   "type": "character",
+   "fields": {
+    "name": "Contact One",
+    "supertype": "Contact",
+    "description": "Source: shape fixture · as of {{today}}\nA contact at the organisation they belong to."
+   },
+   "links": {
+    "institutions": [
+     "schoolD"
+    ]
+   }
+  },
+  {
+   "key": "c2",
+   "type": "character",
+   "fields": {
+    "name": "Contact Two",
+    "supertype": "Contact",
+    "description": "Source: shape fixture · as of {{today}}\nA contact at the organisation they belong to."
+   },
+   "links": {
+    "institutions": [
+     "highE"
+    ]
+   }
+  },
+  {
+   "key": "c3",
+   "type": "character",
+   "fields": {
+    "name": "Contact Three",
+    "supertype": "Contact",
+    "description": "Source: shape fixture · as of {{today}}\nA contact at the organisation they belong to."
+   },
+   "links": {
+    "institutions": [
+     "sectorF"
+    ]
+   }
+  },
+  {
+   "key": "c4",
+   "type": "character",
+   "fields": {
+    "name": "Contact Four",
+    "supertype": "Contact",
+    "description": "Source: shape fixture · as of {{today}}\nA contact at the organisation they belong to."
+   },
+   "links": {
+    "institutions": [
+     "partnerG"
+    ]
+   }
+  },
+  {
+   "key": "c5",
+   "type": "character",
+   "fields": {
+    "name": "Contact Five",
+    "supertype": "Contact",
+    "description": "Source: shape fixture · as of {{today}}\nA contact at the organisation they belong to."
+   },
+   "links": {
+    "institutions": [
+     "schoolH"
+    ]
+   }
+  },
+  {
+   "key": "c6",
+   "type": "character",
+   "fields": {
+    "name": "Contact Six",
+    "supertype": "Contact",
+    "description": "Source: shape fixture · as of {{today}}\nA contact at the organisation they belong to."
+   },
+   "links": {
+    "institutions": [
+     "schoolH"
+    ]
+   }
+  },
+  {
+   "key": "c7",
+   "type": "character",
+   "fields": {
+    "name": "Contact Seven",
+    "supertype": "Contact",
+    "description": "Source: shape fixture · as of {{today}}\nA contact at the organisation they belong to."
+   },
+   "links": {
+    "institutions": [
+     "sectorI"
+    ]
+   }
+  },
+  {
+   "key": "c8",
+   "type": "character",
+   "fields": {
+    "name": "Contact Eight",
+    "supertype": "Contact",
+    "description": "Source: shape fixture · as of {{today}}\nA contact at the organisation they belong to."
+   },
+   "links": {
+    "institutions": [
+     "sectorI"
+    ]
+   }
+  },
+  {
+   "key": "c9",
+   "type": "character",
+   "fields": {
+    "name": "Contact Nine",
+    "supertype": "Contact",
+    "description": "Source: shape fixture · as of {{today}}\nA contact at the organisation they belong to."
+   },
+   "links": {
+    "institutions": [
+     "labJ"
+    ]
+   }
+  },
+  {
+   "key": "founder",
+   "type": "title",
+   "fields": {
+    "name": "Founder",
+    "supertype": "Role",
+    "description": "Source: shape fixture · as of {{today}}\nThe only role filed so far."
+   },
+   "links": {
+    "holders": [
+     "p1"
+    ],
+    "body": "org",
+    "institutions": [
+     "org",
+     "sister"
+    ]
+   }
+  },
+  {
+   "key": "keeper-title",
+   "type": "title",
+   "fields": {
+    "name": "Keeper",
+    "supertype": "Role",
+    "description": "Source: shape fixture · as of {{today}}\nKeeps this world: accepts or declines what is proposed, tidies, adds supertypes."
+   },
+   "links": {
+    "holders": [
+     "p1"
+    ],
+    "body": "org"
+   }
+  },
+  {
+   "key": "keeper-tenure",
+   "type": "relation",
+   "fields": {
+    "name": "Keeper: Person One",
+    "supertype": "Tenure",
+    "description": "Source: shape fixture · as of {{today}}\nKeeps the world from {{today}}.",
+    "start_date": "day:2026-10-22"
+   },
+   "links": {
+    "actor": "p1",
+    "titles": [
+     "keeper-title"
+    ]
+   }
+  },
+  {
+   "key": "l1",
+   "type": "relation",
+   "fields": {
+    "name": "Company A - Board C pilot",
+    "supertype": "Pilot",
+    "description": "Source: shape fixture · as of {{today}}\nA line of kind Pilot, status agreed: the state, the last contact and the next step.",
+    "subtype": "agreed"
+   },
+   "links": {
+    "actor": "p1",
+    "characters": [
+     "c1"
+    ],
+    "institutions": [
+     "org",
+     "boardC"
+    ]
+   }
+  },
+  {
+   "key": "l2",
+   "type": "relation",
+   "fields": {
+    "name": "Company A - College E pilot",
+    "supertype": "Pilot",
+    "description": "Source: shape fixture · as of {{today}}\nA line of kind Pilot, status in talks: the state, the last contact and the next step.",
+    "subtype": "in talks"
+   },
+   "links": {
+    "actor": "p1",
+    "characters": [
+     "c2"
+    ],
+    "institutions": [
+     "org",
+     "highE"
+    ]
+   }
+  },
+  {
+   "key": "l3",
+   "type": "relation",
+   "fields": {
+    "name": "Company A - Body F certification",
+    "supertype": "Certification",
+    "description": "Source: shape fixture · as of {{today}}\nA line of kind Certification, status paused: the state, the last contact and the next step.",
+    "subtype": "paused"
+   },
+   "links": {
+    "actor": "p1",
+    "characters": [
+     "c3"
+    ],
+    "institutions": [
+     "org",
+     "sectorF"
+    ]
+   }
+  },
+  {
+   "key": "l4",
+   "type": "relation",
+   "fields": {
+    "name": "Company A - Company G partnership",
+    "supertype": "Partnership",
+    "description": "Source: shape fixture · as of {{today}}\nA line of kind Partnership, status running: the state, the last contact and the next step.",
+    "subtype": "running"
+   },
+   "links": {
+    "actor": "p1",
+    "characters": [
+     "c4"
+    ],
+    "institutions": [
+     "org",
+     "partnerG"
+    ]
+   }
+  },
+  {
+   "key": "l5",
+   "type": "relation",
+   "fields": {
+    "name": "Company A - School H customer",
+    "supertype": "Customer",
+    "description": "Source: shape fixture · as of {{today}}\nA line of kind Customer, status running: the state, the last contact and the next step.",
+    "subtype": "running"
+   },
+   "links": {
+    "actor": "p1",
+    "characters": [
+     "c5",
+     "c6"
+    ],
+    "institutions": [
+     "org",
+     "schoolH"
+    ]
+   }
+  },
+  {
+   "key": "l6",
+   "type": "relation",
+   "fields": {
+    "name": "Company A - Body I integration",
+    "supertype": "Integration",
+    "description": "Source: shape fixture · as of {{today}}\nA line of kind Integration, status stalled: the state, the last contact and the next step.",
+    "subtype": "stalled"
+   },
+   "links": {
+    "actor": "p1",
+    "characters": [
+     "c7",
+     "c8"
+    ],
+    "institutions": [
+     "org",
+     "sectorI"
+    ]
+   }
+  },
+  {
+   "key": "l7",
+   "type": "relation",
+   "fields": {
+    "name": "Company A - Lab J selection",
+    "supertype": "Selection",
+    "description": "Source: shape fixture · as of {{today}}\nA line of kind Selection, status in talks: the state, the last contact and the next step.",
+    "subtype": "in talks"
+   },
+   "links": {
+    "actor": "p1",
+    "characters": [
+     "c9"
+    ],
+    "institutions": [
+     "org",
+     "labJ"
+    ]
+   }
+  },
+  {
+   "key": "l8",
+   "type": "relation",
+   "fields": {
+    "name": "Company A - Board K pilot",
+    "supertype": "Pilot",
+    "description": "Source: shape fixture · as of {{today}}\nA line of kind Pilot, status paused: the state, the last contact and the next step.",
+    "subtype": "paused"
+   },
+   "links": {
+    "actor": "p1",
+    "characters": [],
+    "institutions": [
+     "org",
+     "boardK"
+    ]
+   }
+  },
+  {
+   "key": "prod1",
+   "type": "object",
+   "fields": {
+    "name": "Product One",
+    "supertype": "Product",
+    "description": "Source: shape fixture · as of {{today}}\nA lookup page: what it is, its status, where its docs live.",
+    "utility": "What it is for, in one line."
+   },
+   "links": {}
+  },
+  {
+   "key": "prod2",
+   "type": "object",
+   "fields": {
+    "name": "Product Two",
+    "supertype": "Product",
+    "description": "Source: shape fixture · as of {{today}}\nA lookup page: what it is, its status, where its docs live.",
+    "utility": "What it is for, in one line."
+   },
+   "links": {}
+  },
+  {
+   "key": "prod3",
+   "type": "object",
+   "fields": {
+    "name": "Product Three",
+    "supertype": "Product",
+    "description": "Source: shape fixture · as of {{today}}\nA lookup page: what it is, its status, where its docs live.",
+    "utility": "What it is for, in one line."
+   },
+   "links": {}
+  },
+  {
+   "key": "welcome",
+   "type": "narrative",
+   "fields": {
+    "name": "Welcome",
+    "supertype": "Message",
+    "description": "The first message, to everyone.",
+    "story": "This world is set up. Read the Charter first, every session."
+   },
+   "links": {
+    "narrator": "p1",
+    "characters": []
+   }
+  }
+ ],
+ "copies": "project",
+ "agents_md": true,
+ "repo": false
+}

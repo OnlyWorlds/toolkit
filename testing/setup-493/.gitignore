@@ -1,0 +1,4 @@
+# The dry runs write the world skill's harness copies; they stay on disk, out of the repository,
+# so no SKILL.md outside skills/ is ever discovered as a toolkit skill.
+*/.agents/
+*/.claude/

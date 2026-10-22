@@ -1,0 +1,6 @@
+{
+  "id": "01a16115-232d-7206-ac84-4d91ee1a6807",
+  "name": "Body I",
+  "supertype": "Sector body",
+  "description": "Source: shape fixture · as of 2026-10-22\nA sector body that runs a sign-on service."
+}

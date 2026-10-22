@@ -1,0 +1,15 @@
+{
+  "id": "01a16115-2086-7c39-b41d-f20db2155031",
+  "name": "Fernhollow Systems - Saltmere customer",
+  "supertype": "Customer",
+  "subtype": "running",
+  "description": "Source: Ada Varga (setup interview) · as of 2026-10-22\nTidetable live on all four Saltmere routes since 2025-04-14. Next: the winter timetable, due 2026-11-15.",
+  "actor": "01a16115-2086-7e4c-b71e-f544578a1b16",
+  "characters": [
+    "01a16115-2086-7c8c-9af1-8a47223e0bdd"
+  ],
+  "institutions": [
+    "01a16115-2086-71c1-bc3f-be6eb9c4267c",
+    "01a16115-2086-77c0-985e-693291af6760"
+  ]
+}

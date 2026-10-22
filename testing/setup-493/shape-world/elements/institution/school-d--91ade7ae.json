@@ -1,0 +1,7 @@
+{
+  "id": "01a16115-232d-71e2-a830-0c8291ade7ae",
+  "name": "School D",
+  "supertype": "School",
+  "description": "Source: shape fixture · as of 2026-10-22\nA school under Board C.",
+  "parent_institution": "01a16115-232d-7912-a2ad-1ce775cb2275"
+}
