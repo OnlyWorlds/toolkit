@@ -1,0 +1,18 @@
+[
+  {
+    "rule": "a live line carries its Next",
+    "where": {
+      "type": "relation",
+      "subtype": [
+        "in talks",
+        "agreed",
+        "running",
+        "paused"
+      ]
+    },
+    "require": {
+      "field": "description",
+      "matches": "(?im)^next\\b"
+    }
+  }
+]

@@ -16,7 +16,8 @@ The plan (JSON):
       "today": "2026-10-22",                   # the setup day (ISO date)
       "world": {"name": "...", "slug": "...", "description": "..."},
       "values": {"org": "...", "keeper": "...", ...},   # every {{name}} the pack's texts use
-      "charter": {"links": {"author": "org", "adjudicators": ["keeper-title"]}},
+      "charter": {"links": {"author": "org", "adjudicators": ["keeper-title"]},
+                  "x_checks_rules": []},         # optional: the checks slot (below)
       "skill": {"utility": "one line: what the skill is for"},
       "elements": [
         {"key": "org", "type": "institution",
@@ -39,6 +40,11 @@ their folder lines; with it, their online lines, which name the server world id 
 world.json's `api.world_id`, except in a repository, whose world.json never carries an `api`
 block). A pack text marks a placement's lines between `<!-- if folder -->` (or `<!-- if online -->`)
 and `<!-- end -->`, each on its own line.
+
+The Charter always carries `x_checks_rules` (the checks profile, schema-dist `profiles/checks.md`): the
+plan's `charter.x_checks_rules` when it gives a list, else the pack's `checks.json` when the pack has
+one, else the empty slot `[]`, so a keeper finds it. It is written beside the other body keys and goes
+to the wire in the bulk body like any `x_` key; the writer never reads or judges a rule.
 
 A seat (question 4) is a Character row's "seat": its role (owner, co_builder, contributor, guest)
 and, for an AI, "ai_of" (the key of its human). The file carries it as `x_seat`; the charter's
@@ -137,6 +143,20 @@ def template(path, placement, problems):
     while rows and not rows[-1][1].strip():
         rows.pop()
     return rows
+
+
+def checks_of(charter_plan, pack, problems):
+    """The Charter's x_checks_rules: the plan's list, else the pack's checks.json, else the empty slot."""
+    if "x_checks_rules" in charter_plan:
+        rules, src = charter_plan["x_checks_rules"], "plan charter"
+    elif (pack / "checks.json").exists():
+        rules, src = json.loads((pack / "checks.json").read_text(encoding="utf-8")), f"packs/{pack.name}/checks.json"
+    else:
+        return []
+    if not isinstance(rules, list) or not all(isinstance(r, dict) for r in rules):
+        problems.append(f"{src}: x_checks_rules is a list of rule objects")
+        return []
+    return rules
 
 
 def write(path, text):
@@ -311,6 +331,7 @@ def main(argv):
     charter = {"id": charter_id, "name": "Charter", "supertype": "Charter", "description": charter_text,
                "date": day_number(today)}
     charter.update(links_of(plan.get("charter", {}).get("links"), "charter"))
+    charter["x_checks_rules"] = checks_of(plan.get("charter", {}), pack, problems)
     files["elements/law/charter.json"] = dump(charter)
     skill = {"id": skill_id, "name": f"{w['name']} world skill", "supertype": "Skill", "description": skill_text,
              "utility": fill(plan.get("skill", {}).get("utility", "How an agent reaches this world. Copy the "

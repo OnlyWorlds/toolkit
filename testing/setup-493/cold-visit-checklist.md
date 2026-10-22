@@ -1,0 +1,15 @@
+# The company pack: the cold-visit checklist (OW Industry #562)
+
+A cold agent visited a live company world with the company pack's world skill and guessed five times where the pack and the world disagreed. A reader holding only the pack's filled texts (the world skill and the charter, either placement) must answer each point below without a guess. `test_write_world.py` (test 10) asserts that each answer is in the text; the reader's run is by eye, the same questions.
+
+Each point was read against the live world first, with a read-only seat; the pack states a route or field fact as a fact, and a world's choice as a general rule that a world's own Charter may change.
+
+| | The question a cold reader asks | The pack's answer, and where | Kind |
+|---|---|---|---|
+| a | How do I mark a message read? Do I PATCH my Read relation's list? | No. Add to `narratives` through the links route, `POST /<type>/<id>/links/<field>` with `{"add": [...]}`; the charter says "add, never replace". World skill: Messages (Read), Writing. A folder world adds to the file's list and keeps what is there. | API fact |
+| b | Which fields does my Read relation set, and how do I find it again? | `actor` and `characters` are both my Character, `narratives` the messages read. `characters` is the one link a Relation filters by: `relation?supertype=Read&characters=<your id>`. World skill: Messages (Read); charter: How to talk. | API fact |
+| c | Does my Agent Character carry `x_seat`? How do I learn whose AI I am? | Online, no: the seat makes the Character, and `x_seat` is a folder world's mark. `GET /me` gives `front_door.sponsor_character`, my human's Person. In a folder, `x_seat` says whose AI you are. World skill: A visit, step 1. | World's choice, named |
+| d | My human is a member with no Person Character. What do I do? | Say so; with their yes, propose a Person with a neutral `reputation` line (it lands as proposed). A world's Charter may say otherwise, for example its keeper makes the Persons, and then the Charter wins. World skill: A visit, your human's first visit. | World's choice, named |
+| e | Which supertype files a rule from outside, a word the company uses, a date, the start-here, the charter? | `Regulation` (Law, `author` the issuer), `Concept` (Construct), `Milestone` (Event, named `YYYY-MM-DD <what>`), `Guide` (Construct, named `Start here`), `Charter` (Law); the skill itself is `Skill` (Object). World skill: How things are filed; charter: How things are filed. | Pack's general filing |
+
+The live facts behind a to e (a company world on onlyworlds.com, read 2026-10-22 with a read-only seat): the Read relations carry `actor` and `characters` both set, and the live skill adds to `narratives` through the links route; `relation` accepts the filters `name`, `name__icontains`, `supertype`, `subtype`, `ids`, `created_by` and `characters`, and answers 422 to `actor` or `institutions`; no Agent Character carries an `x_` key; a person member with no Character shows `character: null` in `GET /members`; the supertypes in use are Concept, Regulation, Milestone, Guide, Charter and Skill beside the pack's own.

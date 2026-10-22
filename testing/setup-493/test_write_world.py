@@ -22,7 +22,13 @@ harness trial (h67 #9988):
    charter-order sentence with its reason, once each (OW Industry #552); only the company pack,
    whose lines keep a Next line, keeps the sweep's clause about stale lines;
 8. the company pack writes the Guide "Start here", a Welcome message to a person, and the
-   charter's Next-line sentence.
+   charter's Next-line sentence;
+9. every pack's charter file carries the checks slot `x_checks_rules` (OW Industry #561): empty
+   except in the company pack, which ships the Next-line rule taken from schema-dist's published
+   fixture; it reaches the bulk body, a plan's list replaces the pack's, and the Python package's
+   doctor (0.24.0 or newer, when installed) applies it;
+10. the company pack answers the five points a cold visit to a live company world guessed
+    (OW Industry #562; `cold-visit-checklist.md`).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -76,6 +82,7 @@ LINES_CLAUSE = "which of the lines they keep are over two weeks old or past thei
 ORDER = ("This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line "
          "or a skill is read first.")
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
+FIXTURE = LINT.parent.parent / "profiles" / "checks.fixture.json"
 OUT = Path(os.environ.get("OW_SETUP_TEST_OUT") or
            REPO / ".scratch" / "tests" / time.strftime("%Y%m%d-%H%M%S"))
 
@@ -311,7 +318,97 @@ class SetupWriter(unittest.TestCase):
                 self.assertTrue(welcomes and all(w["characters"][0] in people for w in welcomes),
                                 "a Welcome message to a person")
                 self.assertIn("Start here, for people: Construct, supertype Guide", run.charter())
-                self.assertIn('A live line keeps a Next line: "Next: <step> · <who> · by YYYY-MM-DD"', run.charter())
+                self.assertIn('carries its Next, "Next: <step> · <who> · by YYYY-MM-DD"', run.charter())
+
+    def test_9_checks_slot_every_pack(self):
+        """OW Industry #561: every charter file carries x_checks_rules; only the company pack ships a rule."""
+        fixture = FIXTURE.exists() and json.loads(read(FIXTURE))
+        def check(run):
+            body = json.loads(read(run.world / "elements" / "law" / "charter.json"))
+            self.assertIn("x_checks_rules", body, "no checks slot on the charter")
+            rules = body["x_checks_rules"]
+            self.assertIsInstance(rules, list)
+            if run.pack != "company":
+                self.assertEqual(rules, [], "the empty slot")
+                return
+            self.assertEqual(len(rules), 1, "the company pack ships one rule")
+            rule = rules[0]
+            self.assertEqual(set(rule), {"rule", "where", "require"})
+            self.assertIn(rule["rule"].lower(), run.charter().lower(), "the rule's sentence is in the charter's own words")
+            self.assertIn("x_checks_rules", run.charter())
+            if fixture:  # taken from the published fixture's rules, not paraphrased
+                self.assertIn(rule, fixture["rules"])
+        self.each(check)
+
+    def test_9b_checks_slot_reaches_the_bulk_body(self):
+        for placement in PLACEMENTS:
+            bulk = json.loads(read(OUT / "plans" / f"company-{placement}-bulk.json"))
+            charters = [i["element"] for i in bulk["items"] if i["type"] == "law"]
+            self.assertEqual(len(charters), 1)
+            self.assertEqual(len(charters[0]["x_checks_rules"]), 1, placement)
+
+    def test_9c_plan_replaces_the_pack_rule(self):
+        plan = json.loads(read(PLANS / "company.json"))
+        plan["charter"]["x_checks_rules"] = []
+        plan["copies"] = "none"
+        plan_path = OUT / "plans" / "no-rule.json"
+        plan_path.write_text(json.dumps(plan), encoding="utf-8")
+        out = OUT / "no-rule"
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(out)], capture_output=True,
+                           text=True, encoding="utf-8")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(json.loads(read(out / "elements" / "law" / "charter.json"))["x_checks_rules"], [])
+        plan["charter"]["x_checks_rules"] = "not a list"
+        plan_path.write_text(json.dumps(plan), encoding="utf-8")
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(OUT / "bad-rule")],
+                           capture_output=True, text=True, encoding="utf-8")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("x_checks_rules", r.stdout)
+
+    def test_9d_the_doctor_reads_the_slot(self):
+        """The Python package's doctor (onlyworlds 0.24.0 or newer) applies the company rule; skipped without it."""
+        try:
+            import onlyworlds.checks  # noqa: F401  (0.24.0 added it)
+        except ImportError:
+            self.skipTest("onlyworlds 0.24.0 or newer is not installed")
+        run = RUNS["company", "folder"]
+        r = subprocess.run([sys.executable, "-m", "onlyworlds.doctor", str(run.world)], capture_output=True,
+                           text=True, encoding="utf-8")
+        self.assertIn("1 of 1 house rules applied", r.stdout, r.stdout + r.stderr)
+        self.assertIn('rule 0, "a live line carries its Next"', r.stdout)
+
+    def test_10_cold_visit_checklist(self):
+        """OW Industry #562: the five points a cold visit guessed, answered by the company pack's own text.
+        The questions and where the pack answers them: cold-visit-checklist.md."""
+        for placement in ("online", "folder"):
+            run = RUNS["company", placement]
+            skill, charter = run.skill(), run.charter()
+            with self.subTest(placement=placement):
+                # (a) the Read list grows through the links route, never a PATCH of the list
+                self.assertIn("(add, never replace)", charter)
+                self.assertIn("never a PATCH of the list" if placement == "online" else "keeping what is there", skill)
+                if placement == "online":
+                    self.assertIn("links route", skill)
+                    self.assertIn("POST /<type>/<id>/links/<field>", skill)
+                # (b) a Read sets actor and characters
+                self.assertIn("actor and characters = your Character", charter)
+                self.assertIn("`actor` and `characters` your Character", skill)
+                if placement == "online":
+                    self.assertIn("relation?supertype=Read&characters=<your id>", skill)
+                # (c) no x_seat on an online Agent; whose AI it is comes from /me
+                if placement == "online":
+                    self.assertIn("an online Agent has no `x_seat`", skill)
+                    self.assertIn("front_door.sponsor_character", skill)
+                else:
+                    self.assertIn("`x_seat` says whose AI you are", skill)
+                # (d) a human with no Person
+                self.assertIn("No Person for your human", skill)
+                self.assertIn("propose a `Person`", skill)
+                # (e) the filing table holds Guide, Concept, Regulation, Milestone, Charter (and Skill)
+                for sup in ("Charter", "Skill", "Guide", "Concept", "Regulation", "Milestone"):
+                    self.assertIn(f"`{sup}`", skill, sup)
+                for sup in ("Concept", "Regulation", "Milestone"):
+                    self.assertIn(sup, charter, sup)
 
 
 if __name__ == "__main__":

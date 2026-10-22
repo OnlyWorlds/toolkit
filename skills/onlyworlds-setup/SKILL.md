@@ -45,7 +45,7 @@ Shared rules: `knowledge/principles.md`. The folder: `knowledge/world-folder.md`
     ├── .gitattributes                 # every pack: LF, binaries marked
     ├── world.json                     # id, name, description, "charter": <the Law's id>, time in days; online, api.world_id
     └── elements/
-        ├── law/charter.json           # the charter: Law, supertype Charter
+        ├── law/charter.json           # the charter: Law, supertype Charter; carries x_checks_rules
         ├── object/<slug>-skill.json   # the world skill: Object, supertype Skill, its description the SKILL.md text
         └── <type>/<name>--<id8>.json  # the seed
 ```
@@ -61,13 +61,27 @@ Every world folder gets the same `.gitattributes` (`* text=auto eol=lf`, binarie
 1. **Interview.** One message with the questions still open, defaults shown. A user who says "just do it" gets every default.
 2. **Read the pack**: `packs/<pack>/PACK.md` first (who is in such a world, which types and supertypes and why, the size budget), then `charter.md`, `skill.md`, `seed.md`. Fill the placeholders from the answers. Seed only the rows the answers fill; list the rest as "left out".
 3. **Show the plan, then write** (principles §2: propose, review, apply). Show the charter text whole, the seed as a table, the skill's name and where its copies land. Write nothing until the user says yes.
-4. **Write the folder** with `scripts/write_world.py` (the plan's shape is in its header): it mints the ids, fills every placeholder before any shape test (`day:{{today}}` lands as a day number), refuses a `{{` left after filling with the file and line named, writes every file by the writer rules, marks each seat on its Character (`x_seat`) and lists the seats in the charter's "Who is here", checks the size budget, and writes the harness copies to the root the plan names (`"copies"`: a path, `"world"`, or `"none"`), with the `AGENTS.md` line beside them (appended to an existing `AGENTS.md`, and to a `CLAUDE.md` there; printed for the user when the root is their home). That line is one sentence, the writer's own, and the world skill quotes it as its courtesy line. It never writes into a world folder that already holds files, and never overwrites a copy.
+4. **Write the folder** with `scripts/write_world.py` (the plan's shape is in its header): it mints the ids, fills every placeholder before any shape test (`day:{{today}}` lands as a day number), refuses a `{{` left after filling with the file and line named, writes every file by the writer rules, marks each seat on its Character (`x_seat`) and lists the seats in the charter's "Who is here", checks the size budget, writes `x_checks_rules` on the charter (the checks slot, below), and writes the harness copies to the root the plan names (`"copies"`: a path, `"world"`, or `"none"`), with the `AGENTS.md` line beside them (appended to an existing `AGENTS.md`, and to a `CLAUDE.md` there; printed for the user when the root is their home). That line is one sentence, the writer's own, and the world skill quotes it as its courtesy line. It never writes into a world folder that already holds files, and never overwrites a copy.
 5. **Check**: schema-dist's folder lint (`python walk/lint_folder.py <folder>`, `knowledge/world-folder.md`); its last line is the count it read. Then read the charter file back whole. The seed elements were approved in step 3, so they are written settled (no proposed mark).
 6. **Online** (an account, and the user wants it): the user makes an empty world on onlyworlds.com first, and its id (no secret) goes into the plan as `online.world_id` before step 4, so the skill names the server's id and `world.json` carries it as `api.world_id` (not in a repository). A folder world that goes online later is written again from its plan, with `online`, into a fresh folder, and that one is uploaded: its skill and roster line are the online ones, and nothing online points at the old ids yet. Then the project-setup skill connects a `.env` (the user types the key; never in chat); the api skill's Bulk Upload sends the elements (`write_world.py --bulk <file>` writes its body); `PATCH /api/v2/world` sets the time settings from `world.json` (`time_current` goes as `time_range_current`; the `charter` key stays in the folder, the server has no place for it) and `owner_character` to the owner's Person. Read back `GET /api/v2/law?supertype=Charter`.
 7. **Invites, made by the user on the world's page** (the screen's own words):
    - A person: **Access**, then **Members**, then **Or make an invite link**: the role (**contributor** for a teammate), the expiry, **Make a link**. It shows once; **Copy** copies a ready sentence. They open it, sign in or create an account, and press **Join as contributor**.
    - An AI: its human, signed in, opens the world's page and presses **Make a seat** (a member under **Your AI in this world**; the owner under **Invite an agent**): a name, a role at most their own, "its own new Character". The `.env` lines show once; they go into the AI's own `.env`, never into a chat. Online, the seat makes the AI's Character (supertype `Agent`), so the writer leaves an AI's row out of an online world (the charter still names it); in a folder world, the seed holds it, marked `x_seat`.
 8. **Report**: what was made (counts by type), what was left out and why, the charter's and skill's sizes against the budget, and the first visit an AI makes (the world skill's step-in).
+
+## The checks slot
+
+The charter file carries `x_checks_rules`, the checks profile's one field (`profiles/checks.md` in the schema distribution): the house rules a machine can check, written beside the sentences a person reads. Every pack writes it empty, `[]`, so a keeper finds it; the company pack ships one rule. A rule has three keys. `rule` is the charter's own sentence, which a report prints. `where` scopes the elements: `type` (one of the 22, lowercase, a string or a list), and optionally `supertype` and `subtype`. `require` names a `field` and exactly one predicate: `present: true`, `matches: "<regex>"`, `links_min: n` or `one_of: [...]`.
+
+```json
+{
+  "rule": "every Character carries a reputation",
+  "where": {"type": "character"},
+  "require": {"field": "reputation", "present": true}
+}
+```
+
+The profile's page has the rest (how each predicate counts, what a reader reports as not checked). The Python package `onlyworlds` (0.24.0 or newer) reads the slot and reports each rule: its sentence, how many elements it scoped, how many fall short. The command is `python -m onlyworlds.doctor <world folder>`, or `python -m onlyworlds.doctor --api` for an online world (key and PIN from `OW_API_KEY` and `OW_API_PIN`); it never writes. Add a rule only when the user gives one; a plan's `charter.x_checks_rules` replaces a pack's default.
 
 ## Checks
 
@@ -79,6 +93,7 @@ Every world folder gets the same `.gitattributes` (`* text=auto eol=lf`, binarie
 | Placement | a folder world's skill and charter hold no API route; an online world's skill names the server world id, never the minted one |
 | Who is here | every seat named, each AI with its role word and its human; the keeper named |
 | Lint | the folder lint's count line, no problems |
+| Checks slot | the charter file carries `x_checks_rules`: a list, `[]` unless the pack ships a rule |
 | Open work | in messages and work items, never in the charter's prose |
 | Credentials | never in chat, never in `world.json` of a folder meant for a shared repository |
 
