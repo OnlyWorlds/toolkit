@@ -1,0 +1,9 @@
+{
+  "id": "01a16120-e752-726a-912c-95151038c91e",
+  "name": "Welcome",
+  "supertype": "Message",
+  "description": "The first message, to everyone.",
+  "story": "This world is set up. Read the Charter first, every session; ask me anything by message. - Ada",
+  "narrator": "01a16120-e752-7462-bee6-9a1c3cd92a39",
+  "characters": []
+}

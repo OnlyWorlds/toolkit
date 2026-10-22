@@ -1,0 +1,9 @@
+{
+  "id": "01a16120-ea68-71df-a099-268d96d420e2",
+  "name": "Person Three",
+  "supertype": "Person",
+  "description": "Source: shape fixture · as of 2026-10-22\nTeammate 3; one neutral line on what they do.",
+  "institutions": [
+    "01a16120-ea68-774e-9f8f-1f716313fd38"
+  ]
+}

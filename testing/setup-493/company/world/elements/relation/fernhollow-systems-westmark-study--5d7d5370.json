@@ -1,0 +1,12 @@
+{
+  "id": "01a16120-e752-7465-85da-71ae5d7d5370",
+  "name": "Fernhollow Systems - Westmark study",
+  "supertype": "Partnership",
+  "subtype": "idea",
+  "description": "Source: Ada Varga (setup interview) · as of 2026-10-22\nThe lab offered a joint study of crossing times. Nothing agreed; unsure whether it is funded.",
+  "actor": "01a16120-e752-7462-bee6-9a1c3cd92a39",
+  "institutions": [
+    "01a16120-e752-703e-bb43-cfb282616301",
+    "01a16120-e752-7cbf-a86d-6f9cf89f8667"
+  ]
+}

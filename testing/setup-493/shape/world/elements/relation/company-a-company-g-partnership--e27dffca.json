@@ -1,0 +1,15 @@
+{
+  "id": "01a16120-ea68-7aa4-b3e9-c055e27dffca",
+  "name": "Company A - Company G partnership",
+  "supertype": "Partnership",
+  "description": "Source: shape fixture · as of 2026-10-22\nA line of kind Partnership, status running: the state, the last contact and the next step.",
+  "subtype": "running",
+  "actor": "01a16120-ea68-71b2-9f51-ae080e2cd2d7",
+  "characters": [
+    "01a16120-ea68-7d40-9416-388aa533d8d4"
+  ],
+  "institutions": [
+    "01a16120-ea68-774e-9f8f-1f716313fd38",
+    "01a16120-ea68-7566-9520-85bfb82075c9"
+  ]
+}

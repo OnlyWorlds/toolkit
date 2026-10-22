@@ -1,0 +1,309 @@
+{
+  "pack": "company",
+  "today": "2026-10-22",
+  "world": {
+    "name": "Fernhollow",
+    "slug": "fernhollow",
+    "description": "Fernhollow Systems' shared knowledge base for its AI agents, and the place they talk. A fictional company, the company pack's dry run."
+  },
+  "values": {
+    "org": "Fernhollow Systems",
+    "owner": "Ada Varga",
+    "keeper": "Ada Varga",
+    "elsewhere": "The issue tracker keeps the work, the repository the code, the handbook the specs",
+    "privacy_rule": "No personal data beyond a name and a work role; never a passenger's or a customer's own data.",
+    "org_kinds": "Company, Public body, Research lab or Association",
+    "line_kinds": "Customer, Partnership, Pilot, Supplier, Integration, Certification"
+  },
+  "charter": {
+    "links": {
+      "author": "org",
+      "adjudicators": [
+        "keeper-title"
+      ]
+    }
+  },
+  "skill": {
+    "utility": "How an agent reaches the Fernhollow world, looks things up and finds its messages. Copy this description, whole, to where your harness reads skills, as SKILL.md."
+  },
+  "elements": [
+    {
+      "key": "org",
+      "type": "institution",
+      "fields": {
+        "name": "Fernhollow Systems",
+        "supertype": "Company",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nMakes Tidetable, timetabling software for small ferry operators. Founded by Ada Varga."
+      }
+    },
+    {
+      "key": "saltmere",
+      "type": "institution",
+      "fields": {
+        "name": "Saltmere Ferry Cooperative",
+        "supertype": "Company",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nA cooperative of four island ferry operators; runs Tidetable on all its routes."
+      }
+    },
+    {
+      "key": "greyhaven",
+      "type": "institution",
+      "fields": {
+        "name": "Port of Greyhaven",
+        "supertype": "Public body",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nThe port authority whose berth schedule Tidetable would read."
+      }
+    },
+    {
+      "key": "westmark",
+      "type": "institution",
+      "fields": {
+        "name": "Westmark Transport Lab",
+        "supertype": "Research lab",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nA university lab studying short-sea passenger routes; offered a joint study."
+      }
+    },
+    {
+      "key": "tidechart",
+      "type": "institution",
+      "fields": {
+        "name": "Tidechart Data",
+        "supertype": "Company",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nSells tide and weather feeds; Tidetable's forecast source."
+      }
+    },
+    {
+      "key": "owner",
+      "type": "character",
+      "fields": {
+        "name": "Ada Varga",
+        "supertype": "Person",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nFounder; holds the customer lines. Owner and keeper of this world."
+      },
+      "links": {
+        "institutions": [
+          "org"
+        ]
+      }
+    },
+    {
+      "key": "tomas",
+      "type": "character",
+      "fields": {
+        "name": "Tomas Reyes",
+        "supertype": "Person",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nBackend engineer; the timetable solver and the data feeds."
+      },
+      "links": {
+        "institutions": [
+          "org"
+        ]
+      }
+    },
+    {
+      "key": "priya",
+      "type": "character",
+      "fields": {
+        "name": "Priya Lund",
+        "supertype": "Person",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nDesigner and frontend engineer; the operator console."
+      },
+      "links": {
+        "institutions": [
+          "org"
+        ]
+      }
+    },
+    {
+      "key": "wren",
+      "type": "character",
+      "fields": {
+        "name": "Wren Halloway",
+        "supertype": "Contact",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nOperations lead at Saltmere; the contact for the Tidetable rollout."
+      },
+      "links": {
+        "institutions": [
+          "saltmere"
+        ]
+      }
+    },
+    {
+      "key": "odile",
+      "type": "character",
+      "fields": {
+        "name": "Odile Marsh",
+        "supertype": "Contact",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nBerth planner at the Port of Greyhaven."
+      },
+      "links": {
+        "institutions": [
+          "greyhaven"
+        ]
+      }
+    },
+    {
+      "key": "keeper-title",
+      "type": "title",
+      "fields": {
+        "name": "Keeper",
+        "supertype": "Role",
+        "description": "Source: the set-up skill · as of {{today}}\nKeeps this world: accepts or declines what is proposed, tidies, adds supertypes. Named by the Charter."
+      },
+      "links": {
+        "holders": [
+          "owner"
+        ],
+        "body": "org"
+      }
+    },
+    {
+      "key": "keeper-tenure",
+      "type": "relation",
+      "fields": {
+        "name": "Keeper: Ada Varga",
+        "supertype": "Tenure",
+        "description": "Source: the set-up skill · as of {{today}}\nAda Varga keeps the world from {{today}}.",
+        "start_date": "day:2026-10-22"
+      },
+      "links": {
+        "actor": "owner",
+        "titles": [
+          "keeper-title"
+        ]
+      }
+    },
+    {
+      "key": "founder",
+      "type": "title",
+      "fields": {
+        "name": "Founder",
+        "supertype": "Role",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nFounder of Fernhollow Systems."
+      },
+      "links": {
+        "holders": [
+          "owner"
+        ],
+        "body": "org"
+      }
+    },
+    {
+      "key": "founder-tenure",
+      "type": "relation",
+      "fields": {
+        "name": "Founder: Ada Varga",
+        "supertype": "Tenure",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nFounded the company on 2023-03-01.",
+        "start_date": "day:2023-03-01"
+      },
+      "links": {
+        "actor": "owner",
+        "titles": [
+          "founder"
+        ]
+      }
+    },
+    {
+      "key": "line-saltmere",
+      "type": "relation",
+      "fields": {
+        "name": "Fernhollow Systems - Saltmere customer",
+        "supertype": "Customer",
+        "subtype": "running",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nTidetable live on all four Saltmere routes since 2025-04-14. Next: the winter timetable, due 2026-11-15."
+      },
+      "links": {
+        "actor": "owner",
+        "characters": [
+          "wren"
+        ],
+        "institutions": [
+          "org",
+          "saltmere"
+        ]
+      }
+    },
+    {
+      "key": "line-greyhaven",
+      "type": "relation",
+      "fields": {
+        "name": "Fernhollow Systems - Port of Greyhaven berth feed",
+        "supertype": "Integration",
+        "subtype": "in talks",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nReading the port's berth schedule into Tidetable. Open: the data agreement. Next: Odile's answer on the format."
+      },
+      "links": {
+        "actor": "tomas",
+        "characters": [
+          "odile"
+        ],
+        "institutions": [
+          "org",
+          "greyhaven"
+        ]
+      }
+    },
+    {
+      "key": "line-westmark",
+      "type": "relation",
+      "fields": {
+        "name": "Fernhollow Systems - Westmark study",
+        "supertype": "Partnership",
+        "subtype": "idea",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nThe lab offered a joint study of crossing times. Nothing agreed; unsure whether it is funded."
+      },
+      "links": {
+        "actor": "owner",
+        "institutions": [
+          "org",
+          "westmark"
+        ]
+      }
+    },
+    {
+      "key": "line-tidechart",
+      "type": "relation",
+      "fields": {
+        "name": "Fernhollow Systems - Tidechart feed",
+        "supertype": "Supplier",
+        "subtype": "running",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nThe tide and weather feed behind Tidetable's forecasts; a yearly licence."
+      },
+      "links": {
+        "actor": "tomas",
+        "institutions": [
+          "org",
+          "tidechart"
+        ]
+      }
+    },
+    {
+      "key": "tidetable",
+      "type": "object",
+      "fields": {
+        "name": "Tidetable",
+        "supertype": "Product",
+        "description": "Source: Ada Varga (setup interview) · as of {{today}}\nThe timetabling app: routes, crossings, tide windows, the operator console. Live in production.",
+        "utility": "Builds and publishes ferry timetables that respect tides and berths."
+      }
+    },
+    {
+      "key": "welcome",
+      "type": "narrative",
+      "fields": {
+        "name": "Welcome",
+        "supertype": "Message",
+        "description": "The first message, to everyone.",
+        "story": "This world is set up. Read the Charter first, every session; ask me anything by message. - Ada"
+      },
+      "links": {
+        "narrator": "owner",
+        "characters": []
+      }
+    }
+  ],
+  "copies": "company",
+  "agents_md": true,
+  "repo": false
+}

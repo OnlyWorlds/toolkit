@@ -1,0 +1,15 @@
+{
+  "id": "01a16120-ea68-7f24-86d1-4eaef9b053ea",
+  "name": "Company A - Board C pilot",
+  "supertype": "Pilot",
+  "description": "Source: shape fixture · as of 2026-10-22\nA line of kind Pilot, status agreed: the state, the last contact and the next step.",
+  "subtype": "agreed",
+  "actor": "01a16120-ea68-71b2-9f51-ae080e2cd2d7",
+  "characters": [
+    "01a16120-ea68-78e4-95e4-24758fe6c33a"
+  ],
+  "institutions": [
+    "01a16120-ea68-774e-9f8f-1f716313fd38",
+    "01a16120-ea68-78b5-8061-e3a29121241e"
+  ]
+}

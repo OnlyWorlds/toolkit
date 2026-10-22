@@ -1,0 +1,16 @@
+{
+  "id": "01a16120-ea68-7bec-a314-5ac2e489f27c",
+  "name": "Company A - Body I integration",
+  "supertype": "Integration",
+  "description": "Source: shape fixture · as of 2026-10-22\nA line of kind Integration, status stalled: the state, the last contact and the next step.",
+  "subtype": "stalled",
+  "actor": "01a16120-ea68-71b2-9f51-ae080e2cd2d7",
+  "characters": [
+    "01a16120-ea68-7410-a37b-38cdfce48874",
+    "01a16120-ea68-7259-934a-fb7ef0924610"
+  ],
+  "institutions": [
+    "01a16120-ea68-774e-9f8f-1f716313fd38",
+    "01a16120-ea68-7e80-9cd4-e5b05abc529d"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "01a16120-ea68-7c95-ac34-d934d99e18bf",
+  "name": "Company A - Lab J selection",
+  "supertype": "Selection",
+  "description": "Source: shape fixture · as of 2026-10-22\nA line of kind Selection, status in talks: the state, the last contact and the next step.",
+  "subtype": "in talks",
+  "actor": "01a16120-ea68-71b2-9f51-ae080e2cd2d7",
+  "characters": [
+    "01a16120-ea68-7983-b599-0cf8a7d28201"
+  ],
+  "institutions": [
+    "01a16120-ea68-774e-9f8f-1f716313fd38",
+    "01a16120-ea68-7dd3-9b7f-af198c73fc14"
+  ]
+}

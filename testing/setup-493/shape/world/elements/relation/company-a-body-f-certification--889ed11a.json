@@ -1,0 +1,15 @@
+{
+  "id": "01a16120-ea68-7668-9c12-b2d8889ed11a",
+  "name": "Company A - Body F certification",
+  "supertype": "Certification",
+  "description": "Source: shape fixture · as of 2026-10-22\nA line of kind Certification, status paused: the state, the last contact and the next step.",
+  "subtype": "paused",
+  "actor": "01a16120-ea68-71b2-9f51-ae080e2cd2d7",
+  "characters": [
+    "01a16120-ea68-7d2b-8398-7056cd6ec884"
+  ],
+  "institutions": [
+    "01a16120-ea68-774e-9f8f-1f716313fd38",
+    "01a16120-ea68-79b4-b31d-a2838e1735e8"
+  ]
+}

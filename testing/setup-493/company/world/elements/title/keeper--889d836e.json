@@ -1,0 +1,10 @@
+{
+  "id": "01a16120-e752-730a-a032-6b09889d836e",
+  "name": "Keeper",
+  "supertype": "Role",
+  "description": "Source: the set-up skill · as of 2026-10-22\nKeeps this world: accepts or declines what is proposed, tidies, adds supertypes. Named by the Charter.",
+  "holders": [
+    "01a16120-e752-7462-bee6-9a1c3cd92a39"
+  ],
+  "body": "01a16120-e752-703e-bb43-cfb282616301"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "01a16120-e752-7e28-a339-3c885f629b25",
+  "name": "Tomas Reyes",
+  "supertype": "Person",
+  "description": "Source: Ada Varga (setup interview) · as of 2026-10-22\nBackend engineer; the timetable solver and the data feeds.",
+  "institutions": [
+    "01a16120-e752-703e-bb43-cfb282616301"
+  ]
+}

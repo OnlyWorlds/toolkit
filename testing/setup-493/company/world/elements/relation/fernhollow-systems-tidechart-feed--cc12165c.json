@@ -1,0 +1,12 @@
+{
+  "id": "01a16120-e752-7d87-89d8-0a7dcc12165c",
+  "name": "Fernhollow Systems - Tidechart feed",
+  "supertype": "Supplier",
+  "subtype": "running",
+  "description": "Source: Ada Varga (setup interview) · as of 2026-10-22\nThe tide and weather feed behind Tidetable's forecasts; a yearly licence.",
+  "actor": "01a16120-e752-7e28-a339-3c885f629b25",
+  "institutions": [
+    "01a16120-e752-703e-bb43-cfb282616301",
+    "01a16120-e752-75d8-8c37-d7a94345b814"
+  ]
+}

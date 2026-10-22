@@ -1,0 +1,9 @@
+{
+  "id": "01a16120-ea68-78e4-95e4-24758fe6c33a",
+  "name": "Contact One",
+  "supertype": "Contact",
+  "description": "Source: shape fixture · as of 2026-10-22\nA contact at the organisation they belong to.",
+  "institutions": [
+    "01a16120-ea68-7fdc-97ab-a2e3ac43cec5"
+  ]
+}

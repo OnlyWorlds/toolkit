@@ -1,0 +1,10 @@
+{
+  "id": "01a16120-e752-7cac-a8f8-6df39ab9bc80",
+  "name": "Founder",
+  "supertype": "Role",
+  "description": "Source: Ada Varga (setup interview) · as of 2026-10-22\nFounder of Fernhollow Systems.",
+  "holders": [
+    "01a16120-e752-7462-bee6-9a1c3cd92a39"
+  ],
+  "body": "01a16120-e752-703e-bb43-cfb282616301"
+}
