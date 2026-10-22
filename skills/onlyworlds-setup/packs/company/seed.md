@@ -19,6 +19,8 @@ Every description opens `Source: <who said it> · as of {{today}}`, then one or 
 | `line-<n>` | relation | its kind from `{{line_kinds}}` | its status | `{{org}} - <partner> <kind>` | `actor`: who holds it, `characters`: [contacts], `institutions`: [`org`, `org-<n>`] | question 6 | Fernhollow Systems - Saltmere customer (`Customer`, `running`) |
 | `product-<n>` | object | `Product` | | each product | | question 6 | Tidetable (the timetabling app) |
 | `welcome` | narrative | `Message` | | Welcome | `narrator`: `owner`; `characters`: [] (everyone) | always | "This world is set up. Read the Charter first; ask me anything by message." |
+| `guide` | construct | `Guide` | | Start here | | always, written from the charter and the world skill: what the world is, how a person uses it through their AI (a seat, its `.env` lines, the Charter as its first read), what to ask it, the house rules in short | "Start here: the Fernhollow world, for people" |
+| `welcome-<n>` | narrative | `Message` | | Welcome | `narrator`: the keeper; `characters`: [that person] | each Person but the keeper (question 3); the keeper sends one to each new person later | "Hi Tomas, welcome to the Fernhollow world. This is the start-here for people; your AI shows it to you on its first visit." then the `guide` text whole, in `story` |
 
 The charter's own links, in the plan's `charter.links`: `author` = `org`, `adjudicators` = [`keeper-title`].
 

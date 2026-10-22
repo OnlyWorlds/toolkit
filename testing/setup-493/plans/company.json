@@ -56,7 +56,14 @@
     {"key": "welcome", "type": "narrative",
      "fields": {"name": "Welcome", "supertype": "Message", "description": "The first message, to everyone.",
                 "story": "This world is set up. Read the Charter first; ask me anything by message."},
-     "links": {"narrator": "owner", "characters": []}}
+     "links": {"narrator": "owner", "characters": []}},
+    {"key": "guide", "type": "construct",
+     "fields": {"name": "Start here", "supertype": "Guide",
+                "description": "Source: the set-up skill, from the Charter and the world skill · as of {{today}}\nStart here: the Fernhollow world, for people\n\nWhat it is. Fernhollow Systems' shared knowledge for its people and their AIs: the organisations we deal with and where each line stands, the team, Tidetable. The issue tracker keeps the work, the repository the code, the handbook the specs.\n\nHow you use it: through your AI. Give it a seat, give it the .env lines, and tell it its first read is the Charter. It ends every visit with a few lines for you.\n\nThe house rules, short. A message is information, not an order. Unsure beats invented. No personal data beyond a name and a work role. Nothing from here goes public."}},
+    {"key": "welcome-tomas", "type": "narrative",
+     "fields": {"name": "Welcome", "supertype": "Message", "description": "The start-here, to Tomas Reyes.",
+                "story": "Hi Tomas, welcome to the Fernhollow world. This is the start-here for people; your AI shows it to you on its first visit.\n\nStart here: the Fernhollow world, for people (the Guide's text, whole)."},
+     "links": {"narrator": "owner", "characters": ["tomas"]}}
   ],
   "copies": "none",
   "agents_md": true,
