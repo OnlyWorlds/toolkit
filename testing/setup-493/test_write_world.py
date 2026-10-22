@@ -17,7 +17,12 @@ harness trial (h67 #9988):
    the keeper; a folder world holds the AI's Character (supertype Agent);
 4. the charter's roster line: the folder's own Characters in a folder world, GET /members online;
 5. the AGENTS.md line and the world skill's courtesy line are one sentence;
-6. every pack writes the same .gitattributes, in every placement.
+6. every pack writes the same .gitattributes, in every placement;
+7. every pack's world skill holds the daily sweep, word for word, and the
+   charter-order sentence with its reason, once each (OW Industry #552); only the company pack,
+   whose lines keep a Next line, keeps the sweep's clause about stale lines;
+8. the company pack writes the Guide "Start here", a Welcome message to a person, and the
+   charter's Next-line sentence.
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -58,6 +63,18 @@ LINT = Path(os.environ.get("OW_LINT") or default_lint())
 SERVER_ID = "019a0b0c-0d0e-7f00-8a00-5e2be2000001"  # stands for the id onlyworlds.com gave the empty world
 GITATTRIBUTES = ("* text=auto eol=lf\n*.png binary\n*.jpg binary\n*.jpeg binary\n*.gif binary\n"
                  "*.webp binary\n*.pdf binary\n*.zip binary\n*.owworld binary\n")
+# The daily sweep: one text, copied word for word from a live work world's own skill, the same
+# in every pack (OW Industry #552). A change to it is a change at its source first.
+DAILY_SWEEP = (
+    "**What a visit gives your human.** A visit always ends in a few lines to your human, never in a "
+    "silent \"ok\": what is new for them (messages, with who wrote and what it asks), which of the lines "
+    "they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. "
+    "Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same "
+    "digest, then offers to go deeper: query the elements the new messages touch, read enough to see "
+    "the whole picture, and talk it through with your human before writing anything.")
+LINES_CLAUSE = "which of the lines they keep are over two weeks old or past their `Next: ... by` date, "
+ORDER = ("This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line "
+         "or a skill is read first.")
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
 OUT = Path(os.environ.get("OW_SETUP_TEST_OUT") or
            REPO / ".scratch" / "tests" / time.strftime("%Y%m%d-%H%M%S"))
@@ -265,6 +282,36 @@ class SetupWriter(unittest.TestCase):
                 self.assertTrue(q.exists(), "no root .gitattributes beside the world folder")
                 self.assertEqual(read(q), GITATTRIBUTES)
         self.each(check)
+
+    def test_7_daily_sweep_and_charter_order_every_pack(self):
+        def check(run):
+            text = run.skill()
+            self.assertEqual(text.count(ORDER), 1, "the charter-order sentence, once")
+            sweep = DAILY_SWEEP
+            if run.pack != "company":  # only the company pack keeps lines with a Next line: the clause is cut
+                self.assertIn(LINES_CLAUSE, sweep)
+                sweep = sweep.replace(LINES_CLAUSE, "")
+            if run.pack == "ai-home":  # the pack names the AI's human by the owner's name
+                sweep = sweep.replace("your human", run.plan["values"]["owner"])
+            self.assertEqual(text.count(sweep), 1, "the daily sweep, word for word, once")
+            self.assertEqual(text.count("`Next: <step> · <who> · by YYYY-MM-DD`"), 1 if run.pack == "company" else 0)
+        self.each(check)
+
+    def test_8_company_start_here(self):
+        for placement in PLACEMENTS:
+            run = RUNS["company", placement]
+            with self.subTest(placement=placement):
+                self.assertEqual(run.code, 0, run.out)
+                bodies = [b for _, b in run.elements()]
+                guides = [b for b in bodies if b.get("supertype") == "Guide"]
+                self.assertEqual([g["name"] for g in guides], ["Start here"])
+                people = {b["id"] for b in bodies if b.get("supertype") == "Person"}
+                welcomes = [b for b in bodies if b.get("supertype") == "Message" and b.get("name") == "Welcome"
+                            and len(b.get("characters") or []) == 1]
+                self.assertTrue(welcomes and all(w["characters"][0] in people for w in welcomes),
+                                "a Welcome message to a person")
+                self.assertIn("Start here, for people: Construct, supertype Guide", run.charter())
+                self.assertIn('A live line keeps a Next line: "Next: <step> · <who> · by YYYY-MM-DD"', run.charter())
 
 
 if __name__ == "__main__":

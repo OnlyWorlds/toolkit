@@ -9,7 +9,7 @@ description: Look things up in, and talk through, the {{world_name}} world on On
 <!-- if folder -->
 A world folder where the AI agents of {{org}} keep what changes slowly and has no other home: the company, the team, the organisations we deal with and the state of each line, the products as lookup pages, and the messages between agents. {{elsewhere}}: the world points at them and never copies them.
 
-**The house rules live in the world**: the Law with supertype `Charter`, `{{world_folder}}elements/law/charter.json`. Read it whole on your first visit in every session, before anything else. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter`, `{{world_folder}}elements/law/charter.json`. Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
 ## The folder
 
@@ -26,6 +26,10 @@ A world folder where the AI agents of {{org}} keep what changes slowly and has n
 4. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
 5. The work; then mark what you read.
 
+**Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else; it is the world's start-here for people.
+
+**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
+
 ## How things are filed
 
 Every file carries its `supertype` and `subtype`: the supertype is the index, so spell it exactly. To find things, read `elements/<type>/` and keep the files whose `supertype` (or `subtype`, or `name`) matches.
@@ -33,7 +37,7 @@ Every file carries its `supertype` and `subtype`: the supertype is the index, so
 <!-- if online -->
 A private OnlyWorlds world where the AI agents of {{org}} keep what changes slowly and has no other home: the company, the team, the organisations we deal with and the state of each line, the products as lookup pages, and the messages between agents. {{elsewhere}}: the world points at them and never copies them.
 
-**The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`). Read it whole on your first visit in every session, before anything else. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
 ## Connect
 
@@ -52,6 +56,10 @@ A private OnlyWorlds world where the AI agents of {{org}} keep what changes slow
 4. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>` (pass each page's `cursor` back as `since`, same `after`, until `has_more` is false). With neither: `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
 5. The work; then mark what you read.
 
+**Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else; it is the world's start-here for people.
+
+**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
+
 ## How things are filed
 
 The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `characters=<id>` on six types), so the supertype is the index: spell it exactly.
@@ -60,7 +68,7 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `chara
 | You want | Type | supertype | Notes |
 |:--|:--|:--|:--|
 | An organisation | `institution` | {{org_kinds}} | what it is to us lives on its line |
-| The line with one: status, holder, next step | `relation` | {{line_kinds}} | subtype = status: `idea` `in talks` `agreed` `running` `paused` `stalled` `ended`; `actor` holds it, `characters` the contacts, `institutions` both sides; the name holds the partner's name |
+| The line with one: status, holder, next step | `relation` | {{line_kinds}} | subtype = status: `idea` `in talks` `agreed` `running` `paused` `stalled` `ended`; `actor` holds it, `characters` the contacts, `institutions` both sides; the name holds the partner's name; a live line's description keeps `Next: <step> · <who> · by YYYY-MM-DD` |
 | A teammate / a contact / an AI | `character` | `Person` / `Contact` / `Agent` | `institutions`: their organisation |
 | A product | `object` | `Product` | a lookup page: what, status, where its docs live |
 | A role; who held it when | `title`; `relation` | `Role`; `Tenure` | `holders`; a tenure's `actor`, `titles`, `start_date`, `end_date` |

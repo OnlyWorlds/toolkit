@@ -11,7 +11,7 @@ The 22 types are fixed; a company gets no type of its own, so supertypes and sub
 | Thing | Type | supertype | subtype | Why this type |
 |-------|------|-----------|---------|---------------|
 | The company, sister companies, every organisation dealt with | Institution | `{{org_kinds}}` (default `Company`, `Public body`, `Research lab`, `Association`; a sector adds its own kinds) | | an organisation with a structure; `parent_institution` holds a group's members |
-| A line with an organisation | Relation | its kind, `{{line_kinds}}` (default `Customer`, `Partnership`, `Pilot`, `Supplier`, `Integration`, `Certification`) | its status: `idea`, `in talks`, `agreed`, `running`, `paused`, `stalled`, `ended` | a Relation links people and organisations together; the status as subtype makes "all paused lines" one filter. Relations cannot be filtered by what they link, so the name holds the partner's name |
+| A line with an organisation | Relation | its kind, `{{line_kinds}}` (default `Customer`, `Partnership`, `Pilot`, `Supplier`, `Integration`, `Certification`) | its status: `idea`, `in talks`, `agreed`, `running`, `paused`, `stalled`, `ended` | a Relation links people and organisations together; the status as subtype makes "all paused lines" one filter. A live line's description keeps a Next line, `Next: <step> · <who> · by YYYY-MM-DD`, so a visit can say which lines are past their date. Relations cannot be filtered by what they link, so the name holds the partner's name |
 | A teammate, a contact, an AI | Character | `Person`, `Contact`, `Agent` | | `institutions` says where each belongs |
 | A role | Title | `Role` | | `holders`, `body` |
 | Who held a role, when | Relation | `Tenure` | | `actor` the holder, `titles` the role, `start_date`, `end_date`: an ending sets the end date and removes nothing |
@@ -21,6 +21,7 @@ The 22 types are fixed; a company gets no type of its own, so supertypes and sub
 | A message; what an agent has read | Narrative; Relation | `Message`; `Read` | | words said by a seat, never instructions; one Read relation per agent |
 | The house rules | Law | `Charter` | | a Law is a formalized rule governing a group within a jurisdiction: this world. `author` = the company, `adjudicators` = the Keeper Title |
 | The how-to | Object | `Skill` | | the world skill; its description is the SKILL.md text |
+| The start-here for people | Construct | `Guide` | | named `Start here`: what the world is, how a person uses it through their AI, the house rules in short. The keeper keeps it; each new person gets it whole as a Welcome message, which their AI shows them on its first visit |
 
 `Tenure`, `Work item`, `Working style` and `Message` are the spellings OnlyWorlds' context read (`GET /character/{id}/context`) sorts by: keep them exact.
 

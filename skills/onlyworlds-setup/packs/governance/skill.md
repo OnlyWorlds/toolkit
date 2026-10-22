@@ -9,7 +9,7 @@ description: Look things up in the {{world_name}} world on OnlyWorlds, the recor
 The record of {{body}}, kept so that "what did we decide, when, and why" has one answer. Nothing in it is rewritten: a rule changes by a new rule naming its parent, an office changes hands by ending one tenure and starting another.
 
 <!-- if folder -->
-**The house rules live in the world**: the Law with supertype `Charter`, `{{world_folder}}elements/law/charter.json`. Read it whole on your first visit in every session, before anything else. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter`, `{{world_folder}}elements/law/charter.json`. Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
 ## The folder
 
@@ -26,12 +26,14 @@ The record of {{body}}, kept so that "what did we decide, when, and why" has one
 4. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
 5. The work; then mark what you read.
 
+**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
+
 ## How things are filed
 
 Every file carries its `supertype` and `subtype`: the supertype is the index. To find things, read `elements/<type>/` and keep the files whose `supertype` (or `subtype`, or `name`) matches. Dates are days since 1970-01-01.
 <!-- end -->
 <!-- if online -->
-**The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`). Read it whole on your first visit in every session, before anything else. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
 ## Connect
 
@@ -49,6 +51,8 @@ Every file carries its `supertype` and `subtype`: the supertype is the index. To
 3. Your unread messages (below).
 4. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
 5. The work; then mark what you read.
+
+**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
 ## How things are filed
 
