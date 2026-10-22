@@ -260,6 +260,10 @@ class SetupWriter(unittest.TestCase):
             self.assertEqual(read(p), GITATTRIBUTES)
             if run.placement == "repo":
                 self.assertTrue((run.world / ".gitignore").exists())
+            else:  # the copies' root is its own repository: the same rule at its root (h67 #10318)
+                q = run.world.parent / ".gitattributes"
+                self.assertTrue(q.exists(), "no root .gitattributes beside the world folder")
+                self.assertEqual(read(q), GITATTRIBUTES)
         self.each(check)
 
 

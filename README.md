@@ -68,6 +68,7 @@ The skills follow the life of a world. Every skill follows the same shared rules
 |                                  | **dev**              | SDK integration, project scaffolding, deployment                                                            |
 |                                  | **council**          | Browse and participate in schema governance                                                                 |
 |                                  | **project-setup**    | Connect to an OnlyWorlds world (runs automatically when needed)                                             |
+| **Set it up for work**           | **setup**            | Set up a world for work from a starter pack (company, AI home, governance, workshop, software project)       |
 
 ## Usage
 

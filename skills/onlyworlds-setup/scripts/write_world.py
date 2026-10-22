@@ -362,6 +362,13 @@ def main(argv):
             if (copy_root / "CLAUDE.md").exists():  # Claude Code reads AGENTS.md only when no CLAUDE.md exists
                 line_files.append(copy_root / "CLAUDE.md")
     files[".gitattributes"] = GITATTRIBUTES  # every pack, every placement: one place
+    # The copies' root is a repository of its own when it is not the world folder: its root files
+    # (AGENTS.md, the skill copies) want the same line-ending rule, or git on an autocrlf machine
+    # rewrites them (Kael, h67 #10318). The repository's own .gitattributes stands when it has one.
+    root_attrs = None
+    if copy_root is not None and copy_root.resolve() not in (out.resolve(), Path.home().resolve()):
+        if not (copy_root / ".gitattributes").exists():
+            root_attrs = copy_root / ".gitattributes"
     if plan.get("repo"):
         files[".gitignore"] = GITIGNORE
 
@@ -385,6 +392,8 @@ def main(argv):
         write(out / rel, text)
     for p in copy_paths:
         write(p, copy_text)
+    if root_attrs is not None:
+        write(root_attrs, GITATTRIBUTES)
     line_done = []
     for p in line_files:  # the user's own file: never overwritten, the line appended once
         if not p.exists():
