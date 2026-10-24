@@ -285,3 +285,15 @@ Report: N findings, N fixed, N kept as canon, N left open, and the "not checked"
 ### What This Does Not See
 
 The script checks structure, not truth (principles §5): a wrong fact stated consistently passes, and zero findings is a claim about the check. Numbers in prose ("born in the year of the flood") are not dates to it; only the integer date fields are.
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- The lens taken, from the argument's first word or the user's words (Picking the lens).
+- The script's count line and its "Left out" line, cited once, never recounted (Step 2; Run the Script).
+- For the consistency lens, the "not checked" section (Run the Script).
+- A question before any fix: which findings are intended, every "possible" finding put as a question (Ask Before Calling It Wrong).
+- Nothing written until the user approves; then the tally of what was fixed, kept, left open or linked (Propose Fixes; Apply What Was Approved; Execute).
+- For a survey, the brief's two head lines, true as of and not read, and the brief's path (Write the Brief; Output).
+- What was checked and how (principles §5); a script that could not run is said so (principles §2).

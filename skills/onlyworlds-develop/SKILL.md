@@ -325,6 +325,18 @@ const saved = await client.get('character', id); // verify what landed (principl
 
 The legacy `/api/worldapi/` dialect and its traps: `references/v1-classic.md`.
 
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- The OpenAPI document by its URL, and the routes and fields taken from it (the first line; Read What Is Served).
+- A version only as read from npm or PyPI this session (Read What Is Served).
+- No key or PIN printed or repeated, even one pasted into chat (Credentials).
+- In client code, no PIN in a build or a `VITE_` variable, and no agent header in a person's app (Step 4).
+- Before a write session to an existing world, the export that is its rollback (Safety Notice).
+- After a bulk upload, every item's `status` read, and each failure named by its index (Bulk Upload).
+- Each write read back (Critical Rule 2; principles §5).
+
 ## Resources
 
 - The API document, browsable: https://www.onlyworlds.com/api/docs

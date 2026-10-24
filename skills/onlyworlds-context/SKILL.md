@@ -116,7 +116,7 @@ NOT LOADED: Tau Ceti Center, the Church of the Shrike, the Time Tombs' history (
 GAPS: no current location recorded for Gladstone
 ```
 
-Every line would carry its source (element and field) in the real packet.
+Every line would carry its source (element and field) in the real packet, and the answer names the recipe file it was built from (`context-recipe.md`).
 
 ## Where OnlyWorlds Helps (optional)
 
@@ -138,6 +138,17 @@ Every line would carry its source (element and field) in the real packet.
 **One being in several worlds.** When a table casts a character from one world into another, each world keeps its own Character, and the extension field `x_identity_key` says they are the same being. Its value is a UUID the casting tool mints (never an element id, never a name), kept byte for byte on every appearance; two elements with the same key are one being, a value that is not a UUID is ignored, and the key joins without merging: events and dates stay in the world they happened in. The full profile: `profiles/identity.md` in github.com/OnlyWorlds/schema-dist.
 
 Sources: a world folder on disk (see `knowledge/world-folder.md`), the REST API, or the MCP server (the develop skill covers both). All of this is buildable without OnlyWorlds too; say so if the user has their own store.
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- The packet's first line: what it is true as of (Step 4, 8).
+- Its gaps: what it could not fill, the stores the folder does not hold, and what the budget cut by the drop order (Step 3; Step 4, 7 and 8).
+- The one-line index of what exists but is not loaded (Step 4, 4).
+- A source on every line, its element and field (Example).
+- The recipe file by its path: the file is the deliverable (Step 4).
+- What was checked and how (principles §5).
 
 ## References
 

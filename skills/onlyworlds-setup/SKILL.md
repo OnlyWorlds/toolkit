@@ -112,3 +112,14 @@ The profile's page has the rest (how each predicate counts, what a reader report
 - Write into an existing world's elements: this skill makes new worlds. Growing one is import, read's link lens or develop.
 - Build a patch from a package copy. A patch file this skill writes for a world that already exists (a new charter text, a new world skill, for its keeper to land) starts from a fresh GET of that element and states the `updated_at` of the element it was built on, so the keeper sees drift before landing it.
 - Put a person's private reads into the world: one neutral line on what each person does, written as they would accept it.
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- The plan's first line: the owner, and where that name came from (Step 3).
+- The charter whole, the seed as a table, the skill's name and where its copies land, and nothing written before the user's yes (Step 3).
+- The seed rows nobody answered, left out and named (Step 2).
+- The report: counts by type, what was left out and why, the charter's and skill's sizes against the budget, the AI's first visit (Step 8).
+- No key, PIN or seat line in chat (Step 6, 3; Step 7).
+- The lint's count line and the charter read back whole (Step 5); what else was checked and how (principles §5); a script that could not run is said so (principles §2).

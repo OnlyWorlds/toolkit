@@ -226,3 +226,14 @@ Other skills detect the `.ow/` folder and:
 2. Load credentials from `.env` (may be partial; never print them)
 3. Check [Cache Freshness](#cache-freshness), then load `world-cache.json`
 4. Reconcile against the cache automatically (import's Step 5)
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- The route: the skill the user's words point to in the Quick Reference (Route Forward).
+- That no account is needed where none is: a world folder never needs credentials (Quick Reference; Route Forward).
+- A world folder or account link found, by its world's name; with both, the source-of-truth question before any route (Check for Existing Setup).
+- After Connect an account, its report: the world, the cached counts, the credential mode; offline, the cache's age (Step 8; Cache Freshness).
+- No key or PIN asked for, printed or repeated in chat (Connect an account, Step 3).
+- What was checked and how (principles §5).

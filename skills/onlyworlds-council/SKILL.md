@@ -309,3 +309,15 @@ When the user hits a genuine schema boundary that the model skill leaves open (n
 3. If not: suggest drafting one ("this might be worth a council motion")
 
 This bridges individual worldbuilding work and collective schema evolution.
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- The answer first, in a sentence or two, then the evidence, every number from this one read, then the schema half from the model skill (The Question Form, 3).
+- How many motions were read; with no match, that the list holds only the newest 200 (The Question Form, 3; Step 1).
+- A field matched by its word in the text, said to be a text match (The Question Form, 2).
+- No status derived: the user is sent to `council.onlyworlds.com` (Motion Status).
+- Nothing submitted or spent without the user's yes: the draft shown, the act and its cost confirmed (Step 3; Step 6).
+- After an act, the token balance; the key and PIN never in chat (Step 4; Step 5).
+- What was checked and how (principles §5).

@@ -152,3 +152,15 @@ OnlyWorlds holds world structure: entities, relationships, lore. For high-volume
 The question isn't "can OW do this?" but "what's the cleanest architecture?"
 
 If you hit a genuine schema limitation (a missing field, an unclear type boundary) that the decision trees leave open, use the **council** skill to check for existing motions or draft a proposal.
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- The proposed structure as a table: concept, type, key fields, links (Step 3).
+- Only fields and links found in that type's own section of the schema page; custom data in an `x_<name>` field (Step 3; Step 4).
+- Asked for a type's fields, the fields themselves, never a pointer to the file (Field Lookup).
+- For a close pair, the answer from that pair's section of the decision trees, given directly (Type Disambiguation).
+- The worked world read before proposing, the spine profile or Hyperion, by name (Step 3).
+- A genuine schema limit taken to the council skill (When OW Isn't Enough).
+- What was checked and how (principles §5).

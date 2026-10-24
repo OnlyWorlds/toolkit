@@ -131,7 +131,19 @@ Source: the Consul, on his ship, receives a fatline message from Meina Gladstone
 | The Time Tombs | Location | the condition they are in (opening) goes in the description, dated |
 | Fatline | Construct | a technology, not a physical object |
 
-A ship is an Object (it is made, owned, sunk) and the place aboard it is a Location linked to it; Hyperion as published keeps the ship as the Object the Steinway's `parent_object` names. The Steinway and the Rachmaninov prelude are a choice: extracted when the world keeps a ship's fittings, as Hyperion does (the Steinway an Object inside the ship, the prelude a Construct), left out when it does not; the world rules file records which. Not extracted: the glass of Scotch (generic). Stubbed: the Shrike, as a Creature for now (named and feared, nature not yet given); its type is a judgment call listed in the report.
+A ship is an Object (it is made, owned, sunk) and the place aboard it is a Location linked to it; Hyperion as published keeps the ship as the Object the Steinway's `parent_object` names. The Steinway and the Rachmaninov prelude are a choice: extracted when the world keeps a ship's fittings, as Hyperion does (the Steinway an Object inside the ship, the prelude a Construct), left out when it does not; the world rules file records which. Not extracted: the glass of Scotch (generic). Stubbed: the Shrike, as a Creature for now (named and feared, nature not yet given); its type is a judgment call listed in the report. The report also gives the counts by type, the registry's source pointer for every row (the opening pages), the folder check's count line, and the credit: `world.json`'s description names the novel the world rests on.
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- Coverage per source: counts by type, and anything unreadable (Step 6).
+- What was not extracted, and why (Step 6; Key Rule 8).
+- Judgment calls with their reasons, conflicts and low-confidence elements, and any name you coined (Step 6; Step 2).
+- A source pointer for every element, in the registry (Key Rule 8).
+- The credit to a published work the world rests on, and where it was written (Step 2, sources).
+- Into an existing world, the change list, and nothing applied before the user rules (Step 5).
+- The folder check's count line (Step 7, 3); what else was checked and how (principles §5).
 
 ## References
 

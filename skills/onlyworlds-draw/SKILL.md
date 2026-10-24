@@ -90,11 +90,23 @@ Colour carries the family, never the type alone: agents, world, abstract and tem
 
 ## Example (Hyperion)
 
-`Draw my world in ./hyperion as a graph I can open in a browser.` Hyperion is a folder with 35 elements. `graph.py ./hyperion` writes `./draw/graph.json` and `./draw/graph.html`: 26 elements and 36 links drawn, 9 left out as placement (one map, one pin, six markers, one zone): the same split the read skill's count gives. The Consul is the most linked element (8 links), then the Primal Performance (7); the two saurian creatures' links to the Swamps zone are not drawn, since a zone is placement.
+`Draw my world in ./hyperion as a graph I can open in a browser.` Hyperion is a folder with 35 elements. `graph.py ./hyperion` writes `./draw/graph.json` and `./draw/graph.html`: 26 elements and 36 links drawn, 9 left out as placement (one map, one pin, six markers, one zone): the same split the read skill's count gives. The Consul is the most linked element (8 links), then the Primal Performance (7); the two saurian creatures' links to the Swamps zone are not drawn, since a zone is placement. The answer carries the script's head line, "Hyperion: true as of" the time of the read, "read from the folder hyperion", and says that nothing in `./hyperion` was written.
 
 `map.py ./hyperion` draws the map of the unnamed planet (1054 × 1492 pixels, its image), the Consul's balcony seat as a pin 810 pixels up from the bottom edge, and the Swamps as a polygon of six markers with the seat inside it.
 
 `timeline.py ./hyperion` places 5 dated elements on -300..100 years, read through the world's calendar, Hegemony Standard: Rachmaninov at 270 O.E., his Prelude at 251 O.E., the Consul's title at 1 PC, and both events at 12 PC, with "now" at 0 PC. The other 22 elements carry no date and are counted as not placed.
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- The script's head line in the answer itself: what the picture is true as of, and the folder it was read from (Method, 6).
+- The script's counts and its left-out line, once, per reason, never recounted (Method, 2 and 6).
+- For an account world's graph, the Graph view described in words, and no URL you have not seen answer (Method, 1).
+- Above about 300 nodes, that the picture crowds, with a focus or a type offered (Method, 3).
+- With no Map elements, that no page was written, and the `parent_location` outline offered (Method, 4).
+- Where the files went, `draw/` or `--out`, and that the world was not written to (Method, 7).
+- What was checked and how (principles §5); a script that could not run is said so (principles §2).
 
 ## References
 

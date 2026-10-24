@@ -106,13 +106,15 @@ After the session where the Consul receives the fatline message:
 
 ```
 LISTING: The Consul (touched) · Meina Gladstone (touched) · The Shrike Pilgrimage (changed) ·
-         The Time Tombs (mentioned) · "the Home Rule Council" (no match: new entry or noise?)
+         The Time Tombs (touched) · "the Home Rule Council" (no match: new entry or noise?)
 ROWS:
   link      The Shrike Pilgrimage.characters  + The Consul      evidence: "You have been chosen..."
   knowledge "The Time Tombs show signs of opening"  held by: The Consul   evidence: Gladstone's message
   flag      Has the Consul accepted? The session ends before he answers. Leave the pilgrimage row as "chosen"?
 NOT PROPOSED: the storm, the carrion-breed pack (background, no recurrence)
 ```
+
+The list goes in a file beside the session's notes, never inside `elements/`, and nothing in the world changes until the user has ruled on its rows; no passage was skipped.
 
 ## Where OnlyWorlds Helps (optional)
 
@@ -132,6 +134,18 @@ Every-line happenings (each exchange, each roll) go in a log beside the world, n
 **To write**: edit files in a world folder (`knowledge/world-folder.md`, writer rules; in a folder linked to an account, every edited file gets a fresh `local_updated_at`), or use the API as the develop skill gives it: an existing element by PATCH of only the fields its row names, read first; multi-link changes through develop's Add or Remove Links; new elements through develop's Bulk Upload.
 
 **A write that comes back as a proposal.** A world whose owner takes an AI seat's writes as proposals (`agent_writes_proposed` on `GET /api/v2/world`) answers a seat's PATCH or link write with `202` and a body of exactly `{"proposal": {...}}`: the element did not change, and the world's keeper accepts or declines it. A new element lands marked `x_review_proposed`, waiting the same way. Read the queue with `GET /api/v2/world/proposals` (open rows by default; `?element=<id>` for one element), report each row to the user as proposed, not applied, and never resend it. The read-back of Step 4's checks then compares the approved rows with the queue, not with the elements.
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- The change list in Step 4's row format, and where it was written: beside the notes, never inside `elements/` (Step 1).
+- Every listed item's verdict, and every *no change* with its reason (Step 4, 3).
+- Every flag, near-names among them, listed for the user's ruling, never decided in a row (Step 4, 6 and 7).
+- What was deliberately not proposed, and why (Step 4, 5).
+- Nothing written before the user has ruled, then only the approved rows (Step 1; Step 4, 9); a write that comes back as a proposal is reported as proposed, not applied (A write that comes back as a proposal).
+- Passages the user chose to skip, as a coverage gap with their count (Step 4, 10).
+- What was checked and how (principles §5).
 
 ## References
 

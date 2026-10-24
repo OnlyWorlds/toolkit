@@ -105,7 +105,19 @@ World Anvil and Campfire take the export by `--file`; Kanka and Notion take it a
    read_world_file("hyperion.owworld").to_folder("check/hyperion")
    ```
 4. Lint both: `checked 35 element files in 19 types: 0 problems` for the source and for the unpacked copy; `left` is empty, so no hidden element was left out.
-5. Tell the user: the friend unpacks it with the package (`read_world_file(path).to_folder(dir)`) or another reader of the format; the folder opens in Atlas in a Chromium browser, and in Firefox or Safari Atlas opens the `.owworld` itself.
+5. Tell the user: both lint lines; the slice is "unknown", since `world.json` declares no `exported_as`; the friend unpacks it with the package (`read_world_file(path).to_folder(dir)`) or another reader of the format; the folder opens in Atlas in a Chromium browser, and in Firefox or Safari Atlas opens the `.owworld` itself.
+
+## The answer says
+
+Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
+
+- Which end is the source of truth after the move (Step 1).
+- For a door, the plan: what became what, what did not map, and each mapping believed rather than read (Step 2).
+- The `api` block and dot-folders, said as present or absent: "say so, rather than claiming a removal" (Step 3; Example, 2). For a file to hand on, how many hidden elements were left out (Step 3).
+- The slice `exported_as` declares, and "unknown" when it is absent (Step 4).
+- The lint's count line for every folder made, the unpacked archive's too (Step 5).
+- Without the package, how to install it: `pip install onlyworlds`, Python 3.12+ (Step 7).
+- What was checked and how (principles §5).
 
 ## References
 
