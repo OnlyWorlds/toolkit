@@ -199,7 +199,7 @@ npm create vite@latest my-app -- --template react-ts   # or vanilla-ts for no fr
 cd my-app && npm install && npm install @onlyworlds/sdk
 ```
 
-`npm install @onlyworlds/sdk` records the current major (`^4.x`) in `package.json`; keep it pinned to a major, not `latest`.
+`npm install @onlyworlds/sdk` records the current major (`^N.x`, whatever npm shows this session) in `package.json`; keep it pinned to a major, not `latest`.
 
 ```
 my-app/

@@ -228,7 +228,7 @@ Fetch the OpenAPI document and read the paths you will call ([Read What Is Serve
 
 ### Step 3: SDK Setup
 
-`npm install @onlyworlds/sdk`. Its major is 4: ESM-only, v2-only, client `OwV2Client`, types generated from the canonical schema.
+`npm install @onlyworlds/sdk`: ESM-only, v2-only, client `OwV2Client`, types generated from the canonical schema. Its major is the one npm shows this session, read before you state it ([Read What Is Served](#read-what-is-served)).
 
 ```typescript
 import { OwV2Client } from '@onlyworlds/sdk';
@@ -249,7 +249,7 @@ const res = await client.bulk(items, { atomic: true });             // does not 
 if (res.errors) console.warn(res.items.filter((s) => s.status >= 400)); // nothing written; record no ids
 ```
 
-Every other method (`get`, `delete`, `upsert`, seats, pictures, sign-in) is typed in `dist/index.d.ts`. The schema-generated palette and metadata (`elementColor`, `ELEMENT_FAMILIES`, `ELEMENT_ICONS`, `FIELD_SCHEMA`) keep a tool in sync for free. The v1 client is gone; pin `@onlyworlds/sdk@3` only for old code.
+Every other method (`get`, `delete`, `upsert`, seats, pictures, sign-in) is typed in `dist/index.d.ts`. The schema-generated palette and metadata (`elementColor`, `ELEMENT_FAMILIES`, `ELEMENT_ICONS`, `FIELD_SCHEMA`) keep a tool in sync for free. The v1 client is gone; for old code, pin the last major that carried it, read from npm's version list.
 
 Link fields are as on the wire; on an existing element, change a multi link with `editLinks` (a `patch` with the array replaces the list). Pin coordinates are integers; a Pin's `element_type` and `element_id` are schema fields, not link suffixes.
 
@@ -272,7 +272,7 @@ A read key in a public bundle lets anyone read that world: use one only for a pu
 **Plain HTML + JS**:
 ```html
 <script type="module">
-  import { OwV2Client } from 'https://esm.sh/@onlyworlds/sdk@4';
+  import { OwV2Client } from 'https://esm.sh/@onlyworlds/sdk';
   const client = new OwV2Client({ apiKey: prompt('Read key (ow_r_...):') ?? '' });
   for await (const ch of client.listAll('character')) console.log(ch.name);
 </script>
