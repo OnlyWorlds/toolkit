@@ -18,6 +18,7 @@ A world folder on disk (`world.json` + `elements/`) never needs credentials; onl
 | "I have notes / a book / a wiki / a campaign bible to structure" | import (into a world folder; an account world: Connect an account first) |
 | "I have an export from World Anvil, LegendKeeper, Kanka, Campfire or Notion" / an `.owworld` / "back up my world" / "send my world to a friend" | carry |
 | "I have an Azgaar map" / "I want my world in Foundry VTT" / "I work in Obsidian" | carry (the public converters, the Obsidian plugin) |
+| "Copy my account world to a folder" / "put my folder on my account" | carry (moving a world between a folder and an account is carry's; develop is for building on it) |
 | "How do I model a magic system / factions / a religion" / "what type is this" / "is there a field for X" / "what fields exist" | model |
 | "What do I actually have" · "my elements feel disconnected" · "does my world contradict itself" | read (its survey, link or consistency lens) |
 | "Show my world as a graph" / "a map of my world" / "my events on a timeline" | draw |
@@ -60,39 +61,17 @@ OnlyWorlds is an open standard for worldbuilding data: 22 element types with def
 Look in the current directory (or the folder the user names) for either:
 
 - **A world folder**: `world.json` plus an `elements/` folder. Read the world name from `world.json` and mention it: "I see a world folder for '{world_name}'." No credentials needed for anything on it.
-- **An account connection**: a `.ow/` folder. Load the world name from `.ow/config.json` and mention it: "I see you're connected to '{world_name}'."
+- **A link to an account world**, either of two marks: a `world.json` with an `api` block (Atlas links a folder this way; never print the block), or a `.ow/` folder (Connect an account's; the world name is in `.ow/config.json`). Mention it: "I see you're connected to '{world_name}'."
 
-If BOTH are there and the user hasn't said which to use, ask: a local folder may be stale relative to a synced account, so the user picks the source of truth.
+A link mark beside world files means one world in two homes. Unless the user has said which to use, ask which is the source of truth: the folder may be stale against the account, or hold edits not yet sent.
 
 ### 4. Route Forward
 
-CRITICAL: for users with an **account world** who want import or API work, **Connect an account comes first** if `.ow/` doesn't exist. Without its local copy, import's Step 5 has nothing to reconcile against and the parse creates duplicates. A world folder never goes through credential setup: import into it, read it, and draw it as files.
+The Quick Reference routes; three cases it cannot carry:
 
-**Has text + account world**: "Let me connect your project first, then we'll import your text." → Connect an account → import
-
-**Has text + world folder**: "Let's import that into your folder." → import (it reads the folder to avoid duplicates; no credentials)
-
-**Has text, no world**: "Let's import that. You can keep the result as files (a world folder Atlas can open) or create an OnlyWorlds world later." → import, with a world folder as the output. Ask for no account and no key; never make an account feel required.
-
-**Has another app's export, or a world to move or back up**: "Let's plan the move." → carry
-
-**Wants modelling**: "Let's work through that design together." → model
-
-**Wants to organise or manage a world**: a folder on disk, "Let me read your world folder." → read (no credentials). On onlyworlds.com, "Let me connect to your world." → Connect an account → read, or develop for writes
-
-**Wants to understand a world, or connect its elements**: "Let me read your world and write you a brief." → read, survey lens; "Let me analyse your world's connections." → read, link lens
-
-**Wants to see it**: "Let me draw it." → draw (a file to open in a browser; it never changes the world)
-
-**Wants history or an alternate timeline**: "Let's put your world folder under git." → open `knowledge/world-folder.md`, "Keeping history", and walk them through it. In a folder linked to an account, turn on Stay offline in Atlas before switching away from the branch the account follows.
-
-**Runs sessions with AI (campaign, roleplay, co-written story) and wants canon to hold**: "Let's work out what each session needs from your world." → context. Once sessions are running: "Let's work out how each session gets written back." → update. Both work on a folder, the user's own notes, or an account world.
-
-**Wants to build tools**: "Let's scaffold a project." → develop
-
-**Wants to propose schema changes**: "Let's check what's already been discussed." → council
-
-**Exploring or discussing ideas** ("I have an idea for a world"): engage with their concept, route to model as complexity emerges.
+- **An account world connects first.** For import or API work on an account world, Connect an account comes first if `.ow/` doesn't exist: without its local copy, import's Step 5 has nothing to reconcile against and the parse creates duplicates. A world folder never goes through credential setup, and a user with no world gets a world folder: never make an account feel required.
+- **Both a folder and an account link**: Step 3's source-of-truth question comes before any route.
+- **History or an alternate timeline**: "Let's put your world folder under git." → open `knowledge/world-folder.md`, "Keeping history", and walk them through it. In a folder linked to an account, turn on Stay offline in Atlas before switching away from the branch the account follows.
 
 ## Scope
 
@@ -157,11 +136,9 @@ OW_API_KEY=
 OW_API_PIN=
 ```
 
-4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (Account → your world → API keys) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first. For an AI's own seat in a world (theirs or one they are a member of), they press **make a seat** on that world's page (the owner under Invite an agent, a member under Your AI in this world) and paste the `.env` lines it shows once: `OW_API_PIN` there is the seat's own secret, not their PIN. A lost key is **new key** beside the seat.
+4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (Account → your world → API keys) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first. For an AI's own seat in a world (theirs or one they are a member of), they press **Make a seat** on that world's page (the owner on **Access**, under **Let someone in**, **An AI agent**, **More options**; a member under **Your AI in this world**) and paste the `.env` lines it shows once: `OW_API_PIN` there is the seat's own secret, not their PIN. A lost key is **New key** beside the seat.
 
-The API key may be a **prefixed key** (`ow_w_…` world-write, `ow_r_…` read-share) or a **legacy 10-digit key** (still valid, no longer issued); any of these works as-is. The PIN is required for writes. Prefixed keys read without it; only a legacy key reading a private world needs it.
-
-`OW_API_KEY`, `OW_API_PIN` and `OW_WORLD` are the names (an OnlyWorlds agent invite writes the same). A folder may instead hold the older names `ONLYWORLDS_API_KEY`, `ONLYWORLDS_API_PIN`, `ONLYWORLDS_WORLD_UUID`; they still work: the skills read `OW_*` first and fall back to them (in shell, `${OW_API_KEY:-$ONLYWORLDS_API_KEY}`). Keep whichever names a folder already uses.
+What each key shape can do, the PIN's part, the `OW_*` names (the older `ONLYWORLDS_*` ones still work: keep whichever a folder already uses) and the headers every call sends: the develop skill's Credentials.
 
 If the user pastes a credential into chat anyway, do not repeat it back; ask them to put it in `.env`.
 
@@ -174,7 +151,7 @@ curl -s "https://www.onlyworlds.com/api/v2/world" \
   -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 ```
 
-A prefixed key reads without a PIN; a legacy 10-digit key on a private world also sends `-H "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}"`. A `200` with the world object confirms the key and gives you the world name and UUID in one call; append `OW_WORLD=<uuid>` to `.env` (older setups: `ONLYWORLDS_WORLD_UUID`). On a `401`, read the error envelope (it names the problem: bad or revoked key, or wrong PIN) and ask the user to re-check `.env`. With a prefixed key the PIN is checked only on writes, so this read proves the key, not the PIN.
+A legacy 10-digit key on a private world also sends the PIN header. A `200` with the world object confirms the key and gives you the world name and UUID in one call; append `OW_WORLD=<uuid>` to `.env` (older setups: `ONLYWORLDS_WORLD_UUID`). On a `401`, read the error envelope (it names the problem: bad or revoked key, or wrong PIN) and ask the user to re-check `.env`. With a prefixed key the PIN is checked only on writes, so this read proves the key, not the PIN.
 
 ### Step 6: Build World Cache
 
