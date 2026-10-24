@@ -215,23 +215,18 @@ If none appears, either they have not committed one yet or their delegate is pas
 
 ### Step 5: Submit
 
-The key and PIN travel in the JSON body. Build the body with `json.dumps` into a file and send the file: a quote, a backslash or a `$` in the user's text then passes through as written, which a JSON heredoc does not survive. The script reads the key and PIN from the environment; never print, echo, or paste them into chat (principles §6), and delete the file after the send.
+The key and PIN travel in the JSON body. Write the approved draft (Step 3's fields, nothing else) to `draft.json` with your file-writing tool, never through a shell or a string in a script: then any quote, backslash or `$` in the user's text arrives as written. A script adds the key, the PIN and the delegate from the environment and writes `body.json`. Never print, echo, or paste the key or PIN into chat (principles §6), and delete `body.json` after the send.
 
 ```bash
 set -a; . ./.env; set +a
+export OW_DELEGATE_ID={delegate_uuid}    # Step 4's delegate; leave it unset for delegate/
 python - <<'EOF'
 import json, os
-body = {
-    "type": "motion",
-    "title": r"""Characters need a death_date field""",
-    "description": r"""Lifespan visualization requires knowing when characters died.""",
-    "element_type": "character",
-    "field": "death_date",
-    "stake": 100,
-    "proposer_key": os.environ.get("OW_API_KEY") or os.environ["ONLYWORLDS_API_KEY"],
-    "proposer_pin": os.environ.get("OW_API_PIN") or os.environ["ONLYWORLDS_API_PIN"],
-    "delegate_id": "{delegate_uuid}",
-}
+body = json.load(open("draft.json", encoding="utf-8"))
+body["proposer_key"] = os.environ.get("OW_API_KEY") or os.environ["ONLYWORLDS_API_KEY"]
+body["proposer_pin"] = os.environ.get("OW_API_PIN") or os.environ["ONLYWORLDS_API_PIN"]
+if os.environ.get("OW_DELEGATE_ID"):
+    body["delegate_id"] = os.environ["OW_DELEGATE_ID"]
 open("body.json", "w", encoding="utf-8").write(json.dumps(body, ensure_ascii=True))
 EOF
 curl -s -X POST "https://www.onlyworlds.com/api/council/submit/" \
