@@ -1,4 +1,4 @@
-# The company pack: the cold-visit checklist (OW Industry #562)
+# The company pack: the cold-visit checklist
 
 A cold agent visited a live company world with the company pack's world skill and guessed five times where the pack and the world disagreed. A reader holding only the pack's filled texts (the world skill and the charter, either placement) must answer each point below without a guess. `test_write_world.py` (test 10) asserts that each answer is in the text; the reader's run is by eye, the same questions.
 

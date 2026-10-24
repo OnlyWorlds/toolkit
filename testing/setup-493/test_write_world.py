@@ -1,4 +1,4 @@
-"""The set-up skill's writer, on every pack, in three placements (OW Industry #493, round 2).
+"""The set-up skill's writer, on every pack, in three placements (round 2).
 
     python testing/setup-493/test_write_world.py [-v]
 
@@ -19,16 +19,16 @@ harness trial (2026-10-22):
 5. the AGENTS.md line and the world skill's courtesy line are one sentence;
 6. every pack writes the same .gitattributes, in every placement;
 7. every pack's world skill holds the daily sweep, word for word, and the
-   charter-order sentence with its reason, once each (OW Industry #552); only the company pack,
+   charter-order sentence with its reason, once each; only the company pack,
    whose lines keep a Next line, keeps the sweep's clause about stale lines;
 8. the company pack writes the Guide "Start here", a Welcome message to a person, and the
    charter's Next-line sentence;
-9. every pack's charter file carries the checks slot `x_checks_rules` (OW Industry #561): empty
+9. every pack's charter file carries the checks slot `x_checks_rules`: empty
    except in the company pack, which ships the Next-line rule taken from schema-dist's published
    fixture; it reaches the bulk body, a plan's list replaces the pack's, and the Python package's
    doctor (0.24.0 or newer, when installed) applies it;
 10. the company pack answers the five points a cold visit to a live company world guessed
-    (OW Industry #562; `cold-visit-checklist.md`).
+    (`cold-visit-checklist.md`).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -70,7 +70,7 @@ SERVER_ID = "019a0b0c-0d0e-7f00-8a00-5e2be2000001"  # stands for the id onlyworl
 GITATTRIBUTES = ("* text=auto eol=lf\n*.png binary\n*.jpg binary\n*.jpeg binary\n*.gif binary\n"
                  "*.webp binary\n*.pdf binary\n*.zip binary\n*.owworld binary\n")
 # The daily sweep: one text, copied word for word from a live work world's own skill, the same
-# in every pack (OW Industry #552). A change to it is a change at its source first.
+# in every pack. A change to it is a change at its source first.
 DAILY_SWEEP = (
     "**What a visit gives your human.** A visit always ends in a few lines to your human, never in a "
     "silent \"ok\": what is new for them (messages, with who wrote and what it asks), which of the lines "
@@ -321,7 +321,7 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn('carries its Next, "Next: <step> · <who> · by YYYY-MM-DD"', run.charter())
 
     def test_9_checks_slot_every_pack(self):
-        """OW Industry #561: every charter file carries x_checks_rules; only the company pack ships a rule."""
+        """Every charter file carries x_checks_rules; only the company pack ships a rule."""
         fixture = FIXTURE.exists() and json.loads(read(FIXTURE))
         def check(run):
             body = json.loads(read(run.world / "elements" / "law" / "charter.json"))
@@ -385,7 +385,7 @@ class SetupWriter(unittest.TestCase):
         self.assertIn('rule 0, "a live line carries its Next"', r.stdout)
 
     def test_10_cold_visit_checklist(self):
-        """OW Industry #562: the five points a cold visit guessed, answered by the company pack's own text.
+        """The five points a cold visit guessed, answered by the company pack's own text.
         The questions and where the pack answers them: cold-visit-checklist.md."""
         for placement in ("online", "folder"):
             run = RUNS["company", placement]
