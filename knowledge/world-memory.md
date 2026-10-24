@@ -1,6 +1,6 @@
 # World Memory: the loop, the dials, and how others build it
 
-Shared reference for the context and resolve skills: the session loop. The general rules they rest on live in `principles.md`. Read the section the conversation needs, not the whole file.
+Shared reference for the context and update skills: the session loop. The general rules they rest on live in `principles.md`. Read the section the conversation needs, not the whole file.
 
 ## Contents
 1. The loop
@@ -71,7 +71,7 @@ Each is the user's choice. Name the setting and the cost.
 | Plan presented as fact | "planned for tomorrow" renders as happened; a next step reads as done | plans are their own kind, never rendered as recent or done |
 | Ghost presence | a character appears where they aren't, because their position was never updated | presence from data; the resolve moves people |
 | Silent overwrite | the newer version replaces canon without anyone deciding | flags with both versions; retire, don't delete |
-| Over-broad retirement | an unscoped contradiction check retires unrelated facts ([Graphiti #1728](https://github.com/getzep/graphiti/issues/1728)) | a new value replaces only the same field on the same thing |
+| Over-broad retirement | an unscoped contradiction check retires unrelated facts ([Graphiti issue 1728](https://github.com/getzep/graphiti/issues/1728)) | a new value replaces only the same field on the same thing |
 | Name collision | two people merged into one, or one split in two | type plus one anchor for every match; a human read of every near-name (`principles.md` §3) |
 | Dropped fact | the resolve missed something; every consistency check still passes | resolve a known session against its expected result, now and then |
 | Stale entries | out-of-date lore keeps being injected | demote what finished; keep the world current |

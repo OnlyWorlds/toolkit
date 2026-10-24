@@ -1,6 +1,6 @@
 # Common Parsing Errors
 
-Mistakes to avoid when parsing text into OnlyWorlds elements. Shared rules: `../knowledge/principles.md`. Type reasoning lives in `../knowledge/decision-trees.md`; this file keeps the error examples.
+Mistakes to avoid when parsing text into OnlyWorlds elements. Shared rules: `principles.md`. Type reasoning lives in `decision-trees.md`; this file keeps the error examples.
 
 ## Table of Contents
 
@@ -164,7 +164,7 @@ These fields DON'T EXIST on the type named. Several exist on another type, so a 
 - BAD: `Construct.location` → use Construct.locations (plural)
 - BAD: `Phenomenon.location` → use `Phenomenon.environments`
 
-**Link direction**: no general rule predicts which side holds a link (`Character.objects`, but `Event.characters` and `Title.holders`). Check the Link Direction Summary in `../knowledge/schema-reference.md`.
+**Link direction**: no general rule predicts which side holds a link (`Character.objects`, but `Event.characters` and `Title.holders`). Check the Link Direction Summary in `schema-reference.md`.
 
 ---
 
@@ -182,12 +182,12 @@ These fields DON'T EXIST on the type named. Several exist on another type, so a 
 
 ## Uploading
 
-A parse result holds element **names** in link fields; an upload holds **UUIDs** under the same bare field names (`location`, `species`, `friends`) on v2 and /bulk. Resolve names to ids first (parsing Step 7).
+A parse result holds element **names** in link fields; an upload holds **UUIDs** under the same bare field names (`location`, `species`, `friends`) on v2 and /bulk. Resolve names to ids first (import's Step 7).
 
 - **The #1 new-user error**: a v1-style suffix (`friends_ids`) on v2 or /bulk is a hard `422 Unknown field: friends_ids`. Use the bare name. The suffix belongs to the legacy v1 dialect only.
 - **Errors are honest**: an unknown field is a `422` naming it; a link to a UUID that doesn't exist is a `400 invalid_link` naming the field. Read the error envelope.
 
-Base URL, headers, endpoints, PINs and the v1 dialect: the api skill.
+Base URL, headers, endpoints, PINs and the v1 dialect: the develop skill.
 
 ---
 
@@ -218,7 +218,7 @@ Pets/companions: Don't put them in `objects` field. Use description or create Re
 
 **Parsing author speculation as fact**
 - BAD: Creating Institution "Bakers Guild" from "wat if the pirates were descended from bakers?"
-- GOOD: List it in the report's speculation section (parsing Step 3), don't parse: questions aren't world facts
+- GOOD: List it in the report's speculation section (import's Step 3), don't parse: questions aren't world facts
 
 **Parsing author indecision**
 - BAD: Location "Feltropolis" for Professor Fuzz when source says "Feltropolis? Or Puddleton? DECIDE"
