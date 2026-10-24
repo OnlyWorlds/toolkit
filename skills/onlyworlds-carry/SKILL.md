@@ -21,7 +21,7 @@ The `onlyworlds` Python package unless said (`pip install onlyworlds`, Python 3.
 | folder edits → account | `push(baseline, folder, api_key=..., pin=..., log_path=...)`, `plan_push` or `dry_run=True` first (patches only) |
 | new folder → new account world | develop's Bulk Upload, keys stripped per world-folder.md's writer rules |
 | World Anvil, LegendKeeper, Kanka, Campfire, Notion → folder | the door with `--plan`, then without it (The doors) |
-| folder → Markdown for an AI notebook · → OKF | `python -m onlyworlds.pack FOLDER OUT` · `python -m onlyworlds.okf FOLDER OUT` |
+| folder → Markdown for an AI notebook · → OKF | `python -m onlyworlds.pack FOLDER OUT` · `python -m onlyworlds.okf FOLDER OUT` (after `pip install "onlyworlds[okf]"`, which adds PyYAML) |
 | Azgaar in · Foundry VTT out · an Obsidian vault | the public converters · the Obsidian plugin (Neighbours) |
 | a converted folder joining an existing world | import's Step 5, Reconcile with an existing world |
 | notes, a book, a wiki's text | the import skill |
@@ -83,7 +83,7 @@ World Anvil and Campfire take the export by `--file`; Kanka and Notion take it a
 - **Account → folder.** `export_world(out_dir, api_key=..., pin=...)` reads the key's world (GET only) and writes a new folder with `source`, `exported_as` and a producer line. Atlas's download gives a folder linked to the account instead.
 - **Folder edits → account.** `push(baseline, folder, ...)` sends field-level edits as PATCHes: `baseline` is the folder as exported, untouched; `folder` is the edited copy. Show `plan_push(baseline, folder)` or a `dry_run=True` run first. It refuses when the two folders hold different elements: a creation goes through develop's Bulk Upload, a deletion is the user's to make in the account.
 - **Folder → Markdown.** `python -m onlyworlds.pack FOLDER OUT` (or `--api OUT` with the key in `OW_API_KEY`) writes a few merged Markdown files sized for an AI notebook's sources. Room, proposed and hidden elements and extension keys are left out by default; `--rooms`, `--proposed`, `--hidden`, `--extensions` bring each back.
-- **Folder → OKF.** `python -m onlyworlds.okf FOLDER OUT` writes an Open Knowledge Format bundle; hidden elements stay out unless `--hidden`.
+- **Folder → OKF.** `pip install "onlyworlds[okf]"` (the `okf` extra adds PyYAML), then `python -m onlyworlds.okf FOLDER OUT` writes an Open Knowledge Format bundle; hidden elements stay out unless `--hidden`.
 
 ## Neighbours
 
