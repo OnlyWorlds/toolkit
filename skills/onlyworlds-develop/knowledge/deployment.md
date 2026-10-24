@@ -216,10 +216,7 @@ my-app/
 
 ## CORS Notes
 
-The API accepts browser requests from an allowlist of common static hosts, over HTTPS:
-
-- `*.pages.dev` (Cloudflare), `*.vercel.app`, `*.netlify.app`, `*.github.io`, `*.gitlab.io`, `*.surge.sh`, `*.onrender.com`, `*.up.railway.app`, `*.fly.dev`, `*.web.app` / `*.firebaseapp.com`, `*.amplifyapp.com`, `*.herokuapp.com`, and a few online sandboxes
-- `http://localhost` and `http://127.0.0.1` on any port (development)
+The API accepts browser requests from an allowlist of common static hosts over HTTPS (Cloudflare Pages, Vercel, Netlify and GitHub Pages among them) and from `localhost` on any port. The list that is served is on the docs' CORS page, https://onlyworlds.github.io/docs/development/api/cors.html: read it there before promising a host.
 
 A **custom domain is not pre-approved**: browser calls from it are refused until it is added server-side. Request it at https://www.onlyworlds.com/feedback. Scripts and servers are not affected by CORS.
 
@@ -243,4 +240,4 @@ A **custom domain is not pre-approved**: browser calls from it are refused until
 
 ---
 
-*For SDK usage patterns, see the dev skill SKILL.md. For API operations, use the api skill.*
+*For SDK usage and API operations, see this skill's `SKILL.md`.*
