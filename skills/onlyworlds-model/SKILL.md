@@ -5,7 +5,7 @@ description: "Decide how to represent something in the 22 element types, and loo
 
 # OnlyWorlds Model
 
-Shared rules (field kinds, extension fields, identity, records beside the graph) live in `../../knowledge/principles.md`.
+Shared rules (field kinds, extension fields, identity, records beside the graph) live in `knowledge/principles.md`.
 
 ## Quick Reference
 
@@ -26,7 +26,7 @@ Shared rules (field kinds, extension fields, identity, records beside the graph)
 
 | Question | Answer |
 |----------|--------|
-| "What fields does X have?" | X's own section of `../../knowledge/schema-reference.md`, plus its Base Fields: read it and **present the fields directly** to the user |
+| "What fields does X have?" | X's own section of `knowledge/schema-reference.md`, plus its Base Fields: read it and **present the fields directly** to the user |
 | "Does X.field exist?" | Look in X's own section of the page (plus Base Fields). A field listed only under another type does not count. Not there = not a schema field; custom data goes in `x_<name>` |
 | "Object vs Construct?" | Specific instance vs type/concept. Can you point at it? Object. |
 | "Character vs Creature?" | Narrative agency → Character. Biological focus → Creature. |
@@ -38,11 +38,11 @@ Shared rules (field kinds, extension fields, identity, records beside the graph)
 | "How to link X to Y?" | Link Direction, below |
 | "How do I mark a death?" | Marking a Dead Character, below |
 
-The one-liners are gists; each pair's reasoning and edge cases are in `../../knowledge/decision-trees.md`.
+The one-liners are gists; each pair's reasoning and edge cases are in `knowledge/decision-trees.md`.
 
 ## The Core Insight
 
-OnlyWorlds is a compositional language, not a form to fill out. The question is not "which category fits?" but "what combination represents this?" Worked example (the Fluffium trade): `../../knowledge/modeling-patterns.md`.
+OnlyWorlds is a compositional language, not a form to fill out. The question is not "which category fits?" but "what combination represents this?" Worked example (the Fluffium trade): `knowledge/modeling-patterns.md`.
 
 ## Instructions
 
@@ -59,10 +59,10 @@ Identify what the user is building:
 
 Read these files first. They prevent misclassification and show compositional thinking:
 
-1. **`../../knowledge/modeling-patterns.md`**: compositional patterns, system translation examples
-2. **`../../knowledge/element-types.md`**: the 22 types and when to use each
-3. **`../../knowledge/decision-trees.md`**: disambiguation for confusing pairs (Collective vs Institution, Trait vs Ability, Law vs Construct, etc.)
-4. **`../../knowledge/schema-reference.md`**: every field of every type, for the Key Fields and Links To columns
+1. **`knowledge/modeling-patterns.md`**: compositional patterns, system translation examples
+2. **`knowledge/element-types.md`**: the 22 types and when to use each
+3. **`knowledge/decision-trees.md`**: disambiguation for confusing pairs (Collective vs Institution, Trait vs Ability, Law vs Construct, etc.)
+4. **`knowledge/schema-reference.md`**: every field of every type, for the Key Fields and Links To columns
 
 If relative paths fail, use Glob to find these files within the plugin/toolkit directory.
 
@@ -82,7 +82,7 @@ Every field and link in the table is one you found in that type's own section of
 - **An ecosystem, a company, a software project**: `profiles/spine.md`, the spine profile. Tools and services are Objects, the contracts they speak Constructs through `Object.technology`, where each thing lives a Location, who keeps it a Title with supertype `Seat`, its policies Laws, and what no field holds goes in its `x_spine_` keys.
 - **Fiction**: `example/hyperion/`, a small world folder (35 elements over 19 types). The Consul's Steinway is an Object inside the Ebony Spaceship (`parent_object`), Steinway Piano the Construct for the kind, Consul of the Hegemony a Title with its `issuer` and `holders`.
 
-To create the elements: emit JSON or a world folder as in the import skill's Step 7 (`../../knowledge/world-folder.md` for the folder); an account world takes them through the develop skill's Bulk Upload.
+To create the elements: emit JSON or a world folder as in the import skill's Step 7 (`knowledge/world-folder.md` for the folder); an account world takes them through the develop skill's Bulk Upload.
 
 ### Step 4: Address Constraints
 
@@ -94,13 +94,13 @@ Common pushback and responses:
 
 - "I need X to link to Y" → check if that link field exists, or use Relation
 - "That's too many elements" → consolidate using supertype/subtype
-- "I need state changes" → dated fields and Events; change over time is the update skill (field kinds: principles §4); what-ifs and history are a world folder in git (`../../knowledge/world-folder.md`, "Keeping history")
+- "I need state changes" → dated fields and Events; change over time is the update skill (field kinds: principles §4); what-ifs and history are a world folder in git (`knowledge/world-folder.md`, "Keeping history")
 
 ## Fields
 
 ### Field Lookup
 
-Every field of all 22 types is in `../../knowledge/schema-reference.md`, one `##` section per type. When the user asks "what fields does X have?", read X's section and **present the fields directly in your response**; do not just tell the user to read the file. The page is generated from schema-dist at the serial in its header; for a newer schema, the live `schema.json` at github.com/OnlyWorlds/schema-dist wins.
+Every field of all 22 types is in `knowledge/schema-reference.md`, one `##` section per type. When the user asks "what fields does X have?", read X's section and **present the fields directly in your response**; do not just tell the user to read the file. The page is generated from schema-dist at the serial in its header; for a newer schema, the live `schema.json` at github.com/OnlyWorlds/schema-dist wins.
 
 ### Base Fields (All Elements)
 
@@ -128,7 +128,7 @@ No general rule predicts which side holds a link (`Character.objects`, but `Titl
 
 ### Common Hallucinations
 
-Known non-fields (`Character.age`, `Character.titles`, `Character.status`, `Object.owners`, `Location.status` and more) are listed with their replacements in `../../knowledge/common-errors.md`, the one home for that list; the page's Fields That Do Not Exist checks the commonest against the schema.
+Known non-fields (`Character.age`, `Character.titles`, `Character.status`, `Object.owners`, `Location.status` and more) are listed with their replacements in `knowledge/common-errors.md`, the one home for that list; the page's Fields That Do Not Exist checks the commonest against the schema.
 
 ### Marking a Dead Character (until a Character status field lands)
 
@@ -136,7 +136,7 @@ This is the one home of the convention; other skills point here. Prefix `physica
 
 ## Type Disambiguation
 
-The Quick Reference gives the one-line answers. The reasoning, edge cases (ships, empires, treaties, eras, ranks) and worked examples live in `../../knowledge/decision-trees.md`: read the section for the pair in question and present the answer directly.
+The Quick Reference gives the one-line answers. The reasoning, edge cases (ships, empires, treaties, eras, ranks) and worked examples live in `knowledge/decision-trees.md`: read the section for the pair in question and present the answer directly.
 
 ## When OW Isn't Enough
 

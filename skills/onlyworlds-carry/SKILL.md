@@ -7,7 +7,7 @@ description: "Move a world between files, tools and homes: pack a world folder i
 
 Move a world that is already structured from one home to another: a folder into one file and back, another app's export into a folder, a folder into Markdown or OKF, an account world down to a folder and a folder up. Nothing is read as prose and nothing is invented: a converter maps what the source holds. Turning notes, a manuscript or a wiki's text into a world is the import skill's parse.
 
-Shared rules (identity, checking your work, credentials) live in `../../knowledge/principles.md`; the folder's method and writer rules in `../../knowledge/world-folder.md`. The format's facts (the layout, every `world.json` key, archives as spec §4.7) are on the docs page [World folders](https://onlyworlds.github.io/docs/schema/folders).
+Shared rules (identity, checking your work, credentials) live in `knowledge/principles.md`; the folder's method and writer rules in `knowledge/world-folder.md`. The format's facts (the layout, every `world.json` key, archives as spec §4.7) are on the docs page [World folders](https://onlyworlds.github.io/docs/schema/folders).
 
 ## Quick Reference
 
@@ -108,7 +108,7 @@ World Anvil and Campfire take the export by `--file`; Kanka and Notion take it a
 
 ## References
 
-- `../../knowledge/principles.md` (§5 checking your work, §6 credentials) · `../../knowledge/world-folder.md` (writer rules, exporting an account world, keeping history in git)
+- `knowledge/principles.md` (§5 checking your work, §6 credentials) · `knowledge/world-folder.md` (writer rules, exporting an account world, keeping history in git)
 - [World folders](https://onlyworlds.github.io/docs/schema/folders): the layout, `world.json` keys, archives (spec §4.7), records, slices
 - schema-dist ([github.com/OnlyWorlds/schema-dist](https://github.com/OnlyWorlds/schema-dist)): `walk/lint_folder.py`, `fixtures/owworld/`, `example/world-export.json`
 - The import skill (a parse; Step 5 for an existing world) · develop's Bulk Upload (a new world up) · start's Connect an account (a key and PIN for this folder)

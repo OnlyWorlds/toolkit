@@ -5,7 +5,7 @@ description: "Build a tool, game, app or AI agent on world data, and read or wri
 
 # OnlyWorlds Develop
 
-Read and write an onlyworlds.com world through its API, and build tools, games and agents on world data. The shared rules (read before write, verify after write, credentials, extension fields) are `../../knowledge/principles.md`.
+Read and write an onlyworlds.com world through its API, and build tools, games and agents on world data. The shared rules (read before write, verify after write, credentials, extension fields) are `knowledge/principles.md`.
 
 ## Quick Reference
 
@@ -18,7 +18,7 @@ Read and write an onlyworlds.com world through its API, and build tools, games a
 | An AI agent on a world | [Agents](#agents): the MCP connect line or a seat; `X-OW-Agent: 1` on writes |
 | A TypeScript tool | [Building a Tool](#building-a-tool), `knowledge/scaffold.md`, `knowledge/deployment.md` |
 | Python | `pip install onlyworlds` (Python 3.12+), its `Client` |
-| A tool on a world folder, no account | `../../knowledge/world-folder.md` |
+| A tool on a world folder, no account | `knowledge/world-folder.md` |
 | Old v1 code (`/api/worldapi/`) | `references/v1-classic.md` |
 
 ## Read What Is Served
@@ -43,7 +43,7 @@ With no argument it lists the paths; name one without its `/api/v2/`. A type's f
 ## Safety Notice
 
 Writes can modify or delete world data.
-- Before a write session to an existing world, export it to a world folder (`../../knowledge/world-folder.md`, "Exporting an account world to a folder"). That folder is the rollback: re-uploading its elements with /bulk (read-only fields stripped) puts the old values back, but does not remove elements created since; delete those by id.
+- Before a write session to an existing world, export it to a world folder (`knowledge/world-folder.md`, "Exporting an account world to a folder"). That folder is the rollback: re-uploading its elements with /bulk (read-only fields stripped) puts the old values back, but does not remove elements created since; delete those by id.
 - Test with a small batch first.
 - Read before PATCH (Critical Rule 1). Verify after write (Critical Rule 2).
 
@@ -207,7 +207,7 @@ The server has schema, read and write tools, and no delete tool.
 
 ### Step 1: Understand the Goal
 
-A **visualization** (maps, graphs, timelines) reads; an **editor** does full CRUD; a **game** reads plus keeps local state; an **integration** uses [The API](#the-api-v2); a **local tool on a world folder** (pipelines, RAG, offline) reads the files with no account (`../../knowledge/world-folder.md`); an **AI agent with a persistent world** goes to [Agents](#agents).
+A **visualization** (maps, graphs, timelines) reads; an **editor** does full CRUD; a **game** reads plus keeps local state; an **integration** uses [The API](#the-api-v2); a **local tool on a world folder** (pipelines, RAG, offline) reads the files with no account (`knowledge/world-folder.md`); an **AI agent with a persistent world** goes to [Agents](#agents).
 
 ### Step 2: Read What Is Served
 

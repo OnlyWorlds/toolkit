@@ -7,7 +7,7 @@ description: "Write a finished session back into the world so canon holds. Use w
 
 Updating the world from a finished session is the resolve: list what the session touched, give each item a verdict, propose a change list, and write only the rows the user approves. Help the user design THEIR way of doing it: what gets found, what becomes canon, who approves, how it is written, and how it is checked. Teach the principles, co-design the procedure, build the smallest working version. Do not install a one-size pipeline. The context skill covers the other half: loading the world into a session. For a one-off import of existing documents (a novel, old notes, a backlog of past sessions), use the import skill; the resolve is the loop that follows every new session. A single edit the user dictates ("make the Consul tired") is not a session: make it directly, merged, with no change list.
 
-Shared rules (propose-review-apply, one writer, identity, field kinds, retire never delete, verify against the source) live in `../../knowledge/principles.md`; this skill applies them to writing a session back.
+Shared rules (propose-review-apply, one writer, identity, field kinds, retire never delete, verify against the source) live in `knowledge/principles.md`; this skill applies them to writing a session back.
 
 ## Quick Reference
 
@@ -50,7 +50,7 @@ In every tier the change list is the artifact: readable, reviewable, kept.
 
 ### Step 3: Learn how the world keeps its fields
 
-Field kinds (replaced, appended with a dated line, never touched) are defined in principles §4. The job here is to find THIS world's: look at how it was updated before (a previous session's edits, version history, or a few elements of each type) and write down, per type, which fields are which and where standing rules and secrets live. Which fields a type has at all, and what each link field points at, is the type's section of `../../knowledge/schema-reference.md`. If the world has a world rules file from an import (import's Step 2), this belongs in it, beside the taxonomy the resolve should keep using. A resolve proposes nothing in a never-touched field without a flag.
+Field kinds (replaced, appended with a dated line, never touched) are defined in principles §4. The job here is to find THIS world's: look at how it was updated before (a previous session's edits, version history, or a few elements of each type) and write down, per type, which fields are which and where standing rules and secrets live. Which fields a type has at all, and what each link field points at, is the type's section of `knowledge/schema-reference.md`. If the world has a world rules file from an import (import's Step 2), this belongs in it, beside the taxonomy the resolve should keep using. A resolve proposes nothing in a never-touched field without a flag.
 
 ### Step 4: Design the procedure together
 
@@ -85,7 +85,7 @@ Resolve one real session. Walk the rows with the user. A ruling they had to inve
 
 ### Step 7: Name the next rung
 
-- **history in git**: commit the world folder after each resolve, with the change list as the message; `main` is canon and a branch is a timeline (a what-if, an alternate ending). A folder linked to an account holds its API key in `world.json`'s `api` block and is never committed: version an unlinked copy (`../../knowledge/world-folder.md`, keeping history)
+- **history in git**: commit the world folder after each resolve, with the change list as the message; `main` is canon and a branch is a timeline (a what-if, an alternate ending). A folder linked to an account holds its API key in `world.json`'s `api` block and is never committed: version an unlinked copy (`knowledge/world-folder.md`, keeping history)
 - **recall testing**: resolve a session whose correct result is known, and compare; read's consistency lens cannot see a dropped fact
 - **resolve in story order** when several sessions are pending
 - **derived views** (timelines, relationship registers) computed from the kept change lists instead of maintained by hand
@@ -122,20 +122,20 @@ NOT PROPOSED: the storm, the carrion-breed pack (background, no recurrence)
 | what happened | `Event` (`characters`, `locations`, `start_date`, `triggers`, `consequences`) |
 | someone moved | `Character.location` (a Location) |
 | a relationship changed | `Relation` (`intensity`, `start_date`, `end_date`, `events`) |
-| who learned what | a knowledge entry: `Narrative` with subtype `knowledge`, held by `narrator`, `collectives`, or both; a rumour and the truth are separate entries held by different people. See `../../knowledge/atlas-conventions.md` |
+| who learned what | a knowledge entry: `Narrative` with subtype `knowledge`, held by `narrator`, `collectives`, or both; a rumour and the truth are separate entries held by different people. See `knowledge/atlas-conventions.md` |
 | a death | Creature `status`; Character: model's "Marking a Dead Character" |
 | canon status, custom state | `x_*` extension fields |
 | verbatim vs editorial | a Narrative's `story` (the only type with that field) vs any element's `description` |
 
 Every-line happenings (each exchange, each roll) go in a log beside the world, not in elements (principles §1). That log points at element ids, never copies of element text; a tool that follows the change feed (develop's Sync Changes) applies its delete rows, so an element gone from the world goes from the tool.
 
-**To write**: edit files in a world folder (`../../knowledge/world-folder.md`, writer rules; in a folder linked to an account, every edited file gets a fresh `local_updated_at`), or use the API as the develop skill gives it: an existing element by PATCH of only the fields its row names, read first; multi-link changes through develop's Add or Remove Links; new elements through develop's Bulk Upload.
+**To write**: edit files in a world folder (`knowledge/world-folder.md`, writer rules; in a folder linked to an account, every edited file gets a fresh `local_updated_at`), or use the API as the develop skill gives it: an existing element by PATCH of only the fields its row names, read first; multi-link changes through develop's Add or Remove Links; new elements through develop's Bulk Upload.
 
 **A write that comes back as a proposal.** A world whose owner takes an AI seat's writes as proposals (`agent_writes_proposed` on `GET /api/v2/world`) answers a seat's PATCH or link write with `202` and a body of exactly `{"proposal": {...}}`: the element did not change, and the world's keeper accepts or declines it. A new element lands marked `x_review_proposed`, waiting the same way. Read the queue with `GET /api/v2/world/proposals` (open rows by default; `?element=<id>` for one element), report each row to the user as proposed, not applied, and never resend it. The read-back of Step 4's checks then compares the approved rows with the queue, not with the elements.
 
 ## References
 
-- `../../knowledge/world-memory.md`: the full loop, the dials, failure modes by name, and how other tools and tabletop practice do it
-- `../../knowledge/schema-reference.md`: every field per type, and what each link field points at
-- `../../knowledge/atlas-conventions.md`: knowledge entries, the calendar, and Atlas's other habits in a world folder
+- `knowledge/world-memory.md`: the full loop, the dials, failure modes by name, and how other tools and tabletop practice do it
+- `knowledge/schema-reference.md`: every field per type, and what each link field points at
+- `knowledge/atlas-conventions.md`: knowledge entries, the calendar, and Atlas's other habits in a world folder
 - The API's routes and their full answers: the live OpenAPI document, `https://www.onlyworlds.com/api/v2/openapi.json`

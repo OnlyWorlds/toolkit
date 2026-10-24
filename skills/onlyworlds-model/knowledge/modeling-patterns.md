@@ -311,7 +311,7 @@ The API validates unprefixed fields against the schema; x_*-prefixed extension f
 - Custom properties without a namespace prefix
 - Links to non-existent elements
 
-**The extension escape valve**: `x_mana_cost` saves and round-trips where the unprefixed `mana_cost` fails with 422. Who writes which namespace: principles §4. API behaviour (PATCH, PUT, /bulk, v1): schema-reference.md.
+**The extension escape valve**: `x_mana_cost` saves and round-trips where the unprefixed `mana_cost` fails with 422. Who writes which namespace: principles §4. API behaviour (PATCH, PUT, /bulk, v1): the develop skill.
 
 ### What Local Apps Can Do
 
@@ -337,7 +337,7 @@ Store extended data locally, or sync it in `x_*` fields (above).
 
 ### "Should this be Object or Construct?"
 
-Can you point at it? Object. Is it an idea that several things instantiate? Construct. Reasoning and examples: `../../../knowledge/decision-trees.md`, Object vs Construct.
+Can you point at it? Object. Is it an idea that several things instantiate? Construct. Reasoning and examples: `decision-trees.md`, Object vs Construct.
 
 A tool, package or service is an Object; a contract it speaks (an API, a file format, a protocol) is a Construct, and `Object.technology` is the edge from the thing to the contracts it implements, set on the dependent's side only.
 
@@ -369,7 +369,7 @@ Often both: Species for the beings, Construct for cultural groupings or racial p
 
 - **Time lives in dated fields and Events.** `start_date`/`end_date`, `founding_date`, `birth_date` place things in time; an Event ("Fall of Feltropolis", with `consequences`) records that something changed.
 - **A date is one whole number in the world's time unit** (`time_basic_unit` in the world's settings, Year by default). A source date finer than the unit (23 April, in a world counted in years) keeps the year in the field and the full date in the text. Count in days only when the world needs to compute with them; then every date field counts days from the same zero.
-- **State that changes over sessions** is the resolve skill. Each field has a kind (principles §4): *replaced* (current state such as `location`), *appended* (a history that grows a dated line), or *never touched* (identity and canon).
+- **State that changes over sessions** is the update skill. Each field has a kind (principles §4): *replaced* (current state such as `location`), *appended* (a history that grows a dated line), or *never touched* (identity and canon).
 - **History and alternate timelines** ("what if the war never happened?") are a world folder in git: commits are the history, branches are timelines (world-folder.md, "Keeping history").
 
 ### "A character has named goals they pursue"
@@ -384,4 +384,4 @@ For very deep trees, consider whether the depth is structural (keep it) or prese
 
 ---
 
-*For field-level details, see schema-reference.md. For API operations, see the api skill. For building tools, see the dev skill.*
+*For field-level details, see schema-reference.md. For API operations and building tools, see the develop skill.*

@@ -7,7 +7,7 @@ description: "Import notes, a manuscript, PDFs, a campaign bible, a wiki or old 
 
 Turn existing material into structured world elements: the parse. The source is canon that already exists (a book, a bible, a module, a stack of notes); the job is to capture it faithfully. The repeating after-each-session update is the update skill, which uses this skill's extraction rules for anything new a session introduces.
 
-Shared rules (identity, field kinds, propose-review-apply, checking your work) live in `../../knowledge/principles.md`.
+Shared rules (identity, field kinds, propose-review-apply, checking your work) live in `knowledge/principles.md`.
 
 ## Quick Reference
 
@@ -21,7 +21,7 @@ Shared rules (identity, field kinds, propose-review-apply, checking your work) l
 | Someone else's book, or history mixed with fiction | Your own words, a basis label per element, attribution (Step 2, sources) |
 | No account | Output a world folder (opens in Atlas) |
 | An existing world (folder or API) | Reconcile before writing (Step 5) |
-| Campaigns or stories in a parsed world | Commit the parsed world as canon, branch per campaign (`../../knowledge/world-folder.md`, keeping history in git), then the update skill after each session |
+| Campaigns or stories in a parsed world | Commit the parsed world as canon, branch per campaign (`knowledge/world-folder.md`, keeping history in git), then the update skill after each session |
 | After each played session | The update skill |
 | An export from World Anvil, LegendKeeper, Kanka, Campfire or Notion | The carry skill (Step 1) |
 | Designing a system the text only implies | The model skill |
@@ -29,7 +29,7 @@ Shared rules (identity, field kinds, propose-review-apply, checking your work) l
 ## Key Rules
 
 1. **World-specific only.** "A sword" and "wolves" get no element; "a Voidsteel blade" and "the Marsh Saurians" do.
-2. **Schema-strict.** Only fields listed under that type in `../../knowledge/schema-reference.md`; custom data goes in `x_<name>` fields (principles §4).
+2. **Schema-strict.** Only fields listed under that type in `knowledge/schema-reference.md`; custom data goes in `x_<name>` fields (principles §4).
 3. **Fields before elements.** A physical description is `physicality`, not a Trait called "Tall".
 4. **Decompose.** One concept often needs several linked types (Step 3).
 5. **A stub is cheap, a skip is forever.** Create an element for anything the source canonically introduces, even with only a name and a line. Ask "does the source introduce it?", never "is it important enough?"
@@ -75,7 +75,7 @@ Write a rule when the same call has come up twice. Stop changing the rules once 
 
 Work one document at a time, a unit you can read whole (a chapter, or a book taken chapter by chapter), or in passes for a long single source (beings and places, then groups and things, then events and connections, then a sweep). Add every element to the **registry file**: name, type, aliases, id once minted, source pointer.
 
-- **Type**: from the definitions in `../../knowledge/element-types.md`; for close calls, `../../knowledge/decision-trees.md`; for this world, the world rules file.
+- **Type**: from the definitions in `knowledge/element-types.md`; for close calls, `knowledge/decision-trees.md`; for this world, the world rules file.
 - **Decompose** what the text describes as one thing: a tradition practitioners learn is a Construct plus an Ability per technique; a ruled territory is a Zone plus an Institution; a treaty is a Law plus the Event of its signing; a kind of creature is a Species, a named one a Creature.
 - **Link by name** at this stage (names become ids in Step 7). Only link what is stated or clearly implied. If a link field does not exist on one side, check the other side (the schema reference's Link Direction Summary shows who holds each link).
 - **Messy sources**: parse what the author decided ("going with", "this is canon now", plain statements); report brainstorming ("maybe", "what if", "???") separately. When sources contradict and the author never settled it, keep both versions for the user's ruling. The thing a question is about may still be an element even if its details are open.
@@ -83,15 +83,15 @@ Work one document at a time, a unit you can read whole (a chapter, or a book tak
 
 ### Step 4: Check
 
-- **Structure, by script**: for a world folder, run schema-dist's folder check, `python walk/lint_folder.py <folder>` (`../../knowledge/world-folder.md`, writing a new folder). It catches invented fields, unresolved or mistyped links and wrong value shapes in one pass, and its last line is the count it checked. The checks below are what it cannot see, and the way to work without it.
-- **Schema, by type**: every field exists under that element's own type (a whole-file search passes `status` on Character because Creature has it). Known traps: `../../knowledge/common-errors.md`.
+- **Structure, by script**: for a world folder, run schema-dist's folder check, `python walk/lint_folder.py <folder>` (`knowledge/world-folder.md`, writing a new folder). It catches invented fields, unresolved or mistyped links and wrong value shapes in one pass, and its last line is the count it checked. The checks below are what it cannot see, and the way to work without it.
+- **Schema, by type**: every field exists under that element's own type (a whole-file search passes `status` on Character because Creature has it). Known traps: `knowledge/common-errors.md`.
 - **Links**: every name in a link field matches an element; create the missing one or drop the link.
 - **Identity** (principles §3), within the parse and against any existing world: near-spellings, sound-alikes, the same person under a title and a name, two things sharing a name, a new element that duplicates the job of an existing one.
 - **Recall**: sample-read the output against the source; a clean schema check says nothing about missed or merged facts. For large sources, run a second independent pass and compare; the differences show where to read again.
 
 ### Step 5: Reconcile with an existing world
 
-Skip for a new world: a world this parse is building stays new until the user has reviewed it or someone else has edited it; after that, every further document goes through this step. Otherwise, for a folder, index every `elements/*/*.json` by id and name; for an API world, use the local copy start's Connect an account keeps. Snapshot first (commit the folder in git, or export an account world to a folder: `../../knowledge/world-folder.md`).
+Skip for a new world: a world this parse is building stays new until the user has reviewed it or someone else has edited it; after that, every further document goes through this step. Otherwise, for a folder, index every `elements/*/*.json` by id and name; for an API world, use the local copy start's Connect an account keeps. Snapshot first (commit the folder in git, or export an account world to a folder: `knowledge/world-folder.md`).
 
 Write the change list in the same row format the update skill uses, one line per change: **create** · **update** (in the field's own kind: replace a current-state field, append a dated line to a history field, never touch identity fields without a ruling) · **link** · **no change** (with a short reason) · **flag** (conflicts and identity questions, with both versions). A name match is a candidate until type plus one anchor (place, holder, role) agree. Then stop: the user rules on the list, and only approved rows are applied. In a folder, apply them per the world-folder writer rules (in a folder linked to an account, each edited file gets a fresh `local_updated_at`).
 
@@ -106,7 +106,7 @@ Write the change list in the same row format the update skill uses, one line per
 
 1. **Resolve names to ids.** Mint a UUID per new element (v7 recommended). Resolve every link name to an id, searching only the link's target type. A name with no match, or more than one, goes back to the user; never guess.
 2. **Write**:
-   - **World folder** (the default, no account needed): `world.json` + one file per element, per `../../knowledge/world-folder.md`. It opens in Atlas.
+   - **World folder** (the default, no account needed): `world.json` + one file per element, per `knowledge/world-folder.md`. It opens in Atlas.
    - **Account world**: new elements through develop's Bulk Upload; an existing element is updated by PATCH or the links route, never resent in a batch (Bulk Upload says why).
    - **Grouped JSON with names** is only a review form; it is not uploadable as is.
 3. **Read back** what landed and compare it with the approved change list, or for a new folder with the extraction file (principles §5).
@@ -132,6 +132,6 @@ Not extracted: the Steinway, the Rachmaninov prelude, the glass of Scotch (real-
 
 ## References
 
-- `../../knowledge/common-errors.md`: invented fields and other traps
-- `../../knowledge/schema-reference.md` · `../../knowledge/element-types.md` · `../../knowledge/decision-trees.md` · `../../knowledge/world-folder.md` · `../../knowledge/atlas-conventions.md` (when the user will write or keep knowledge entries in Atlas; opening a folder in Atlas does not need it)
+- `knowledge/common-errors.md`: invented fields and other traps
+- `knowledge/schema-reference.md` · `knowledge/element-types.md` · `knowledge/decision-trees.md` · `knowledge/world-folder.md` · `knowledge/atlas-conventions.md` (when the user will write or keep knowledge entries in Atlas; opening a folder in Atlas does not need it)
 - The update skill (the after-each-session loop) · the model skill (systems the text only implies) · read's link lens (enriching links in an existing world) · the carry skill (another app's export, an `.owworld`) · develop's Bulk Upload (sending a new world up)

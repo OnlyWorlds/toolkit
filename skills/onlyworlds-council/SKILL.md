@@ -7,7 +7,7 @@ description: "Ask about, propose or back a change to the OnlyWorlds schema. Use 
 
 Ask what the council holds, then, if the user wants, take part: propose, vote, endorse, second.
 
-Shared rules (credentials above all) live in `../../knowledge/principles.md`; this skill applies them to council requests.
+Shared rules (credentials above all) live in `knowledge/principles.md`; this skill applies them to council requests.
 
 ## Quick Reference
 
@@ -208,7 +208,7 @@ Validation rules (a failure is a 422 `{"detail": [...]}`):
 Every request except browse carries:
 
 1. **`proposer_key` and `proposer_pin`**: the world's API key and 4-digit PIN, the same ones the develop skill uses, loaded from `.env`. If they are not there, the user types them into `.env` (start's Connect an account shows how); never ask for them in chat. Wrong PINs back off and then lock the key for a while (429, from 2026-10-15).
-2. **`delegate_id`** (submit, vote, endorse, dispatch): the UUID of the user's committed delegate. In the `browse/` response's `delegates[]`, find the ones whose `council_char` block has `sourceWorldId` equal to the user's world id and `isDelegate: true`; or ask the user for their delegate's name and match it; or commit one (Step 6), whose answer gives the id. The world id comes from `GET /api/v2/world`, or from a world folder's `world.json` (`api.world_id`, falling back to `id`: `../../knowledge/world-folder.md`).
+2. **`delegate_id`** (submit, vote, endorse, dispatch): the UUID of the user's committed delegate. In the `browse/` response's `delegates[]`, find the ones whose `council_char` block has `sourceWorldId` equal to the user's world id and `isDelegate: true`; or ask the user for their delegate's name and match it; or commit one (Step 6), whose answer gives the id. The world id comes from `GET /api/v2/world`, or from a world folder's `world.json` (`api.world_id`, falling back to `id`: `knowledge/world-folder.md`).
 
 If none appears, either they have not committed one yet or their delegate is past the 100-character cap; ask the user for the delegate's UUID before concluding the first.
 

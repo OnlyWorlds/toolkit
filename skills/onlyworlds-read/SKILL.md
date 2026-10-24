@@ -7,7 +7,7 @@ description: "Read a whole world and report on it through one of three lenses: w
 
 Read a whole world, from a folder or an account, through one lens: **survey** (what it is, where its weight sits), **link** (the connections it is missing) or **consistency** (where it disagrees with itself). Code counts the world; the model reads only what matters and writes nothing the user has not approved.
 
-Shared rules (identity, code counts, propose-review-apply, merge-don't-overwrite, checking your work): `../../knowledge/principles.md`, here especially §2 and §5.
+Shared rules (identity, code counts, propose-review-apply, merge-don't-overwrite, checking your work): `knowledge/principles.md`, here especially §2 and §5.
 
 ## Quick Reference
 
@@ -22,8 +22,8 @@ Shared rules (identity, code counts, propose-review-apply, merge-don't-overwrite
 
 ## Step 1: Pick the Source
 
-- **World folder** (no account needed): the current directory if it holds `world.json`, else the folder the user names (for Atlas, the world's own subfolder, not the `onlyworlds-atlas/` wrapper). Read `world.json` and every `*.json` under `elements/*/`, keyed on the internal id, never the filename (`../../knowledge/world-folder.md`). For an Atlas world, also read `../../knowledge/atlas-conventions.md`.
-- **API**: export the world to a folder first, then treat it as one: `../../knowledge/world-folder.md`, "Exporting an account world to a folder", gives the walk and the file shape, and the develop skill's list rules hold for the calls (`www.`, singular endpoints, exact headers, follow `next_cursor` until `has_more` is false). Load credentials from `.env`, as start's Connect an account writes it (principles §6): `set -a; . ./.env; set +a`, and fill an unset `OW_*` name from its older `ONLYWORLDS_*` twin (`OW_API_KEY=${OW_API_KEY:-$ONLYWORLDS_API_KEY}`, likewise the PIN). A read key (`ow_r_`) reads without a PIN; every write needs one. If there are none, ask the user to type them into `.env` themselves; never ask for them in chat, never print one.
+- **World folder** (no account needed): the current directory if it holds `world.json`, else the folder the user names (for Atlas, the world's own subfolder, not the `onlyworlds-atlas/` wrapper). Read `world.json` and every `*.json` under `elements/*/`, keyed on the internal id, never the filename (`knowledge/world-folder.md`). For an Atlas world, also read `knowledge/atlas-conventions.md`.
+- **API**: export the world to a folder first, then treat it as one: `knowledge/world-folder.md`, "Exporting an account world to a folder", gives the walk and the file shape, and the develop skill's list rules hold for the calls (`www.`, singular endpoints, exact headers, follow `next_cursor` until `has_more` is false). Load credentials from `.env`, as start's Connect an account writes it (principles §6): `set -a; . ./.env; set +a`, and fill an unset `OW_*` name from its older `ONLYWORLDS_*` twin (`OW_API_KEY=${OW_API_KEY:-$ONLYWORLDS_API_KEY}`, likewise the PIN). A read key (`ow_r_`) reads without a PIN; every write needs one. If there are none, ask the user to type them into `.env` themselves; never ask for them in chat, never print one.
 
 The export is for reading: approved changes to an account world go back through the API, not into it. The rest is the same for both sources.
 
@@ -135,7 +135,7 @@ Start from the count's orphans, near-orphans, clusters and bridges; a room eleme
 2. **`description` and other text fields** that name another element.
 3. **Structure**: shared Events, shared locations, elements that bridge otherwise separate clusters.
 
-In an Atlas world, a knowledge entry (Narrative with subtype `knowledge`) uses `collectives` for the groups who HOLD the knowledge, not its topics: never add a Collective there because the entry mentions it (`../../knowledge/atlas-conventions.md`).
+In an Atlas world, a knowledge entry (Narrative with subtype `knowledge`) uses `collectives` for the groups who HOLD the knowledge, not its topics: never add a Collective there because the entry mentions it (`knowledge/atlas-conventions.md`).
 
 ### The Three Lists
 
@@ -181,7 +181,7 @@ For each recommendation, show what to link (source and target), which field to u
 Apply only the approved items.
 
 **World folder**:
-1. **Snapshot first**: commit the folder in git, or copy it (`../../knowledge/world-folder.md`, "Keeping history").
+1. **Snapshot first**: commit the folder in git, or copy it (`knowledge/world-folder.md`, "Keeping history").
 2. **Edit per the world-folder writer rules**: change only the approved link fields; keep every other field, including `atlas_*`/`shadow_*`/`x_*` values and nulls, value for value; keep keys in their original order. In a folder linked to an account, set a fresh `local_updated_at` on every edited file, or Atlas never sends the edit. A new Relation is a new file: mint a UUID, name the file per the folder rules, and omit `local_updated_at`/`server_updated_at`.
 3. **Read back**: re-load each edited file and confirm every approved link landed and nothing else changed (principles §5).
 
@@ -210,7 +210,7 @@ Report results: N links added, N Relations created, N orphans resolved. For a fo
 
 ### Link Field Reference
 
-Which type has which link field: the type's own section of `../../knowledge/schema-reference.md` (`single-link → T`, `multi-link → T`) and its Link Direction Summary; v2 uses bare field names holding UUIDs. Single links: Character.location, Character.birthplace, Location.parent_location. Multi links: Character.species, Character.objects, Character.institutions, Event.characters, Event.locations. Relation: `actor` (single Character) plus the involves multi-links, with `intensity` and `description`.
+Which type has which link field: the type's own section of `knowledge/schema-reference.md` (`single-link → T`, `multi-link → T`) and its Link Direction Summary; v2 uses bare field names holding UUIDs. Single links: Character.location, Character.birthplace, Location.parent_location. Multi links: Character.species, Character.objects, Character.institutions, Event.characters, Event.locations. Relation: `actor` (single Character) plus the involves multi-links, with `intensity` and `description`.
 
 ## The consistency lens
 
@@ -224,7 +224,7 @@ python <this skill's folder>/scripts/consistency.py WORLD_FOLDER --dates    # on
 python <this skill's folder>/scripts/consistency.py WORLD_FOLDER --json     # the same report as JSON
 ```
 
-Python 3, stdlib only; it writes nothing. It reads the link and date fields from this skill's `../../knowledge/schema-reference.md`. The report opens with the counts ("Checked 158 elements, 412 links; 3 contradictions, 7 possible"), then one section per class, one line per finding: the element, the field, the two values that disagree, the other element's name and id, and the file. The user's words pick the flags: a timeline is `--dates`, nesting `--places`, duplicates `--names`, broken links `--links`.
+Python 3, stdlib only; it writes nothing. It reads the link and date fields from this skill's `knowledge/schema-reference.md`. The report opens with the counts ("Checked 158 elements, 412 links; 3 contradictions, 7 possible"), then one section per class, one line per finding: the element, the field, the two values that disagree, the other element's name and id, and the file. The user's words pick the flags: a timeline is `--dates`, nesting `--places`, duplicates `--names`, broken links `--links`.
 
 | Class | Contradiction | Possible |
 |-------|---------------|----------|
@@ -251,7 +251,7 @@ Read only the elements a finding names, and the other element on the same line. 
 A contradiction may be canon:
 
 - an unreliable narrator, a legend, a propaganda history;
-- a secret or a false belief: in an Atlas world, a knowledge entry (a Narrative with subtype `knowledge`) records what its holders believe, true or not (`../../knowledge/atlas-conventions.md`);
+- a secret or a false belief: in an Atlas world, a knowledge entry (a Narrative with subtype `knowledge`) records what its holders believe, true or not (`knowledge/atlas-conventions.md`);
 - two different things that share a name (principles §3: a name match is a candidate, never a conclusion).
 
 Ask the user which findings are intended before proposing fixes for them. "Possible" findings are questions, not verdicts: put them as questions.

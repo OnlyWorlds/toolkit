@@ -41,7 +41,7 @@
    "key": "sister",
    "type": "institution",
    "fields": {
-    "name": "Company A Studio",
+    "name": "Company A Design",
     "supertype": "Company",
     "description": "Source: shape fixture · as of {{today}}\nA sister company sharing the founder and the name."
    },

@@ -7,7 +7,7 @@ description: "Where to begin with worldbuilding material: notes, a novel, campai
 
 Route users to the right capability. The toolkit is a general worldbuilding companion for the whole life of a world: it works on whatever the user has (notes, manuscripts, folders, nothing yet), with no account required. OnlyWorlds is the shared language underneath, and the optional power layer (hosting, the API, the apps) when they want it.
 
-Shared rules every skill follows: `../../knowledge/principles.md`. A world folder on disk: `../../knowledge/world-folder.md`.
+Shared rules every skill follows: `knowledge/principles.md`. A world folder on disk: `knowledge/world-folder.md`.
 
 ## Quick Reference
 
@@ -23,7 +23,7 @@ A world folder on disk (`world.json` + `elements/`) never needs credentials; onl
 | "Show my world as a graph" / "a map of my world" / "my events on a timeline" | draw |
 | "I run a campaign, roleplay or story with AI and it loses canon" / "my AI forgets my lore" | context (load the world each session), then update (write each session back) |
 | "Update my world from these session notes" / "a character died in play" | update |
-| "Keep my world's history" / "try an alternate timeline or a what-if" | `../../knowledge/world-folder.md`, "Keeping history: a world folder in git" (a knowledge page) |
+| "Keep my world's history" / "try an alternate timeline or a what-if" | `knowledge/world-folder.md`, "Keeping history: a world folder in git" (a knowledge page) |
 | "Build a tool, game, app or AI agent on my world" / "upload, sync or fetch data" / "set up the MCP server" | develop (an account world: Connect an account first) |
 | "Set up a world for my company, team, AI, council, workshop or repo" / "invite my AI" | setup (a starter pack: charter, world skill, seed, invites) |
 | "The schema should have X" / "are there motions about X?" | council |
@@ -84,7 +84,7 @@ CRITICAL: for users with an **account world** who want import or API work, **Con
 
 **Wants to see it**: "Let me draw it." → draw (a file to open in a browser; it never changes the world)
 
-**Wants history or an alternate timeline**: "Let's put your world folder under git." → open `../../knowledge/world-folder.md`, "Keeping history", and walk them through it. In a folder linked to an account, turn on Stay offline in Atlas before switching away from the branch the account follows.
+**Wants history or an alternate timeline**: "Let's put your world folder under git." → open `knowledge/world-folder.md`, "Keeping history", and walk them through it. In a folder linked to an account, turn on Stay offline in Atlas before switching away from the branch the account follows.
 
 **Runs sessions with AI (campaign, roleplay, co-written story) and wants canon to hold**: "Let's work out what each session needs from your world." → context. Once sessions are running: "Let's work out how each session gets written back." → update. Both work on a folder, the user's own notes, or an account world.
 
@@ -104,7 +104,7 @@ Curious, not salesy. Structure serves creation; it never cools it.
 
 ## Connect an account
 
-Connect a project folder to one world on onlyworlds.com. Run this only when the user names an account world; a world folder on disk needs none of it (`../../knowledge/world-folder.md`). Shared rules for credentials and checking your work: principles §5 and §6.
+Connect a project folder to one world on onlyworlds.com. Run this only when the user names an account world; a world folder on disk needs none of it (`knowledge/world-folder.md`). Shared rules for credentials and checking your work: principles §5 and §6.
 
 | Situation | Do |
 |---|---|

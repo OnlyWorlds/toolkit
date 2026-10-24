@@ -7,7 +7,7 @@ description: "Draw a world: its elements and links as a graph, its maps with pin
 
 Turn a world into a picture the user opens in a browser: the web of its links, its maps with what sits on them, or its dates in order. Code reads the world and places every node, pin and date; the model chooses what to draw, names it, and says what was left out. The world is never written to.
 
-Shared rules (code counts, say what you didn't do, field presence over labels, the room): `../../knowledge/principles.md`, here especially §2 and §4. Reading a folder: `../../knowledge/world-folder.md`.
+Shared rules (code counts, say what you didn't do, field presence over labels, the room): `knowledge/principles.md`, here especially §2 and §4. Reading a folder: `knowledge/world-folder.md`.
 
 ## Quick Reference
 
@@ -98,8 +98,8 @@ Colour carries the family, never the type alone: agents, world, abstract and tem
 
 ## References
 
-- `../../knowledge/principles.md`: code counts, say what you didn't do, the room profile (§4)
-- `../../knowledge/world-folder.md`: reading a folder, exporting an account world to one
+- `knowledge/principles.md`: code counts, say what you didn't do, the room profile (§4)
+- `knowledge/world-folder.md`: reading a folder, exporting an account world to one
 - Family colours: `presentation.json` in github.com/OnlyWorlds/schema-dist
 - The calendar profile: `profiles/calendar.md` in github.com/OnlyWorlds/schema-dist, with its fixture
 - Each type's fields, Map, Pin, Marker and Zone included: the model skill

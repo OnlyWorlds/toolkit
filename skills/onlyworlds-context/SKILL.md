@@ -7,7 +7,7 @@ description: "Load a world into an AI session so it stops forgetting. Use when t
 
 Help the user design THEIR way of building a fresh, scoped context for each session from their world. Teach the principles, co-design the recipe, build the smallest working version. Do not install a one-size pipeline. The update skill covers the other half: writing what happened back into the world.
 
-Shared rules (code counts, the world is the record, checking your work) live in `../../knowledge/principles.md`; this skill applies them to loading a session.
+Shared rules (code counts, the world is the record, checking your work) live in `knowledge/principles.md`; this skill applies them to loading a session.
 
 ## Quick Reference
 
@@ -128,14 +128,14 @@ Every line would carry its source (element and field) in the real packet.
 | a story told, and each telling | a Narrative's `events` are the events it tells (its dates are when it is told: "the span it recounts lives on its events"); a telling (someone told someone) is an Event with its hearers on `characters` |
 | one Character's view, computed for you | her own key (a guest or player seat), or the owner's key with `?as=<character id>`; stubs carry `known_of: true` |
 | one Character's whole packet, in one read | the draught, `GET /api/v2/character/{id}/context` (`mode`, `as_of`, `undated`, `budget`, `components`; the room's lines and elements only when `components` names them); the MCP tool `get_draught` takes the same policy |
-| what a character or group knows | knowledge entries: a `Narrative` with subtype `knowledge`, held by `narrator` (one character), `collectives` (a group; members inherit), or both. See `../../knowledge/atlas-conventions.md` |
+| what a character or group knows | knowledge entries: a `Narrative` with subtype `knowledge`, held by `narrator` (one character), `collectives` (a group; members inherit), or both. See `knowledge/atlas-conventions.md` |
 | their own categories | `supertype` / `subtype` |
 | custom state | `x_*` extension fields |
 
 **One being in several worlds.** When a table casts a character from one world into another, each world keeps its own Character, and the extension field `x_identity_key` says they are the same being. Its value is a UUID the casting tool mints (never an element id, never a name), kept byte for byte on every appearance; two elements with the same key are one being, a value that is not a UUID is ignored, and the key joins without merging: events and dates stay in the world they happened in. The full profile: `profiles/identity.md` in github.com/OnlyWorlds/schema-dist.
 
-Sources: a world folder on disk (see `../../knowledge/world-folder.md`), the REST API, or the MCP server (the develop skill covers both). All of this is buildable without OnlyWorlds too; say so if the user has their own store.
+Sources: a world folder on disk (see `knowledge/world-folder.md`), the REST API, or the MCP server (the develop skill covers both). All of this is buildable without OnlyWorlds too; say so if the user has their own store.
 
 ## References
 
-- `../../knowledge/world-memory.md`: the full loop, the ladder from query to agent, the dials, failure modes by name, and how other tools do it
+- `knowledge/world-memory.md`: the full loop, the ladder from query to agent, the dials, failure modes by name, and how other tools do it

@@ -1,6 +1,6 @@
 # Atlas Conventions
 
-How Atlas (the flagship OnlyWorlds app) uses the schema, so an AI working alongside an Atlas user writes data Atlas actually understands. Most relevant when parsing lore or prose, or writing a session back (the resolve skill), for someone whose world lives in Atlas.
+How Atlas (the flagship OnlyWorlds app) uses the schema, so an AI working alongside an Atlas user writes data Atlas actually understands. Most relevant when parsing lore or prose, or writing a session back (the update skill), for someone whose world lives in Atlas.
 
 Conventions are registered as they prove out; this knowledge file carries the tool-facing summaries.
 
@@ -27,7 +27,7 @@ Atlas's writing room organizes long-form prose as a tree of **Narrative elements
 
 > **⚠ The one safety caveat**: writing prose into a **NEW** narrative is fully safe. **EDITING `story` on a narrative the user authored in Atlas is currently shadowed**: Atlas's editor prefers its rich-text sidecar, so your edit lands on the wire but the user keeps seeing their old prose in the writing room (a fix is planned, not shipped). Append a new scene/narrative instead, or tell the user the change lives in the raw field only.
 
-**Writing a session back for an Atlas user** (the resolve skill; parsing is for a one-off import of older notes) → the session write-up becomes a new Narrative (prose in `story`, summary in `description`, supertype = the world's session/scene-tier label), linked to the Characters/Locations/Events it involves; new entities become elements linked back into it.
+**Writing a session back for an Atlas user** (the update skill; the import skill is for a one-off import of older notes) → the session write-up becomes a new Narrative (prose in `story`, summary in `description`, supertype = the world's session/scene-tier label), linked to the Characters/Locations/Events it involves; new entities become elements linked back into it.
 
 ## Knowledge system ("who knows what")
 

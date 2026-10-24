@@ -2,7 +2,7 @@
 
 A world can live entirely as files on disk: `world.json` for the world, one JSON file per element. Atlas (the flagship app) stores every world this way, converters emit this shape, and every toolkit skill that reads a world can read a FOLDER instead of the API. No account, no credentials, no network.
 
-**This page is the method; the format's facts are served.** The layout, every `world.json` key, the current `format_version`, the producer line's list of input words, records, archives (`.owworld`), snapshots, known-of stubs, which tools read and write folders, and the full rules for tools: [World folders](https://onlyworlds.github.io/docs/schema/folders). Each type's fields: `schema.json` in [schema-dist](https://github.com/OnlyWorlds/schema-dist). Read the page before you write a folder; Atlas's own habits are in `atlas-conventions.md`.
+**This page is the method; the format's facts are served.** The layout, every `world.json` key, the current `format_version`, the producer line's list of input words, records, archives (`.owworld`), snapshots, known-of stubs, which tools read and write folders, and the full rules for tools: [World folders](https://onlyworlds.github.io/docs/schema/folders). Each type's fields: `schema.json` in [schema-dist](https://github.com/OnlyWorlds/schema-dist). Read the page before you write a folder; Atlas's own habits are on Atlas's conventions page in this toolkit's knowledge.
 
 Atlas keeps its worlds inside a wrapper directory (`onlyworlds-atlas/<name>-<id-prefix>/`): point skills at the world's own subfolder, not the wrapper.
 

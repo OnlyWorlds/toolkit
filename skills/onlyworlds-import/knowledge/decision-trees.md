@@ -512,7 +512,7 @@ Zone is spatial but not geometric: it covers ground because of what's significan
     └─ Location: "USS Fuzzball" (it's a place)
     └─ Ownership in description: "commanded by Admiral Fluffington"
 
-"Captain Snoot's ship, The Leaky Bucket"
+"Admiral Snoot's ship, The Leaky Bucket"
     └─ Primarily mentioned as possession? → Depends
     └─ Crew lives aboard, scenes happen there? → Location
     └─ Just mentioned as "his ship"? → Could be Object + Character.objects
