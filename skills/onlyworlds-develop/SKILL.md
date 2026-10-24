@@ -1,17 +1,18 @@
 ---
 name: onlyworlds-develop
-description: "Build a tool, game, app or AI agent on world data, and read or write an onlyworlds.com world through its API. Use when the user says 'npm install @onlyworlds/sdk', 'a React app on my world', 'connect my agent to my world', 'upload this to my world', 'pull my world', 'bulk upload', 'sync changes', 'set up the MCP server', or wants OnlyWorlds as a backend. Reads the live API document for routes."
+description: "Build a tool, game, app or AI agent on world data, and read or write an onlyworlds.com world through its API. Use when the user says 'npm install @onlyworlds/sdk', 'a React app on my world', 'connect my agent to my world', 'upload this to my world', 'bulk upload', 'sync changes', 'set up the MCP server', or wants OnlyWorlds as a backend. Reads the live API document for routes."
 ---
 
 # OnlyWorlds Develop
 
 Read and write an onlyworlds.com world through its API, and build tools, games and agents on world data. The shared rules (read before write, verify after write, credentials, extension fields) are `knowledge/principles.md`.
 
+**First, before a line of client code**: fetch `https://www.onlyworlds.com/api/v2/openapi.json` ([Read What Is Served](#read-what-is-served)), the one source for any route, param or error (memory is not one), and say in your answer which routes and fields you took from it.
+
 ## Quick Reference
 
 | You need | Go to |
 |---|---|
-| Any route, param or error | The live `https://www.onlyworlds.com/api/v2/openapi.json` ([Read What Is Served](#read-what-is-served)); memory is not a source |
 | Read and write a world | [Critical Rules](#critical-rules), then [The API](#the-api-v2) |
 | Many elements at once | [Bulk Upload](#bulk-upload) |
 | Keep a copy in sync | [Sync Changes](#sync-changes) |
@@ -30,7 +31,7 @@ curl -s -A "my-tool/1.0" https://www.onlyworlds.com/api/v2/openapi.json -o opena
 python -c "import json,sys; p=json.load(open('openapi.json',encoding='utf-8'))['paths']; print(json.dumps(p['/api/v2/'+sys.argv[1]],indent=1)[:6000] if sys.argv[1:] else '\n'.join(p))" bulk
 ```
 
-With no argument it lists the paths; name one without its `/api/v2/`. A type's field descriptors: `GET /api/metadata/{type}/`. Concepts: https://onlyworlds.github.io/docs/. The SDK's methods are typed in its `dist/index.d.ts`; a version you state is one you read from npm or PyPI this session.
+With no argument it lists the paths; name one without its `/api/v2/`. A type's field descriptors: `GET /api/metadata/{type}/`. Concepts: https://onlyworlds.github.io/docs/. A version you state is one you read from npm or PyPI this session.
 
 ## Critical Rules
 
@@ -43,7 +44,7 @@ With no argument it lists the paths; name one without its `/api/v2/`. A type's f
 ## Safety Notice
 
 Writes can modify or delete world data.
-- Before a write session to an existing world, export it to a world folder (`knowledge/world-folder.md`, "Exporting an account world to a folder"). That folder is the rollback: re-uploading its elements with /bulk (read-only fields stripped) puts the old values back, but does not remove elements created since; delete those by id.
+- Before a write session to an existing world, export it to a world folder (carry's `export_world`). That folder is the rollback: re-uploading its elements with /bulk (read-only fields stripped) puts the old values back, but does not remove elements created since; delete those by id.
 - Test with a small batch first.
 - Read before PATCH (Critical Rule 1). Verify after write (Critical Rule 2).
 
@@ -174,7 +175,7 @@ The PIN is the **world's wall**, not a dialect's, Argon2-hashed on the server: e
 
 ## Errors
 
-v2 and /bulk answer `{"error": {"type", "code", "message", "param", "doc_url"}}`: the `message` names the field or credential at fault. Every code a route returns is in that path's responses in the document; the five a first build hits:
+v2 and /bulk answer `{"error": {"type", "code", "message", "param", "doc_url"}}`: the `message` names the field or credential at fault. Every code a route returns is in that path's responses in the document; the ones a first build hits:
 
 | You get | Fix |
 |---|---|
@@ -182,7 +183,9 @@ v2 and /bulk answer `{"error": {"type", "code", "message", "param", "doc_url"}}`
 | `422` `Unknown field: friends_ids`: a typo, or v1's `_ids` suffix; `param` names it | The bare canonical field name |
 | `400` / per-item `invalid_link`: a link names a UUID that does not exist | A real UUID, or the target in the same batch |
 | `409` `id_conflict`: POST of an id that exists | PUT to upsert |
-| `429` `rate_limited`: wrong PINs, or over the request budget | Wait `Retry-After` seconds; sooner does not help |
+| `429` `rate_limited`: failed PINs, throttled per key ([PIN](#pin-the-world-wall)) | Wait `Retry-After` seconds; sooner does not help |
+| `429` `too_many_requests`: over the request budget (the document's Limits) | Wait `Retry-After`; `RateLimit-Remaining` says where you stand |
+| `503` `server_busy`: every request slot is busy | Retry after `Retry-After` |
 
 **These are honest errors: nothing is silently dropped.** An unknown field is rejected (not ignored), a dangling link rejected (not nulled), a write without the right PIN rejected (not partly applied). A `2xx` means what you sent landed; still verify. A `202` is not a write: it answers `{"proposal": …}` where the owner takes an agent seat's writes as proposals, and nothing changes until a keeper accepts.
 
@@ -195,7 +198,7 @@ claude mcp add --transport http onlyworlds https://www.onlyworlds.com/mcp \
 ```
 The server has schema, read and write tools, and no delete tool.
 
-**A seat of its own** suits an agent that writes to someone's world: **make a seat** under Invite an agent on the owner's world page, or under **Your AI in this world** on a member's; the `.env` lines show once, and a lost key is **new key** beside the seat. Its `ow_s_` secret is its PIN, and its writes count as agent-made. Otherwise declare: the header, `agent: true` in the SDK, `agent=True` in Python's `Client`.
+**A seat of its own** suits an agent that writes to someone's world: **Make a seat** on the owner's Access page (Let someone in, An AI agent, More options), or under **Your AI in this world** on a member's; the `.env` lines show once, and a lost key is **New key** beside the seat. Its `ow_s_` secret is its PIN, and its writes count as agent-made. Otherwise declare: the header, `agent: true` in the SDK, `agent=True` in Python's `Client`.
 
 **Patterns that work**:
 - **Agent with a world**: the agent queries typed elements over MCP instead of guessing from context. `update_element` is a server-side read-merge, so partial writes are safe.
@@ -211,7 +214,7 @@ A **visualization** (maps, graphs, timelines) reads; an **editor** does full CRU
 
 ### Step 2: Read What Is Served
 
-Routes from the document, methods from `dist/index.d.ts` ([Read What Is Served](#read-what-is-served)); the on-ramp is https://www.onlyworlds.com/develop.
+Fetch the OpenAPI document and read the paths you will call ([Read What Is Served](#read-what-is-served)); the on-ramp is https://www.onlyworlds.com/develop.
 
 ### Step 3: SDK Setup
 
@@ -231,6 +234,7 @@ await client.editLinks('character', id, 'friends', { add: ['uuid-a'], remove: ['
 const feed = client.changesAll(cursor);                             // no cursor = full export
 let step; while (!(step = await feed.next()).done) applyChange(step.value);
 cursor = step.value.cursor;                                         // save for the next pull
+// a guest's or contributor's tool also keeps .head and .epoch: a moved epoch, walk again
 const res = await client.bulk(items, { atomic: true });             // does not throw on a failed item
 if (res.errors) console.warn(res.items.filter((s) => s.status >= 400)); // nothing written; record no ids
 ```
