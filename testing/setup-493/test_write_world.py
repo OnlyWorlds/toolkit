@@ -6,7 +6,7 @@ Each pack's plan (plans/<pack>.json, the rows of that pack's seed.md) is written
 a plain folder (the world in <project>/world, the copies at <project>), a repository (the world
 folder IS the repository, copies "world", "repo": true) and online (as the plain folder, with
 "online": {"world_id": <a server id>}). Then the checks, one test per finding of the first
-harness trial (h67 #9988):
+harness trial (2026-10-22):
 
 1. every placeholder is filled before a shape test (a `day:{{today}}` date lands as its day
    number), the folder lint reads zero problems, and a `{{` left after filling refuses the
@@ -284,7 +284,7 @@ class SetupWriter(unittest.TestCase):
             self.assertEqual(read(p), GITATTRIBUTES)
             if run.placement == "repo":
                 self.assertTrue((run.world / ".gitignore").exists())
-            else:  # the copies' root is its own repository: the same rule at its root (h67 #10318)
+            else:  # the copies' root is its own repository: the same rule at its root (ruled 2026-10-22)
                 q = run.world.parent / ".gitattributes"
                 self.assertTrue(q.exists(), "no root .gitattributes beside the world folder")
                 self.assertEqual(read(q), GITATTRIBUTES)
@@ -348,11 +348,11 @@ class SetupWriter(unittest.TestCase):
             self.assertEqual(len(charters[0]["x_checks_rules"]), 1, placement)
 
     def test_9e_format_version_is_the_spec_current(self):
-        """The writer's FORMAT_VERSION is the folder spec's current (0.3.15, the package's own): no older-format finding."""
+        """The writer's FORMAT_VERSION is the folder spec's current (0.3.18, the package's own): no older-format finding."""
         src = read(WRITER)
-        self.assertIn('FORMAT_VERSION = "0.3.15"', src)
+        self.assertIn('FORMAT_VERSION = "0.3.18"', src)
         for placement in PLACEMENTS:
-            self.assertEqual(RUNS["company", placement].world_json["format_version"], "0.3.15", placement)
+            self.assertEqual(RUNS["company", placement].world_json["format_version"], "0.3.18", placement)
 
     def test_9c_plan_replaces_the_pack_rule(self):
         plan = json.loads(read(PLANS / "company.json"))

@@ -72,7 +72,7 @@ from pathlib import Path
 
 CHARTER_MAX = 4000
 SKILL_MAX = 9000
-FORMAT_VERSION = "0.3.15"
+FORMAT_VERSION = "0.3.18"
 EPOCH = datetime.date(1970, 1, 1)
 PACKS = Path(__file__).resolve().parent.parent / "packs"
 PH = re.compile(r"\{\{([a-z_]+(?::[A-Za-z0-9_-]+)?)\}\}")
@@ -325,7 +325,7 @@ def main(argv):
                   "time_format_equivalents": [1, 7, 365], "time_range_min": 0,
                   "time_range_max": day_number("2099-12-31"), "time_current": day_number(today)}
     if online and not plan.get("repo"):
-        world_json["api"] = {"world_id": server_id}  # the key stays in .env (project-setup), never here
+        world_json["api"] = {"world_id": server_id}  # the key stays in .env (start's Connect an account), never here
     files["world.json"] = dump(world_json)
 
     charter = {"id": charter_id, "name": "Charter", "supertype": "Charter", "description": charter_text,
@@ -385,7 +385,7 @@ def main(argv):
     files[".gitattributes"] = GITATTRIBUTES  # every pack, every placement: one place
     # The copies' root is a repository of its own when it is not the world folder: its root files
     # (AGENTS.md, the skill copies) want the same line-ending rule, or git on an autocrlf machine
-    # rewrites them (Kael, h67 #10318). The repository's own .gitattributes stands when it has one.
+    # rewrites them (ruled 2026-10-22). The repository's own .gitattributes stands when it has one.
     root_attrs = None
     if copy_root is not None and copy_root.resolve() not in (out.resolve(), Path.home().resolve()):
         if not (copy_root / ".gitattributes").exists():

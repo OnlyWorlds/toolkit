@@ -1,6 +1,6 @@
 # World Memory: the loop, the dials, and how others build it
 
-Shared reference for the context and resolve skills: the session loop. The general rules they rest on live in `principles.md`. Read the section the conversation needs, not the whole file.
+Shared reference for the context and update skills: the session loop. The general rules they rest on live in `principles.md`. Read the section the conversation needs, not the whole file.
 
 ## Contents
 1. The loop
@@ -71,7 +71,7 @@ Each is the user's choice. Name the setting and the cost.
 | Plan presented as fact | "planned for tomorrow" renders as happened; a next step reads as done | plans are their own kind, never rendered as recent or done |
 | Ghost presence | a character appears where they aren't, because their position was never updated | presence from data; the resolve moves people |
 | Silent overwrite | the newer version replaces canon without anyone deciding | flags with both versions; retire, don't delete |
-| Over-broad retirement | an unscoped contradiction check retires unrelated facts ([Graphiti #1728](https://github.com/getzep/graphiti/issues/1728)) | a new value replaces only the same field on the same thing |
+| Over-broad retirement | an unscoped contradiction check retires unrelated facts ([Graphiti issue 1728](https://github.com/getzep/graphiti/issues/1728)) | a new value replaces only the same field on the same thing |
 | Name collision | two people merged into one, or one split in two | type plus one anchor for every match; a human read of every near-name (`principles.md` §3) |
 | Dropped fact | the resolve missed something; every consistency check still passes | resolve a known session against its expected result, now and then |
 | Stale entries | out-of-date lore keeps being injected | demote what finished; keep the world current |
@@ -108,4 +108,4 @@ Everything above is buildable on plain files. A world with types and links (Only
 
 **The chat-only roleplayer** (a big lore bible in PDFs, ChatGPT, losing details as chats compress). First a written recipe: "for a session, include the place, who is there, their open threads, and three lines of each lead's voice; everything else stays out." Then only the documents the next session needs become entries (plain markdown, one file per character or place, is enough); the rest of the bible follows over time, one document at a time, each checked for what it contributed. A build prompt fills the recipe from the entries into a brief; the session starts fresh with the brief. At the end, a resolve prompt lists changes in a fixed format; the user approves them and edits the entry files by hand. Character cognition waits for rung 4.
 
-**The novelist with a local agent** (chapters on disk, a world folder). A skill writes `context/current.md` before each writing session: the chapter's place and date, who is present, their last scenes together, what the reader knows so far. After each chapter, a resolve skill proposes a change list into `resolves/chapter-14.md`; the author rules on the flags; the approved changes are applied to the world files; a check confirms every link resolves.
+**The novelist with a local agent** (chapters on disk, a world folder). A skill writes `context/current.md` before each writing session: the chapter's place and date, who is present, their last scenes together, what the reader knows so far. After each chapter, a second skill of their own proposes a change list into `resolves/chapter-14.md`; the author rules on the flags; the approved changes are applied to the world files; a check confirms every link resolves.
