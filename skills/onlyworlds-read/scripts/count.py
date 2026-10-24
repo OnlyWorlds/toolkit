@@ -11,9 +11,16 @@ mark x_room_of) and placement (map, pin, marker and zone: the draw skill's graph
 same four) are dropped from the id map before counting, so their links drop with them; the
 report opens with the world's whole count and the split, and says how many were left out.
 
+The marks a world carries are named. A proposed element (x_review_proposed, the review
+profile; a doubtful value counts with them) is not yet canon: left out like the room unless
+asked for, and said. A known-of stub (keel's `known_of: true`) is counted but never thin and
+never a link target: its unset fields are unknown, not missing. A hidden element (folder spec
+4.8) is counted, since the folder's holder sees it, and the report says how many, since a brief
+is often handed on.
+
 Usage:
-    python count.py WORLD_FOLDER [--top N] [--mentions] [--room] [--placement] [--json]
-                    [--schema PATH]
+    python count.py WORLD_FOLDER [--top N] [--mentions] [--room] [--placement] [--proposed]
+                    [--json] [--schema PATH]
 
     --top N      how many elements the "most linked" and "most text" tables list (default 40)
     --mentions   list ow:// mentions in a description or story that no link field backs
@@ -21,6 +28,7 @@ Usage:
                  copy of the schema reference (../knowledge/schema-reference.md)
     --room       count the room too (only when the user asks)
     --placement  count map, pin, marker and zone too (--spatial, the older name, still works)
+    --proposed   count proposed elements too, each labelled "proposed, not yet reviewed"
     --json       the same report as JSON, with every list in full
 
 Python 3, stdlib only. Exit 0 on a report, 2 when the folder cannot be read.
@@ -31,7 +39,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from consistency import ids_of, label, load_schema, load_world  # noqa: E402
+from consistency import ids_of, is_hidden, is_known_of, label, load_schema, load_world, review_mark  # noqa: E402
 
 # Placement, not lore: the same four types the draw skill's graph.py leaves out.
 PLACEMENT = {"map", "pin", "marker", "zone"}
@@ -117,21 +125,44 @@ def articulation(nodes, adj):
     return parts
 
 
-def count(folder, room=False, spatial=False, schema=None, mentions=False):
+def marks_of(e):
+    """The words a row carries: what a reader of the brief must not read past."""
+    words = []
+    r = review_mark(e)
+    if r == "proposed":
+        words.append("proposed, not yet reviewed")
+    elif r == "doubt":
+        words.append("doubtful review mark, handed on as proposed")
+    if is_known_of(e):
+        words.append("known of")
+    if is_hidden(e):
+        words.append("hidden")
+    return words
+
+
+def count(folder, room=False, spatial=False, schema=None, mentions=False, proposed=False):
     world, raw, skipped = load_world(folder)
     notes = list(skipped)
     left_room = [e for e in raw.values() if is_room(e)]
     left_spatial = [e for e in raw.values() if e["_type"] in PLACEMENT and not is_room(e)]
+    left_proposed = [e for e in raw.values()
+                     if review_mark(e) and not is_room(e) and e["_type"] not in PLACEMENT]
     for e in raw.values():
         if malformed_mark(e):
             notes.append(f"{e['_file']}: carries x_room_of but none of the room's pairs; "
                          "a malformed mark, counted as lore")
+        if review_mark(e) == "doubt":
+            notes.append(f"{e['_file']}: x_review_proposed is not an object with by, evidence and "
+                         "expires; a doubt, counted with the proposed (the review profile, rule 4)")
     drop = set()
     if not room:
         drop |= {e["id"] for e in left_room}
     if not spatial:
         drop |= {e["id"] for e in left_spatial}
+    if not proposed:
+        drop |= {e["id"] for e in left_proposed}
     els = {i: e for i, e in raw.items() if i not in drop}
+    stubs = {i for i, e in els.items() if is_known_of(e)}
 
     out_links = {i: [] for i in els}
     in_links = {i: [] for i in els}
@@ -153,7 +184,8 @@ def count(folder, room=False, spatial=False, schema=None, mentions=False):
         e = els[i]
         return {"id": i, "name": label(e), "type": e["_type"], "file": e["_file"],
                 "out": len(out_links[i]), "in": len(in_links[i]),
-                "degree": len(out_links[i]) + len(in_links[i]), "text": text_weight(e)}
+                "degree": len(out_links[i]) + len(in_links[i]), "text": text_weight(e),
+                "marks": marks_of(e)}
 
     rows = {i: row(i) for i in els}
     dist = {}
@@ -169,7 +201,7 @@ def count(folder, room=False, spatial=False, schema=None, mentions=False):
 
     near = []
     for i in order:
-        if rows[i]["degree"] == 1:
+        if rows[i]["degree"] == 1 and i not in stubs:
             f, other = (out_links[i] or in_links[i])[0]
             way = "out" if out_links[i] else "in"
             near.append(dict(rows[i], link=f"{f} ({way}) {rows[other]['name']}"))
@@ -192,8 +224,8 @@ def count(folder, room=False, spatial=False, schema=None, mentions=False):
                     if t not in raw:
                         dangling += 1
                         continue
-                    if t not in els or t in linked or t == i:
-                        continue
+                    if t not in els or t in linked or t == i or t in stubs:
+                        continue  # a known-of stub is never a link target: its reader cannot see it whole
                     target = els[t]["_type"]
                     fields = sorted(k for k, (_, tt) in links.get(e["_type"], {}).items() if tt == target)
                     found.append({"element": rows[i], "in": f, "names": rows[t],
@@ -207,14 +239,19 @@ def count(folder, room=False, spatial=False, schema=None, mentions=False):
         "world": world.get("name"), "folder": str(folder),
         "total": len(raw), "placement": len(left_spatial), "elements": len(els), "links": sum(len(v) for v in out_links.values()),
         "left_out": {"room": len(left_room) if not room else 0,
-                     "placement": len(left_spatial) if not spatial else 0},
+                     "placement": len(left_spatial) if not spatial else 0,
+                     "proposed": len(left_proposed) if not proposed else 0},
+        "marks": {"hidden": sum(1 for e in els.values() if is_hidden(e)),
+                  "known_of": len(stubs),
+                  "proposed": len(left_proposed)},
         "distribution": dict(sorted(dist.items(), key=lambda kv: (-kv[1], kv[0]))),
         "most_linked": sorted(rows.values(), key=lambda r: (-r["degree"], r["name"].casefold())),
-        "most_text": sorted(rows.values(), key=lambda r: (-r["text"], r["name"].casefold())),
+        "most_text": sorted((r for i, r in rows.items() if i not in stubs),
+                            key=lambda r: (-r["text"], r["name"].casefold())),
         "clusters": [{"size": len(c), "top": top_of(c), "ids": sorted(c)} for c in comps],
         "bridges": sorted((dict(rows[i], splits_into=n) for i, n in parts.items()),
                           key=lambda r: (-r["splits_into"], -r["degree"], r["name"].casefold())),
-        "orphans": [rows[i] for i in order if rows[i]["degree"] == 0],
+        "orphans": [rows[i] for i in order if rows[i]["degree"] == 0 and i not in stubs],
         "near_orphans": near,
         "mentions": found if mentions else None,
         "notes": notes,
@@ -243,8 +280,22 @@ def markdown(r, top):
         gone.append(f"the room, {n_of(lo['room'], 'element')}")
     if lo["placement"]:
         gone.append(f"placement, {n_of(lo['placement'], 'element')}")
+    if lo["proposed"]:
+        gone.append(f"proposed, not yet reviewed, {n_of(lo['proposed'], 'element')} (--proposed counts them)")
     if gone:
         out.append("Left out: " + "; ".join(gone) + ".")
+    mk = r["marks"]
+    said = []
+    if mk["hidden"]:
+        said.append(f"{mk['hidden']} hidden (counted, as this folder's holder sees them; "
+                    "a brief handed on says so)")
+    if mk["known_of"]:
+        said.append(f"{mk['known_of']} known of (stubs: their empty fields are unknown, so never "
+                    "thin and never a link target)")
+    if mk["proposed"] and not lo["proposed"]:
+        said.append(f"{mk['proposed']} proposed, not yet reviewed (counted on request, labelled)")
+    if said:
+        out.append("Marks: " + "; ".join(said) + ".")
     out.append(f"Orphans {len(r['orphans'])} · near-orphans {len(r['near_orphans'])} · "
                f"clusters {len(r['clusters'])} · bridges {len(r['bridges'])}.")
     out += ["", "## Distribution", "", "| Type | Count |", "|------|-------|"]
@@ -253,8 +304,11 @@ def markdown(r, top):
     head = "| Element | Type | Out | In | Degree | Text | File |"
     bar = "|---|---|---|---|---|---|---|"
 
+    def named(x):
+        return x["name"] + (f" ({', '.join(x['marks'])})" if x["marks"] else "")
+
     def line(x):
-        return (f"| {x['name']} | {x['type']} | {x['out']} | {x['in']} | {x['degree']} | "
+        return (f"| {named(x)} | {x['type']} | {x['out']} | {x['in']} | {x['degree']} | "
                 f"{x['text']} | {x['file']} |")
 
     out += ["", f"## Most linked (top {top})", "", head, bar] + [line(x) for x in r["most_linked"][:top]]
@@ -267,9 +321,9 @@ def markdown(r, top):
     out += capped(r["bridges"], lambda x: f"- {x['name']} ({x['type']}, degree {x['degree']}): "
                   f"splits its cluster into {x['splits_into']} ({x['file']})", "bridges")
     out += ["", "## Orphans (no link in or out)", ""]
-    out += capped(r["orphans"], lambda x: f"- {x['name']} ({x['type']}, {x['file']})", "orphans")
+    out += capped(r["orphans"], lambda x: f"- {named(x)} ({x['type']}, {x['file']})", "orphans")
     out += ["", "## Near-orphans (one link)", ""]
-    out += capped(r["near_orphans"], lambda x: f"- {x['name']} ({x['type']}): {x['link']} "
+    out += capped(r["near_orphans"], lambda x: f"- {named(x)} ({x['type']}): {x['link']} "
                   f"({x['file']})", "near-orphans")
     if r["mentions"] is not None:
         out += ["", "## Mentions no link backs (ow:// in a description or story)", ""]
@@ -283,7 +337,7 @@ def markdown(r, top):
 
 
 def main(argv):
-    args, top, room, spatial, mentions, as_json, schema = [], 40, False, False, False, False, None
+    args, top, room, spatial, mentions, as_json, schema, proposed = [], 40, False, False, False, False, None, False
     it = iter(argv)
     for a in it:
         if a == "--top":
@@ -298,6 +352,8 @@ def main(argv):
             spatial = True
         elif a == "--mentions":
             mentions = True
+        elif a == "--proposed":
+            proposed = True
         elif a == "--json":
             as_json = True
         elif a == "--schema":
@@ -316,7 +372,7 @@ def main(argv):
               "(for Atlas, the world's subfolder, not the onlyworlds-atlas/ wrapper).")
         return 2
     schema = Path(schema) if schema else Path(__file__).resolve().parent.parent / "knowledge" / "schema-reference.md"
-    r = count(folder, room=room, spatial=spatial, schema=schema, mentions=mentions)
+    r = count(folder, room=room, spatial=spatial, schema=schema, mentions=mentions, proposed=proposed)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     if as_json:

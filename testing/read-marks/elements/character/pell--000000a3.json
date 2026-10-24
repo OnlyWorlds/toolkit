@@ -1,0 +1,10 @@
+{
+  "id": "0192a000-0000-7000-8000-0000000000a3",
+  "name": "Pell",
+  "description": "An AI seat's guess at a smuggler, longer than anything settled here.",
+  "x_review_proposed": {
+    "by": "seat",
+    "evidence": "a session note",
+    "expires": "2099-01-01"
+  }
+}

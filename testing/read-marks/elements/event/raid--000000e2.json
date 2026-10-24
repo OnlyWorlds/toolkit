@@ -1,0 +1,14 @@
+{
+  "id": "0192a000-0000-7000-8000-0000000000e2",
+  "name": "The raid",
+  "start_date": 700,
+  "end_date": 600,
+  "characters": [
+    "0192a000-0000-7000-8000-0000000000a3"
+  ],
+  "x_review_proposed": {
+    "by": "seat",
+    "evidence": "a session note",
+    "expires": "2099-01-01"
+  }
+}
