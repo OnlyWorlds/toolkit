@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-develop
-description: "Build a tool, game, app or AI agent on world data, and read or write an onlyworlds.com world through its API. Use when the user says 'npm install @onlyworlds/sdk', 'a React app on my world', 'connect my agent to my world', 'upload this to my world', 'bulk upload', 'sync changes', 'set up the MCP server', or wants OnlyWorlds as a backend. Reads the live API document for routes."
+description: "Build a tool, game, app or AI agent on world data, and read or write an onlyworlds.com world through its API. Use when the user says 'npm install @onlyworlds/sdk', 'a React app on my world', 'a Unity game on my world', 'load my world in Godot', 'connect my agent to my world', 'upload this to my world', 'bulk upload', 'sync changes', 'set up the MCP server', or wants OnlyWorlds as a backend. Reads the live API document for routes."
 ---
 
 # OnlyWorlds Develop
@@ -20,6 +20,7 @@ Read and write an onlyworlds.com world through its API, and build tools, games a
 | A TypeScript tool | [Building a Tool](#building-a-tool), `knowledge/scaffold.md`, `knowledge/deployment.md` |
 | Python | `pip install onlyworlds` (Python 3.12+), its `Client` |
 | A tool on a world folder, no account | `knowledge/world-folder.md` |
+| A game in Unity, Godot or another engine | [Games and Engines](#games-and-engines) |
 | Old v1 code (`/api/worldapi/`) | `references/v1-classic.md` |
 
 ## Read What Is Served
@@ -205,6 +206,15 @@ The server has schema, read and write tools, and no delete tool.
 - **World as RAG corpus**: the folder IS a typed, chunked corpus, one JSON file per entity.
 - **AI proposes, a human approves, one writer applies** (principles §2): the agent drafts a batch with its own minted UUIDs, a human rules on the list, only the approved items go up via `/bulk`, and people read the result back in Atlas.
 - **Game/sim state**: the world as the NPC knowledge base; the app reads typed truth, the LLM voices it. A tool's own data goes in `x_<tool>_...` fields.
+
+## Games and Engines
+
+A game takes a world with no key and no network: a world folder, or one `.owworld` file (the carry skill packs it). The API comes in when the game writes back.
+
+- **Unity**: the `unity-sdk` package (Package Manager, Add package from git URL, `https://github.com/OnlyWorlds/unity-sdk.git?path=/Packages/com.onlyworlds.sdk`) reads a folder, an `.owworld` or an account world into typed elements and writes them back; its README is the truth for its calls.
+- **Godot, Unreal and others**: no public package yet. Read the folder (`knowledge/world-folder.md`: one JSON file per element) or the archive by spec §4.7 ([World folders](https://onlyworlds.github.io/docs/schema/folders)).
+- **The map as space**: a Pin's and a Marker's `x`, `y` count in pixels from the Map's bottom-left (an engine whose y runs down flips it); the picture is the Map's `image_url`; Maps nest by `parent_map`. Height is optional: a Pin and a Marker carry `z`, a Map `depth`, and few worlds fill them, so a game brings its own.
+- **An archive reader of your own** is graded by schema-dist's `fixtures/owworld/` (each zip with its verdict): run every case before trusting it. A runtime's own zip reader, JSON parser (numbers as floats) and Unicode tables each fail some.
 
 ## Building a Tool
 

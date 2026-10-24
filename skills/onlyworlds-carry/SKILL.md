@@ -89,6 +89,7 @@ World Anvil and Campfire take the export by `--file`; Kanka and Notion take it a
 
 - **Azgaar converter**, [github.com/OnlyWorlds/azgaar-converter](https://github.com/OnlyWorlds/azgaar-converter): turns an Azgaar Fantasy Map Generator JSON export into an OnlyWorlds world folder (or a `/bulk` payload).
 - **Foundry VTT converter**, [github.com/OnlyWorlds/foundry-converter](https://github.com/OnlyWorlds/foundry-converter): turns a world folder into an installable Foundry VTT module (one-way, out of OnlyWorlds).
+- **Unity**, [github.com/OnlyWorlds/unity-sdk](https://github.com/OnlyWorlds/unity-sdk): the unity-sdk package reads a world folder or an `.owworld` into typed elements and writes one back, graded by the same `fixtures/owworld/`.
 - **Obsidian plugin**, [github.com/OnlyWorlds/obsidian-plugin](https://github.com/OnlyWorlds/obsidian-plugin): builds and syncs OnlyWorlds worlds as Markdown notes in a vault.
 
 ## Example (Hyperion, a file for a friend)
@@ -104,7 +105,7 @@ World Anvil and Campfire take the export by `--file`; Kanka and Notion take it a
    read_world_file("hyperion.owworld").to_folder("check/hyperion")
    ```
 4. Lint both: `checked 35 element files in 19 types: 0 problems` for the source and for the unpacked copy; `left` is empty, so no hidden element was left out.
-5. Tell the user: the friend unpacks it with the package (`read_world_file(path).to_folder(dir)`) or another reader of the format, and the folder opens in Atlas.
+5. Tell the user: the friend unpacks it with the package (`read_world_file(path).to_folder(dir)`) or another reader of the format; the folder opens in Atlas in a Chromium browser, and in Firefox or Safari Atlas opens the `.owworld` itself.
 
 ## References
 
