@@ -348,7 +348,7 @@ function controls(){const d=h('div',null,side);for(const[t,f]of[['+',()=>zoom(1/
  h('div','Drag to move along the line; Ctrl and the wheel zoom.',side,'k')}
 function panel(){side.textContent='';controls();h('p',T.placed+' dates placed, in '+(T.unit||'steps')+(T.calendar?', read through the calendar '+T.calendar:'')+'.',side,'k');
  for(const g of T.groups){const d=h('div',null,side),s=h('span',null,d,'sw');s.style.background=col(g.family);d.append((g.label||g.type)+' ('+g.items.length+')')}
- h('p','Eras are Constructs with a start and an end'+(T.bands.length?', shaded behind the rows.':'; they overlap, so they are not shaded.'),side,'k')}
+ if(T.eras)h('p','Eras are Constructs with a start and an end'+(T.bands.length?', shaded behind the rows.':'; they overlap, so they are not shaded.'),side,'k')}
 function detail(it){side.textContent='';controls();const a=h('a','All dates',side);a.onclick=()=>{sel=null;render();panel()};
  h('h2',it.name,side);h('div',it.type+(it.sup?' · '+it.sup:''),side,'k');h('p',it.fa.replace('_',' ')+': '+it.wa+(it.b!=null?'; '+it.fb.replace('_',' ')+': '+it.wb:''),side);if(it.desc)h('p',it.desc,side)}
 T.byK={};for(const g of T.groups)for(const it of g.items){it.type=g.type;T.byK[it.k]=it}
@@ -438,7 +438,7 @@ def main(argv):
     unit = world.get("time_basic_unit") if isinstance(world.get("time_basic_unit"), str) else ""
     tl = {"min": rmin, "max": rmax, "unit": unit, "current": cur, "currentWords": say(cur),
           "calendar": label(cal_el) if cal_el else "", "placed": placed, "groups": groups,
-          "bands": eras if apart else []}
+          "eras": len(eras), "bands": eras if apart else []}
 
     out = out_folder(folder, a.out)
     head = head_line(folder, world)

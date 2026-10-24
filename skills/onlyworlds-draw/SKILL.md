@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-draw
-description: "Draw a world: its elements and links as a graph, its maps with pins and zones, or its events on a timeline. Use when the user says 'show my world as a graph', 'visualise my world', 'draw the connections', 'a map of my world', 'put my events on a timeline'. A world folder or an account world; writes a file to open in a browser; an account world's graph is the platform's own Graph view. Never changes the world."
+description: "Draw a world: its elements and links as a graph, its maps with pins and zones, or its events on a timeline. Use when the user says 'show my world as a graph', 'visualise my world', 'a diagram of my world', 'draw the connections', 'chart my history', 'a map of my world', 'put my events on a timeline'. A world folder or an account world; writes a file to open in a browser; an account world's graph is the platform's own Graph view. Never changes the world."
 ---
 
 # Draw
@@ -47,7 +47,7 @@ Principles §2: the script reads the folder and computes every position, link an
 - **Left out**: Map, Pin, Marker and Zone (placement, not a graph), and every link to them. Room elements (principles §4: the pair and the mark `x_room_of`), proposed ones (`x_review_proposed`) and hidden ones (`hidden: true`) are left out unless the user asks, and so is every link to them.
 - **A cut**: `--focus NAME` (repeatable; a name or an id) keeps that element and what lies within `--depth N` links (default 1; a large N gives its whole cluster). `--type` keeps only the types named.
 - **Size**: above about 300 nodes the picture crowds; the script says so, and you offer a focus or a type before the user squints at a hairball. The page lays out about 200 nodes in well under a second and still draws a thousand.
-- **The page**: a force layout, the family colours, a name search, a legend whose type boxes hide a type, and a side panel with a clicked element's links out and links in, each one a click away.
+- **The page**: a force layout, the family colours, a name search, a legend whose type boxes hide a type, and a side panel with a clicked element's links out and links in, each one a click away. A name is drawn only where it does not crowd one already placed (the most linked first); a hidden name shows on hover and on a click, and the head counts them. On a narrow screen the panel sits under the picture.
 
 ### 4. Map
 
@@ -69,7 +69,7 @@ Principles §2: the script reads the folder and computes every position, link an
 
 ### 6. Head and foot
 
-Every page says what it is true as of and which folder it was read from (and the slice, when `world.json` names one), and its foot counts everything left out, per reason: placement, room, proposed, hidden, outside the cut, undated, outside the range, files that did not parse. Carry the script's summary into your answer: the counts and the left-out line, once.
+Every page says what it is true as of and which folder it was read from, by the folder's own name and never a path (and the slice, when `world.json` names one), and its foot counts everything left out, per reason: placement, room, proposed, hidden, outside the cut, undated, outside the range, files that did not parse. Carry the script's summary into your answer: the counts and the left-out line, once.
 
 ### 7. Never write to the world
 
@@ -90,7 +90,7 @@ Colour carries the family, never the type alone: agents, world, abstract and tem
 
 ## Example (Hyperion)
 
-`Draw my world in ./hyperion as a graph I can open in a browser.` Hyperion is a folder with 35 elements. `graph.py ./hyperion` writes `./draw/graph.json` and `./draw/graph.html`: 26 elements and 36 links drawn, 9 left out as placement (one map, one pin, six markers, one zone). The Consul is the most linked element (8 links), then the Primal Performance (7); the two saurian creatures' links to the Swamps zone are not drawn, since a zone is placement.
+`Draw my world in ./hyperion as a graph I can open in a browser.` Hyperion is a folder with 35 elements. `graph.py ./hyperion` writes `./draw/graph.json` and `./draw/graph.html`: 26 elements and 36 links drawn, 9 left out as placement (one map, one pin, six markers, one zone): the same split the read skill's count gives. The Consul is the most linked element (8 links), then the Primal Performance (7); the two saurian creatures' links to the Swamps zone are not drawn, since a zone is placement.
 
 `map.py ./hyperion` draws the map of the unnamed planet (1054 × 1492 pixels, its image), the Consul's balcony seat as a pin 810 pixels up from the bottom edge, and the Swamps as a polygon of six markers with the seat inside it.
 

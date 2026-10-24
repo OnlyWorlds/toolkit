@@ -7,7 +7,9 @@ on the id inside each file) and writes two files into the output folder, never i
                  the platform's graph page draws: a and b index into nodes, one edge per link
                  field and direction held (a link held on both ends is two edges)
     graph.html   one page, inline JS, no network: a force layout, the family colours, a search,
-                 a legend that hides a type, and a panel with the clicked element's links
+                 a legend that hides a type, and a panel with the clicked element's links;
+                 a name is drawn only where it meets no name already placed (greedy, by degree),
+                 a hidden one shows on hover and on a click, and the head counts them
 
 Map, Pin, Marker and Zone are placement, not a graph: never a node. Room elements (the room
 profile: one of its eight type-and-supertype pairs AND the mark x_room_of), proposed elements
@@ -43,6 +45,7 @@ import sys
 import urllib.request
 from pathlib import Path
 
+# Placement, not a graph: count.py in the read skill names the same four, so the two counts agree.
 PLACEMENT = {"map", "pin", "marker", "zone"}
 EXT_PREFIXES = ("x_", "atlas_", "shadow_")
 NOT_LINKS = {"id", "world", "type", "element_id"}
@@ -210,8 +213,9 @@ def out_folder(folder, out):
 
 
 def head_line(folder, world):
+    """The world and the folder's own name, never a path: a page may be shared."""
     slice_ = world.get("exported_as")
-    s = f"{world.get('name') or folder.name}: true as of {now()}, read from {folder}"
+    s = f"{world.get('name') or folder.name}: true as of {now()}, read from the folder {folder.name}"
     return s + (f" (the {slice_} slice of the world)" if isinstance(slice_, str) and slice_ else "")
 
 
@@ -242,7 +246,9 @@ aside a{color:inherit;cursor:pointer;text-decoration:underline;text-decoration-c
 input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit}
 .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
 label{display:block;cursor:pointer;font-size:13px}
-@media (max-width:640px){main{flex-direction:column}aside{width:auto;max-width:none;border-left:0;border-top:1px solid var(--line);max-height:40vh}}
+header{overflow-wrap:anywhere}
+@media (max-width:699px){html,body{height:auto}body{display:block}main{display:block}#stage{height:72vh;min-height:320px}
+aside{width:auto;max-width:none;border-left:0;border-top:1px solid var(--line);overflow:visible}}
 """
 
 
@@ -306,7 +312,15 @@ const lines=E.map(e=>el('line',{x1:X[e[0]],y1:Y[e[0]],x2:X[e[1]],y2:Y[e[1]]},eg)
 const dots=G.nodes.map((n,i)=>{const c=el('circle',{cx:X[i],cy:Y[i],r:R(i),fill:col(n.family),stroke:dark?'#121211':'#fafaf8','stroke-width':1.2},ng);
  c.dataset.i=i;h('title',n.name+' ('+n.type+(n.sup?', '+n.sup:'')+')',c);return c});
 const most=[...G.nodes.keys()].sort((a,b)=>deg[b]-deg[a]).slice(0,N<=60?N:40);
-const labs=new Map();for(const i of most){const t=el('text',{x:X[i]+R(i)+2,y:Y[i]+4},lg);t.textContent=G.nodes[i].name;labs.set(i,t)}
+// Labels, greedy by degree: one is drawn only where it meets no label already placed; a hidden
+// one shows on hover and when its node or a neighbour is clicked, and the head counts them.
+const labs=new Map(),boxes=[];let clash=0;
+for(const i of most){const t=el('text',{x:X[i]+R(i)+2,y:Y[i]+4},lg);t.textContent=G.nodes[i].name;const b=t.getBBox();
+ if(boxes.some(q=>b.x<q.x+q.width&&q.x<b.x+b.width&&b.y<q.y+q.height&&q.y<b.y+b.height)){t.remove();clash++;continue}
+ boxes.push({x:b.x,y:b.y,width:b.width,height:b.height});labs.set(i,t)}
+const unlabelled=N-labs.size;
+if(unlabelled){const hd=document.querySelector('header');hd.append(' · '+unlabelled+' label'+(unlabelled===1?'':'s')+' hidden ('+
+ (clash?clash+' would overlap':'')+(clash&&unlabelled>clash?', ':'')+(unlabelled>clash?(unlabelled-clash)+' past the '+most.length+' most linked':'')+'): hover or click a dot')}
 let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(let i=0;i<N;i++){x0=Math.min(x0,X[i]);y0=Math.min(y0,Y[i]);x1=Math.max(x1,X[i]);y1=Math.max(y1,Y[i])}
 const fit=()=>N?fitTo(x0-60,y0-40,x1+120,y1+40):fitTo(0,0,100,100);fit();
 const hiddenType=new Set(),HI=getComputedStyle(document.body).getPropertyValue('--hi').trim();
@@ -322,7 +336,7 @@ function legend(){side.textContent='';h('input',null,side).placeholder='Find an 
  const dl=h('datalist',null,side);dl.id='names';inp.setAttribute('list','names');G.nodes.forEach(n=>{const o=h('option',null,dl);o.value=n.name});
  inp.addEventListener('change',()=>{const q=inp.value.trim().toLowerCase();let i=G.nodes.findIndex(n=>n.name.toLowerCase()===q);
   if(i<0)i=G.nodes.findIndex(n=>n.name.toLowerCase().includes(q));if(i>=0)select(i,true)});
- h('p',N+' elements, '+E.length+' links',side,'k');
+ h('p',N+' elements, '+E.length+' links'+(unlabelled?'; '+unlabelled+' names hidden where they would crowd: hover or click a dot':''),side,'k');
  const byT={};G.nodes.forEach(n=>{(byT[n.type]=byT[n.type]||{n:0,f:n.family}).n++});
  for(const f of D.families){const ts=Object.keys(byT).filter(t=>byT[t].f===f);if(!ts.length)continue;
   const d=h('div',null,side);const s=h('span',null,d,'sw');s.style.background=col(f);h('b',f[0].toUpperCase()+f.slice(1),d);
@@ -334,6 +348,8 @@ function select(i,center){paint(i);const n=G.nodes[i];side.textContent='';const 
  for(const[ttl,ks,other]of[['Links out',out,1],['Linked from',inn,0]]){if(!ks.length)continue;h('b',ttl+' ('+ks.length+')',side);const ul=h('ul',null,side);
   for(const k of ks){const j=E[k][other],li=h('li',null,ul);h('span',E[k][2]+': ',li,'k');const a=h('a',G.nodes[j].name,li);a.onclick=()=>select(j,true)}}
  if(center){const w=vb[2],hh=vb[3];vb=[X[i]-w/2,Y[i]-hh/2,w,hh];setVB()}}
+dots.forEach((c,i)=>{c.addEventListener('pointerenter',()=>{if(labs.has(i)||c.style.display==='none')return;const t=el('text',{x:X[i]+R(i)+2,y:Y[i]+4},lg);t.textContent=G.nodes[i].name;t.dataset.hov=1});
+ c.addEventListener('pointerleave',()=>lg.querySelectorAll('[data-hov]').forEach(t=>t.remove()))});
 window.onTap=ev=>{const t=ev.target;if(t.tagName==='circle')select(+t.dataset.i,false);else{paint(null);legend()}};
 legend();paint(null);
 const ms=Math.round(performance.now()-t0);document.body.dataset.ms=ms;document.getElementById('ms').textContent='Laid out and drawn in '+ms+' ms.';
