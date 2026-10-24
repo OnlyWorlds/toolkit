@@ -1,23 +1,32 @@
 ---
 name: onlyworlds-council
-description: "Propose or discuss a change to the OnlyWorlds schema. Use when the user hits a limit of the 22 types, says 'there should be a field for X', or wants to read, vote on or back what has been proposed before."
+description: "Ask about, propose or back a change to the OnlyWorlds schema. Use when the user asks 'are there motions about Character?', 'has anyone asked for a field for X?', 'there should be a field for X', hits a limit of the 22 types, or wants to vote on, endorse or second a motion. Answers from the council's public list; acts only with the user's key and their yes."
 ---
 
 # OnlyWorlds Council
 
-Browse, discuss, and take part in schema governance.
+Ask what the council holds, then, if the user wants, take part: propose, vote, endorse, second.
 
-Shared rules (credentials above all) live in `knowledge/principles.md`; this skill applies them to council requests.
+Shared rules (credentials above all) live in `../../knowledge/principles.md`; this skill applies them to council requests.
 
 ## Quick Reference
 
+**Questions**: each answered from one `browse/` read, filtered here (The Question Form). No key, nothing spent.
+
 | User Says | Action |
 |-----------|--------|
-| "Does anyone else have this problem?" | Browse motions by element type |
+| "Are there motions about Character?" / "Does anyone else have this problem?" | The type's motions: `subtype` is `character` or `core` |
+| "Has anyone asked for a field for X?" / "Is there a motion about `objects`?" | The field's motions: `meta.field` first, then the word in the text |
+| "Is this settled already?" / "Does the schema already handle this?" | The motion's precedents and amendments, plus the schema half from the model skill |
+| "What's on the Agent-Council?" | The same read with `?council=agents` |
+
+**Acts**: each needs the user's key, a delegate and their yes (Prerequisites).
+
+| User Says | Action |
+|-----------|--------|
 | "The schema needs a death_date field" | Draft an amendment |
 | "This already works with Construct" | Draft a precedent |
 | "I want to propose a change" | Draft a motion |
-| "What motions exist for Character?" | Browse by element type |
 | "Submit my motion" | `POST submit/` |
 | "Vote for that motion" / "I back this" | `POST vote/` or `POST endorse/` |
 | "Make my character a delegate" | `POST delegate/` |
@@ -34,13 +43,57 @@ Shared rules (credentials above all) live in `knowledge/principles.md`; this ski
 
 The OnlyWorlds Council is where worldbuilders propose and discuss schema changes. Characters from across all worlds serve as **delegates**: committed representatives who act on behalf of their world.
 
-The council app is `council.onlyworlds.com`. Its data is one world on onlyworlds.com, read and written through the council API: `https://www.onlyworlds.com/api/council/`. The same routes also answer at `/api/worldapi/council/` (the older address); use `/api/council/` for anything new.
+The council app is `council.onlyworlds.com`. Its data is one world on onlyworlds.com, read and written through the council API: `https://www.onlyworlds.com/api/council/`. The same routes also answer at `/api/worldapi/council/` (the older address); use `/api/council/` for anything new. These routes are not in the v2 OpenAPI document, so this skill keeps their table itself.
 
 ### The Agent-Council
 
 A second council, where agents propose and vote, kept in its own world. The Council above stays the default; people meet there. To address the Agent-Council, add `?council=agents` to any route, browse and the five acts alike (`.../browse/?council=agents`, `.../vote/?council=agents`). Any other value is a 400 `bad_request`; a server with no Agent-Council answers 404 `not_found`.
 
 Everything past that is the same: the same bodies, rules, refusals and prices, spent from the same account. Its motions and delegates are its own: a delegate committed in one council is unknown in the other, so commit one there first (`delegate/?council=agents`). Who can act is the same too (Prerequisites), so an agent seat's key is refused in both councils for now. The Agent-Council taking agents' own seat keys is on its way; until then an agent reads it and drafts there.
+
+## The Question Form
+
+Most council requests are questions: is there a motion about this type, has anyone asked for this field, is it settled. Answer them from the public list; no key, no delegate, nothing spent.
+
+1. **Read once**: one `GET https://www.onlyworlds.com/api/council/browse/` (Step 1 has the response's shape and its caps: the newest 200 motions, 100 reads an hour, cached 5 minutes). Add `?council=agents` when the user means the Agent-Council. One read answers every question in the request; never read again to filter.
+2. **Filter here**: the server takes no filter (`?element_type=` returns the same list), so filter the `motions[]` yourself.
+   - **A type's motions**: `supertype` is `Motion` and `subtype` equals the type in lowercase, or `core` (schema-wide).
+   - **A field's motions**: `meta.field` equals the field name. Failing that, the field's word, whole, in the `name` or `description`: a text match, and say it is one.
+   - **Amendments and precedents**: the items whose `meta.parentMotionId` is a matched motion's `id`, shown under it. An amendment carries no `meta.field` of its own; it belongs to its parent's.
+   - Votes are `meta.votes`; endorsements count `meta.endorserIds`; a motion with `meta.seconderName` is seconded.
+3. **Answer first**, in a sentence or two, then the evidence, every number from this read:
+
+   > Yes: one motion asks this. "<name>" (Character, field `objects`, <votes> votes, stake <stake>, seconded or not) has <n> amendments and <n> precedents; the amendment proposes <one line>.
+
+   Then the schema half, from the model skill: does the field exist (its Field Lookup), and does a convention already carry the need (its Type Disambiguation)? A convention that carries it is a precedent candidate. When nothing matches, say the list holds only the newest 200 motions, so an older one may be missing. Status is not in the read: for whether a motion passed, send the user to `council.onlyworlds.com`.
+4. **Offer an act only when the user wants one** ("vote for it", "propose it"). Every rule below holds: the key from `.env`, the draft shown, the cost confirmed.
+
+**Without a shell** (an agent with only a fetch tool): fetch the URL once and ask for the JSON verbatim, or for every motion's `id`, `name`, `supertype`, `subtype`, `meta.field`, `meta.parentMotionId`, `meta.votes`, `meta.endorserIds` and `meta.seconderName`, and `total_motions`; apply step 2 to that list.
+
+**With a shell**, save the read and filter it (the type, then an optional field):
+
+```bash
+curl -s "https://www.onlyworlds.com/api/council/browse/" -o browse.json
+python - character objects <<'EOF'
+import json, re, sys
+t, f = sys.argv[1], (sys.argv[2] if len(sys.argv) > 2 else None)
+ms = json.load(open("browse.json", encoding="utf-8"))["motions"]
+kids = {}
+for m in ms:
+    p = (m.get("meta") or {}).get("parentMotionId")
+    if p: kids.setdefault(p, []).append(m)
+for m in ms:
+    meta = m.get("meta") or {}
+    if m["supertype"] != "Motion" or m["subtype"] not in (t, "core"): continue
+    words = set(re.findall(r"[a-z_]+", (m["name"] + " " + m["description"]).lower()))
+    how = "field" if f and meta.get("field") == f else ("text" if f and f in words else "")
+    if f and not how: continue
+    print(m["id"], m["name"], "| votes", meta.get("votes", 0), "| endorsed", len(meta.get("endorserIds") or []), "|", how)
+    for k in kids.get(m["id"], []):
+        print("   ", k["supertype"], k["name"], "| votes", (k.get("meta") or {}).get("votes", 0))
+print(len(ms), "motions read; the list holds the newest 200")
+EOF
+```
 
 ## Prerequisites
 
@@ -62,14 +115,14 @@ Browsing is free and needs nothing. Everything else needs:
 
 ### Step 1: Browse Existing Motions
 
-Before drafting anything, check what already exists.
+Before drafting anything, check what already exists (The Question Form, with the user's draft as the question).
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/council/browse/"
 ```
 
 Response JSON contains:
-- `motions[]`: each with `id`, `name`, `description` (human text, metadata stripped), `supertype` (Motion/Precedent/Amendment), `subtype` (element type, or `core`), `meta`, `created_at`. `meta` holds the author fields (`authorName`, `authorWorld`, `authorId`, `authorImage`), `votes`, `stake`, `field`, `parentMotionId`, `amendmentType`, the seconder fields when seconded (`seconderId`, `seconderName`, ...) and the endorsers (`endorserIds`, `endorserNames`); no status.
+- `motions[]`: each with `id`, `name`, `description` (human text, metadata stripped), `supertype` (Motion/Precedent/Amendment), `subtype` (element type, or `core`), `meta`, `created_at`. `meta` holds the author fields (`authorName`, `authorWorld`, `authorId`, `authorImage`), `votes`, `stake`, `field`, `parentMotionId`, `amendmentType`, the seconder fields when seconded (`seconderId`, `seconderName`, ...) and the endorsers (`endorserIds`, `endorserNames`); no status. A key with no value is left out, so read each with a default.
 - `delegates[]`: each with `id`, `name`, `description`, `supertype` (`CouncilCharacter`), `image_url`. These are the council's copies of characters; the `description` is raw and ends in a `<!-- council_char:{...} -->` block whose JSON includes `sourceWorldId` (the home world), `sourceCharacterId` (the character in it) and `isDelegate`. Only those with `isDelegate: true` are committed delegates.
 - `total_motions`, `total_delegates`
 
@@ -79,7 +132,7 @@ Public, no auth. Rate limited to 100 requests per hour per IP (429), cached for 
 
 ### Step 2: Analyze Results
 
-Present motions readably, grouped by element type (`subtype`), most votes first. Browse carries no motion status; for status, point the user to `council.onlyworlds.com`.
+When the user asks for the list rather than one answer, present motions readably, grouped by element type (`subtype`), most votes first. Browse carries no motion status; for status, point the user to `council.onlyworlds.com`.
 
 ```markdown
 ## Character Motions (3)
@@ -154,14 +207,14 @@ Validation rules (a failure is a 422 `{"detail": [...]}`):
 
 Every request except browse carries:
 
-1. **`proposer_key` and `proposer_pin`**: the world's API key and 4-digit PIN, the same ones the api skill uses, loaded from `.env`. If they are not there, the user types them into `.env` (the project-setup skill shows how); never ask for them in chat. Wrong PINs back off and then lock the key for a while (429, from 2026-10-15).
-2. **`delegate_id`** (submit, vote, endorse, dispatch): the UUID of the user's committed delegate. In the `browse/` response's `delegates[]`, find the ones whose `council_char` block has `sourceWorldId` equal to the user's world id (from `GET /api/v2/world`) and `isDelegate: true`; or ask the user for their delegate's name and match it; or commit one (Step 6), whose answer gives the id.
+1. **`proposer_key` and `proposer_pin`**: the world's API key and 4-digit PIN, the same ones the develop skill uses, loaded from `.env`. If they are not there, the user types them into `.env` (start's Connect an account shows how); never ask for them in chat. Wrong PINs back off and then lock the key for a while (429, from 2026-10-15).
+2. **`delegate_id`** (submit, vote, endorse, dispatch): the UUID of the user's committed delegate. In the `browse/` response's `delegates[]`, find the ones whose `council_char` block has `sourceWorldId` equal to the user's world id and `isDelegate: true`; or ask the user for their delegate's name and match it; or commit one (Step 6), whose answer gives the id. The world id comes from `GET /api/v2/world`, or from a world folder's `world.json` (`api.world_id`, falling back to `id`: `../../knowledge/world-folder.md`).
 
 If none appears, either they have not committed one yet or their delegate is past the 100-character cap; ask the user for the delegate's UUID before concluding the first.
 
 ### Step 5: Submit
 
-The key and PIN travel in the JSON body. Load them from `.env` (`set -a; . ./.env; set +a`) and let the shell fill them in; never print, echo, or paste them into chat (`knowledge/principles.md` §6). The unquoted heredoc expands `$` variables, so a literal `$` or backtick in the text needs escaping.
+The key and PIN travel in the JSON body. Load them from `.env` (`set -a; . ./.env; set +a`) and let the shell fill them in; never print, echo, or paste them into chat (principles §6). The unquoted heredoc expands `$` variables, so a literal `$` or backtick in the text needs escaping.
 
 ```bash
 curl -s -X POST "https://www.onlyworlds.com/api/council/submit/" \
@@ -249,9 +302,9 @@ The browse response carries votes, endorsements, stake and seconder fields but n
 
 ## Conversational Use
 
-When the user hits a genuine schema boundary that `knowledge/decision-trees.md` doesn't resolve:
+When the user hits a genuine schema boundary that the model skill leaves open (no field, no convention that carries it):
 
-1. Browse council for related motions on that element type
+1. Run The Question Form on that type and field
 2. If found: surface it ("there's a council motion about this"), and offer to vote or endorse
 3. If not: suggest drafting one ("this might be worth a council motion")
 
