@@ -29,7 +29,7 @@ Shared rules (field kinds, extension fields, identity, records beside the graph)
 | "What fields does X have?" | X's own section of `knowledge/schema-reference.md`, plus its Base Fields: read it and **present the fields directly** to the user |
 | "Does X.field exist?" | Look in X's own section of the page (plus Base Fields). A field listed only under another type does not count. Not there = not a schema field; custom data goes in `x_<name>` |
 | "Object vs Construct?" | Specific instance vs type/concept. Can you point at it? Object. |
-| "Character vs Creature?" | Narrative agency → Character. Biological focus → Creature. |
+| "Character vs Creature?" | Narrative agency → Character. Biological focus → Creature. Both definitions: `knowledge/element-types.md` |
 | "Event vs Narrative?" | What happened (factual) → Event. How it's told → Narrative. |
 | "Trait vs Ability?" | Inherent quality → Trait. Learnable/usable power → Ability. |
 | "Institution vs Collective?" | Organized body with purpose and structure → Institution. Group that acts as a unit without formal governance → Collective. |
@@ -38,7 +38,7 @@ Shared rules (field kinds, extension fields, identity, records beside the graph)
 | "How to link X to Y?" | Link Direction, below |
 | "How do I mark a death?" | Marking a Dead Character, below |
 
-The one-liners are gists; each pair's reasoning and edge cases are in `knowledge/decision-trees.md`.
+The one-liners are gists. `knowledge/decision-trees.md` carries the reasoning and edge cases for Object vs Construct, Title vs Construct, Collective vs Institution, Event vs Narrative, Trait vs Ability and Location vs Zone (and Species vs Creature, ships, eras, ranks); Character vs Creature has no section there, only the one-liner and the definitions.
 
 ## The Core Insight
 
@@ -80,7 +80,7 @@ Map concepts to OnlyWorlds elements. Present as a table:
 Every field and link in the table is one you found in that type's own section of the page. To see a whole world built this way, read one before you propose (both are public, in github.com/OnlyWorlds/schema-dist; fetch them: they are not on disk):
 
 - **An ecosystem, a company, a software project**: `profiles/spine.md`, the spine profile. Tools and services are Objects, the contracts they speak Constructs through `Object.technology`, where each thing lives a Location, who keeps it a Title with supertype `Seat`, its policies Laws, and what no field holds goes in its `x_spine_` keys.
-- **Fiction**: `example/hyperion/`, a small world folder (35 elements over 19 types). The Consul's Steinway is an Object inside the Ebony Spaceship (`parent_object`), Steinway Piano the Construct for the kind, Consul of the Hegemony a Title with its `issuer` and `holders`.
+- **Fiction**: `example/hyperion/`, a small world folder (35 elements over 19 types). Steinway Piano is the Construct for the kind of the Consul's Steinway, Consul of the Hegemony a Title with its `issuer` and `holders`. A ship is an Object (it is made, owned, sunk) and the place aboard it is a Location linked to it; Hyperion as published keeps the ship as the Object the Steinway's `parent_object` names (the Ebony Spaceship).
 
 To create the elements: emit JSON or a world folder as in the import skill's Step 7 (`knowledge/world-folder.md` for the folder); an account world takes them through the develop skill's Bulk Upload.
 
