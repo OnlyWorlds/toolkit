@@ -168,7 +168,7 @@ class Report:
 
 
 def death_of(e):
-    """(is_dead, death_date or None, field) under the schema skill's convention: a
+    """(is_dead, death_date or None, field) under the model skill's convention: a
     "[Deceased] " prefix on a Character's physicality or a Creature's status marks the death.
     The date: a year right after the prefix; else background's death line (one naming death
     or died, with one year), where the convention writes it; else a lone integer in the rest
