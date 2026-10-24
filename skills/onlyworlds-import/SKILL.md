@@ -19,7 +19,8 @@ Shared rules (identity, field kinds, propose-review-apply, checking your work) l
 | Messy notes with contradictions | Parse what is decided; report the rest (Step 3) |
 | PDFs | Read in page ranges; scanned pages need OCR first; report unreadable pages |
 | Someone else's book, or history mixed with fiction | Your own words, a basis label per element, attribution (Step 2, sources) |
-| No account | Output a world folder (opens in Atlas) |
+| No account | Output a world folder (opens in Atlas; Step 7 says which browsers) |
+| The source marks something GM-only (a secret, a twist, a stat block) | `hidden: true` in that element's file (Step 3) |
 | An existing world (folder or API) | Reconcile before writing (Step 5) |
 | Campaigns or stories in a parsed world | Commit the parsed world as canon, branch per campaign (`knowledge/world-folder.md`, keeping history in git), then the update skill after each session |
 | After each played session | The update skill |
@@ -80,6 +81,7 @@ Work one document at a time, a unit you can read whole (a chapter, or a book tak
 - **Link by name** at this stage (names become ids in Step 7). Only link what is stated or clearly implied. If a link field does not exist on one side, check the other side (the schema reference's Link Direction Summary shows who holds each link).
 - **Messy sources**: parse what the author decided ("going with", "this is canon now", plain statements); report brainstorming ("maybe", "what if", "???") separately. When sources contradict and the author never settled it, keep both versions for the user's ruling. The thing a question is about may still be an element even if its details are open.
 - **Revise**: when a later passage changes an earlier element (a "battle" turns out to be a massacre), update the element and note it.
+- **GM-only**: what the source marks GM-only (a secret, a twist, a stat block the players never see) goes `hidden: true` in the element's file, the folder format's `hidden` mark. The holder sees it; a published page and every member but the keepers do not.
 
 ### Step 4: Check
 
@@ -107,7 +109,7 @@ Write the change list in the same row format the update skill uses, one line per
 
 1. **Resolve names to ids.** Mint a UUID per new element (v7 recommended). Resolve every link name to an id, searching only the link's target type. A name with no match, or more than one, goes back to the user; never guess.
 2. **Write**:
-   - **World folder** (the default, no account needed): `world.json` + one file per element, per `knowledge/world-folder.md`. It opens in Atlas.
+   - **World folder** (the default, no account needed): `world.json` + one file per element, per `knowledge/world-folder.md`. It opens in Atlas; folder mode needs a Chromium browser, and in Firefox or Safari Atlas opens the world as one `.owworld` file (the carry skill makes it).
    - **Account world**: new elements through develop's Bulk Upload; an existing element is updated by PATCH or the links route, never resent in a batch (Bulk Upload says why).
    - **Grouped JSON with names** is only a review form; it is not uploadable as is.
 3. **Read back** what landed and compare it with the approved change list, or for a new folder with the extraction file (principles §5). A world folder's read-back starts with schema-dist's folder check, `python walk/lint_folder.py <folder>` (Python 3 with PyYAML), run from a clone of schema-dist, since it imports `schema_walk.py` and reads `schema/` beside it (`knowledge/world-folder.md`, writing a new folder). It catches invented fields, unresolved or mistyped links and wrong value shapes in one pass, and its last line is the count it checked.
