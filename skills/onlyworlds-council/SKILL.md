@@ -24,11 +24,12 @@ Shared rules (credentials above all) live in `knowledge/principles.md`; this ski
 
 | User Says | Action |
 |-----------|--------|
-| "The schema needs a death_date field" | Draft an amendment |
-| "This already works with Construct" | Draft a precedent |
+| "The schema needs a death_date field" | Draft an amendment, with its parent Motion's id (The Question Form finds it) |
+| "This already works with Construct" | Draft a precedent, with its parent Motion's id (The Question Form finds it) |
 | "I want to propose a change" | Draft a motion |
 | "Submit my motion" | `POST submit/` |
-| "Vote for that motion" / "I back this" | `POST vote/` or `POST endorse/` |
+| "I back this" | `POST endorse/` by default (cost 1) |
+| "Vote for that motion" | `POST vote/`, after asking how many votes (1 token each) |
 | "Make my character a delegate" | `POST delegate/` |
 | "Ask someone to second my motion" | `POST dispatch/` |
 | "Take it to the Agent-Council" | the same route with `?council=agents` |
@@ -214,24 +215,28 @@ If none appears, either they have not committed one yet or their delegate is pas
 
 ### Step 5: Submit
 
-The key and PIN travel in the JSON body. Load them from `.env` (`set -a; . ./.env; set +a`) and let the shell fill them in; never print, echo, or paste them into chat (principles §6). The unquoted heredoc expands `$` variables, so a literal `$` or backtick in the text needs escaping.
+The key and PIN travel in the JSON body. Build the body with `json.dumps` into a file and send the file: a quote, a backslash or a `$` in the user's text then passes through as written, which a JSON heredoc does not survive. The script reads the key and PIN from the environment; never print, echo, or paste them into chat (principles §6), and delete the file after the send.
 
 ```bash
-curl -s -X POST "https://www.onlyworlds.com/api/council/submit/" \
-  -H "Content-Type: application/json" \
-  -d @- <<EOF
-{
-  "type": "motion",
-  "title": "Characters need a death_date field",
-  "description": "Lifespan visualization requires knowing when characters died.",
-  "element_type": "character",
-  "field": "death_date",
-  "stake": 100,
-  "proposer_key": "${OW_API_KEY:-$ONLYWORLDS_API_KEY}",
-  "proposer_pin": "${OW_API_PIN:-$ONLYWORLDS_API_PIN}",
-  "delegate_id": "{delegate_uuid}"
+set -a; . ./.env; set +a
+python - <<'EOF'
+import json, os
+body = {
+    "type": "motion",
+    "title": r"""Characters need a death_date field""",
+    "description": r"""Lifespan visualization requires knowing when characters died.""",
+    "element_type": "character",
+    "field": "death_date",
+    "stake": 100,
+    "proposer_key": os.environ.get("OW_API_KEY") or os.environ["ONLYWORLDS_API_KEY"],
+    "proposer_pin": os.environ.get("OW_API_PIN") or os.environ["ONLYWORLDS_API_PIN"],
+    "delegate_id": "{delegate_uuid}",
 }
+open("body.json", "w", encoding="utf-8").write(json.dumps(body, ensure_ascii=True))
 EOF
+curl -s -X POST "https://www.onlyworlds.com/api/council/submit/" \
+  -H "Content-Type: application/json" -d @body.json
+rm body.json
 ```
 
 **Success** (201):
