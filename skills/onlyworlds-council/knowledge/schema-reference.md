@@ -1,7 +1,7 @@
 # OnlyWorlds Schema Reference
 
-**Schema Version**: 00.32.02 (canonical VERSION; distributed via github.com/OnlyWorlds/schema-dist, release v0.32.2-dist.33; types generated into @onlyworlds/sdk 4.x)
-**Last Verified**: 2026-10-20 (every field, its kind and its link target, all 22 types, against the schema YAML at 00.32.02; the live v2 platform last 2026-09-28)
+**Schema Version**: 00.33.00 (canonical VERSION; distributed via github.com/OnlyWorlds/schema-dist, release v0.33.0-dist.59; types generated into @onlyworlds/sdk 4.x)
+**Last Verified**: 2026-10-24 (every field, all 22 types, against schema-dist's `schema.json` at 00.33.00, serial 59; Zone's `shape` also against the live v2 OpenAPI document)
 
 The schema is now single-sourced from the canonical schema YAML: models, SDK, and docs are generated from it, so field lists here track that source. Field descriptors for any type are also available live at `GET /api/metadata/{type}/`.
 
@@ -490,6 +490,7 @@ characters, objects, locations, species, creatures, institutions, traits, collec
 
 **Scope:**
 - role (text) - Functional purpose of the zone
+- shape (text) - How the zone's markers are joined: `polygon` (a closed area: the last marker joins the first) or `line` (an open path, drawn in marker order). Lowercase. Empty, absent, or any other value means the shape is not stated, and a reader draws a polygon
 - start_date (integer) - When becomes relevant
 - end_date (integer) - When ceases meaning
 - phenomena (multi-link → Phenomenon) - Affecting phenomena

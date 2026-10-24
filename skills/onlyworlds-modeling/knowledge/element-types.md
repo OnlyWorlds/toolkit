@@ -57,6 +57,7 @@ Don't create separate elements for:
 - **Object + Construct** often pair: specific instance + its type
 - **Character + Title** often pair: person + their position
 - **Creature + Species** often pair: individual + its kind
+- **Zone + Marker** pair: the Zone is the area or path, its Markers the points in `order`; Zone's `shape` says `polygon` (closed, the default) or `line` (an open path)
 
 ---
 

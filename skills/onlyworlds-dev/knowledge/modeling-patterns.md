@@ -119,6 +119,8 @@ The Constructs are "Steel", "Mithril", "Enchanting Method X". The Objects are th
 
 Reputation tracking: If a Character's standing with a faction matters, use Relation element. Actor = Character, links to Institution, `intensity` field for reputation score.
 
+Who keeps a thing is a Title with supertype `Seat` whose `holders` are the keepers and whose `objects`, `constructs`, `locations` and `laws` are what they keep; a Relation is for a seam between two owners with a history, never for every "reads" or "depends on" edge.
+
 ### Maps, Pins, and Zones (Spatial System)
 
 **Pattern: Layered visual containers**
@@ -157,9 +159,9 @@ Marker 1 (order: 0) ──────── Marker 2 (order: 1)
 Marker 4 (order: 3) ──────── Marker 3 (order: 2)
 ```
 
-A Zone drawn by Markers is a closed polygon by default. Atlas records the shape in its own `atlas_shape` field; other writers leave that field to Atlas and mark an open line with supertype `line`, which Atlas also reads. Write it lowercase: Atlas reads it in any case since 1.5, but earlier versions matched only `line`. Always write order.
+A Zone's `shape` says how its Markers are joined: `polygon` (a closed area, the default) or `line` (an open path in marker order), lowercase; any other value, or none, draws a polygon. Atlas reads `shape` first; its own `atlas_shape` field is Atlas's to write. A line whose supertype the user left empty may also carry supertype `line`, the word readers that predate `shape` look for. Always write order.
 
-**Routes and itineraries**: the path itself is a Zone with supertype `line`, drawn by Markers in `order`. The stops are Pins as usual. Pin has no order field, so when the sequence of stops matters, give each Pin an extension field such as `x_order` (0 = first) and name it in the world's rules; dated Events at the stops carry the same sequence in time.
+**Routes and itineraries**: the path itself is a Zone with `shape: line`, drawn by Markers in `order`. The stops are Pins as usual. Pin has no order field, so when the sequence of stops matters, give each Pin an extension field such as `x_order` (0 = first) and name it in the world's rules; dated Events at the stops carry the same sequence in time.
 
 **Visual overview**:
 
@@ -185,7 +187,7 @@ A Zone drawn by Markers is a closed polygon by default. Atlas records the shape 
 - Map: "Moppetopia Space Map" (width: 2400, height: 1600)
 - Pin: x: 450, y: 720, element_type: "location", element_id → Feltropolis
 - Pin: x: 450, y: 720, element_type: "character", element_id → Admiral Fluffington - same coords, stacked
-- Zone: "The Snack Nebula" (a polygon, the default)
+- Zone: "The Snack Nebula" (`shape: polygon`, or left empty: the default)
 - Markers: 4 points at corners, order 0-3, all linking to the Zone
 
 ### Schedules and Structured Data
@@ -282,7 +284,7 @@ Object: The Constitution of Feltropolis
   supertype: Document
   subtype: Legal/Founding
 
-Object: Captain's Quarters
+Object: Admiral's Quarters
   supertype: Room
   subtype: Ship/Command
 ```
@@ -292,6 +294,8 @@ This works if you want uniform handling in your tool. Trade-off: you lose specia
 ---
 
 ## Extension Boundaries
+
+Before proposing a script or a new element kind for something about the world itself (its members' roles, recent changes, review state, checks), read what onlyworlds.com already serves for it: the OpenAPI document at `www.onlyworlds.com/api/v2/openapi.json`, and the extension profiles in `github.com/OnlyWorlds/schema-dist/profiles/`.
 
 ### What the API Accepts
 
@@ -334,6 +338,8 @@ Store extended data locally, or sync it in `x_*` fields (above).
 ### "Should this be Object or Construct?"
 
 Can you point at it? Object. Is it an idea that several things instantiate? Construct. Reasoning and examples: `../../../knowledge/decision-trees.md`, Object vs Construct.
+
+A tool, package or service is an Object; a contract it speaks (an API, a file format, a protocol) is a Construct, and `Object.technology` is the edge from the thing to the contracts it implements, set on the dependent's side only.
 
 ### "Where do I put character attributes like age?"
 
