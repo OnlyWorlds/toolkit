@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-setup
-description: "Set up a world for a company, a team, an AI's own home, a council or board, a workshop or a software project, from a starter pack: house rules, a world skill for the AIs, a seed, the invites. Use when the user says 'set up a world for work', 'a shared knowledge base for our agents', 'invite my AI', 'a home for my AI'."
+description: "Set up a world for a company, a team, an AI's own home, a council or board, or a software project, from a starter pack: house rules, a world skill for the AIs, a seed, the invites. Use when the user says 'set up a world for work', 'a shared knowledge base for our agents', 'invite my AI', 'a home for my AI'."
 ---
 
 # OnlyWorlds Setup
