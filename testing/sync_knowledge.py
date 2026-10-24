@@ -14,11 +14,20 @@ the root file byte for byte except its pointers, rewritten for its new home:
 
     ../skills/<s>/...    -> ../../<s>/...                (another skill, from skills/<x>/knowledge/)
     <other>.md           kept when <other>.md is copied into the same skill;
-                         otherwise -> ../../../knowledge/<other>.md (the root form; listed with -v)
+                         otherwise -> ../../../knowledge/<other>.md (the root form)
+
+The root form resolves in the repository but not after `npx skills add`, which installs the
+skill's folder alone: a sync counts them (`-v` lists each), and `--check` fails on each. The fix is in the
+skill (name the file, so it is copied) or in the root file (drop the name).
+
+`knowledge/schema-reference.md` is generated (testing/gen_schema_page.py), never edited by
+hand: both modes run `gen_schema_page.py --check` first and fail, writing nothing, when the
+page differs from its generator at the release tag in its header, or when that check cannot
+run (it fetches the release, so it needs the network).
 
 The copies are committed (the directory installs from the main branch). A skill's own
-knowledge file (no root namesake, like dev's deployment.md) is left alone; it must not take
-a root knowledge file's name. Run after editing anything in `knowledge/`, then commit.
+knowledge file (no root namesake, like develop's deployment.md) is left alone; it must not
+take a root knowledge file's name. Run after editing anything in `knowledge/`, then commit.
 
 Usage:
     python testing/sync_knowledge.py [-v] [TOOLKIT_DIR]           sync: copy, rewrite, prune
@@ -27,6 +36,7 @@ Usage:
 Python 3, stdlib only.
 """
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -64,6 +74,26 @@ def transform(text, keep, sib, rooted):
     return sib.sub(fix, text)
 
 
+def generated_page_problems(tk):
+    """The generated schema page against its generator; a list of problems (empty when clean)."""
+    page = tk / "knowledge" / "schema-reference.md"
+    gen = tk / "testing" / "gen_schema_page.py"
+    if not page.exists():
+        return []
+    if not gen.exists():
+        return [f"knowledge/schema-reference.md is generated, and {gen.relative_to(tk).as_posix()} is missing"]
+    r = subprocess.run([sys.executable, str(gen), "--check", str(tk)], capture_output=True,
+                       text=True, encoding="utf-8", errors="replace")
+    if r.returncode == 0:
+        return []
+    said = " ".join((r.stdout + r.stderr).split())
+    if r.returncode == 1:
+        return ["knowledge/schema-reference.md differs from its generator (a hand edit?): "
+                "regenerate it with testing/gen_schema_page.py, never edit it"]
+    return [f"knowledge/schema-reference.md could not be checked against its generator "
+            f"(gen_schema_page.py exit {r.returncode}: {said})"]
+
+
 def main(argv):
     check = "--check" in argv
     verbose = "-v" in argv
@@ -72,7 +102,7 @@ def main(argv):
     root_kn = tk / "knowledge"
     root_names = {p.name for p in root_kn.glob("*.md")}
     sib = sibling_re(root_names)
-    problems, notes = [], []
+    problems, notes = generated_page_problems(tk), []
     stats = {"rewritten": 0, "copies": 0, "rooted": 0}
     writes, copies, prunes = [], [], []  # applied only when the whole tree is clean
 
@@ -125,7 +155,11 @@ def main(argv):
             stats["copies"] += 1
             stats["rooted"] += len(rooted)
             for r in rooted:
-                notes.append(f"{dst.relative_to(tk).as_posix()}: {r} -> ../../../knowledge/{r} (not copied)")
+                line = f"{dst.relative_to(tk).as_posix()}: {r} -> ../../../knowledge/{r} (not copied)"
+                if check:
+                    problems.append(f"{line}: the root form does not resolve after npx skills add")
+                else:
+                    notes.append(line)
             if dst.exists() and read_text(dst) == expected:
                 continue
             if check:
