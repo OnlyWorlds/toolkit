@@ -3,8 +3,10 @@
 Reads a world folder (world.json + elements/<type>/*.json, plus a legacy spatial/ folder) and
 prints a Markdown report: counts at the top, one section per class, one line per finding. Each
 finding names the file, the field, the two values that disagree, and the other element.
-"possible" findings are questions, not verdicts. It writes nothing and always exits 0 on a
-report (2 only when the folder cannot be read): a report, not a gate.
+"possible" findings are questions, not verdicts. A finding that involves a proposed element
+(x_review_proposed, the review profile) is "proposal": not yet canon, a question for its keeper,
+never counted as a contradiction. It writes nothing and always exits 0 on a report (2 only
+when the folder cannot be read): a report, not a gate.
 
 The link fields and date fields come from the skill's own copy of the schema reference
 (../knowledge/schema-reference.md), so the check follows the schema the toolkit ships.
@@ -137,6 +139,33 @@ def ref(e):
     return {"id": e["id"], "name": label(e), "type": e["_type"], "file": e["_file"]}
 
 
+# ---------------------------------------------------------------- the marks a world carries
+
+REVIEW_KEYS = {"by", "evidence", "expires"}
+
+
+def review_mark(e):
+    """The review profile's reader rule (schema-dist profiles/review.md, rules 1 and 4):
+    "proposed" when x_review_proposed is an object with its keys, "doubt" for any other value
+    but null (handed on as the proposed are), None when absent or null (settled)."""
+    if e.get("x_review_proposed") is None:
+        return None
+    v = e["x_review_proposed"]
+    return "proposed" if isinstance(v, dict) and REVIEW_KEYS <= v.keys() else "doubt"
+
+
+def is_hidden(e):
+    """Folder spec 4.8's one reading: `hidden` present and not null or false. Hidden from whoever
+    the world is handed to, never from the folder's holder, so it is counted and named."""
+    return e.get("hidden") not in (None, False)
+
+
+def is_known_of(e):
+    """keel's stub (a reader's sheet names it, nothing else shows it): its unset fields are
+    unknown, never empty facts."""
+    return e.get("known_of") is True
+
+
 def as_int(v):
     if isinstance(v, bool) or v is None:
         return None
@@ -160,11 +189,14 @@ class Report:
         self.findings = {c: [] for c in CLASSES}
 
     def add(self, cls, level, e, field, value, other_value, other=None, text=""):
+        # A proposed element is not yet canon (the review profile): a disagreement it takes part
+        # in is a question for its keeper, never counted as the world contradicting itself.
+        proposal = any(x is not None and review_mark(x) for x in (e, other))
         self.findings[cls].append({
-            "level": level, "file": e["_file"], "element": ref(e), "field": field,
+            "level": "proposal" if proposal else level, "file": e["_file"], "element": ref(e), "field": field,
             "value": value, "other_value": other_value,
             "other": ref(other) if other else None,
-            "message": f"{text} ({e['_file']})"})
+            "message": ("Not yet canon (a proposed element): " if proposal else "") + f"{text} ({e['_file']})"})
 
 
 def death_of(e):
@@ -392,8 +424,10 @@ def text_reads(els, links):
 def markdown(world, n_el, n_links, rep, run, notes, skipped, reads):
     c = sum(1 for k in run for x in rep.findings[k] if x["level"] == "contradiction")
     p = sum(1 for k in run for x in rep.findings[k] if x["level"] == "possible")
+    q = sum(1 for k in run for x in rep.findings[k] if x["level"] == "proposal")
     out = [f"# Consistency: {world.get('name') or '(unnamed world)'}", "",
-           f"Checked {n_el} elements, {n_links} links; {c} contradictions, {p} possible.",
+           f"Checked {n_el} elements, {n_links} links; {c} contradictions, {p} possible."
+           + (f" {q} more involve a proposed element, not yet canon: questions for its keeper." if q else ""),
            f"Classes run: {', '.join(run)}."]
     for k in run:
         out += ["", f"## {k}", ""]
@@ -463,8 +497,9 @@ def main(argv):
     if as_json:
         c = sum(1 for k in run for x in rep.findings[k] if x["level"] == "contradiction")
         p = sum(1 for k in run for x in rep.findings[k] if x["level"] == "possible")
+        q = sum(1 for k in run for x in rep.findings[k] if x["level"] == "proposal")
         print(json.dumps({"world": world.get("name"), "elements": len(els), "links": n_links,
-                          "contradictions": c, "possible": p, "classes": run,
+                          "contradictions": c, "possible": p, "proposal": q, "classes": run,
                           "findings": {k: rep.findings[k] for k in run}, "text_reads": reads,
                           "not_checked": notes + skipped}, indent=2, ensure_ascii=False))
     else:

@@ -48,6 +48,8 @@ Python 3, stdlib only; it reads the folder with the consistency script's loader,
 
 **The room is left out unless the user asks.** A room element (principles §4: one of the room profile's pairs and its mark `x_room_of`; its lines, boards, hearts, votes, sittings, specs and members) is the world's work about itself, not its lore. The script drops room elements from the id map before counting, so distribution, degree, orphans and clusters exclude them and their links, and its "Left out" line gives their count: carry it into your answer once. `--room` counts them. Placement (map, pin, marker and zone, the four the draw skill leaves out of its graph) is left out the same way; the report's first line gives the world's whole count and that split, and `--placement` counts them.
 
+**The marks are named.** A proposed element (`x_review_proposed`, an AI seat's write waiting for a keeper: schema-dist's review profile) is not yet canon, so it is left out the same way and the "Left out" line says how many; `--proposed` counts them, each labelled "proposed, not yet reviewed", and a brief never states one as a fact. A known-of stub (`known_of: true`, an element the reader's sheet names but cannot see whole) is counted but its empty fields are unknown: it is never an orphan, a near-orphan or a text row. A hidden element (`hidden`, folder spec 4.8) is counted, since the folder's holder sees it; the "Marks" line gives the counts, and a brief that may be handed on says how many are hidden.
+
 Save the report beside your output; the brief and the link lists cite its numbers and never recount them. The consistency lens runs its own script instead.
 
 ## The survey lens
@@ -81,10 +83,10 @@ From what you read, find:
 
 ```markdown
 True as of: {when the data was read} from {folder path or API world name}
-Not read: {M} of {N} elements read in full; the rest known only by their counts. Skipped: {placement: map, pin, marker, zone}; the room left out: {R} elements; hidden: {H} elements
+Not read: {M} of {N} elements read in full; the rest known only by their counts. Skipped: {placement: map, pin, marker, zone}; the room left out: {R} elements; proposed, not yet reviewed, left out: {P} elements; hidden: {H} elements
 ```
 
-`{H}` counts the elements marked `hidden: true`: counted, since the holder reads them; said, since a brief is handed on.
+`{H}` counts the elements marked `hidden: true`: counted, since the holder reads them; said, since a brief is handed on. `{P}` and `{H}` are the count's "Left out" and "Marks" lines, never recounted.
 
 Then the count's **distribution table**, before any prose. Then the brief's sections (adapt to what the world gives you):
 
@@ -127,7 +129,7 @@ Write the brief to `survey-{world-name}.md` beside the world folder (principles 
 
 ## The link lens
 
-Find the connections a world is missing and add the approved ones. It adds links only.
+Find the connections a world is missing and add the approved ones. It adds links only. A known-of stub is never a link target (its reader cannot see it whole; `--mentions` leaves it out), and a proposed element is not linked to until a keeper settles it.
 
 ### Gather the Evidence
 
@@ -226,7 +228,7 @@ python <this skill's folder>/scripts/consistency.py WORLD_FOLDER --dates    # on
 python <this skill's folder>/scripts/consistency.py WORLD_FOLDER --json     # the same report as JSON
 ```
 
-Python 3, stdlib only; it writes nothing. It reads the link and date fields from this skill's `knowledge/schema-reference.md`. The report opens with the counts ("Checked 158 elements, 412 links; 3 contradictions, 7 possible"), then one section per class, one line per finding: the element, the field, the two values that disagree, the other element's name and id, and the file. The user's words pick the flags: a timeline is `--dates`, nesting `--places`, duplicates `--names`, broken links `--links`.
+Python 3, stdlib only; it writes nothing. It reads the link and date fields from this skill's `knowledge/schema-reference.md`. The report opens with the counts ("Checked 158 elements, 412 links; 3 contradictions, 7 possible"), then one section per class, one line per finding: the element, the field, the two values that disagree, the other element's name and id, and the file. A finding that involves a proposed element is not yet canon: it opens "Not yet canon", is counted apart from the contradictions, and goes to its keeper as a question. The user's words pick the flags: a timeline is `--dates`, nesting `--places`, duplicates `--names`, broken links `--links`.
 
 | Class | Contradiction | Possible |
 |-------|---------------|----------|
