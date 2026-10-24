@@ -62,7 +62,7 @@ The skills follow the life of a world. Every skill follows the same shared rules
 | Stage                           | Skill       | Purpose |
 |---------------------------------|-------------|---------|
 | **Start**                       | **start**   | Entry point: understands your situation, routes you forward, and connects a folder to your onlyworlds.com account when you want one |
-|                                 | **setup**   | Set up a world for work (a company, a team, an AI's home, a council, a workshop, a software project) from a starter pack |
+|                                 | **setup**   | Set up a world for work (a company, a team, an AI's home, a council, a software project) from a starter pack |
 | **Structure it**                | **import**  | Notes, a manuscript, PDFs, a wiki or old session notes → a world folder Atlas opens, or reconciled into an existing world |
 |                                 | **model**   | How to represent a system in the 22 types, and every type's fields |
 | **Grow it**                     | **read**    | Read a whole world through one lens: a creative brief, the missing connections, or where it contradicts itself |
