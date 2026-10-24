@@ -55,10 +55,10 @@ PRESENTATION_URL = "https://raw.githubusercontent.com/OnlyWorlds/schema-dist/mai
 # when the fetch fails, so a node still has a family; the colours then fall back to greys.
 OFFLINE_FAMILY = {
     "character": "agents", "collective": "agents", "creature": "agents", "family": "agents",
-    "institution": "agents", "species": "agents", "title": "agents",
+    "institution": "agents", "species": "agents",
     "construct": "world", "location": "world", "map": "world", "marker": "world",
     "object": "world", "pin": "world", "zone": "world",
-    "ability": "abstract", "language": "abstract", "law": "abstract", "trait": "abstract",
+    "ability": "abstract", "language": "abstract", "law": "abstract", "title": "abstract", "trait": "abstract",
     "event": "temporal", "narrative": "temporal", "phenomenon": "temporal", "relation": "temporal",
 }
 GREYS = {"agents": ("#3d3d3d", "#e0e0e0"), "world": ("#5f5f5f", "#bdbdbd"),

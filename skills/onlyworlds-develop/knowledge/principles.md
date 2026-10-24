@@ -23,7 +23,7 @@ The rules every skill in this toolkit follows. Each skill points here instead of
 ## 2. How changes happen
 
 - **Code counts, the model judges.** Anything countable (who is where, which threads are open, which elements a text mentions, link degree) is computed by a query or a script. The model renders, proposes, and judges; it never re-decides what the count settled.
-- **Propose, review, apply.** A model proposes changes as a readable list; a human rules on it; a single writer applies only what was approved. Extraction and writing are never the same step.
+- **Propose, review, apply.** A model proposes changes as a readable list; a human rules on it; a single writer applies only what was approved. Extraction and writing are never the same step. When a script a skill ships cannot run (no Python, no network), say so and report the gap: a check rebuilt by hand is named as yours, never passed off as the script's, and its counts never stand in for the script's.
 - **One writer per file at a time.** Two processes writing the same file at the same moment overwrite each other silently. Atlas can stay open while you write a folder: it keeps outside edits when it saves and shows them when the user comes back to its window. In a folder linked to an account, an edited file must also carry a fresh `local_updated_at`, or Atlas never sends the edit (`world-folder.md`, writer rules).
 - **Merge, don't overwrite.** An update touches only the fields it names and keeps everything else, including fields it does not understand.
 - **Retire, never delete.** The dead, the departed, and the finished are marked and dated, not removed, so the past stays answerable.
