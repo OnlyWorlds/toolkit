@@ -83,10 +83,10 @@ From what you read, find:
 
 ```markdown
 True as of: {when the data was read} from {folder path or API world name}
-Not read: {M} of {N} elements read in full; the rest known only by their counts. Skipped: {placement: map, pin, marker, zone}; the room left out: {R} elements; hidden: {H} elements
+Not read: {M} of {N} elements read in full; the rest known only by their counts. Skipped: {placement: map, pin, marker, zone}; the room left out: {R} elements; proposed, not yet reviewed, left out: {P} elements; hidden: {H} elements
 ```
 
-`{H}` counts the elements marked `hidden: true`: counted, since the holder reads them; said, since a brief is handed on.
+`{H}` counts the elements marked `hidden: true`: counted, since the holder reads them; said, since a brief is handed on. `{P}` and `{H}` are the count's "Left out" and "Marks" lines, never recounted.
 
 Then the count's **distribution table**, before any prose. Then the brief's sections (adapt to what the world gives you):
 
