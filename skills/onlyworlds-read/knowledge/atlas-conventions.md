@@ -1,75 +1,81 @@
 # Atlas Conventions
 
-How Atlas (the flagship OnlyWorlds app) uses the schema, so an AI working alongside an Atlas user writes data Atlas actually understands. Most relevant when parsing lore or prose, or writing a session back (the update skill), for someone whose world lives in Atlas.
+How to write for someone whose world lives in Atlas (the flagship OnlyWorlds app), so Atlas shows what you wrote as you meant it. Most relevant when importing notes or writing a session back (the onlyworlds-import and onlyworlds-update skills).
 
-Conventions are registered as they prove out; this knowledge file carries the tool-facing summaries.
+**Read against Atlas 1.88.3 (2026-10-24).** Atlas is open source: [github.com/OnlyWorlds/atlas](https://github.com/OnlyWorlds/atlas). Its numbered conventions ("conv. N" below) are in `DESIGN_LAWS.md` at the repository's root, the writing room in `DESIGN_WRITING.md`, knowledge in `DESIGN_KNOWLEDGE.md`, Atlas's own fields in `ATLAS_FIELDS.md`; what it does for a person, release by release, is the docs' [Atlas page](https://onlyworlds.github.io/docs/tools/atlas.html). When this page and the code disagree, the code is right.
 
 ---
 
-## The folder is the world
+## The folder
 
-Atlas is local-first: the world is a folder of real JSON files on the user's disk, synced to the OnlyWorlds API on demand. **You can read the folder directly** to learn a world's current state.
+An Atlas world is a world folder. The folder's rules are `world-folder.md`: the two laws, the writer rules, and `local_updated_at` on every file you change in a linked folder. What Atlas adds:
 
-- **Filenames are presentation; the `id` inside the file is identity.** Reading and writing rules: `world-folder.md` (the two laws, writer rules).
-- **Never write into `.atlas/`** (sync state, tombstones, lock) **or the `api` block of `world.json`**: that is machinery. Nor `atlas_richtext_json`: edit `story` alone. Atlas can stay open while you write: it keeps outside edits when it saves and shows them when the user comes back to its window. `.atlas/lock` is Atlas's own tab-to-tab lock: it signals nothing to other tools, and it can be left in place.
-- **New** element files: **omit `local_updated_at`/`server_updated_at`**; Atlas treats the element as new and syncs it.
-- **Editing an existing element in a folder linked to an account**: set `local_updated_at` to the current UTC time and leave `server_updated_at` as it is, or the edit is never pushed and the next online change overwrites it (`world-folder.md`, writer rules). Never drop `server_updated_at` from an existing file: Atlas then tries to create it, gets a conflict, and adopts the server's version.
+- **Never write into `.atlas/`** (sync state, tombstones, and Atlas's lock between its own browser tabs, which does not tell you whether Atlas is open and never needs removing) **or the `api` block of `world.json`**.
+- A new element is a new file with neither stamp; Atlas sends it as new at its next sync.
+- **Never remove `server_updated_at` from an existing file.** Atlas then reads the element as new, OnlyWorlds answers that the id exists, and Atlas sends your whole file over the online copy with no conflict asked: a newer change someone made online is lost.
 
-## Writing system (Narratives carry the prose)
+## Prose: the writing room
 
-Atlas's writing room organizes long-form prose as a tree of **Narrative elements**:
+The writing room is a tree of Narratives (`DESIGN_WRITING.md`).
 
-- **Tier labels are user-configurable**: Book/Chapter/Scene/Draft are only the defaults. A Narrative is in the writing tree iff its `supertype` matches one of the world's configured tier labels. **Read existing narratives' supertypes to learn this world's actual labels; never hardcode "Book".**
-- Structure: `parent_narrative` (required for Chapter-under-Book and Scene-under-Chapter; Drafts carry no parent constraint) + `order` (sequential integer among siblings).
-- **`Narrative.story` holds the prose itself, as portable markdown.** `description` stays the editorial overview. Leave `subtype` EMPTY on writing narratives: Atlas reserves it (knowledge uses it, below).
-- In-prose element references: `[Name](ow://type/uuid)`. Atlas renders these as mention chips. Plain names also work; the `ow://` form survives cross-tool.
-- `atlas_richtext_json` is Atlas's local rich-text sidecar: stripped on push, never yours to write.
+- **A Narrative is in the tree when its `supertype` is one of the world's four tier labels.** Book, Chapter, Scene and Draft are the defaults; a person can rename them, and the names live in Atlas, not in the folder. Read the supertypes the world's narratives already carry, and never assume "Book"; a world with no narratives yet has the defaults, and the person says where a new one goes.
+- Position: `parent_narrative` (a Chapter under a Book, a Scene under a Chapter; a Draft under any narrative or none) and `order`, an integer among siblings: one past the last. Leave `subtype` empty on a writing narrative: the person's to use, and `knowledge` is reserved (below).
+- **`story` holds the prose, as markdown; `description` is the summary.** A name in the prose becomes a link as `[Name](ow://character/<id>)`: the type in lower case, singular.
+- **Editing `story` is safe.** Atlas keeps its own editor copy in `atlas_richtext_json` (never yours to write), and when `story` no longer matches it, the writing room opens `story` and its next save rewrites the copy (conv. 116). Formatting that markdown cannot hold is dropped.
 
-> **⚠ The one safety caveat**: writing prose into a **NEW** narrative is fully safe. **EDITING `story` on a narrative the user authored in Atlas is currently shadowed**: Atlas's editor prefers its rich-text sidecar, so your edit lands on the wire but the user keeps seeing their old prose in the writing room (a fix is planned, not shipped). Append a new scene/narrative instead, or tell the user the change lives in the raw field only.
+**A session written back** (onlyworlds-update) is a new Narrative, usually at the scene tier under the campaign's chapter: the write-up in `story`, a summary in `description`, and the elements it involves, new ones included, in its own link fields (`characters`, `locations`, `events`, `objects`, …).
 
-**Writing a session back for an Atlas user** (the update skill; the import skill is for a one-off import of older notes) → the session write-up becomes a new Narrative (prose in `story`, summary in `description`, supertype = the world's session/scene-tier label), linked to the Characters/Locations/Events it involves; new entities become elements linked back into it.
+## Knowledge: who knows what
 
-## Knowledge system ("who knows what")
+A knowledge entry is a **Narrative with `subtype: "knowledge"`** (any case; `DESIGN_KNOWLEDGE.md`).
 
-A knowledge entry is a **Narrative with `subtype: "knowledge"`**. The mechanics:
+- **`story` is the knowledge.** Knowing an entry never exposes a linked element's own fields.
+- **Held by**: `narrator` (one Character who knows it alone), `collectives` (groups whose members all know it), or both. **About**: the ordinary links (`characters`, `locations`, `objects`, `events`, …).
+- **Knowing is computed**: X knows K when `K.narrator` is X, or a Collective in `K.collectives` lists X in its `characters`. Nothing is stored on the knower.
+- **A rumour and the truth are two entries**, held by different groups.
 
-- **`story` carries the knowledge text, and the text IS the knowledge.** Knowing an entry never auto-exposes any linked element's canonical fields.
-- **Held-by (who knows it)**: `narrator` (exactly one Character, the lone-knower channel), `collectives` (one or more knower-groups; members inherit), or both.
-- **About (what it concerns)**: the ordinary involves multi-links (`characters`, `locations`, `objects`, `events`, `constructs`, …), same as any narrative.
-- **Knowing is computed, never stored on the knower**: X knows K iff `K.narrator == X`, or some Collective in `K.collectives` lists X in its `characters`.
-- **Fidelity = separate entries**: the vague rumor and the true version are two knowledge narratives held by different groups, never per-link metadata.
+**⚠ On a knowledge entry, `collectives` means holders, not subjects.** Linking a Collective as a topic tells that whole group the secret. Knowledge about a group goes in the prose or in `institutions`.
 
-**⚠ The trap: on a knowledge narrative, `collectives` means HOLDERS, not subjects.** Linking a Collective as a *topic* of a knowledge entry silently grants that whole group knowledge of it. If knowledge is *about* a group, say it in the prose or use the `institutions` field.
+A Circle is a Collective used as a knower group: a role, not a type. Atlas may give one `subtype: "circle"`; nothing depends on it.
 
-**Circles**: a Circle is simply a **Collective acting as a knower-group**: a role, not a type. Members inherit its knowledge via `Collective.characters`; an Institution "knows" via a Circle of its members (Collective with `operator` = the institution). Atlas may tag purpose-made circles `subtype: "circle"`, but that's organizational, never load-bearing. You only need Circles when writing knowledge data.
+## What a world hides, and what OnlyWorlds settles
+
+- **`hidden: true` in an element's file keeps it from the people a world is handed to**: its players and members, and a published page's readers (folder spec 4.8, on the [World folders](https://onlyworlds.github.io/docs/schema/folders) page). A GM-only NPC or secret takes it. Atlas shows it to whoever has the folder, with the word Hidden, leaves it out of a published page, and sends it hidden when it makes the element online, or holds it back when the person's role on OnlyWorlds cannot hide. For an element already online, Atlas hides it there before sending the edit, with the owner's or a co-builder's key (conv. 170, 173). Taking the mark out of a file never shows it again online: that is done on onlyworlds.com.
+- **Never write `created_by`, `changed_by`, `changed_via`, `changed_client` or `x_review_proposed`.** OnlyWorlds sets them. Atlas keeps them as served and never sends them in an edit.
+- An element whose `x_review_proposed` is an object was proposed by an AI seat and is not canon until a keeper accepts it: Atlas shows it as Proposed and leaves it out of counts and published pages (conv. 168).
+
+## The world file
+
+Atlas opens a world file, `.owworld` or `.zip` (one file, spec §4.7 on the [World folders](https://onlyworlds.github.io/docs/schema/folders) page), in every browser, and saves one with Download the whole world (as `.zip`), leaving a tool's private records out unless the person asks (conv. 166, 175). Folder mode needs a Chromium browser; in Firefox or Safari the world file is how a world reaches Atlas (the carry skill packs one).
 
 ## Extension fields
 
-- Atlas namespaces its tool data as **`atlas_*`**; the recognized extension namespaces are **`atlas_*`, `shadow_*`, `x_*`**; the API passes them through and Atlas preserves foreign ones.
-- **Never invent `atlas_*` fields** (that namespace is Atlas's). Your own extra data goes in `x_*`.
-- **Always preserve extension fields on round-trips, including null-valued ones.** `null` is a tombstone (a deleted custom field record); `''` is live-but-empty. "Cleaning up" null keys destroys delete records.
-- One defensible external touch: `atlas_aliases` (`string[]`, any element) feeds Atlas's mention picker; appending genuine alternate names helps the user's linking. **Strictly append-only, and folder-write only**: Atlas treats `atlas_aliases` as local-only over the wire (stripped from its pushes, preserved-from-local on pull), so an API write never reliably reaches an already-synced Atlas. Write it when producing world FOLDERS; skip it on API syncs.
+- Never invent `atlas_*` fields: that namespace is Atlas's. Your own data goes in `x_<yourtool>_*` (`principles.md`).
+- **Keep null extension values.** `null` is a deleted custom field's record; `''` is a live empty one.
+- `atlas_aliases` (`string[]`, any element), the one `atlas_` field another writer may touch, feeds Atlas's mention picker. Adding a genuine alternate name to the list helps the person link; **add, never remove, and in a folder only**: Atlas never sends it, so an API write never reaches a synced copy.
+- **The published profiles**: Atlas prints the world's own words for the types from `world.json`'s `x_names`, hides a room's work by `x_room_of`, shows a Law with supertype Charter on Home, and keeps `x_identity_*`, `x_packet_*`, `x_review_*`, `x_room_*` and `x_checks_*` keys read only, never offered as custom fields. What each means: the docs' [Conventions](https://onlyworlds.github.io/docs/schema/conventions) page, never a copy here.
 
-## Calendar system (a Construct carrying `atlas_calendar`)
+## Calendars
 
-Atlas models a world's calendar as a **Construct** whose machine config lives in the **`atlas_calendar`** extension field (a nested JSON object: eras, months, week days, formatting tokens).
+A calendar is a Construct carrying **`atlas_calendar`**, a nested object (eras, months, week days, formats).
 
-- **Detect calendars by `atlas_calendar` field presence, never by type labels.** Atlas sets `supertype: "calendar"` on creation, but that's display convention only: a valid config is a usable calendar on any element. (Supertype and subtype labels are display conventions here: match them case-insensitively if you read them, never branch behavior on them. The exception is a reserved value such as subtype `knowledge`, which does mark a knowledge entry (Atlas matches reserved values case-insensitively too); see `principles.md` §4.)
-- **Read both forms, write objects**: Atlas writes the config as a nested object and accepts object or JSON-string forms from other tools; prefer objects. Extension passthrough round-trips nested objects verbatim.
-- **Degrade gracefully**: a malformed config means "show bare numbers", never a broken surface. `date` fields stay numeric forever; formatted labels are derived, not stored.
-- **Legacy seed fields**: `time_format_names`/`time_format_equivalents` on World are seed-only legacy: Atlas offers a one-time calendar mint from them, then clears both. Don't write them anymore.
+- **Detect it by the field, never by `supertype: "calendar"`**, which is only Atlas's label.
+- Write an object; Atlas also reads the JSON-string form. A malformed config shows bare numbers, never a broken page. `date` fields stay numbers: labels are derived, never stored.
+- `time_format_names` and `time_format_equivalents` on World are a legacy seed Atlas reads once to offer a first calendar, then clears. Don't write them.
 
-## Field-clearing convention
+## Clearing a field
 
-To clear a field: `null` for relations/numbers, `''` for text. On PATCH, omitting a key means "no change"; never use omission to mean deletion.
+Write `null` for links and numbers, `''` for text; never delete the key. A reader takes an absent key as unset, but a sync takes it as no change, so the old value stays online.
 
 ## Quick reference
 
 | You're writing... | Put it... |
 |---|---|
-| Prose / session write-up / chapter text | A NEW Narrative: `story` (markdown), supertype = the world's tier label |
-| What the unit is about | Narrative `description` |
-| A fact only some characters know | Narrative `subtype: "knowledge"`; holders via `narrator` or `collectives`; topics via other involves links |
-| An in-prose reference | `[Name](ow://type/uuid)` |
-| Custom data of your own | `x_*` field, preserved round-trip (nulls included) |
-| An edit to Atlas-authored prose | **Don't**: append a new narrative instead (shadowing caveat above) |
+| Prose, a session write-up, a chapter | A new Narrative: `story` (markdown), supertype = the world's tier label |
+| A change to existing prose | Edit `story` (conv. 116); never `atlas_richtext_json` |
+| A summary of the unit | Narrative `description` |
+| A fact only some characters know | Narrative `subtype: "knowledge"`; holders in `narrator` or `collectives`, topics in the other links |
+| Something the world's people must not see | `hidden: true` in the element's file |
+| A link in prose | `[Name](ow://type/uuid)` |
+| Data of your own | `x_<yourtool>_*`, kept round trip (nulls included) |
+| Who made or changed it, or a proposal mark | Nothing: OnlyWorlds sets those |
