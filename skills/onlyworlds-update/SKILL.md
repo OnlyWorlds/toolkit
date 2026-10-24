@@ -120,7 +120,7 @@ The list goes in a file beside the session's notes, never inside `elements/`, an
 
 | Update need | OnlyWorlds field |
 |---|---|
-| the session itself, verbatim | `Narrative.story`, with `events`, `characters`, `parent_narrative` (campaign → session) |
+| the session itself, verbatim | `Narrative.story`, with `events`, `characters`, `parent_narrative` (campaign → chapter → scene) |
 | what happened | `Event` (`characters`, `locations`, `start_date`, `triggers`, `consequences`) |
 | someone moved | `Character.location` (a Location) |
 | a relationship changed | `Relation` (`intensity`, `start_date`, `end_date`, `events`) |
