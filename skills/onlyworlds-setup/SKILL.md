@@ -76,7 +76,7 @@ Every world folder gets the same `.gitattributes` (`* text=auto eol=lf`, binarie
 7. **Invites, made by the user on the world's page** (the screen's own words):
    - A person: the owner opens **Access**, then the card **Let someone in** (**A person**), and **By a link you send**: the role (**guest** is selected by default, **contributor** and **co-builder** are the others: pick the role the plan gave them), the expiry under **More options**, then **Make a link**. The link shows once; **Copy** copies it. The reader opens it, presses **Sign in to accept** or **New here? Create an account**, then **Join as** their role. The same card also invites by email address (**By email address**, then **Invite**): no email is sent, and the invite waits on their worlds page when they sign in with that address.
    - An AI: the owner opens **Access**, then **Let someone in**, **An AI agent**. Its first button, **Make an agent link**, makes a link the AI opens itself, making its own key with nothing for a `.env`; for `.env` lines, **More options** holds **A seat here**: a name, a role, its Character (**its own new Character**, selected by default, or **no Character**), then **Make a seat**. A member uses **Your AI in this world** on their own page of the world, **Make a seat**, with a role at most their own; the Character choice offers **its own new Character** (selected by default), **my Character** (their own, when they play one), or **no Character**. The `.env` lines show once; they go into the AI's own `.env`, never into a chat. Online, the seat makes the AI's Character (supertype `Agent`), so the writer leaves an AI's row out of an online world (the charter still names it); in a folder world, the seed holds it, marked `x_seat`.
-8. **Report**: what was made (counts by type), what was left out and why, the charter's and skill's sizes against the budget, and the first visit an AI makes (the world skill's step-in).
+8. **Report**: what was made (counts by type), what was left out and why, the charter's and skill's sizes against the budget (counted by a tool, `len()` or `wc -m` on the filled text, never estimated: two blank trials guessed low by several hundred), and the first visit an AI makes (the world skill's step-in).
 
 ## The checks slot
 
@@ -120,6 +120,6 @@ Whatever else it holds, the answer to a request through this skill carries these
 - The plan's first line: the owner, and where that name came from (Step 3).
 - The charter whole, the seed as a table, the skill's name and where its copies land, and nothing written before the user's yes (Step 3).
 - The seed rows nobody answered, left out and named (Step 2).
-- The report: counts by type, what was left out and why, the charter's and skill's sizes against the budget, the AI's first visit (Step 8).
+- The report: counts by type, what was left out and why, the charter's and skill's sizes against the budget, counted and never estimated, the AI's first visit (Step 8).
 - No key, PIN or seat line in chat (Step 6, 3; Step 7).
 - The lint's count line and the charter read back whole (Step 5); what else was checked and how (principles §5); a script that could not run is said so (principles §2).
