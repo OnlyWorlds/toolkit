@@ -519,11 +519,11 @@ Zone is spatial but not geometric: it covers ground because of what's significan
 ```
 
 **Key signals**:
-- Crew members have `location: "Ship Name"` → Ship must be Location
+- Crew members have a `location` aboard → that Location is the place aboard, linked to the ship Object
 - Scenes happen aboard → Location
 - Ship is just mentioned as possession → Could be Object
 
-**The validation problem**: Character.location links to Location, not Object. If characters are ON a ship, the ship must be a Location.
+**The validation problem**: Character.location links to Location, not Object: characters aboard a ship stand in a Location linked to the ship Object.
 
 ---
 

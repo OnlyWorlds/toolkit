@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-import
-description: "Import notes, a manuscript, PDFs, a campaign bible, a wiki or old session notes into a structured world, once. Use when the user says 'import my notes', 'turn this book into a world', 'structure my lore', 'parse this', 'make a world folder from these files'. Writes a world folder Atlas opens, or reconciles into an existing world. Invents no fields; no account needed. An export from another worldbuilding app is carry's."
+description: "Import notes, a manuscript, PDFs, a campaign bible, a wiki or old session notes into a structured world, once, or batch by batch into an existing world. Use when the user says 'import my notes', 'turn this book into a world', 'structure my lore', 'parse this', 'make a world folder from these files'. Writes a world folder Atlas opens, or reconciles into an existing world. Invents no fields; no account needed. An export from another worldbuilding app is carry's."
 ---
 
 # OnlyWorlds Import
@@ -56,7 +56,7 @@ State the plan in one line and proceed; ask more only when the source is large a
 **The source inventory.** A file listing every source with its size, reading order, and status (not read / extracted / checked). It becomes the coverage table in Step 6: a document that contributed nothing is visible, never silently skipped.
 
 **The world rules file** (for anything bigger than a few documents). The schema says what the 22 types are; this file says how THIS world uses them. Keep it as `world-rules.md` in the root of the world folder, next to `world.json` (outside `elements/`), with the inventory and the registry, so all of them share the world's git history; the update skill and later parses read it first. The format's own files are `world.json` and `elements/`; these working files ride along beside them. Start it small and add to it as the parse makes decisions:
-- **What counts as an element here**: the filter, with this world's examples ("ships are Locations", "a named spell is an Ability, a school of magic a Construct").
+- **What counts as an element here**: the filter, with this world's examples ("a ship is an Object, the deck aboard it a Location", "a named spell is an Ability, a school of magic a Construct").
 - **The taxonomy**: the supertype and subtype values this world uses, per type, so the same kind of thing is labelled the same way every time.
 - **Naming**: how titles, aliases, epithets and translations are handled; when a descriptor ("the old man") becomes an element.
 - **Conventions**: recurring shapes and how they are modeled (deaths, ranks, factions within factions).
@@ -83,7 +83,8 @@ Work one document at a time, a unit you can read whole (a chapter, or a book tak
 
 ### Step 4: Check
 
-- **Structure, by script**: for a world folder, run schema-dist's folder check, `python walk/lint_folder.py <folder>` (`knowledge/world-folder.md`, writing a new folder). It catches invented fields, unresolved or mistyped links and wrong value shapes in one pass, and its last line is the count it checked. The checks below are what it cannot see, and the way to work without it.
+The structure check by script runs on the written folder (Step 7, read back); these are the checks it cannot see, and the way to work without it.
+
 - **Schema, by type**: every field exists under that element's own type (a whole-file search passes `status` on Character because Creature has it). Known traps: `knowledge/common-errors.md`.
 - **Links**: every name in a link field matches an element; create the missing one or drop the link.
 - **Identity** (principles §3), within the parse and against any existing world: near-spellings, sound-alikes, the same person under a title and a name, two things sharing a name, a new element that duplicates the job of an existing one.
@@ -109,7 +110,7 @@ Write the change list in the same row format the update skill uses, one line per
    - **World folder** (the default, no account needed): `world.json` + one file per element, per `knowledge/world-folder.md`. It opens in Atlas.
    - **Account world**: new elements through develop's Bulk Upload; an existing element is updated by PATCH or the links route, never resent in a batch (Bulk Upload says why).
    - **Grouped JSON with names** is only a review form; it is not uploadable as is.
-3. **Read back** what landed and compare it with the approved change list, or for a new folder with the extraction file (principles §5).
+3. **Read back** what landed and compare it with the approved change list, or for a new folder with the extraction file (principles §5). A world folder's read-back starts with schema-dist's folder check, `python walk/lint_folder.py <folder>` (Python 3 with PyYAML), run from a clone of schema-dist, since it imports `schema_walk.py` and reads `schema/` beside it (`knowledge/world-folder.md`, writing a new folder). It catches invented fields, unresolved or mistyped links and wrong value shapes in one pass, and its last line is the count it checked.
 
 ## Example (Hyperion, the opening pages)
 
@@ -119,7 +120,7 @@ Source: the Consul, on his ship, receives a fatline message from Meina Gladstone
 |---|---|---|
 | The Consul | Character | named only by his office |
 | Consul | Title, held by the Consul | the office is its own element |
-| The Consul's ship | Location | he lives aboard; `Character.location` points at it |
+| The Consul's ship | Object, and a Location aboard it linked to the ship | he lives aboard: `Character.location` points at the Location |
 | Meina Gladstone | Character | |
 | The Hegemony | Institution + Zone (its territory, "the Web") | a ruled territory: the power and its ground |
 | Tau Ceti Center | Location | |
@@ -128,7 +129,7 @@ Source: the Consul, on his ship, receives a fatline message from Meina Gladstone
 | The Time Tombs | Location | the condition they are in (opening) goes in the description, dated |
 | Fatline | Construct | a technology, not a physical object |
 
-Not extracted: the Steinway, the Rachmaninov prelude, the glass of Scotch (real-world or generic). Stubbed: the Shrike, as a Creature for now (named and feared, nature not yet given); its type is a judgment call listed in the report.
+A ship is an Object (it is made, owned, sunk) and the place aboard it is a Location linked to it; Hyperion as published keeps the ship as the Object the Steinway's `parent_object` names. The Steinway and the Rachmaninov prelude are a choice: extracted when the world keeps a ship's fittings, as Hyperion does (the Steinway an Object inside the ship, the prelude a Construct), left out when it does not; the world rules file records which. Not extracted: the glass of Scotch (generic). Stubbed: the Shrike, as a Creature for now (named and feared, nature not yet given); its type is a judgment call listed in the report.
 
 ## References
 
