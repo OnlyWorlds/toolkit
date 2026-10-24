@@ -7,11 +7,12 @@ writes nothing; the model cites its numbers and never recounts them.
 
 A link is any field whose value is an id, or a list of ids, found in the id map (extension
 fields included). The room (the room profile: one of its eight type-and-supertype pairs AND the
-mark x_room_of) and map, pin and marker are dropped from the id map before counting, so their
-links drop with them; the report says how many were left out.
+mark x_room_of) and placement (map, pin, marker and zone: the draw skill's graph.py names the
+same four) are dropped from the id map before counting, so their links drop with them; the
+report opens with the world's whole count and the split, and says how many were left out.
 
 Usage:
-    python count.py WORLD_FOLDER [--top N] [--mentions] [--room] [--spatial] [--json]
+    python count.py WORLD_FOLDER [--top N] [--mentions] [--room] [--placement] [--json]
                     [--schema PATH]
 
     --top N      how many elements the "most linked" and "most text" tables list (default 40)
@@ -19,7 +20,7 @@ Usage:
                  (the link lens's strongest evidence); the field names come from the skill's
                  copy of the schema reference (../knowledge/schema-reference.md)
     --room       count the room too (only when the user asks)
-    --spatial    count map, pin and marker too
+    --placement  count map, pin, marker and zone too (--spatial, the older name, still works)
     --json       the same report as JSON, with every list in full
 
 Python 3, stdlib only. Exit 0 on a report, 2 when the folder cannot be read.
@@ -30,7 +31,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from consistency import SPATIAL, ids_of, label, load_schema, load_world  # noqa: E402
+from consistency import ids_of, label, load_schema, load_world  # noqa: E402
+
+# Placement, not lore: the same four types the draw skill's graph.py leaves out.
+PLACEMENT = {"map", "pin", "marker", "zone"}
 
 ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
               ("construct", "spec"), ("relation", "heart"), ("relation", "vote"),
@@ -117,7 +121,7 @@ def count(folder, room=False, spatial=False, schema=None, mentions=False):
     world, raw, skipped = load_world(folder)
     notes = list(skipped)
     left_room = [e for e in raw.values() if is_room(e)]
-    left_spatial = [e for e in raw.values() if e["_type"] in SPATIAL and not is_room(e)]
+    left_spatial = [e for e in raw.values() if e["_type"] in PLACEMENT and not is_room(e)]
     for e in raw.values():
         if malformed_mark(e):
             notes.append(f"{e['_file']}: carries x_room_of but none of the room's pairs; "
@@ -201,9 +205,9 @@ def count(folder, room=False, spatial=False, schema=None, mentions=False):
 
     return {
         "world": world.get("name"), "folder": str(folder),
-        "elements": len(els), "links": sum(len(v) for v in out_links.values()),
+        "total": len(raw), "placement": len(left_spatial), "elements": len(els), "links": sum(len(v) for v in out_links.values()),
         "left_out": {"room": len(left_room) if not room else 0,
-                     "spatial": len(left_spatial) if not spatial else 0},
+                     "placement": len(left_spatial) if not spatial else 0},
         "distribution": dict(sorted(dist.items(), key=lambda kv: (-kv[1], kv[0]))),
         "most_linked": sorted(rows.values(), key=lambda r: (-r["degree"], r["name"].casefold())),
         "most_text": sorted(rows.values(), key=lambda r: (-r["text"], r["name"].casefold())),
@@ -230,13 +234,15 @@ def capped(items, fmt, what):
 
 def markdown(r, top):
     out = [f"# Count: {r['world'] or '(unnamed world)'}", "",
-           f"Counted {r['elements']} elements and {r['links']} links in {r['folder']}."]
+           f"{n_of(r['total'], 'element')} in the folder, of which {r['placement']} placement "
+           f"(map, pin, marker, zone). Counted {r['elements']} elements and {r['links']} links "
+           f"in {r['folder']}."]
     lo = r["left_out"]
     gone = []
     if lo["room"]:
         gone.append(f"the room, {n_of(lo['room'], 'element')}")
-    if lo["spatial"]:
-        gone.append(f"map, pin and marker, {n_of(lo['spatial'], 'element')}")
+    if lo["placement"]:
+        gone.append(f"placement, {n_of(lo['placement'], 'element')}")
     if gone:
         out.append("Left out: " + "; ".join(gone) + ".")
     out.append(f"Orphans {len(r['orphans'])} · near-orphans {len(r['near_orphans'])} · "
@@ -288,7 +294,7 @@ def main(argv):
                 return 2
         elif a == "--room":
             room = True
-        elif a == "--spatial":
+        elif a in ("--placement", "--spatial"):
             spatial = True
         elif a == "--mentions":
             mentions = True

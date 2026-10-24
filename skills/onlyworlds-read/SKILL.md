@@ -46,7 +46,7 @@ Python 3, stdlib only; it reads the folder with the consistency script's loader,
 - **Bridges**: elements whose removal splits their cluster.
 - **Text weight**: characters of `description` plus `story` per element; the most linked and the most written each get a table (`--top N`, default 40).
 
-**The room is left out unless the user asks.** A room element (principles §4: one of the room profile's pairs and its mark `x_room_of`; its lines, boards, hearts, votes, sittings, specs and members) is the world's work about itself, not its lore. The script drops room elements from the id map before counting, so distribution, degree, orphans and clusters exclude them and their links, and its "Left out" line gives their count: carry it into your answer once. `--room` counts them. Map, pin and marker are left out the same way (spatial, not narrative); `--spatial` counts them.
+**The room is left out unless the user asks.** A room element (principles §4: one of the room profile's pairs and its mark `x_room_of`; its lines, boards, hearts, votes, sittings, specs and members) is the world's work about itself, not its lore. The script drops room elements from the id map before counting, so distribution, degree, orphans and clusters exclude them and their links, and its "Left out" line gives their count: carry it into your answer once. `--room` counts them. Placement (map, pin, marker and zone, the four the draw skill leaves out of its graph) is left out the same way; the report's first line gives the world's whole count and that split, and `--placement` counts them.
 
 Save the report beside your output; the brief and the link lists cite its numbers and never recount them. The consistency lens runs its own script instead.
 
@@ -81,7 +81,7 @@ From what you read, find:
 
 ```markdown
 True as of: {when the data was read} from {folder path or API world name}
-Not read: {M} of {N} elements read in full; the rest known only by their counts. Skipped: {map, pin, marker, test zones}; the room left out: {R} elements
+Not read: {M} of {N} elements read in full; the rest known only by their counts. Skipped: {placement: map, pin, marker, zone}; the room left out: {R} elements
 ```
 
 Then the count's **distribution table**, before any prose. Then the brief's sections (adapt to what the world gives you):
@@ -121,7 +121,7 @@ Zones with no description or generic names (poly1, new zone, TRE) are likely map
 
 ### Output
 
-Write the brief to `survey-{world-name}.md` in the current directory (or where the user asked) and report the path. Then offer the next step: orphans and bridges feed the link lens; preparing a session from this world is the context skill; a picture of the web is the draw skill.
+Write the brief to `survey-{world-name}.md` beside the world folder (principles §1; or where the user asked) and report the path. Then offer the next step: orphans and bridges feed the link lens; preparing a session from this world is the context skill; a picture of the web is the draw skill.
 
 ## The link lens
 

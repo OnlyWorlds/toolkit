@@ -17,6 +17,7 @@ The rules every skill in this toolkit follows. Each skill points here instead of
 - **Folder first, account optional.** A world can live entirely as files on disk (see `world-folder.md`). An OnlyWorlds account adds hosting, sync, and the API. Never require it for work a folder can do.
 - **The world is the record.** Chats, session briefs, summaries, and reports are views of it, rebuilt when needed. A summary that replaces its source loses detail unevenly and compounds the loss each pass.
 - **Records beside the graph.** High-volume happenings (every line of dialogue, every dice roll, every simulation step) do not belong as elements: keep them in a log beside the world, joined by element id. An Event is for what crosses a line someone cares about; a Narrative can chronicle a stretch of time.
+- **Output beside the world, never in it.** A report or brief a skill writes goes beside the world folder, named for the world (`survey-<world-name>.md`); the draw skill writes into `draw/` beside it. Nothing a skill reports goes inside the folder.
 - **Branch, don't copy.** A copied world gets new ids, and every comparison between the copies degrades to matching by name. Keep one world and version it (see `world-folder.md`, keeping history in git).
 
 ## 2. How changes happen
