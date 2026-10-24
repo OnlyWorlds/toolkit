@@ -1,11 +1,11 @@
 ---
 name: onlyworlds-update
-description: "Write a finished session back into the world so canon holds. Use when the user says 'update my world from these session notes', 'a character died in play', 'turn last night's recap into canon', 'keep the AI from rewriting my lore'. Lists what the session touched, proposes a change list, writes only what the user approves. For a first import of existing material, use import."
+description: "Write a finished session, or a finished chapter or scene, back into the world so canon holds. Use when the user says 'update my world from these session notes', 'I finished chapter 14, update my files', 'a character died in play', 'turn last night's recap into canon', 'keep the AI from rewriting my lore'. Lists what the session touched, proposes a change list, writes only what the user approves. For a first import of existing material, use import."
 ---
 
 # OnlyWorlds Update
 
-Updating the world from a finished session is the resolve: list what the session touched, give each item a verdict, propose a change list, and write only the rows the user approves. Help the user design THEIR way of doing it: what gets found, what becomes canon, who approves, how it is written, and how it is checked. Teach the principles, co-design the procedure, build the smallest working version. Do not install a one-size pipeline. The context skill covers the other half: loading the world into a session. For a one-off import of existing documents (a novel, old notes, a backlog of past sessions), use the import skill; the resolve is the loop that follows every new session. A single edit the user dictates ("make the Consul tired") is not a session: make it directly, merged, with no change list.
+Updating the world from a finished session is the resolve: list what the session touched, give each item a verdict, propose a change list, and write only the rows the user approves. Help the user design THEIR way of doing it: what gets found, what becomes canon, who approves, how it is written, and how it is checked. Teach the principles, co-design the procedure, build the smallest working version. Do not install a one-size pipeline. The context skill covers the other half: loading the world into a session. For a one-off import of existing documents (a novel, old notes, a backlog of past sessions), use the import skill; the update is the loop that follows every new session. A single edit the user dictates ("make the Consul tired") is not a session: make it directly, merged, with no change list.
 
 Shared rules (propose-review-apply, one writer, identity, field kinds, retire never delete, verify against the source) live in `knowledge/principles.md`; this skill applies them to writing a session back.
 
@@ -13,8 +13,8 @@ Shared rules (propose-review-apply, one writer, identity, field kinds, retire ne
 
 | Principle | The failure it prevents |
 |---|---|
-| Nothing is canon until resolved; the world does not move mid-session | the AI quietly rewriting canon while it writes or plays |
-| Two closes: a quick handover every session, and the resolve | losing the thread, or never getting the world updated |
+| Nothing is canon until the update; the world does not move mid-session | the AI quietly rewriting canon while it writes or plays |
+| Two closes: a quick handover every session, and the update | losing the thread, or never getting the world updated |
 | List everything the session touched first, then give each a verdict | the facts nobody extracted, which every later check passes silently |
 | Propose, review, apply (principles §2) | confidently wrong entries that everything downstream trusts |
 | One writer of the world (principles §2) | two processes overwriting each other |
@@ -24,7 +24,7 @@ Shared rules (propose-review-apply, one writer, identity, field kinds, retire ne
 | Contradictions surface as flags with both versions | the newer version silently winning |
 | Retire, never delete (principles §2) | the past no longer answerable |
 | A write that comes back as a proposal is reported, never resent | the same change queued twice for the world's keeper |
-| Check after every resolve | drift that nobody notices for a month |
+| Check after every update | drift that nobody notices for a month |
 
 ## Instructions
 
@@ -36,11 +36,11 @@ Shared rules (propose-review-apply, one writer, identity, field kinds, retire ne
 - **How much review does the user want?** Every change · only the flagged ones · a sample.
 - **What has gone wrong?** Their words. "It keeps rewriting my canon" and "I never update my notes" are different designs.
 
-**A session in hand** ("we played last night, here are my notes, update the world"): resolve that session first and design the procedure from it afterwards. Read the world (and its world rules file, if it has one), then run Step 4's listing, verdicts, passes and flags against the notes, and write the change list in Step 4's row format to a file beside the notes (`session-3-changes.md`), never inside the world's `elements/`. Then stop: nothing in the world changes until the user has ruled on the rows. What they had to rule on the spot is the first draft of their procedure file.
+**A session in hand** ("we played last night, here are my notes, update the world"): resolve that session first and design the procedure from it afterwards. Read the world (and its world rules file, if it has one), then run Step 4's listing, verdicts, passes and flags against the notes, and write the change list in Step 4's row format to a file beside the notes (`session-3-changes.md`), never inside the world's `elements/`. Then stop: nothing in the world changes until the user has ruled on the rows, and then only the approved rows are written, as Step 4's "Who writes" says (the writer rules, then the read-back). What they had to rule on the spot is the first draft of their procedure file.
 
 ### Step 2: Pick the shape for their tier
 
-| Tier | Their resolve procedure becomes |
+| Tier | Their update procedure becomes |
 |---|---|
 | **Chat only** | an end-of-session prompt that outputs a change list in a fixed format; they review and apply it by hand or in their editor |
 | **Local agent** | their own skill that lists what the session touched, writes a proposed change list to a file, waits for rulings, then applies the approved rows |
@@ -50,28 +50,28 @@ In every tier the change list is the artifact: readable, reviewable, kept.
 
 ### Step 3: Learn how the world keeps its fields
 
-Field kinds (replaced, appended with a dated line, never touched) are defined in principles §4. The job here is to find THIS world's: look at how it was updated before (a previous session's edits, version history, or a few elements of each type) and write down, per type, which fields are which and where standing rules and secrets live. Which fields a type has at all, and what each link field points at, is the type's section of `knowledge/schema-reference.md`. If the world has a world rules file from an import (import's Step 2), this belongs in it, beside the taxonomy the resolve should keep using. A resolve proposes nothing in a never-touched field without a flag.
+Field kinds (replaced, appended with a dated line, never touched) are defined in principles §4. The job here is to find THIS world's: look at how it was updated before (a previous session's edits, version history, or a few elements of each type) and write down, per type, which fields are which and where standing rules and secrets live. Which fields a type has at all, and what each link field points at, is the type's section of `knowledge/schema-reference.md`. If the world has a world rules file from an import (import's Step 2), this belongs in it, beside the taxonomy the update should keep using. An update proposes nothing in a never-touched field without a flag.
 
 ### Step 4: Design the procedure together
 
-Write each answer into a file in their project (e.g. `resolve-procedure.md`). The file is the deliverable. Propose a default for each item from what you can see and ask the user only for the rulings; a user with a session's notes in hand resolves that session first (Step 1) and fills the procedure from it.
+Write each answer into a file in their project (e.g. `update-procedure.md`). The file is the deliverable. Propose a default for each item from what you can see and ask the user only for the rulings; a user with a session's notes in hand resolves that session first (Step 1) and fills the procedure from it.
 
-1. **The handover** (cheap, every session): where everyone is, what is unresolved, what is tentative, secrets not yet revealed. The next session can continue from it before any resolve runs. Keep each one.
+1. **The handover** (cheap, every session): where everyone is, what is unresolved, what is tentative, secrets not yet revealed. The next session can continue from it before any update runs. Keep each one.
 2. **The listing** (code, where possible): every named thing the session mentions, matched against the world (names, aliases, titles); names that match nothing; unnamed figures who recur ("the ferryman"); threads whose subject came up. Nothing enters the proposal that the listing didn't surface, and nothing the listing surfaced is left without a verdict.
 3. **The verdicts.** Each listed item gets one: *changed* (a row follows), *touched* (present, nothing changed), or *no change* with a short reason (no change is a decision, not a default). Each unmatched name gets one: a new entry, an alias of an existing one, or noise. New entries follow the rule: recurs, named, or matters, and are extracted by the import skill's rules (its Key Rules and Step 3: type, decomposition, fields before elements, the world's own taxonomy). A one-off becomes a line on its place or event, or nothing.
 4. **The passes**, in this order:
    - new entries first (so later rows can link to them)
    - where everyone ended up (every present character's final place against their location field)
-   - what happened (events: who, where, when in the world). A tool that writes play back puts every participant on each Event it mints and stamps `start_date` in the world's own time unit; finer ordering stays in the tool. The reason: in a parsed Curse of Strahd, 78% of the "was there" links already mean "knows", and only 2% of the Events carry a date, so no reader can say what happened before what.
+   - what happened (events: who, where, when in the world). A tool that writes play back puts every participant on each Event it mints and stamps `start_date` in the world's own time unit; finer ordering stays in the tool. The reason: an Event without its participants or a date leaves no reader able to say who was there or what happened before what.
    - what changed (in each field's own kind: replace, append a dated line, or flag)
    - threads: advanced only when their next step actually happened, not when they were mentioned
    - who learned what: a first telling, a witnessed secret, a discovery becomes knowledge held by that character or group (a group needs a knower-group first, e.g. a party Collective with the player characters as members). An entry inferred rather than witnessed (she was at the battle, so she knows who won) links its `events` to the Events it was inferred from, so a reader can trace it back to them
-   - what finished (the dead, the departed, the resolved): retired with a date so context stops picking them by default. A dead Character is marked as model's "Marking a Dead Character" says, the one home of that convention
+   - what finished (the dead, the departed, the resolved): retired by the field's own marker, so context stops picking them by default: a Character's death as model's "Marking a Dead Character" says (the one home of that convention), an `end_date` on a Relation or Event, a Title's `revoke_date`
 5. **The row format**: one line per change, from a small fixed set of operations (create · update · append · link · retire · event · knowledge · flag), with target, old and new value, and evidence (a quote or a pointer into the session). Keep a short list of what was deliberately NOT proposed, and why.
 6. **Identity before names.** Before an existing element's name goes into a row, confirm it is the same thing (principles §3). A different referent is a collision note, never an edit.
 7. **Flags**: ambiguity, near-names, contradictions with canon, a link whose target is the wrong type for its field, anything that might be a mistake. Rule them by reading the session, never the proposer's summary. A proposal with zero flags deserves suspicion. Contradiction is sometimes the world: rumours, lies, and disputed histories are content, recorded as what someone believes.
 8. **Canon status.** Decide the levels the user wants (e.g. draft / established / locked). Promotion to canon is an explicit decision in review.
-9. **Who writes.** One process applies the approved rows, merging (principles §2).
+9. **Who writes.** Before the first write, a snapshot: commit the world folder, or export the account world to a folder (`knowledge/world-folder.md`); with it, and the old value every row keeps, any write can be undone. Then one process applies only the approved rows, merging (principles §2), by the writer rules ("To write", below), and reads back what landed (the checks).
 10. **The checks**: every listed item has a verdict; every *no change* has its reason, and a few are spot-checked against the session; every link points at something real, of the type its field takes (`single-link → T` in the schema reference: a Character's `location` takes a Location, never an Object); every place is a real place; nothing identity-level changed without a ruling. After applying, read back what landed and compare it with the approved rows, not with a copy just made (principles §5). Passages the user chose to skip are reported as a coverage gap, with their count. Add a check every time a mistake slips through; never remove one.
 
 ### Step 5: Build the smallest working version
@@ -85,7 +85,7 @@ Resolve one real session. Walk the rows with the user. A ruling they had to inve
 
 ### Step 7: Name the next rung
 
-- **history in git**: commit the world folder after each resolve, with the change list as the message; `main` is canon and a branch is a timeline (a what-if, an alternate ending). A folder linked to an account holds its API key in `world.json`'s `api` block and is never committed: version an unlinked copy (`knowledge/world-folder.md`, keeping history)
+- **history in git**: commit the world folder after each update, with the change list as the message; `main` is canon and a branch is a timeline (a what-if, an alternate ending). A folder linked to an account holds its API key in `world.json`'s `api` block and is never committed: version an unlinked copy (`knowledge/world-folder.md`, keeping history)
 - **recall testing**: resolve a session whose correct result is known, and compare; read's consistency lens cannot see a dropped fact
 - **resolve in story order** when several sessions are pending
 - **derived views** (timelines, relationship registers) computed from the kept change lists instead of maintained by hand
@@ -116,7 +116,7 @@ NOT PROPOSED: the storm, the carrion-breed pack (background, no recurrence)
 
 ## Where OnlyWorlds Helps (optional)
 
-| Resolve need | OnlyWorlds field |
+| Update need | OnlyWorlds field |
 |---|---|
 | the session itself, verbatim | `Narrative.story`, with `events`, `characters`, `parent_narrative` (campaign → session) |
 | what happened | `Event` (`characters`, `locations`, `start_date`, `triggers`, `consequences`) |
