@@ -17,6 +17,8 @@ Shared rules (field kinds, extension fields, records beside the graph) live in `
 | Historical periods | Construct (named eras) + Event (occurrences) + Narrative (stories about) |
 | Skill/tech trees | Ability (nodes) + Construct (branches, prerequisites via requisites) + Trait (aptitudes via talents) |
 | Crafting system | Construct (recipes, materials) + Object (instances) + Ability (crafting skill) |
+| Tools, services, contracts | Object (the tool, package or service) + Construct (the API, file format or protocol it speaks), joined by `Object.technology` on the dependent's side only |
+| Who keeps what | Title with supertype `Seat`: `holders` the keepers; `objects`, `constructs`, `locations`, `laws` what they keep. Relation only for a seam between two owners with a history |
 
 ## The Core Insight
 
@@ -69,6 +71,8 @@ Common pushback and responses:
 - "I need state changes" → dated fields and Events; change over time is the resolve skill (field kinds: principles §4); what-ifs and history are a world folder in git (`knowledge/world-folder.md`, "Keeping history")
 
 ## When OW Isn't Enough
+
+Before proposing a script or a new element kind for something about the world itself (its members' roles, recent changes, review state, checks), read what onlyworlds.com already serves for it: the OpenAPI document at `www.onlyworlds.com/api/v2/openapi.json`, and the extension profiles in `github.com/OnlyWorlds/schema-dist/profiles/`.
 
 OnlyWorlds holds world structure: entities, relationships, lore. For high-volume logging, real-time state, or custom data beyond what x_* extension fields carry, recommend complementary tools:
 
