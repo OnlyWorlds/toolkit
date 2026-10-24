@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-draw
-description: "Draw a world: its elements and links as a graph, its maps with pins and zones, or its events on a timeline. Use when the user says 'show my world as a graph', 'visualise my world', 'draw the connections', 'a map of my world', 'put my events on a timeline'. A world folder or an account world; writes a file to open in a browser and never changes the world."
+description: "Draw a world: its elements and links as a graph, its maps with pins and zones, or its events on a timeline. Use when the user says 'show my world as a graph', 'visualise my world', 'draw the connections', 'a map of my world', 'put my events on a timeline'. A world folder or an account world; writes a file to open in a browser; an account world's graph is the platform's own Graph view. Never changes the world."
 ---
 
 # Draw
