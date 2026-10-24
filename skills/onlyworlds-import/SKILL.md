@@ -112,7 +112,7 @@ Write the change list in the same row format the update skill uses, one line per
    - **World folder** (the default, no account needed): `world.json` + one file per element, per `knowledge/world-folder.md`. It opens in Atlas; folder mode needs a Chromium browser, and in Firefox or Safari Atlas opens the world as one `.owworld` file (the carry skill makes it).
    - **Account world**: new elements through develop's Bulk Upload; an existing element is updated by PATCH or the links route, never resent in a batch (Bulk Upload says why).
    - **Grouped JSON with names** is only a review form; it is not uploadable as is.
-3. **Read back** what landed and compare it with the approved change list, or for a new folder with the extraction file (principles §5). A world folder's read-back starts with schema-dist's folder check, `python walk/lint_folder.py <folder>` (Python 3 with PyYAML), run from a clone of schema-dist, since it imports `schema_walk.py` and reads `schema/` beside it (`knowledge/world-folder.md`, writing a new folder). It catches invented fields, unresolved or mistyped links and wrong value shapes in one pass, and its last line is the count it checked.
+3. **Read back** what landed and compare it with the approved change list, or for a new folder with the extraction file (principles §5). A world folder's read-back starts with schema-dist's folder check, `walk/lint_folder.py <folder>` (Python 3 with PyYAML), run from a fresh clone of schema-dist in a scratch directory (how: `knowledge/world-folder.md`, the check paragraph), never one found on the disk. It catches invented fields, unresolved or mistyped links and wrong value shapes in one pass, and its last line is the count it checked.
 
 ## Example (Hyperion, the opening pages)
 

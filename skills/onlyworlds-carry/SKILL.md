@@ -52,7 +52,7 @@ Keep a converter's producer line (`producer.input` names the source, such as `wo
 
 ### Step 5: Check and hand over
 
-Lint every folder made: schema-dist's `python walk/lint_folder.py <folder>` (Python 3 with PyYAML), run from a clone of schema-dist, since it imports `schema_walk.py` and reads `schema/` beside it; a lone download of the file fails on its import. Its last line is the count it checked. For an archive, unpack it into an empty scratch directory and lint that: the count matches the source folder's, less any hidden elements left out. After an upload or a push, read back what landed (principles §5).
+Lint every folder made: schema-dist's `walk/lint_folder.py <folder>` (Python 3 with PyYAML), run from a fresh clone of schema-dist in a scratch directory (how: `knowledge/world-folder.md`, the check paragraph), never one found on the disk. Its last line is the count it checked. For an archive, unpack it into an empty scratch directory and lint that: the count matches the source folder's, less any hidden elements left out. After an upload or a push, read back what landed (principles §5).
 
 A converted folder entering an existing world goes through import's Step 5, Reconcile with an existing world, never a merge by name.
 
