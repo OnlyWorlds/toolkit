@@ -34,7 +34,7 @@ Say which end is the source of truth after the move. A copy is a new world. One 
 
 ### Step 2: Plan before writing
 
-Run the door with `--plan` (it writes nothing) and show the user what becomes what and what does not map: the templates or categories and the type each became, the fields kept as `x_` extensions, the mentions the source never resolved, what was left out as page chrome. Where the plan marks a mapping as believed rather than read on a real export, say so. Fix a mapping with the door's `--map TAG=TYPE` where it has one (LegendKeeper), never by hand-editing the output. A door without one maps by its own table: report what it got wrong, and the user rules on it after the folder exists.
+Run the door with `--plan` (it writes nothing) and show the user what becomes what and what does not map: the templates or categories and the type each became, the fields kept as `x_` extensions, the mentions the source never resolved, what was left out as page chrome. Where the plan marks a mapping as believed rather than read on a real export, say so. Fix a mapping with the door's `--map TAG=TYPE` where it has one (LegendKeeper), never by hand-editing the output. The schema distribution carries a shared **import map** (`profiles/import-map.json`, with `import-map.md` beside it): per source tool, the words its users write (`city`, `organization`, `artifact`) to one of the 22 types, LegendKeeper first. A door that knows it offers the table as its default map, printed with what each row would type; it is applied only on the user's yes, never silently, and a `--map` the user typed wins over it. A door without one maps by its own table: report what it got wrong, and the user rules on it after the folder exists.
 
 ### Step 3: The archive
 
