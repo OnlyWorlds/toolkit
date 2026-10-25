@@ -123,4 +123,4 @@ OnlyWorlds is a typed, persistent, portable world-state layer for AI systems: th
 
 ## Licence and contributions
 
-MIT. See [LICENSE](LICENSE). Issues are welcome: a skill that gave a wrong answer, a step that did not work in your AI, a word that reads wrong. Pull requests are read; a small fix is usually taken as is, and a new skill or a change to what one does is better opened as an issue first, since it may already be built or ruled out. Security reports: see [SECURITY.md](SECURITY.md). A reply can take a few days.
+MIT. See [LICENSE](LICENSE). Issues are welcome: a skill that gave a wrong answer, a step that did not work in your AI, a word that reads wrong. Pull requests are read; a small fix is usually taken as is, and a new skill or a change to what one does is better opened as an issue first, since it may already be built or ruled out. Security reports: see [SECURITY.md](SECURITY.md). A reply can take a few days. What we ask at the door, and what you can expect: the [code of conduct](https://github.com/OnlyWorlds/OnlyWorlds/blob/main/CODE_OF_CONDUCT.md).
