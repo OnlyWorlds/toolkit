@@ -66,7 +66,7 @@ Say how to install it: `pip install onlyworlds` (Python 3.12+). Hand-zip only to
 
 ## The doors
 
-Each door reads one app's own export into a new world folder: no AI, no account, the same folder from the same export every time. `OUT` must not exist or be empty. The package's doors are listed in its docs, and `python -m onlyworlds.<door> --help` is the truth for its flags.
+Each door reads one app's own export into a new world folder: no AI, no account, the same folder from the same export every time. The door is code, and the session stays on its side of it: run the door, read its plan and its report, and open the export or the other tool's API reply only where the user's own request needs a line looked at; keep nothing from it. `OUT` must not exist or be empty. The package's doors are listed in its docs, and `python -m onlyworlds.<door> --help` is the truth for its flags.
 
 | From | The export the user makes | Command |
 |---|---|---|
