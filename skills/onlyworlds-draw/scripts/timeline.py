@@ -13,7 +13,8 @@ comes before its start is drawn at its start and counted.
 
 A calendar (atlas_calendar, schema-dist profiles/calendar.md) labels the dates when one reads:
 the only one in the world, or the one --calendar names. A value that is not a calendar leaves
-the dates as bare numbers, and the script says so. The axis itself counts plain steps.
+the dates as bare numbers, and the script says so. The axis itself counts plain steps. The
+calendar is read by the onlyworlds package (onlyworlds.calendar), never by a copy here.
 
 Room, proposed and hidden elements are left out unless a flag asks for them.
 
@@ -21,12 +22,10 @@ Usage:
     python timeline.py WORLD_FOLDER [--out DIR] [--type TYPE ...] [--calendar NAME_OR_ID]
                        [--room] [--proposed] [--hidden] [--offline] [--presentation PATH]
 
-Python 3, stdlib only. Exit 0 on a page, 2 when the folder cannot be read.
+Python 3.12+; the standard library and the onlyworlds package (>=0.68.1, for the calendar).
+Exit 0 on a page, 2 when the folder cannot be read or the package is missing.
 """
 import argparse
-import json
-import math
-import re
 import sys
 from pathlib import Path
 
@@ -34,241 +33,22 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from graph import (BASE_JS, FAMILY_ORDER, count_line, fold, head_line, label,  # noqa: E402
                    left_out_reason, open_folder, out_folder, presentation, write_page)
 
+try:
+    from onlyworlds.calendar import format_step, read_calendar_value  # noqa: E402
+except ImportError:
+    print('The timeline reads calendars through the onlyworlds package, which is missing or too old: '
+          'run pip install "onlyworlds>=0.68.1" (Python 3.12+) and draw again.', file=sys.stderr)
+    sys.exit(2)
+
 SPANS = (("start_date", "end_date"), ("grant_date", "revoke_date"))
 POINTS = ("birth_date", "founding_date", "formation_date", "date")
 
 
-# ---------------------------------------------------------------- the calendar (atlas_calendar)
-# A port of the calendar profile's reader (schema-dist profiles/calendar.md; the reference is
-# the TypeScript SDK's readCalendarConfig, breakdownStep and formatStep). Proven against the
-# profile's calendar.fixture.json: every case's validity and words.
-
-def _whole(v, low=None):
+def _whole(v):
+    """An integer date: a whole number that is not a boolean."""
     if isinstance(v, bool) or not isinstance(v, (int, float)):
         return False
-    if isinstance(v, float) and not v.is_integer():
-        return False
-    return low is None or v >= low
-
-
-def _truthy(v):
-    """JavaScript's truthiness, which the SDK's reader uses for bundles.months."""
-    if v is None or v is False or v == "":
-        return False
-    return not (isinstance(v, (int, float)) and v == 0)
-
-
-def _strict_json(text):
-    def refuse(_):
-        raise ValueError("not strict JSON")
-    return json.loads(text, parse_constant=refuse)
-
-
-def read_calendar(value):
-    """The calendar as a dict of plain parts, or None: not a calendar (show bare numbers)."""
-    if isinstance(value, str):
-        try:
-            value = _strict_json(value)
-        except ValueError:
-            return None
-    if not isinstance(value, dict):
-        return None
-    if not _whole(value.get("version")) or value.get("version") != 1:
-        return None
-    if not isinstance(value.get("grain"), str):
-        return None
-    bundles = value.get("bundles") if isinstance(value.get("bundles"), dict) else {}
-    cal = {"months": None, "year": None, "week": None, "eras": [], "inter": [],
-           "format": value.get("format"), "format_i": value.get("format_intercalary")}
-    months = bundles.get("months")
-    if _truthy(months):
-        names = months.get("names") if isinstance(months, dict) else None
-        lengths = months.get("lengths") if isinstance(months, dict) else None
-        if not (isinstance(names, list) and isinstance(lengths, list)
-                and len(names) == len(lengths) and names):
-            return None
-        if not all(isinstance(n, str) for n in names) or not all(_whole(n, 1) for n in lengths):
-            return None
-        cal["months"] = (names, [int(n) for n in lengths])
-    year = bundles.get("year")
-    if year is not None:
-        if not isinstance(year, dict) or not _whole(year.get("steps"), 1):
-            return None
-        cal["year"] = int(year["steps"])
-    week = bundles.get("week")
-    if week is not None:
-        if not isinstance(week, dict) or not _whole(week.get("length"), 1):
-            return None
-        names = week.get("names")
-        if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
-            return None
-        cal["week"] = (int(week["length"]), names, week.get("mode") or "free")
-    eras = value.get("eras")
-    if eras is not None:
-        if not isinstance(eras, list):
-            return None
-        for i, e in enumerate(eras):
-            if not isinstance(e, dict) or not isinstance(e.get("name"), str) or not _whole(e.get("start")):
-                return None
-            if e.get("end") is not None and not _whole(e["end"]):
-                return None
-            if e.get("year_base") is not None and not (_whole(e["year_base"]) and e["year_base"] in (0, 1)):
-                return None
-            cal["eras"].append({
-                "name": e["name"], "abbrev": None if e.get("abbrev") is None else str(e["abbrev"]),
-                "start": int(e["start"]), "end": None if e.get("end") is None else int(e["end"]),
-                "restart": e.get("restart") is not False,
-                "base": 1 if e.get("year_base") is None else int(e["year_base"]),
-                "down": e.get("direction") == "down", "i": i})
-    inter = value.get("intercalary")
-    if inter is not None:
-        if not isinstance(inter, list):
-            return None
-        for d in inter:
-            if not isinstance(d, dict) or not isinstance(d.get("name"), str) or not _whole(d.get("after_month")):
-                return None
-            if d.get("every_years") is not None and not _whole(d["every_years"], 1):
-                return None
-            cal["inter"].append({"name": d["name"], "after": int(d["after_month"]),
-                                 "every": None if d.get("every_years") is None else int(d["every_years"]),
-                                 "in_week": d.get("in_week") is not False})
-    return cal
-
-
-def _year_days(cal, y):
-    """The year's segments in order: ("m", index, length) or ("i", entry) or ("lost", entry)."""
-    names, lengths = cal["months"]
-    here = [d for d in cal["inter"] if d["every"] is None or y % d["every"] == 0]
-    segs = [("i", d) for d in here if d["after"] == 0]
-    for m in range(len(names)):
-        segs.append(("m", m, lengths[m]))
-        segs += [("i", d) for d in here if d["after"] == m + 1]
-    segs += [("lost", d) for d in here if d["after"] > len(names)]
-    return segs
-
-
-def _year_len(cal, y):
-    if not cal["months"]:  # the SDK's yearShape: a leap entry adds a step even without months
-        return (cal["year"] or 1) + sum(1 for d in cal["inter"] if d["every"] and y % d["every"] == 0)
-    return sum(s[2] if s[0] == "m" else 1 for s in _year_days(cal, y))
-
-
-def _off_week(cal, y):
-    """Days in year y that do not advance a free week (in_week false, active that year)."""
-    return sum(1 for d in cal["inter"] if not d["in_week"] and (d["every"] is None or y % d["every"] == 0))
-
-
-def _cycle(cal):
-    c = 1
-    for d in cal["inter"]:
-        if d["every"]:
-            c = c * d["every"] // math.gcd(c, d["every"])
-    return c if c <= 10000 else None
-
-
-def _locate(cal, step):
-    """(absYear, the step that opens it, free-week days skipped before it since step 0)."""
-    cyc = _cycle(cal)
-    y, start, skip = 0, 0, 0
-    if cyc:
-        clen = sum(_year_len(cal, k) for k in range(cyc))
-        cskip = sum(_off_week(cal, k) for k in range(cyc))
-        n = step // clen
-        y, start, skip = n * cyc, n * clen, n * cskip
-    while step < start:
-        y -= 1
-        start -= _year_len(cal, y)
-        skip -= _off_week(cal, y)
-    while step >= start + _year_len(cal, y):
-        start += _year_len(cal, y)
-        skip += _off_week(cal, y)
-        y += 1
-    return y, start, skip
-
-
-def _era_at(cal, step):
-    """A down era holds [end, start); an up era [start, end), or to the start of the next era
-    in start order (the SDK's resolveEraDomains). Overlaps: the latest start, then up over
-    down, then the later in the list."""
-    ordered = sorted(cal["eras"], key=lambda e: e["start"])
-    held = []
-    for n, e in enumerate(ordered):
-        if e["down"]:
-            lo, hi = e["end"], e["start"]
-        else:
-            lo, hi = e["start"], e["end"]
-            if hi is None and n + 1 < len(ordered):
-                hi = ordered[n + 1]["start"]
-        if (lo is None or step >= lo) and (hi is None or step < hi):
-            held.append(e)
-    if not held:
-        return None
-    return max(held, key=lambda e: (e["start"], not e["down"], e["i"]))
-
-
-def breakdown(cal, step):
-    b = {"absYear": None, "year": None, "era": None, "month": None, "monthName": None,
-         "day": None, "intercalary": None, "weekday": None}
-    y, start, skip = _locate(cal, step)
-    b["absYear"] = b["year"] = y
-    in_week = True
-    if cal["months"]:
-        off, pos = step - start, 0
-        for s in _year_days(cal, y):
-            size = s[2] if s[0] == "m" else 1
-            if off < pos + size:
-                if s[0] == "m":
-                    b["month"], b["monthName"], b["day"] = s[1] + 1, cal["months"][0][s[1]], off - pos + 1
-                elif s[0] == "i":
-                    b["intercalary"], in_week = s[1]["name"], s[1]["in_week"]
-                break
-            if s[0] == "i" and not s[1]["in_week"]:
-                skip += 1
-            pos += size
-    week = cal["week"]
-    if week and len(week[1]) == week[0] and in_week:
-        length, wnames, mode = week
-        if mode == "nested":
-            if b["day"] is not None:
-                b["weekday"] = wnames[(b["day"] - 1) % length]
-        else:
-            b["weekday"] = wnames[(step - skip) % length]
-    era = _era_at(cal, step)
-    if era:
-        b["era"] = era
-        if not era["restart"]:
-            b["year"] = y
-        elif era["down"]:
-            b["year"] = _locate(cal, era["start"] - 1)[0] - y + era["base"]
-        else:
-            b["year"] = y - _locate(cal, era["start"])[0] + era["base"]
-    return b
-
-
-_TOKEN = re.compile(r"\{([a-z_]+)\}")
-EMPTY = chr(0xE000)  # a private-use mark for an empty known token, as the SDK's renderTemplate
-SEPS = ",;" + chr(0xB7)
-SEP_EMPTY = re.compile(r"\s*[" + SEPS + r"]?\s*" + EMPTY + r"\s*[" + SEPS + r"]?\s*")
-EDGES = re.compile(r"^[\s" + SEPS + r"]+|[\s" + SEPS + r"]+$")
-_KNOWN = {"day", "month", "weekday", "year", "era", "step", "intercalary"}
-
-
-def words(cal, step):
-    b = breakdown(cal, step)
-    era = b["era"]
-    vals = {"day": b["day"], "month": b["monthName"], "weekday": b["weekday"], "year": b["year"],
-            "era": (era["name"] if era["abbrev"] is None else era["abbrev"]) if era else None,
-            "step": step, "intercalary": b["intercalary"]}
-    if b["intercalary"] is not None:
-        tpl = cal["format_i"] if isinstance(cal["format_i"], str) else "{intercalary}, {year} {era}"
-    elif isinstance(cal["format"], str):
-        tpl = cal["format"]
-    else:
-        tpl = "{day} {month}, {year} {era}" if cal["months"] else "{year} {era}"
-    out = _TOKEN.sub(lambda m: m.group(0) if m.group(1) not in _KNOWN
-                     else EMPTY if vals[m.group(1)] in (None, "") else str(vals[m.group(1)]), tpl)
-    out = re.sub(r"\s{2,}", " ", SEP_EMPTY.sub(" ", out)).strip()
-    return EDGES.sub("", out)
+    return not isinstance(v, float) or v.is_integer()
 
 
 # ---------------------------------------------------------------- the timeline
@@ -289,7 +69,7 @@ def dated(e):
 
 def pick_calendar(kept, want):
     """(the element, the calendar) the page speaks, or (None, None); and the lines to say."""
-    found = [(e, read_calendar(e["atlas_calendar"])) for e in kept.values()
+    found = [(e, read_calendar_value(e["atlas_calendar"])) for e in kept.values()
              if e.get("atlas_calendar") is not None]
     found.sort(key=lambda ec: (fold(label(ec[0])), str(ec[0]["id"])))
     notes = [f"{label(e)} carries an atlas_calendar that is not a calendar: its dates stay numbers"
@@ -386,7 +166,7 @@ def main(argv):
         {i: e for i, e in elements.items() if not left_out_reason(e, a.room, a.proposed, a.hidden)}, a.calendar)
 
     def say(v):
-        return words(cal, v) if cal and v is not None else ("" if v is None else str(v))
+        return format_step(cal, int(v)) if cal and v is not None else ("" if v is None else str(v))
 
     rows, all_dates = [], []
     not_placed = {"with no date": 0, "dated outside the world's range": 0, "spans ending before they start": 0}

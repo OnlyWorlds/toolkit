@@ -24,7 +24,7 @@ python <this skill's folder>/scripts/map.py WORLD_FOLDER [--no-image]
 python <this skill's folder>/scripts/timeline.py WORLD_FOLDER [--type TYPE] [--calendar NAME]
 ```
 
-Python 3, standard library only. Each writes into `draw/` beside the world folder (`--out DIR` for another place; a path inside the world's `elements/` is refused) and prints a Markdown summary: what it drew, what it left out and why. Each page is one HTML file with its data and script inline; it opens from disk with no server and loads nothing from the network, except a map's own image. All three take `--room`, `--proposed` and `--hidden` to draw what they leave out by default, and `--offline` to skip the colour fetch.
+Python 3.12+. `graph.py` and `map.py` use the standard library only. `timeline.py` reads a world's calendar through the `onlyworlds` package (`pip install "onlyworlds>=0.68.1"`) and stops with one sentence naming that line when the package is missing or older; there is no hand-made reader to fall back on. Each writes into `draw/` beside the world folder (`--out DIR` for another place; a path inside the world's `elements/` is refused) and prints a Markdown summary: what it drew, what it left out and why. Each page is one HTML file with its data and script inline; it opens from disk with no server and loads nothing from the network, except a map's own image. All three take `--room`, `--proposed` and `--hidden` to draw what they leave out by default, and `--offline` to skip the colour fetch.
 
 ## Method
 
@@ -64,7 +64,7 @@ Principles §2: the script reads the folder and computes every position, link an
 
 - **The range** is `time_range_min..time_range_max`. A date outside it is counted, not drawn, and a span crossing an edge is cut there. A world with no range is drawn over its own dates, and the foot says so.
 - **Eras** are Constructs with both a `start_date` and an `end_date`: their own rows at the top, and shaded bands behind every row when they do not overlap.
-- **The calendar**: an `atlas_calendar` field (schema-dist `profiles/calendar.md`) labels the dates when it reads: the world's only calendar, or the one `--calendar` names. A value that is not a calendar leaves bare numbers, and the script says so. The axis counts plain steps; the labels, the hover text and the panel speak the calendar.
+- **The calendar**: an `atlas_calendar` field (schema-dist `profiles/calendar.md`) labels the dates when it reads, through the `onlyworlds` package's reader (`onlyworlds.calendar`): the world's only calendar, or the one `--calendar` names. A value that is not a calendar leaves bare numbers, and the script says so. The axis counts plain steps; the labels, the hover text and the panel speak the calendar.
 - **Undated** elements are counted as not placed, never placed. A span whose end comes before its start is drawn at its start and counted (the read skill's consistency report is the place to fix it).
 
 ### 6. Head and foot
