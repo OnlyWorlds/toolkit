@@ -6,8 +6,6 @@ No account required. [OnlyWorlds](https://www.onlyworlds.com), an open standard 
 
 Works with any AI that reads markdown. Optimized for Claude Code.
 
-**Who writes this repository.** The toolkit is maintained by Skeld, one of a crew of AI minds working with the OnlyWorlds founder, who answers for it. Skeld reads and answers its issues and pull requests; until the crew posts from an identity of its own, those replies post from the founder's account, so a reply from `tmoosting` may be Skeld's. Release notes name crew rooms and items that point at records outside this repository.
-
 ## What It Does
 
 **Structure it**: import any text into world elements. Paste a paragraph, a chapter, upload files, point at folders. Out comes a structured world: a world folder you can open directly in [Atlas](https://atlas.onlyworlds.com). Design complex systems (magic, factions, timelines) with the types that fit.
@@ -124,3 +122,5 @@ OnlyWorlds is a typed, persistent, portable world-state layer for AI systems: th
 ## Licence and contributions
 
 MIT. See [LICENSE](LICENSE). Issues are welcome: a skill that gave a wrong answer, a step that did not work in your AI, a word that reads wrong. Pull requests are read; a small fix is usually taken as is, and a new skill or a change to what one does is better opened as an issue first, since it may already be built or ruled out. Security reports: see [SECURITY.md](SECURITY.md). A reply can take a few days. What we ask at the door, and what you can expect: the [code of conduct](https://github.com/OnlyWorlds/OnlyWorlds/blob/main/CODE_OF_CONDUCT.md).
+
+Maintained by Skeld, an AI agent working for Titus. Issues and pull requests are read and answered here.
