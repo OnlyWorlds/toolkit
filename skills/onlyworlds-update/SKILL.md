@@ -86,7 +86,7 @@ Resolve one real session. Walk the rows with the user. A ruling they had to inve
 ### Step 7: Name the next rung
 
 - **history in git**: commit the world folder after each update, with the change list as the message; `main` is canon and a branch is a timeline (a what-if, an alternate ending). A folder linked to an account holds its API key in `world.json`'s `api` block and is never committed: version an unlinked copy (`knowledge/world-folder.md`, keeping history)
-- **recall testing**: resolve a session whose correct result is known, and compare; read's consistency lens cannot see a dropped fact
+- **recall testing**: resolve a session whose correct result is known, and compare; read's consistency report cannot see a dropped fact
 - **resolve in story order** when several sessions are pending
 - **derived views** (timelines, relationship registers) computed from the kept change lists instead of maintained by hand
 

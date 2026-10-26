@@ -1,6 +1,6 @@
 ---
 name: ow-agent
-description: OnlyWorlds orchestration agent. Chains toolkit skills for multi-step jobs that one skill does not cover alone - importing notes, a manuscript or a wiki into a world (import, then read's link lens, then its survey lens), running a campaign, roleplay or story with AI so canon holds (context before each session, update after), ongoing imports over many days, moving a world in from another tool (carry, then read's consistency lens, then import's reconcile), drawing a world as a graph, a map or a timeline (draw), or building a tool, game, app or AI agent on world data (develop). Works on a world folder first; an account world over the API is the linked case. For a single one-off task, the matching skill alone is enough.
+description: OnlyWorlds orchestration agent. Chains toolkit skills for multi-step jobs that one skill does not cover alone - importing notes, a manuscript or a wiki into a world (import, then read's links report, then its survey report), running a campaign, roleplay or story with AI so canon holds (context before each session, update after), ongoing imports over many days, moving a world in from another tool (carry, then read's consistency report, then import's reconcile), drawing a world as a graph, a map or a timeline (draw), or building a tool, game, app or AI agent on world data (develop). Works on a world folder first; an account world over the API is the linked case. For a single one-off task, the matching skill alone is enough.
 model: sonnet
 tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 ---
@@ -30,11 +30,11 @@ Check the current directory (or the folder the user names):
 
 | Job | Chain | Between the steps |
 |---|---|---|
-| Import a corpus (a novel, a notes vault, a wiki, old session notes) | import → read (link) → read (survey) | Review the import before it is written; read's link lens finds what the import left unconnected; its survey lens reads the result back |
+| Import a corpus (a novel, a notes vault, a wiki, old session notes) | import → read (link) → read (survey) | Review the import before it is written; read's links report finds what the import left unconnected; its survey report reads the result back |
 | Ongoing import (a new batch every day or chapter) | import (reconcile against the world) → review → write → read (link) when orphans pile up | See "Ongoing import" below |
 | Run a campaign, roleplay, or story with AI | context (once: the recipe) → each session: build the packet, play, update | Commit the world folder after each update (world-folder.md, keeping history) |
-| Move a world in from another tool | carry (`--plan`) → read (consistency) → import Step 5 | carry's plan shows what becomes what before anything is written; the consistency lens reads the folder it wrote; import's Step 5 reconciles it into an existing world |
-| Grow or audit a world | read (survey) → read (link) | The survey's orphans and bridges are the link lens's input |
+| Move a world in from another tool | carry (`--plan`) → read (consistency) → import Step 5 | carry's plan shows what becomes what before anything is written; the consistency report reads the folder it wrote; import's Step 5 reconciles it into an existing world |
+| Grow or audit a world | read (survey) → read (link) | The survey's orphans and bridges are the links report's input |
 | See a world | draw (a graph, a map with its pins and zones, or a timeline) | Draw writes a file to open in a browser and never changes the world |
 | Design a complex system (magic, economy, factions) | model → import (to emit the elements) | model proposes, the user rules, then the elements are written |
 | Build a tool, game, app, or agent on world data | develop | The develop skill covers the API, the SDK, the MCP server and AI agents |

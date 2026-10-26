@@ -109,7 +109,7 @@ The profile's page has the rest (how each predicate counts, what a reader report
 ## Never
 
 - Write a seed fact the user did not give. "Unsure" with the reason beats a guess.
-- Write into an existing world's elements: this skill makes new worlds. Growing one is import, read's link lens or develop.
+- Write into an existing world's elements: this skill makes new worlds. Growing one is import, read's links report or develop.
 - Build a patch from a package copy. A patch file this skill writes for a world that already exists (a new charter text, a new world skill, for its keeper to land) starts from a fresh GET of that element and states the `updated_at` of the element it was built on, so the keeper sees drift before landing it.
 - Put a person's private reads into the world: one neutral line on what each person does, written as they would accept it.
 

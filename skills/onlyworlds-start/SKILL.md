@@ -20,7 +20,7 @@ A world folder on disk (`world.json` + `elements/`) never needs credentials; onl
 | "I have an Azgaar map" / "I want my world in Foundry VTT" / "I work in Obsidian" | carry (the public converters, the Obsidian plugin) |
 | "Copy my account world to a folder" / "put my folder on my account" | carry (moving a world between a folder and an account is carry's; develop is for building on it) |
 | "How do I model a magic system / factions / a religion" / "what type is this" / "is there a field for X" / "what fields exist" | model |
-| "What do I actually have" · "my elements feel disconnected" · "does my world contradict itself" | read (its survey, link or consistency lens) |
+| "What do I actually have" · "my elements feel disconnected" · "does my world contradict itself" | read (its survey, links or consistency report) |
 | "Show my world as a graph" / "a map of my world" / "my events on a timeline" | draw |
 | "I run a campaign, roleplay or story with AI and it loses canon" / "my AI forgets my lore" | context (load the world each session), then update (write each session back) |
 | "Update my world from these session notes" / "a character died in play" | update |

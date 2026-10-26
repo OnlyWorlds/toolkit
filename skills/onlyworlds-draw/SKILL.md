@@ -65,7 +65,7 @@ Principles §2: the script reads the folder and computes every position, link an
 - **The range** is `time_range_min..time_range_max`. A date outside it is counted, not drawn, and a span crossing an edge is cut there. A world with no range is drawn over its own dates, and the foot says so.
 - **Eras** are Constructs with both a `start_date` and an `end_date`: their own rows at the top, and shaded bands behind every row when they do not overlap.
 - **The calendar**: an `atlas_calendar` field (schema-dist `profiles/calendar.md`) labels the dates when it reads: the world's only calendar, or the one `--calendar` names. A value that is not a calendar leaves bare numbers, and the script says so. The axis counts plain steps; the labels, the hover text and the panel speak the calendar.
-- **Undated** elements are counted as not placed, never placed. A span whose end comes before its start is drawn at its start and counted (the read skill's consistency lens is the place to fix it).
+- **Undated** elements are counted as not placed, never placed. A span whose end comes before its start is drawn at its start and counted (the read skill's consistency report is the place to fix it).
 
 ### 6. Head and foot
 

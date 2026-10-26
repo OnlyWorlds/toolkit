@@ -63,7 +63,7 @@ The skills follow the life of a world. Every skill follows the same shared rules
 |                                 | **setup**   | Set up a world for work (a company, a team, an AI's home, a council, a software project) from a starter pack |
 | **Structure it**                | **import**  | Notes, a manuscript, PDFs, a wiki or old session notes → a world folder Atlas opens, or reconciled into an existing world |
 |                                 | **model**   | How to represent a system in the 22 types, and every type's fields |
-| **Grow it**                     | **read**    | Read a whole world through one lens: a creative brief, the missing connections, or where it contradicts itself |
+| **Grow it**                     | **read**    | Read a whole world and get one of three reports: a creative brief, the missing connections, or where it contradicts itself |
 |                                 | **draw**    | A world as a graph, its maps with pins and zones, or its events on a timeline, in a file to open in a browser |
 | **Play in it and keep it true** | **context** | Design how your world gets loaded into AI sessions: fresh, scoped, sourced, never a giant chat that forgets |
 |                                 | **update**  | Write a finished session (notes, recap, transcript) back into the world, through a change list you approve |

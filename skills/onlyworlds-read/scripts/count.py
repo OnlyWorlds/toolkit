@@ -1,4 +1,4 @@
-"""Count a world folder: the numbers the survey and link lenses start from.
+"""Count a world folder: the numbers the survey and links reports start from.
 
 Reads a world folder with consistency.py's loader (world.json + elements/<type>/*.json, plus a
 legacy spatial/ folder, keyed on the id inside each file) and prints a Markdown report:
@@ -24,7 +24,7 @@ Usage:
 
     --top N      how many elements the "most linked" and "most text" tables list (default 40)
     --mentions   list ow:// mentions in a description or story that no link field backs
-                 (the link lens's strongest evidence); the field names come from the skill's
+                 (the links report's strongest evidence); the field names come from the skill's
                  copy of the schema reference (../knowledge/schema-reference.md)
     --room       count the room too (only when the user asks)
     --placement  count map, pin, marker and zone too (--spatial, the older name, still works)
@@ -233,7 +233,7 @@ def count(folder, room=False, spatial=False, schema=None, mentions=False, propos
                     linked.add(t)
         if dangling:
             notes.append(f"mentions: {dangling} ow:// mention(s) name an id not in the folder "
-                         "(the consistency lens reads link fields, not prose)")
+                         "(the consistency report reads link fields, not prose)")
 
     return {
         "world": world.get("name"), "folder": str(folder),

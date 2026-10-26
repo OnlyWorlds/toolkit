@@ -149,4 +149,4 @@ Whatever else it holds, the answer to a request through this skill carries these
 
 - `knowledge/common-errors.md`: invented fields and other traps
 - `knowledge/schema-reference.md` · `knowledge/element-types.md` · `knowledge/decision-trees.md` · `knowledge/world-folder.md` · `knowledge/atlas-conventions.md` (when the user will write or keep knowledge entries in Atlas; opening a folder in Atlas does not need it)
-- The update skill (the after-each-session loop) · the model skill (systems the text only implies) · read's link lens (enriching links in an existing world) · the carry skill (another app's export, an `.owworld`) · develop's Bulk Upload (sending a new world up)
+- The update skill (the after-each-session loop) · the model skill (systems the text only implies) · read's links report (enriching links in an existing world) · the carry skill (another app's export, an `.owworld`) · develop's Bulk Upload (sending a new world up)

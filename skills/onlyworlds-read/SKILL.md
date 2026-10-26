@@ -1,24 +1,24 @@
 ---
 name: onlyworlds-read
-description: "Read a whole world and report on it through one of three lenses: what it contains and where its weight sits (a creative brief), which connections are missing (orphans, characters with no relations, places nobody lives in), or where it contradicts itself (dates, places, names, broken links). Use when the user says 'survey my world', 'what do I actually have', 'my elements feel disconnected', 'find orphans', 'continuity check', 'does this timeline add up'. A world folder or an account world. Writes only what the user approves."
+description: "Read a whole world and write one of three reports: the survey report (what it contains and where its weight sits, a creative brief), the links report (which connections are missing: orphans, characters with no relations, places nobody lives in) or the consistency report (where it contradicts itself: dates, places, names, broken links). Use when the user says 'survey my world', 'what do I actually have', 'my elements feel disconnected', 'find orphans', 'continuity check', 'does this timeline add up'. A world folder or an account world. Writes only what the user approves."
 ---
 
 # Read
 
-Read a whole world, from a folder or an account, through one lens: **survey** (what it is, where its weight sits), **link** (the connections it is missing) or **consistency** (where it disagrees with itself). Code counts the world; the model reads only what matters and writes nothing the user has not approved.
+Read a whole world, from a folder or an account, and write one of three reports: the **survey** report (what it is, where its weight sits), the **links** report (the connections it is missing) or the **consistency** report (where it disagrees with itself). Code counts the world; the model reads only what matters and writes nothing the user has not approved.
 
 Shared rules (identity, code counts, propose-review-apply, merge-don't-overwrite, checking your work): `knowledge/principles.md`, here especially §2 and §5.
 
 ## Quick Reference
 
-| The user wants | Lens | First move |
+| The user wants | Report | First move |
 |---|---|---|
 | what they have, a brief | `survey` | count, read the top of the web, write the brief |
 | disconnected, orphans, missing links | `link` | count, gather evidence, propose links |
 | contradictions, continuity, timeline, duplicates, broken links | `consistency` | `scripts/consistency.py`, then read what it flags |
 | unsure | `survey`, then offer the other two | |
 
-**Picking the lens.** The first word of the invocation's argument picks it: `survey` (or `brief`), `link` (or `links`, `orphans`), `consistency` (or `contradictions`, `continuity`). With no such word, the table picks from the user's words. One lens runs at a time; run a second only when the user asks for it. A picture of the web ("show my world", a graph) is the draw skill, not a lens here.
+**Picking the report.** The first word of the invocation's argument picks it: `survey` (or `brief`), `link` (or `links`, `orphans`), `consistency` (or `contradictions`, `continuity`). With no such word, the table picks from the user's words. One report runs at a time; run a second only when the user asks for it. A picture of the web ("show my world", a graph) is the draw skill, not a report here.
 
 ## Step 1: Pick the Source
 
@@ -50,9 +50,9 @@ Python 3, stdlib only; it reads the folder with the consistency script's loader,
 
 **The marks are named.** A proposed element (`x_review_proposed`, an AI seat's write waiting for a keeper: schema-dist's review profile) is not yet canon, so it is left out the same way and the "Left out" line says how many; `--proposed` counts them, each labelled "proposed, not yet reviewed", and a brief never states one as a fact. A known-of stub (`known_of: true`, an element the reader's sheet names but cannot see whole) is counted but its empty fields are unknown: it is never an orphan, a near-orphan or a text row. A hidden element (`hidden`, folder spec 4.8) is counted, since the folder's holder sees it; the "Marks" line gives the counts, and a brief that may be handed on says how many are hidden.
 
-Save the report beside your output; the brief and the link lists cite its numbers and never recount them. The consistency lens runs its own script instead.
+Save the report beside your output; the brief and the link lists cite its numbers and never recount them. The consistency report runs its own script instead.
 
-## The survey lens
+## The survey report
 
 A creative brief: a reading of what the world is about and where its weight sits.
 
@@ -125,9 +125,9 @@ Zones with no description or generic names (poly1, new zone, TRE) are likely map
 
 ### Output
 
-Write the brief to `survey-{world-name}.md` beside the world folder (principles §1; or where the user asked) and report the path. Then offer the next step: orphans and bridges feed the link lens; preparing a session from this world is the context skill; a picture of the web is the draw skill.
+Write the brief to `survey-{world-name}.md` beside the world folder (principles §1; or where the user asked) and report the path. Then offer the next step: orphans and bridges feed the links report; preparing a session from this world is the context skill; a picture of the web is the draw skill.
 
-## The link lens
+## The links report
 
 Find the connections a world is missing and add the approved ones. It adds links only. A known-of stub is never a link target (its reader cannot see it whole; `--mentions` leaves it out), and a proposed element is not linked to until a keeper settles it.
 
@@ -216,7 +216,7 @@ Report results: N links added, N Relations created, N orphans resolved. For a fo
 
 Which type has which link field: the type's own section of `knowledge/schema-reference.md` (`single-link → T`, `multi-link → T`) and its Link Direction Summary; v2 uses bare field names holding UUIDs. Single links: Character.location, Character.birthplace, Location.parent_location. Multi links: Character.species, Character.objects, Character.institutions, Event.characters, Event.locations. Relation: `actor` (single Character) plus the involves multi-links, with `intensity` and `description`.
 
-## The consistency lens
+## The consistency report
 
 Find where a world disagrees with itself, and propose fixes the user rules on. A script finds the structural contradictions; the model reads only the elements the script flags.
 
@@ -277,7 +277,7 @@ Offer two fixes when the right one depends on intent (the date was wrong, or the
 ### Apply What Was Approved
 
 - **World folder**: snapshot first (git, or a copy: world-folder.md, "Keeping history"); edit only the approved fields, per the world-folder writer rules (keep every other field and key order; in a folder linked to an account, a fresh `local_updated_at`).
-- **API**: read before write, PATCH only the approved fields; multi-link changes go through the links endpoint (the link lens's Execute shows both calls).
+- **API**: read before write, PATCH only the approved fields; multi-link changes go through the links endpoint (the links report's Execute shows both calls).
 - Read each edited element back, then run the script again: an approved fix should take its finding with it, and nothing new should appear.
 
 Report: N findings, N fixed, N kept as canon, N left open, and the "not checked" lines.
@@ -290,9 +290,9 @@ The script checks structure, not truth (principles §5): a wrong fact stated con
 
 Whatever else it holds, the answer to a request through this skill carries these lines; a line that does not apply is said not to apply, never left out silently.
 
-- The lens taken, from the argument's first word or the user's words (Picking the lens).
+- The report taken, from the argument's first word or the user's words (Picking the report).
 - The script's count line and its "Left out" line, cited once, never recounted (Step 2; Run the Script).
-- For the consistency lens, the "not checked" section (Run the Script).
+- For the consistency report, the "not checked" section (Run the Script).
 - A question before any fix: which findings are intended, every "possible" finding put as a question (Ask Before Calling It Wrong).
 - Nothing written until the user approves; then the tally of what was fixed, kept, left open or linked (Propose Fixes; Apply What Was Approved; Execute).
 - For a survey, the brief's two head lines, true as of and not read, and the brief's path (Write the Brief; Output).
