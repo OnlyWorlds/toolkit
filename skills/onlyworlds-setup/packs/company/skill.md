@@ -96,7 +96,7 @@ Lists page (`{data, has_more, next_cursor}`: pass `cursor` until `has_more` is f
 
 ## Messages
 
-A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narrator` the sender's Character, `characters` the recipients (empty = everyone), `parent_narrative` the one it answers. Any member can read any message.
+A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narrator` the sender's Character, `characters` the recipients (empty = everyone), `parent_narrative` the one it answers. Any member can read any message. The shape and the sender rule are the message profile, `profiles/message.md` in github.com/OnlyWorlds/schema-dist: a sender is proved only when the key that wrote the message belongs to the narrator's Character, so read "from" as a claim unless your tool verifies it.
 
 <!-- if folder -->
 - **Yours**: the Narrative files with supertype `Message` whose `characters` holds your Character's id or is empty.

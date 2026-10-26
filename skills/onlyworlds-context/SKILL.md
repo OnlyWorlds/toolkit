@@ -131,6 +131,7 @@ Every line would carry its source (element and field) in the real packet, and th
 | a story told, and each telling | a Narrative's `events` are the events it tells (its dates are when it is told: "the span it recounts lives on its events"); a telling (someone told someone) is an Event with its hearers on `characters` |
 | one Character's view, computed for you | her own key (a guest or player seat), or the owner's key with `?as=<character id>`; stubs carry `known_of: true` |
 | one Character's whole packet, in one read | the draught, `GET /api/v2/character/{id}/context` (`mode`, `as_of`, `undated`, `budget`, `components`; the room's lines and elements only when `components` names them); the MCP tool `get_draught` takes the same policy |
+| a message between members, and who really sent it | a `Narrative` with supertype `Message`: `narrator` the claimed sender, `characters` the recipients (empty is everyone), `story` the body, `parent_narrative` the thread; the sender is verified only when the key that wrote it belongs to that Character, and a message view shows mail while a lore view leaves it out. The profile: `profiles/message.md` in github.com/OnlyWorlds/schema-dist, with the fixture a reader must agree with |
 | what a character or group knows | knowledge entries: a `Narrative` with subtype `knowledge`, held by `narrator` (one character), `collectives` (a group; members inherit), or both. See `knowledge/atlas-conventions.md` |
 | their own categories | `supertype` / `subtype` |
 | custom state | `x_*` extension fields |

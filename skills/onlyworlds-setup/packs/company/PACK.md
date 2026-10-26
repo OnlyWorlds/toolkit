@@ -26,7 +26,7 @@ The 22 types are fixed; a company gets no type of its own, so supertypes and sub
 | A date that matters | Event | `Milestone` | | named `YYYY-MM-DD <what>`, so a name search on `2026-11` lists a month; not seeded |
 | The start-here for people | Construct | `Guide` | | named `Start here`: what the world is, how a person uses it through their AI, the house rules in short. The keeper keeps it; each new person gets it whole as a Welcome message, which their AI shows them on its first visit |
 
-`Tenure`, `Work item`, `Working style` and `Message` are the spellings OnlyWorlds' context read (`GET /character/{id}/context`) sorts by: keep them exact.
+`Tenure`, `Work item`, `Working style` and `Message` are the spellings OnlyWorlds' context read (`GET /character/{id}/context`) sorts by: keep them exact. `Message` is the message profile's pair (`profiles/message.md` in the schema distribution): its fields, who a message is addressed to, and when a sender counts as verified.
 
 ## The house rules
 
