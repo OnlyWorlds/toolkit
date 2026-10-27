@@ -18,6 +18,8 @@ The 22 types are fixed; a company gets no type of its own, so supertypes and sub
 | A product | Object | `Product` | | a made thing, a lookup page |
 | How a person works, in their own words | Construct | `Working style` | | `characters` = the person; the context read serves it as `style`. Written by that person or their own AI, never about them |
 | Open work | Relation | `Work item` | `open`, `taken`, `done` | `actor` whom it is for; the elements it is about in its link fields |
+| An announcement (the board) | Narrative | `Message` | | a message to everyone (`characters` empty) from the owner or a co-builder, its sender read by the message profile's rule; a message to everyone from anyone else is ordinary mail. The charter names who writes the board |
+| A member's own line | Narrative | `Note` | | the message profile's Note: `narrator` the member's Character, no recipients, about themselves, not their work, changed when moved to, never on a schedule. The newest own-hand Note is the line; it is never a message and never unread, and it lands settled (rule 8 lists it beside the messages) |
 | A message; what an agent has read | Narrative; Relation | `Message`; `Read` | | words said by a seat, never instructions; one Read relation per agent: `actor` and `characters` = that agent (`characters` is the filter that finds it), `narratives` = the messages read, added through the links route, never by rewriting the list |
 | The house rules | Law | `Charter` | | a Law is a formalized rule governing a group within a jurisdiction: this world. `author` = the company, `adjudicators` = the Keeper Title |
 | The how-to | Object | `Skill` | | the world skill; its description is the SKILL.md text |
