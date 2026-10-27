@@ -6,7 +6,7 @@ distribution, link degree, orphans and near-orphans, clusters, bridges and text 
 writes nothing; the model cites its numbers and never recounts them.
 
 A link is any field whose value is an id, or a list of ids, found in the id map (extension
-fields included). The room (the room profile: one of its eight type-and-supertype pairs AND the
+fields included). The room (the room profile: one of its nine type-and-supertype pairs AND the
 mark x_room_of) and placement (map, pin, marker and zone: the draw skill's graph.py names the
 same four) are dropped from the id map before counting, so their links drop with them; the
 report opens with the world's whole count and the split, and says how many were left out.
@@ -44,21 +44,28 @@ from consistency import ids_of, is_hidden, is_known_of, label, load_schema, load
 # Placement, not lore: the same four types the draw skill's graph.py leaves out.
 PLACEMENT = {"map", "pin", "marker", "zone"}
 
+# The room profile's nine pairs (schema-dist profiles/room.md; principles §4). graph.py in the
+# draw skill holds the same table and rule: a skill installs alone, so the two cannot share a
+# module, and testing/test_room_pairs.py keeps them equal and runs the profile's fixture.
 ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
-              ("construct", "spec"), ("relation", "heart"), ("relation", "vote"),
-              ("event", "sitting"), ("character", "member")}
+              ("construct", "spec"), ("relation", "heart"), ("relation", "take"),
+              ("relation", "vote"), ("event", "sitting"), ("character", "member")}
+# Trimmed as the room profile defines it: exactly Unicode's White_Space code points, so a file
+# separator (U+001C, which str.strip() also removes) or a byte order mark stays in the word.
+ROOM_WS = ("\t\n\x0b\x0c\r \x85\xa0         "
+           "       　")
 NOT_LINKS = {"id", "world"}
 MENTION = re.compile(r"\[([^\]]*)\]\(ow://([A-Za-z]+)/([0-9A-Fa-f-]{36})\)")
 LIST_CAP = 150
 
 
-def fold(v):
-    return str(v).strip().casefold() if isinstance(v, str) else ""
+def room_word(v):
+    return v.strip(ROOM_WS).casefold() if isinstance(v, str) else ""
 
 
 def is_room(e):
     """The room profile's reader rule: the pair, trimmed and case-folded, AND a non-empty mark."""
-    pair = (fold(e.get("type") or e["_type"]), fold(e.get("supertype")))
+    pair = (room_word(e.get("type") or e["_type"]), room_word(e.get("supertype")))
     mark = e.get("x_room_of")
     return pair in ROOM_PAIRS and isinstance(mark, str) and mark != ""
 

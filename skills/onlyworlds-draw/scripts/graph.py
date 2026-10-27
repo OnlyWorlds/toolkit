@@ -12,7 +12,7 @@ on the id inside each file) and writes two files into the output folder, never i
                  a hidden one shows on hover and on a click, and the head counts them
 
 Map, Pin, Marker and Zone are placement, not a graph: never a node. Room elements (the room
-profile: one of its eight type-and-supertype pairs AND the mark x_room_of), proposed elements
+profile: one of its nine type-and-supertype pairs AND the mark x_room_of), proposed elements
 (x_review_proposed) and hidden ones (hidden: true) are left out unless a flag asks for them.
 A link is a schema field (no x_, atlas_ or shadow_ prefix) whose value is an id, or a list of
 ids, of a node; a link to a left-out element draws nothing. Every left-out count is printed.
@@ -65,10 +65,16 @@ GREYS = {"agents": ("#3d3d3d", "#e0e0e0"), "world": ("#5f5f5f", "#bdbdbd"),
          "abstract": ("#818181", "#9a9a9a"), "temporal": ("#a3a3a3", "#777777")}
 NO_FAMILY = ("#9e9e9e", "#8a8a8a")
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
-# The room profile's pairs (count.py in the read skill holds the same rule; principles §4).
+# The room profile's nine pairs (schema-dist profiles/room.md; principles §4). count.py in the
+# read skill holds the same table and rule: a skill installs alone, so the two cannot share a
+# module, and testing/test_room_pairs.py keeps them equal and runs the profile's fixture.
 ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
-              ("construct", "spec"), ("relation", "heart"), ("relation", "vote"),
-              ("event", "sitting"), ("character", "member")}
+              ("construct", "spec"), ("relation", "heart"), ("relation", "take"),
+              ("relation", "vote"), ("event", "sitting"), ("character", "member")}
+# Trimmed as the room profile defines it: exactly Unicode's White_Space code points, so a file
+# separator (U+001C, which str.strip() also removes) or a byte order mark stays in the word.
+ROOM_WS = ("\t\n\x0b\x0c\r \x85\xa0         "
+           "       　")
 
 
 # ---------------------------------------------------------------- reading
@@ -127,8 +133,12 @@ def fold(v):
     return str(v).strip().casefold() if isinstance(v, str) else ""
 
 
+def room_word(v):
+    return v.strip(ROOM_WS).casefold() if isinstance(v, str) else ""
+
+
 def is_room(e):
-    pair = (fold(e.get("type") or e["_type"]), fold(e.get("supertype")))
+    pair = (room_word(e.get("type") or e["_type"]), room_word(e.get("supertype")))
     mark = e.get("x_room_of")
     return pair in ROOM_PAIRS and isinstance(mark, str) and mark != ""
 

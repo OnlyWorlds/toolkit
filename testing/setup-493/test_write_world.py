@@ -28,7 +28,10 @@ harness trial (2026-10-22):
    fixture; it reaches the bulk body, a plan's list replaces the pack's, and the Python package's
    doctor (0.24.0 or newer, when installed) applies it;
 10. the company pack answers the five points a cold visit to a live company world guessed
-    (`cold-visit-checklist.md`).
+    (`cold-visit-checklist.md`);
+11. the company pack names who writes the board (the owner and the co-builders) and steers
+    everyone to keep a Note about themselves, in the charter and the world skill, and a Note
+    lands settled beside the messages.
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -348,11 +351,11 @@ class SetupWriter(unittest.TestCase):
             self.assertEqual(len(charters[0]["x_checks_rules"]), 1, placement)
 
     def test_9e_format_version_is_the_spec_current(self):
-        """The writer's FORMAT_VERSION is the folder spec's current (0.3.18, the package's own): no older-format finding."""
+        """The writer's FORMAT_VERSION is the folder spec's current (0.3.19): no older-format finding."""
         src = read(WRITER)
-        self.assertIn('FORMAT_VERSION = "0.3.18"', src)
+        self.assertIn('FORMAT_VERSION = "0.3.19"', src)
         for placement in PLACEMENTS:
-            self.assertEqual(RUNS["company", placement].world_json["format_version"], "0.3.18", placement)
+            self.assertEqual(RUNS["company", placement].world_json["format_version"], "0.3.19", placement)
 
     def test_9c_plan_replaces_the_pack_rule(self):
         plan = json.loads(read(PLANS / "company.json"))
@@ -416,6 +419,21 @@ class SetupWriter(unittest.TestCase):
                     self.assertIn(f"`{sup}`", skill, sup)
                 for sup in ("Concept", "Regulation", "Milestone"):
                     self.assertIn(sup, charter, sup)
+
+    def test_11_board_and_note(self):
+        """The board's writers and the Note's steer, in the company pack's own words."""
+        for placement in PLACEMENTS:
+            run = RUNS["company", placement]
+            skill, charter = run.skill(), run.charter()
+            with self.subTest(placement=placement):
+                self.assertIn("The board: the owner's and the co-builders' messages to everyone", charter)
+                self.assertIn("keeps a Note about themselves, not their work", charter)
+                self.assertIn("Narrative, supertype Note", charter)
+                self.assertIn("never on a schedule", charter)
+                self.assertIn("Your messages, Note, Read relation", charter)
+                self.assertIn("a Note about yourself, not your work", skill)
+                self.assertIn("`Note`", skill)
+                self.assertIn("your message, your Note, your Read relation", skill)
 
 
 if __name__ == "__main__":
