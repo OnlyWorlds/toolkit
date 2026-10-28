@@ -16,7 +16,8 @@ the only one in the world, or the one --calendar names. A value that is not a ca
 the dates as bare numbers, and the script says so. The axis itself counts plain steps. The
 calendar is read by the onlyworlds package (onlyworlds.calendar), never by a copy here.
 
-Room, proposed and hidden elements are left out unless a flag asks for them.
+Room, proposed and hidden elements are left out unless a flag asks for them; the three reading
+aids (graph.py's docstring) are left out always and said once in the foot.
 
 Usage:
     python timeline.py WORLD_FOLDER [--out DIR] [--type TYPE ...] [--calendar NAME_OR_ID]
@@ -30,7 +31,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from graph import (BASE_JS, FAMILY_ORDER, count_line, fold, head_line, label,  # noqa: E402
+from graph import (BASE_JS, FAMILY_ORDER, aids_line, count_line, fold, head_line, label,  # noqa: E402
                    left_out_reason, open_folder, out_folder, presentation, write_page)
 
 try:
@@ -152,7 +153,7 @@ def main(argv):
 
     folder, world, elements, skipped = open_folder(a.folder)
     name = world.get("name") or folder.name
-    left = {"room": 0, "proposed": 0, "hidden": 0, "outside --type": 0}
+    left = {"reading aid": 0, "room": 0, "proposed": 0, "hidden": 0, "outside --type": 0}
     kept = {}
     for i, e in elements.items():
         why = left_out_reason(e, a.room, a.proposed, a.hidden)
@@ -223,7 +224,7 @@ def main(argv):
     out = out_folder(folder, a.out)
     head = head_line(folder, world)
     foot = [f"{placed} dated elements and {len(eras)} eras placed on {rmin}..{rmax} {unit or 'steps'} "
-            f"(from {range_from}). Not placed: {count_line(not_placed)}. Left out: {count_line(left)}.",
+            f"(from {range_from}). Not placed: {count_line(not_placed)}. Left out: {count_line(left)}.{aids_line(left)}",
             ("Dates read through the calendar " + label(cal_el) + "; the axis counts plain steps.") if cal_el
             else "Dates are the world's plain integers (no calendar reads).",
             f"Colours: {colour_source}."] + notes
