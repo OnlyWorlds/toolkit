@@ -31,7 +31,12 @@ harness trial (2026-10-22):
     (`cold-visit-checklist.md`);
 11. the company pack names who writes the board (the owner and the co-builders) and steers
     everyone to keep a Note about themselves, in the charter and the world skill, and a Note
-    lands settled beside the messages.
+    lands settled beside the messages;
+12. the reading aids carry the charter profile's mark `x_charter_of` (schema-dist
+    `profiles/charter.md`): the Charter in every pack and the company pack's Guide, each the id of
+    the world it is in (world.json's for a folder, the server's online), in the files and the bulk
+    body; no other element carries the key; a Domain matches by its pair trimmed and folded, a
+    near-word does not; a plan that names an `x_charter_` key is refused.
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -351,11 +356,11 @@ class SetupWriter(unittest.TestCase):
             self.assertEqual(len(charters[0]["x_checks_rules"]), 1, placement)
 
     def test_9e_format_version_is_the_spec_current(self):
-        """The writer's FORMAT_VERSION is the folder spec's current (0.3.19): no older-format finding."""
+        """The writer's FORMAT_VERSION is the folder spec's current (0.3.20): no older-format finding."""
         src = read(WRITER)
-        self.assertIn('FORMAT_VERSION = "0.3.19"', src)
+        self.assertIn('FORMAT_VERSION = "0.3.20"', src)
         for placement in PLACEMENTS:
-            self.assertEqual(RUNS["company", placement].world_json["format_version"], "0.3.19", placement)
+            self.assertEqual(RUNS["company", placement].world_json["format_version"], "0.3.20", placement)
 
     def test_9c_plan_replaces_the_pack_rule(self):
         plan = json.loads(read(PLANS / "company.json"))
@@ -434,6 +439,92 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn("a Note about yourself, not your work", skill)
                 self.assertIn("`Note`", skill)
                 self.assertIn("your message, your Note, your Read relation", skill)
+
+    def test_12a_company_charter_and_guide_carry_the_mark(self):
+        """Written from the company pack: the charter and the guide files carry x_charter_of, the
+        world's id; no other element carries the key."""
+        for placement in PLACEMENTS:
+            run = RUNS["company", placement]
+            with self.subTest(placement=placement):
+                self.assertEqual(run.code, 0, run.out)
+                want = SERVER_ID if placement == "online" else run.world_json["id"]
+                if placement != "online":
+                    self.assertNotEqual(want, SERVER_ID)
+                charter = json.loads(read(run.world / "elements" / "law" / "charter.json"))
+                self.assertEqual(charter.get("x_charter_of"), want, "the Charter's mark")
+                guides = [b for _, b in run.elements() if b.get("supertype") == "Guide"]
+                self.assertEqual(len(guides), 1)
+                self.assertEqual(guides[0].get("x_charter_of"), want, "the Guide's mark")
+                marked = [b["id"] for _, b in run.elements() if "x_charter_of" in b]
+                total = sum(1 for _ in run.elements())
+                self.assertEqual(sorted(marked), sorted([charter["id"], guides[0]["id"]]),
+                                 "only the Charter and the Guide carry the mark")
+                print(f"\n  company/{placement}: {total} elements read, {len(marked)} carry x_charter_of "
+                      f"(the Charter, the Guide), each = {'the server id' if placement == 'online' else 'world.json id'}")
+
+    def test_12b_every_pack_marks_its_aids_only(self):
+        def check(run):
+            want = SERVER_ID if run.placement == "online" else run.world_json["id"]
+            aids, others = 0, 0
+            for p, body in run.elements():
+                aid = p.parts[-2] == "law" and body.get("supertype") == "Charter" or \
+                    p.parts[-2] == "construct" and body.get("supertype") in ("Guide", "Domain")
+                if aid:
+                    aids += 1
+                    self.assertEqual(body.get("x_charter_of"), want, p.name)
+                else:
+                    others += 1
+                    self.assertNotIn("x_charter_of", body, p.name)
+            self.assertGreaterEqual(aids, 1, "no Charter")
+        self.each(check)
+
+    def test_12c_the_mark_reaches_the_bulk_body(self):
+        for placement in PLACEMENTS:
+            bulk = json.loads(read(OUT / "plans" / f"company-{placement}-bulk.json"))
+            marked = [i for i in bulk["items"] if "x_charter_of" in i["element"]]
+            self.assertEqual(sorted(i["type"] for i in marked), ["construct", "law"], placement)
+            if placement == "online":
+                self.assertTrue(all(i["element"]["x_charter_of"] == SERVER_ID for i in marked))
+            print(f"\n  company/{placement} bulk: {len(bulk['items'])} items, {len(marked)} carry x_charter_of")
+
+    def test_12d_domain_pair_folded_near_word_not(self):
+        plan = json.loads(read(PLANS / "company.json"))
+        plan["copies"] = "none"
+        plan["elements"] += [
+            {"key": "dom", "type": "construct", "fields": {"name": "People", "supertype": "  domain\t",
+                                                           "description": "Who is here."}},
+            {"key": "near", "type": "construct", "fields": {"name": "Domains", "supertype": "Domains",
+                                                            "description": "Not an aid."}},
+            {"key": "lore", "type": "law", "fields": {"name": "Founding rules", "supertype": "Charters",
+                                                      "description": "Not an aid."}},
+        ]
+        plan_path = OUT / "plans" / "domain.json"
+        plan_path.write_text(json.dumps(plan), encoding="utf-8")
+        out = OUT / "domain"
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(out)], capture_output=True,
+                           text=True, encoding="utf-8")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        wid = json.loads(read(out / "world.json"))["id"]
+        bodies = {b["name"]: b for b in (json.loads(read(p)) for p in (out / "elements").glob("*/*.json"))}
+        self.assertEqual(bodies["People"].get("x_charter_of"), wid)
+        self.assertNotIn("x_charter_of", bodies["Domains"])
+        self.assertNotIn("x_charter_of", bodies["Founding rules"])
+        print(f"\n  domain plan: {len(bodies)} elements, "
+              f"{sum('x_charter_of' in b for b in bodies.values())} carry x_charter_of (Charter, Guide, Domain)")
+
+    def test_12e_a_plan_never_names_the_mark(self):
+        plan = json.loads(read(PLANS / "company.json"))
+        plan["copies"] = "none"
+        org = next(e for e in plan["elements"] if e["key"] == "org")
+        org["fields"]["x_charter_of"] = "019a0b0c-0d0e-7f00-8a00-5e2be2000002"
+        plan_path = OUT / "plans" / "plan-mark.json"
+        plan_path.write_text(json.dumps(plan), encoding="utf-8")
+        out = OUT / "plan-mark"
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(out)], capture_output=True,
+                           text=True, encoding="utf-8")
+        self.assertNotEqual(r.returncode, 0, r.stdout)
+        self.assertRegex(r.stdout, r"REFUSED .*org.*x_charter_of")
+        self.assertFalse(out.exists() and any(out.iterdir()), "a refused plan wrote files")
 
 
 if __name__ == "__main__":

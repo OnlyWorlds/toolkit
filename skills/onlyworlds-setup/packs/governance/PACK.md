@@ -49,3 +49,7 @@ The charter under **4,000** characters filled, the world skill under **9,000**.
 ## Time
 
 Date fields count days from 1970-01-01 (2026-10-22 is 20748): tenures, rules' `date`, votes, meetings and decisions are all on one line. A real calendar's dates go in the text too.
+
+## A world set up before toolkit 5.5.0
+
+Its Charter carries no `x_charter_of`, so every reader shows it as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, and on any Guide or Domain the world holds, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.

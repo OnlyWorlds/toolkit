@@ -65,3 +65,7 @@ The charter under **4,000** characters filled, the world skill under **9,000**: 
 ## Time
 
 Date fields count days from 1970-01-01 (the setup day 2026-10-22 is 20748); `world.json` sets the unit to Day. Every description also writes its dates in ISO in the text. There is no calendar element: OnlyWorlds' calendar extension can print a real year but not a real date, because its leap rule is one period counted from day 0, with no phase and no century rule (2026-10-22 prints as October 21). So the day number is the date, and the ISO text is how a person reads it.
+
+## A world set up before toolkit 5.5.0
+
+Its Charter and its Guide (`Start here`) carry no `x_charter_of`, so every reader shows them as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, the Guide and each Domain, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.

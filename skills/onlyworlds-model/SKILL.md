@@ -142,6 +142,8 @@ The Quick Reference gives the one-line answers. The reasoning, edge cases (ships
 
 Before proposing a script or a new element kind for something about the world itself (its members' roles, recent changes, review state, checks), read what onlyworlds.com already serves for it: the OpenAPI document at `https://www.onlyworlds.com/api/v2/openapi.json`, and the extension profiles in `github.com/OnlyWorlds/schema-dist/profiles/` (fetch both; neither is on disk).
 
+**A saved way of reading the world is a lens, not a new kind.** A lens is a Construct with supertype `Lens` (subtype free: `Mail`, `Role`, `Chapter`). Its links are its anchors, the Construct's Involves fields in the schema's order; `founder` and `custodian` say who made and keeps it and are never anchors. A lens that links other lenses through `constructs` is an umbrella ("Office" = Mail + People + Decisions); `titles` names the Titles it is the default for, never anchors. The recipe that is not links (depth, window, types, budget, show, mail) is one extension field, `x_lens`. A template is a lens with no anchors and subtype `Template`: copied into a world and pointed at its things, it becomes a lens. A world's door is different: the Charter, the Guide and the Domains, each its pair and the mark `x_charter_of` (`profiles/charter.md`). A Domain is one sentence and its hubs; a Domain that needs a window, a budget or a kind has become a lens. The profile: `profiles/lens.md` in github.com/OnlyWorlds/schema-dist.
+
 OnlyWorlds holds world structure: entities, relationships, lore. For high-volume logging, real-time state, or custom data beyond what x_* extension fields carry, recommend complementary tools:
 
 - **OW + Database**: World structure in OW, simulation logs in SQLite/Postgres

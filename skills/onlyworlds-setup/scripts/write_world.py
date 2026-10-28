@@ -46,6 +46,13 @@ plan's `charter.x_checks_rules` when it gives a list, else the pack's `checks.js
 one, else the empty slot `[]`, so a keeper finds it. It is written beside the other body keys and goes
 to the wire in the bulk body like any `x_` key; the writer never reads or judges a rule.
 
+The reading aids carry the mark `x_charter_of` (the charter profile, schema-dist `profiles/charter.md`):
+the Charter, and every element whose type and supertype, trimmed and case-folded as the room profile
+defines, are `law`/`Charter`, `construct`/`Guide` or `construct`/`Domain`. Its value is the id of the
+world the element is in: the folder's minted id for a folder world, the server's (`online.world_id`)
+for an online one, whose elements live in the server world. Without the mark a reader treats the three
+as lore. The key is the writer's: a plan that sets any `x_charter_` field itself is refused.
+
 A seat (question 4) is a Character row's "seat": its role (owner, co_builder, contributor, guest)
 and, for an AI, "ai_of" (the key of its human). The file carries it as `x_seat`; the charter's
 "Who is here" lists every seat. Online, an AI's Character comes from its seat (keel's "its own new
@@ -72,7 +79,7 @@ from pathlib import Path
 
 CHARTER_MAX = 4000
 SKILL_MAX = 9000
-FORMAT_VERSION = "0.3.19"
+FORMAT_VERSION = "0.3.20"
 EPOCH = datetime.date(1970, 1, 1)
 PACKS = Path(__file__).resolve().parent.parent / "packs"
 PH = re.compile(r"\{\{([a-z_]+(?::[A-Za-z0-9_-]+)?)\}\}")
@@ -82,6 +89,17 @@ IF = re.compile(r"^<!-- if (folder|online) -->$")
 END = "<!-- end -->"
 NAMED = 8
 ROLES = {"owner": "owner", "co_builder": "co-builder", "contributor": "contributor", "guest": "guest"}
+# The charter profile's three reading-aid pairs, folded; trimmed by Unicode's White_Space set, as the
+# room profile defines (a byte order mark is not whitespace and stays).
+READING_AIDS = {("law", "charter"), ("construct", "guide"), ("construct", "domain")}
+WHITE_SPACE = ("\t\n\x0b\x0c\r \x85\xa0         "
+               "       　")
+
+
+def is_reading_aid(type_, supertype):
+    if not isinstance(type_, str) or not isinstance(supertype, str):
+        return False
+    return (type_.strip(WHITE_SPACE).casefold(), supertype.strip(WHITE_SPACE).casefold()) in READING_AIDS
 
 # The one AGENTS.md sentence: the writer writes it beside the copies and fills it into the world
 # skill's courtesy line ({{agents_line}}), so the two cannot drift.
@@ -210,6 +228,9 @@ def main(argv):
     ids = {e["key"]: uuid7() for e in rows}
     names = {e["key"]: e.get("fields", {}).get("name", e["key"]) for e in rows}
     world_id, charter_id, skill_id = uuid7(), uuid7(), uuid7()
+    # The reading aids' mark names the world the element is in: online, the server's world, never the
+    # folder's minted id (which is no address there).
+    charter_of = server_id if online else world_id
 
     # The seats (question 4): every Character row with a "seat"; online, an AI's row is its seat's.
     people, ais, seat_of, from_seat = {r: [] for r in ROLES}, [], {}, set()
@@ -283,6 +304,10 @@ def main(argv):
     def fields_of(raw, where):
         body = {}
         for k, v in raw.items():
+            if k.startswith("x_charter_"):  # the reading-aid mark is the writer's, by the pair
+                problems.append(f"{where}, {k}: the writer sets x_charter_of on a reading aid itself; "
+                                f"a plan never names an x_charter_ key")
+                continue
             if isinstance(v, str):
                 v = fill(v, f"{where}, {k}")  # fill first: "day:{{today}}" is a date once filled
                 m = DAY.match(v)
@@ -332,6 +357,7 @@ def main(argv):
                "date": day_number(today)}
     charter.update(links_of(plan.get("charter", {}).get("links"), "charter"))
     charter["x_checks_rules"] = checks_of(plan.get("charter", {}), pack, problems)
+    charter["x_charter_of"] = charter_of
     files["elements/law/charter.json"] = dump(charter)
     skill = {"id": skill_id, "name": f"{w['name']} world skill", "supertype": "Skill", "description": skill_text,
              "utility": fill(plan.get("skill", {}).get("utility", "How an agent reaches this world. Copy the "
@@ -350,6 +376,8 @@ def main(argv):
         if e["key"] in seat_of:
             body["x_seat"] = seat_of[e["key"]]
         t = e["type"]
+        if is_reading_aid(t, body.get("supertype")):
+            body["x_charter_of"] = charter_of
         name = slug(body.get("name", "")) or ids[e["key"]]
         rel = f"elements/{t}/{name}--{ids[e['key']][-8:]}.json" if name != ids[e["key"]] else f"elements/{t}/{name}.json"
         if rel in taken:
