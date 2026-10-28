@@ -15,10 +15,10 @@ Quick reference for identifying the 22 OnlyWorlds element types during parsing. 
 | Type | What It Is | Create When | Don't Create When |
 |------|-----------|-------------|-------------------|
 | **Character** | Named individual with agency | Named person who acts/decides | Generic "the villagers", abstract desires |
-| **Creature** | Individual lacking a Character's strategic reasoning, narrative focus or social complexity | Specific named animal/beast | Generic species member ("a wolf") |
+| **Creature** | Living individual with behaviour and agency, lacking a Character's strategic reasoning or social complexity | Specific named animal/beast | Generic species member ("a wolf") |
 | **Species** | Type/category of beings | Named kind of creature/people | Referring to specific individual |
 | **Family** | Group tied by lineage, heritage or community | Named house/clan/dynasty | Generic "a family", informal group |
-| **Collective** | Group acting as a unit, without formal governance | Named team/band/crew | Informal gathering, formal org (→ Institution) |
+| **Collective** | Group of individuals acting as a unit, with no formal governance of its own | Named team/band/crew | Informal gathering, formal org (→ Institution) |
 | **Institution** | Formal organization with structure | Named org with hierarchy/doctrine | Informal group, just a gathering |
 | **Location** | Named physical place | Named city/building/region | Generic "a city", abstract territory |
 | **Zone** | Abstract region/territory | Named conceptual area (political/magical) | Physical place with form (→ Location) |

@@ -145,7 +145,7 @@ Decision trees for choosing between confusing element types. This file is the on
 
 ## Collective vs Institution
 
-**The core question**: Is this an organized body with purpose and structure (Institution), or a group of individuals that acts as a unit without formal governance (Collective)?
+**The core question**: Is this an organized body with purpose and structure (Institution), or a group of individuals that acts as a unit but has no formal governance of its own (Collective)?
 
 ```
 "The King's Guard"
@@ -153,10 +153,15 @@ Decision trees for choosing between confusing element types. This file is the on
     └─ Collective: "The King's Guard"
     └─ They might be OPERATED BY an Institution
 
-"The Royal Army"
-    └─ Is it a formal organization with hierarchy? → YES
-    └─ Institution: "The Royal Army"
-    └─ It might CONTAIN Collectives (regiments, units)
+"The Third Regiment"
+    └─ Is it the soldiers themselves, acting as a unit? → YES
+    └─ Collective: "The Third Regiment"
+    └─ No formal governance of its own: the army command directs it
+
+"The Army Command"
+    └─ Is it a formal body that governs and directs? → YES
+    └─ Institution: "The Army Command"
+    └─ It directs Collectives (regiments, units)
 
 "The Titanborn"
     └─ Is it the people themselves? → YES (children born on station)
@@ -171,7 +176,7 @@ Decision trees for choosing between confusing element types. This file is the on
 **Key signals for Collective**:
 - Refers to the people themselves as a group
 - Named band, crew, team, tribe, gang
-- May have informal leadership but no formal hierarchy
+- May have informal leadership but no formal governance of its own
 - Collective has `operator` field → can be run BY an Institution
 
 **Key signals for Institution**:
@@ -181,7 +186,7 @@ Decision trees for choosing between confusing element types. This file is the on
 - Institution has `parent_institution` field → can nest
 
 **The nesting pattern**:
-- Institution "Royal Army" might operate Collective "Third Regiment"
+- Institution "Army Command" operates Collective "Third Regiment"
 - Collective.operator → Institution
 
 ---
@@ -221,7 +226,8 @@ Decision trees for choosing between confusing element types. This file is the on
 **Key signals for Creature**:
 - Proper name for a specific individual
 - Individual actions/personality
-- Lacks a Character's strategic reasoning, narrative focus or social complexity (otherwise → Character)
+- Behaviour and agency, but lacks a Character's strategic reasoning or social complexity (otherwise → Character)
+- How much the story follows a being does not decide its category: a warhorse at the centre of a saga is a Creature
 
 **Note**: Generic real-world animals (wolves, horses, eagles) don't need Species elements unless the world gives them special significance.
 
