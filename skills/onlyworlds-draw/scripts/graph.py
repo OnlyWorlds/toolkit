@@ -14,6 +14,10 @@ on the id inside each file) and writes two files into the output folder, never i
 Map, Pin, Marker and Zone are placement, not a graph: never a node. Room elements (the room
 profile: one of its nine type-and-supertype pairs AND the mark x_room_of), proposed elements
 (x_review_proposed) and hidden ones (hidden: true) are left out unless a flag asks for them.
+The three reading aids (the charter profile: a Law with supertype Charter, a Construct with
+supertype Guide or Domain, AND the mark x_charter_of) are left out and said once in the foot;
+no flag draws them, since a world's front door is where they show, never a lore graph. Either
+mark counts when its value is not null, a string only when something is left after trimming.
 A link is a schema field (no x_, atlas_ or shadow_ prefix) whose value is an id, or a list of
 ids, of a node; a link to a left-out element draws nothing. Every left-out count is printed.
 
@@ -71,6 +75,9 @@ HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
               ("construct", "spec"), ("relation", "heart"), ("relation", "take"),
               ("relation", "vote"), ("event", "sitting"), ("character", "member")}
+# The charter profile's three reading aids (schema-dist profiles/charter.md), matched like the
+# room's pairs with the mark x_charter_of; count.py holds the same table, kept equal by the test.
+CHARTER_PAIRS = {("law", "charter"), ("construct", "guide"), ("construct", "domain")}
 # Trimmed as the room profile defines it: exactly Unicode's White_Space code points, so a file
 # separator (U+001C, which str.strip() also removes) or a byte order mark stays in the word.
 ROOM_WS = ("\t\n\x0b\x0c\r \x85\xa0         "
@@ -137,14 +144,30 @@ def room_word(v):
     return v.strip(ROOM_WS).casefold() if isinstance(v, str) else ""
 
 
+def mark_present(value):
+    """The profiles' presence rule: null is absent, a string counts only when something is left
+    after trimming, any other value (a number, an object) counts; the value is never compared."""
+    return value is not None and (not isinstance(value, str) or value.strip(ROOM_WS) != "")
+
+
+def pair_of(e):
+    return room_word(e.get("type") or e["_type"]), room_word(e.get("supertype"))
+
+
 def is_room(e):
-    pair = (room_word(e.get("type") or e["_type"]), room_word(e.get("supertype")))
-    mark = e.get("x_room_of")
-    return pair in ROOM_PAIRS and isinstance(mark, str) and mark != ""
+    return pair_of(e) in ROOM_PAIRS and mark_present(e.get("x_room_of"))
+
+
+def is_reading_aid(e):
+    """The charter profile's reader rule: one of the three pairs AND the mark x_charter_of."""
+    return pair_of(e) in CHARTER_PAIRS and mark_present(e.get("x_charter_of"))
 
 
 def left_out_reason(e, room=False, proposed=False, hidden=False):
-    """Why an element is not drawn (room, proposed, hidden), or None."""
+    """Why an element is not drawn (reading aid, room, proposed, hidden), or None. A reading aid
+    has no flag: the front door shows it, a lore view never does."""
+    if is_reading_aid(e):
+        return "reading aid"
     if not room and is_room(e):
         return "room"
     if not proposed and e.get("x_review_proposed") not in (None, False, "", [], {}):
@@ -230,7 +253,14 @@ def head_line(folder, world):
 
 
 def count_line(counts):
-    return ", ".join(f"{n} {why}" for why, n in counts.items() if n) or "nothing"
+    """The left-out counts per reason; the reading aids are said apart, once (aids_line)."""
+    return ", ".join(f"{n} {why}" for why, n in counts.items() if n and why != "reading aid") or "nothing"
+
+
+def aids_line(counts):
+    """The charter profile's sentence beside a lore view's count, once, when the world has aids."""
+    n = counts.get("reading aid", 0)
+    return f" The three reading aids are not drawn ({n} element{'' if n == 1 else 's'})." if n else ""
 
 
 def embed(data):
@@ -442,8 +472,8 @@ def main(argv):
 
     folder, world, elements, skipped = open_folder(a.folder)
     fam_of, colors, colour_source = presentation(a.offline, a.presentation)
-    left = {"placement (map, pin, marker, zone)": 0, "room": 0, "proposed": 0, "hidden": 0,
-            "outside --type": 0, "outside the focus": 0}
+    left = {"placement (map, pin, marker, zone)": 0, "reading aid": 0, "room": 0, "proposed": 0,
+            "hidden": 0, "outside --type": 0, "outside the focus": 0}
     kept = []
     for e in elements.values():
         if e["_type"] in PLACEMENT:
@@ -469,7 +499,7 @@ def main(argv):
         fh.write(json.dumps(graph, ensure_ascii=False, indent=2) + "\n")
     head = head_line(folder, world)
     foot = [f"{len(graph['nodes'])} elements and {len(graph['edges'])} links drawn, of "
-            f"{len(elements)} in the folder. Left out: {count_line(left)}.",
+            f"{len(elements)} in the folder. Left out: {count_line(left)}.{aids_line(left)}",
             f"Colours: {colour_source}. Colour carries the family; the type is in each node's "
             "title and the legend."]
     if skipped:

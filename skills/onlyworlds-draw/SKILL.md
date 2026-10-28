@@ -44,7 +44,7 @@ Principles §2: the script reads the folder and computes every position, link an
 
 `graph.py` writes the platform's own shape, `{name, nodes:[{id,name,type,family,sup,desc}], edges:[[a,b,field]]}`: `a` and `b` index into `nodes`, one edge per link field and direction held, so a link held on both ends is two edges. A link is a schema field whose value is an id, or a list of ids, of another node; extension fields (`x_`, `atlas_`, `shadow_`) are not links here. Nodes are ordered by family, then type, then name; `desc` is the description's first sentence.
 
-- **Left out**: Map, Pin, Marker and Zone (placement, not a graph), and every link to them. Room elements (principles §4: the pair and the mark `x_room_of`), proposed ones (`x_review_proposed`) and hidden ones (`hidden: true`) are left out unless the user asks, and so is every link to them.
+- **Left out**: Map, Pin, Marker and Zone (placement, not a graph), and every link to them. Room elements (principles §4: the pair and the mark `x_room_of`), proposed ones (`x_review_proposed`) and hidden ones (`hidden: true`) are left out unless the user asks, and so is every link to them. The three reading aids (principles §4: a Charter, a Guide or a Domain with the mark `x_charter_of`) are always left out, and the foot says so once: a world's front door shows them, never a lore graph.
 - **A cut**: `--focus NAME` (repeatable; a name or an id) keeps that element and what lies within `--depth N` links (default 1; a large N gives its whole cluster). `--type` keeps only the types named.
 - **Size**: above about 300 nodes the picture crowds; the script says so, and you offer a focus or a type before the user squints at a hairball. The page lays out about 200 nodes in well under a second and still draws a thousand.
 - **The page**: a force layout, the family colours, a name search, a legend whose type boxes hide a type, and a side panel with a clicked element's links out and links in, each one a click away. A name is drawn only where it does not crowd one already placed (the most linked first); a hidden name shows on hover and on a click, and the head counts them. On a narrow screen the panel sits under the picture.
@@ -69,7 +69,7 @@ Principles §2: the script reads the folder and computes every position, link an
 
 ### 6. Head and foot
 
-Every page says what it is true as of and which folder it was read from, by the folder's own name and never a path (and the slice, when `world.json` names one), and its foot counts everything left out, per reason: placement, room, proposed, hidden, outside the cut, undated, outside the range, files that did not parse. Carry the script's summary into your answer: the counts and the left-out line, once.
+Every page says what it is true as of and which folder it was read from, by the folder's own name and never a path (and the slice, when `world.json` names one), and its foot counts everything left out, per reason: placement, the reading aids, room, proposed, hidden, outside the cut, undated, outside the range, files that did not parse. Carry the script's summary into your answer: the counts and the left-out line, once.
 
 ### 7. Never write to the world
 

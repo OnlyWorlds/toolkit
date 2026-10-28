@@ -12,7 +12,8 @@ lists them as a tree and shows one at a time.
 Nothing is placed by guess: a pin or marker without integer x and y, or on a map the folder
 lacks, is counted as not placed. A map with no width and height takes its image's own size
 when the image loads; with neither, its pins are not placed. Room, proposed and hidden
-elements (and pins that place one) are left out unless a flag asks for them.
+elements (and pins that place one) are left out unless a flag asks for them; the three
+reading aids (graph.py's docstring) are left out always and said once in the foot.
 
 A folder with no Map element gets no page: the script says so and prints the parent_location
 tree as an outline instead.
@@ -31,7 +32,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from graph import (FAMILY_ORDER, VIEW_JS, count_line, fold, head_line, label,  # noqa: E402
+from graph import (FAMILY_ORDER, VIEW_JS, aids_line, count_line, fold, head_line, label,  # noqa: E402
                    left_out_reason, open_folder, out_folder, presentation, write_page)
 
 
@@ -117,7 +118,7 @@ def main(argv):
 
     folder, world, elements, skipped = open_folder(a.folder)
     name = world.get("name") or folder.name
-    left = {"room": 0, "proposed": 0, "hidden": 0}
+    left = {"reading aid": 0, "room": 0, "proposed": 0, "hidden": 0}
     kept = {}
     for i, e in elements.items():
         why = left_out_reason(e, a.room, a.proposed, a.hidden)
@@ -190,7 +191,7 @@ def main(argv):
     head = head_line(folder, world)
     n_pins = sum(len(m["pins"]) for m in data_maps)
     n_zones = sum(len(m["zones"]) for m in data_maps)
-    foot = [f"{len(data_maps)} maps, {n_pins} pins and {n_zones} zones placed. Left out: {count_line(left)}. "
+    foot = [f"{len(data_maps)} maps, {n_pins} pins and {n_zones} zones placed. Left out: {count_line(left)}.{aids_line(left)} "
             f"Not placed: {count_line(not_placed)}.",
             "Pins and markers are drawn where their x and y say, counted from the map's bottom-left corner. "
             + ("The map images are not loaded (--no-image)." if a.no_image

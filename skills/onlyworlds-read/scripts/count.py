@@ -10,6 +10,11 @@ fields included). The room (the room profile: one of its nine type-and-supertype
 mark x_room_of) and placement (map, pin, marker and zone: the draw skill's graph.py names the
 same four) are dropped from the id map before counting, so their links drop with them; the
 report opens with the world's whole count and the split, and says how many were left out.
+The three reading aids (the charter profile: a Law with supertype Charter, a Construct with
+supertype Guide or Domain, AND the mark x_charter_of) are dropped the same way and said once
+("the three reading aids are not counted or listed"); no flag counts them, since a world's
+front door shows them, never a survey. Either mark counts when its value is not null, a string
+only when something is left after trimming; a mark on none of its pairs is named as malformed.
 
 The marks a world carries are named. A proposed element (x_review_proposed, the review
 profile; a doubtful value counts with them) is not yet canon: left out like the room unless
@@ -50,6 +55,10 @@ PLACEMENT = {"map", "pin", "marker", "zone"}
 ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
               ("construct", "spec"), ("relation", "heart"), ("relation", "take"),
               ("relation", "vote"), ("event", "sitting"), ("character", "member")}
+# The charter profile's three reading aids (schema-dist profiles/charter.md), matched like the
+# room's pairs with the mark x_charter_of; graph.py holds the same table, kept equal by the test.
+CHARTER_PAIRS = {("law", "charter"), ("construct", "guide"), ("construct", "domain")}
+AIDS_SAID = "the three reading aids are not counted or listed"
 # Trimmed as the room profile defines it: exactly Unicode's White_Space code points, so a file
 # separator (U+001C, which str.strip() also removes) or a byte order mark stays in the word.
 ROOM_WS = ("\t\n\x0b\x0c\r \x85\xa0         "
@@ -63,16 +72,34 @@ def room_word(v):
     return v.strip(ROOM_WS).casefold() if isinstance(v, str) else ""
 
 
+def mark_present(value):
+    """The profiles' presence rule: null is absent, a string counts only when something is left
+    after trimming, any other value (a number, an object) counts; the value is never compared."""
+    return value is not None and (not isinstance(value, str) or value.strip(ROOM_WS) != "")
+
+
+def pair_of(e):
+    return room_word(e.get("type") or e["_type"]), room_word(e.get("supertype"))
+
+
 def is_room(e):
-    """The room profile's reader rule: the pair, trimmed and case-folded, AND a non-empty mark."""
-    pair = (room_word(e.get("type") or e["_type"]), room_word(e.get("supertype")))
-    mark = e.get("x_room_of")
-    return pair in ROOM_PAIRS and isinstance(mark, str) and mark != ""
+    """The room profile's reader rule: the pair, trimmed and case-folded, AND the mark present."""
+    return pair_of(e) in ROOM_PAIRS and mark_present(e.get("x_room_of"))
 
 
-def malformed_mark(e):
-    mark = e.get("x_room_of")
-    return isinstance(mark, str) and mark != "" and not is_room(e)
+def is_reading_aid(e):
+    """The charter profile's reader rule: one of the three pairs AND the mark x_charter_of."""
+    return pair_of(e) in CHARTER_PAIRS and mark_present(e.get("x_charter_of"))
+
+
+def malformed_marks(e):
+    """The marks this element carries on none of their pairs: named, never hidden."""
+    out = []
+    if mark_present(e.get("x_room_of")) and pair_of(e) not in ROOM_PAIRS:
+        out.append(("x_room_of", "the room's pairs"))
+    if mark_present(e.get("x_charter_of")) and pair_of(e) not in CHARTER_PAIRS:
+        out.append(("x_charter_of", "the three reading aids' pairs"))
+    return out
 
 
 def text_weight(e):
@@ -150,18 +177,21 @@ def marks_of(e):
 def count(folder, room=False, spatial=False, schema=None, mentions=False, proposed=False):
     world, raw, skipped = load_world(folder)
     notes = list(skipped)
+    # A reading aid is left out before the room and the rest (no flag counts it; a pair is never
+    # both), and never placement: its types are law and construct.
+    left_aids = [e for e in raw.values() if is_reading_aid(e)]
     left_room = [e for e in raw.values() if is_room(e)]
     left_spatial = [e for e in raw.values() if e["_type"] in PLACEMENT and not is_room(e)]
-    left_proposed = [e for e in raw.values()
-                     if review_mark(e) and not is_room(e) and e["_type"] not in PLACEMENT]
+    left_proposed = [e for e in raw.values() if review_mark(e) and not is_room(e)
+                     and not is_reading_aid(e) and e["_type"] not in PLACEMENT]
     for e in raw.values():
-        if malformed_mark(e):
-            notes.append(f"{e['_file']}: carries x_room_of but none of the room's pairs; "
+        for field, pairs in malformed_marks(e):
+            notes.append(f"{e['_file']}: carries {field} but none of {pairs}; "
                          "a malformed mark, counted as lore")
         if review_mark(e) == "doubt":
             notes.append(f"{e['_file']}: x_review_proposed is not an object with by, evidence and "
                          "expires; a doubt, counted with the proposed (the review profile, rule 4)")
-    drop = set()
+    drop = {e["id"] for e in left_aids}
     if not room:
         drop |= {e["id"] for e in left_room}
     if not spatial:
@@ -245,9 +275,11 @@ def count(folder, room=False, spatial=False, schema=None, mentions=False, propos
     return {
         "world": world.get("name"), "folder": str(folder),
         "total": len(raw), "placement": len(left_spatial), "elements": len(els), "links": sum(len(v) for v in out_links.values()),
-        "left_out": {"room": len(left_room) if not room else 0,
+        "left_out": {"reading aids": len(left_aids),
+                     "room": len(left_room) if not room else 0,
                      "placement": len(left_spatial) if not spatial else 0,
                      "proposed": len(left_proposed) if not proposed else 0},
+        "reading_aids": AIDS_SAID if left_aids else None,
         "marks": {"hidden": sum(1 for e in els.values() if is_hidden(e)),
                   "known_of": len(stubs),
                   "proposed": len(left_proposed)},
@@ -291,6 +323,9 @@ def markdown(r, top):
         gone.append(f"proposed, not yet reviewed, {n_of(lo['proposed'], 'element')} (--proposed counts them)")
     if gone:
         out.append("Left out: " + "; ".join(gone) + ".")
+    if lo["reading aids"]:
+        out.append(f"{r['reading_aids'][0].upper()}{r['reading_aids'][1:]} "
+                   f"({n_of(lo['reading aids'], 'element')}).")
     mk = r["marks"]
     said = []
     if mk["hidden"]:
