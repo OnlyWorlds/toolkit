@@ -36,7 +36,8 @@ harness trial (2026-10-22):
     `profiles/charter.md`): the Charter in every pack and the company pack's Guide, each the id of
     the world it is in (world.json's for a folder, the server's online), in the files and the bulk
     body; no other element carries the key; a Domain matches by its pair trimmed and folded, a
-    near-word does not; a plan that names an `x_charter_` key is refused.
+    near-word does not; a plan that names an `x_charter_` key, or a plan row with the pair
+    law/Charter, is refused.
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -524,6 +525,21 @@ class SetupWriter(unittest.TestCase):
                            text=True, encoding="utf-8")
         self.assertNotEqual(r.returncode, 0, r.stdout)
         self.assertRegex(r.stdout, r"REFUSED .*org.*x_charter_of")
+        self.assertFalse(out.exists() and any(out.iterdir()), "a refused plan wrote files")
+
+    def test_12f_a_plan_row_is_never_a_second_charter(self):
+        plan = json.loads(read(PLANS / "company.json"))
+        plan["copies"] = "none"
+        plan["elements"].append({"key": "rules-two", "type": "law",
+                                 "fields": {"name": "Rules", "supertype": " charter ", "description": "A second one."}})
+        plan_path = OUT / "plans" / "second-charter.json"
+        plan_path.write_text(json.dumps(plan), encoding="utf-8")
+        out = OUT / "second-charter"
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(out)], capture_output=True,
+                           text=True, encoding="utf-8")
+        self.assertNotEqual(r.returncode, 0, r.stdout)
+        self.assertRegex(r.stdout, r"REFUSED plan element 'rules-two': the pack writes the Charter; "
+                                   r"a plan row cannot be a second one")
         self.assertFalse(out.exists() and any(out.iterdir()), "a refused plan wrote files")
 
 

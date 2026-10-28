@@ -51,7 +51,8 @@ the Charter, and every element whose type and supertype, trimmed and case-folded
 defines, are `law`/`Charter`, `construct`/`Guide` or `construct`/`Domain`. Its value is the id of the
 world the element is in: the folder's minted id for a folder world, the server's (`online.world_id`)
 for an online one, whose elements live in the server world. Without the mark a reader treats the three
-as lore. The key is the writer's: a plan that sets any `x_charter_` field itself is refused.
+as lore. The key is the writer's: a plan that sets any `x_charter_` field itself is refused, and so is
+a plan row whose pair is `law`/`Charter`, since the pack's charter is the world's one Charter.
 
 A seat (question 4) is a Character row's "seat": its role (owner, co_builder, contributor, guest)
 and, for an AI, "ai_of" (the key of its human). The file carries it as `x_seat`; the charter's
@@ -377,6 +378,9 @@ def main(argv):
             body["x_seat"] = seat_of[e["key"]]
         t = e["type"]
         if is_reading_aid(t, body.get("supertype")):
+            if t.strip(WHITE_SPACE).casefold() == "law":  # newest-wins would make it supersede the pack's
+                problems.append(f"{where}: the pack writes the Charter; a plan row cannot be a second one")
+                continue
             body["x_charter_of"] = charter_of
         name = slug(body.get("name", "")) or ids[e["key"]]
         rel = f"elements/{t}/{name}--{ids[e['key']][-8:]}.json" if name != ids[e["key"]] else f"elements/{t}/{name}.json"
