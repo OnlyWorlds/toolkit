@@ -41,13 +41,40 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT / "skills" / "onlyworlds-draw" / "scripts"))
 sys.path.insert(0, str(ROOT / "skills" / "onlyworlds-read" / "scripts"))
+sys.path.insert(0, str(ROOT / "skills" / "onlyworlds-setup" / "scripts"))
 import graph  # noqa: E402
 import count as counter  # noqa: E402
+import write_world  # noqa: E402
 
 NINE = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
         ("construct", "spec"), ("relation", "heart"), ("relation", "take"),
         ("relation", "vote"), ("event", "sitting"), ("character", "member")}
 WORLD = "0199c3a1-7b2e-7c3d-8e4f-000000000001"
+
+
+def fixture_path(name, env):
+    """The fixture to replay: the file the environment names, else schema-dist's beside
+    the toolkit's main checkout. Loud when there is none, and loud when that checkout sits
+    behind its own fetched origin/main: a stale checkout passes old code (serial 81 skipped the
+    charter fixture for a week). Set the variable to 'skip' to run without one, on purpose."""
+    if os.environ.get(env) == "skip":
+        return None
+    if os.environ.get(env):
+        path = Path(os.environ[env])
+        assert path.exists(), f"{env} names a file that is not there: {path}"
+        return path
+    path = default_fixture(name)
+    assert path is not None, (f"no schema-dist checkout beside {ROOT.parent}: clone it there, "
+                              f"or set {env} to a {name} (or to 'skip')")
+    repo = path.parent.parent
+    serial = next((ln.split(":", 1)[1].strip() for ln in (repo / "VERSION").read_text(encoding="utf-8").splitlines()
+                   if ln.startswith("serial:")), "?")
+    behind = subprocess.run(["git", "-C", str(repo), "rev-list", "--count", "HEAD..origin/main"],
+                            capture_output=True, text=True).stdout.strip()
+    assert behind in ("", "0"), (f"schema-dist at serial {serial} is {behind} commits behind its fetched "
+                                 f"origin/main: git -C {repo} pull")
+    print(f"fixture {name}: schema-dist serial {serial} ({repo})")
+    return path
 
 
 def default_fixture(name="room.fixture.json"):
@@ -117,9 +144,9 @@ def test_a_planted_take_is_room_not_lore():
 
 
 def test_the_profile_fixture_reads_the_same():
-    path = Path(os.environ["OW_ROOM_FIXTURE"]) if os.environ.get("OW_ROOM_FIXTURE") else default_fixture()
-    if not path or not path.exists():
-        print("room fixture: not found beside this checkout; skipped (OW_ROOM_FIXTURE points at one)")
+    path = fixture_path("room.fixture.json", "OW_ROOM_FIXTURE")
+    if path is None:
+        print("room fixture: skipped on purpose (OW_ROOM_FIXTURE=skip)")
         return
     fx = json.loads(path.read_text(encoding="utf-8"))
     pairs = {(p["type"].casefold(), p["supertype"].casefold()) for p in fx["pairs"]}
@@ -179,10 +206,12 @@ def run(script, *args):
     return r.stdout
 
 
-def test_the_two_charter_tables_are_one():
+def test_the_three_charter_tables_are_one():
     assert graph.CHARTER_PAIRS == counter.CHARTER_PAIRS, graph.CHARTER_PAIRS ^ counter.CHARTER_PAIRS
+    assert graph.CHARTER_PAIRS == write_world.READING_AIDS, graph.CHARTER_PAIRS ^ write_world.READING_AIDS
     assert graph.CHARTER_PAIRS == THREE, THREE ^ graph.CHARTER_PAIRS
-    print(f"charter pairs: graph.py {len(graph.CHARTER_PAIRS)}, count.py {len(counter.CHARTER_PAIRS)}")
+    print(f"charter pairs: graph.py {len(graph.CHARTER_PAIRS)}, count.py {len(counter.CHARTER_PAIRS)}, "
+          f"write_world.py {len(write_world.READING_AIDS)}")
 
 
 def test_planted_aids_are_left_out_and_said_once():
@@ -230,10 +259,9 @@ def test_both_readers_read_a_mark_by_presence():
 
 
 def test_the_charter_fixture_reads_the_same():
-    env = os.environ.get("OW_CHARTER_FIXTURE")
-    path = Path(env) if env else default_fixture("charter.fixture.json")
-    if not path or not path.exists():
-        print("charter fixture: not found beside this checkout; skipped (OW_CHARTER_FIXTURE points at one)")
+    path = fixture_path("charter.fixture.json", "OW_CHARTER_FIXTURE")
+    if path is None:
+        print("charter fixture: skipped on purpose (OW_CHARTER_FIXTURE=skip)")
         return
     fx = json.loads(path.read_text(encoding="utf-8"))
     pairs = {(p["type"].casefold(), p["supertype"].casefold()) for p in fx["pairs"]}
