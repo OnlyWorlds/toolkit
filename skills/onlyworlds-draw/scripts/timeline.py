@@ -3,7 +3,7 @@
 Reads a world folder with graph.py's reader and writes one page into the output folder, never
 into the world. Every integer date field is placed, in the world's time_basic_unit: start_date
 and end_date, grant_date and revoke_date (spans), birth_date, founding_date, formation_date and
-date (points). Rows are grouped by type in the family order; the world's time_current is a line.
+date (points). Rows are grouped by type in the colour groups' order; the world's time_current is a line.
 Eras are Constructs with both a start_date and an end_date, drawn as bands behind the rows.
 
 The axis runs over the world's time_range_min..time_range_max (over the dates themselves when

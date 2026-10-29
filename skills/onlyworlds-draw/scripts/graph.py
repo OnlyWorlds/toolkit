@@ -6,7 +6,7 @@ on the id inside each file) and writes two files into the output folder, never i
     graph.json   {name, nodes:[{id,name,type,family,sup,desc}], edges:[[a,b,field]]}, the shape
                  the platform's graph page draws: a and b index into nodes, one edge per link
                  field and direction held (a link held on both ends is two edges)
-    graph.html   one page, inline JS, no network: a force layout, the family colours, a search,
+    graph.html   one page, inline JS, no network: a force layout, the group colours, a search,
                  a legend that hides a type, and a panel with the clicked element's links;
                  a name is drawn only where it meets no name already placed (greedy, by degree),
                  a hidden one shows on hover and on a click, and the head counts them
@@ -21,8 +21,10 @@ mark counts when its value is not null, a string only when something is left aft
 A link is a schema field (no x_, atlas_ or shadow_ prefix) whose value is an id, or a list of
 ids, of a node; a link to a left-out element draws nothing. Every left-out count is printed.
 
-Family colours come from schema-dist's presentation.json, fetched at run time (the only
-network the script uses); offline, or on a value that does not read, four neutral greys.
+Colours come from schema-dist's presentation.json, fetched at run time (the only network the
+script uses): four colour groups named by their colours (blue, green, pink, amber), a visual
+aid, not part of the standard. Offline, or on a file that does not read, four neutral greys; a
+file whose colour word is not in its own order stops the script, naming the word.
 
 Usage:
     python graph.py WORLD_FOLDER [--out DIR] [--focus NAME_OR_ID ...] [--depth N]
@@ -53,20 +55,24 @@ from pathlib import Path
 PLACEMENT = {"map", "pin", "marker", "zone"}
 EXT_PREFIXES = ("x_", "atlas_", "shadow_")
 NOT_LINKS = {"id", "world", "type", "element_id"}
-FAMILY_ORDER = ("agents", "world", "abstract", "temporal")
+# The four colour groups, named by their colours (schema-dist serial 86, 2026-10-28): a visual
+# aid for drawing the 22 types, not part of the standard, and never shown as a label. The wire
+# key on a node stays `family`.
+FAMILY_ORDER = ("blue", "green", "pink", "amber")
 PRESENTATION_URL = "https://raw.githubusercontent.com/OnlyWorlds/schema-dist/main/presentation.json"
-# The families as presentation.json listed them at schema-dist serial 60 (2026-10-24): used only
-# when the fetch fails, so a node still has a family; the colours then fall back to greys.
+# The groups as presentation.json listed them at serial 86: used only when the fetch fails, so a
+# node still has a group; the colours then fall back to greys.
 OFFLINE_FAMILY = {
-    "character": "agents", "collective": "agents", "creature": "agents", "family": "agents",
-    "institution": "agents", "species": "agents",
-    "construct": "world", "location": "world", "map": "world", "marker": "world",
-    "object": "world", "pin": "world", "zone": "world",
-    "ability": "abstract", "language": "abstract", "law": "abstract", "title": "abstract", "trait": "abstract",
-    "event": "temporal", "narrative": "temporal", "phenomenon": "temporal", "relation": "temporal",
+    "character": "blue", "collective": "blue", "creature": "blue", "family": "blue",
+    "institution": "blue", "species": "blue",
+    "location": "green", "map": "green", "marker": "green", "object": "green", "pin": "green",
+    "zone": "green",
+    "construct": "pink", "language": "pink", "law": "pink", "title": "pink", "trait": "pink",
+    "ability": "amber", "event": "amber", "narrative": "amber", "phenomenon": "amber",
+    "relation": "amber",
 }
-GREYS = {"agents": ("#3d3d3d", "#e0e0e0"), "world": ("#5f5f5f", "#bdbdbd"),
-         "abstract": ("#818181", "#9a9a9a"), "temporal": ("#a3a3a3", "#777777")}
+GREYS = {"blue": ("#3d3d3d", "#e0e0e0"), "green": ("#5f5f5f", "#bdbdbd"),
+         "pink": ("#818181", "#9a9a9a"), "amber": ("#a3a3a3", "#777777")}
 NO_FAMILY = ("#9e9e9e", "#8a8a8a")
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 # The room profile's nine pairs (schema-dist profiles/room.md; principles §4). count.py in the
@@ -212,10 +218,17 @@ def presentation(offline=False, path=None):
     try:
         types = raw["types"]
         fams = raw["colors"]["families"]
-        read_fam = {t: v["family"] for t, v in types.items()
-                    if t in OFFLINE_FAMILY and v.get("family") in FAMILY_ORDER}
-        read_col = {f: [fams[f]["light"], fams[f]["dark"]] for f in FAMILY_ORDER}
-        if len(read_fam) != len(OFFLINE_FAMILY) or not all(HEX.match(c) for v in read_col.values() for c in v):
+        order = list(raw["colors"]["order"])
+        # A word the file's own order does not list fails loudly, never a default colour
+        # (the lens profile's rule, serial 87): a silent grey would hide a drifted reader.
+        for t in OFFLINE_FAMILY:
+            word = types[t].get("family")
+            if word not in order:
+                sys.exit(f"presentation.json gives {t} the colour group {word!r}, which its "
+                         f"colors.order ({', '.join(order)}) does not list; nothing drawn.")
+        read_fam = {t: types[t]["family"] for t in OFFLINE_FAMILY}
+        read_col = {f: [fams[f]["light"], fams[f]["dark"]] for f in order}
+        if not all(HEX.match(c) for v in read_col.values() for c in v):
             raise ValueError("unexpected shape")
         fam_of, colors = read_fam, read_col
     except (TypeError, KeyError, AttributeError, ValueError):
@@ -500,7 +513,7 @@ def main(argv):
     head = head_line(folder, world)
     foot = [f"{len(graph['nodes'])} elements and {len(graph['edges'])} links drawn, of "
             f"{len(elements)} in the folder. Left out: {count_line(left)}.{aids_line(left)}",
-            f"Colours: {colour_source}. Colour carries the family; the type is in each node's "
+            f"Colours: {colour_source}. Colour carries the type's group, never a label; the type is in each node's "
             "title and the legend."]
     if skipped:
         foot.append(f"{len(skipped)} files not read: " + "; ".join(skipped[:5])

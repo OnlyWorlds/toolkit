@@ -47,20 +47,20 @@ Principles §2: the script reads the folder and computes every position, link an
 - **Left out**: Map, Pin, Marker and Zone (placement, not a graph), and every link to them. Room elements (principles §4: the pair and the mark `x_room_of`), proposed ones (`x_review_proposed`) and hidden ones (`hidden: true`) are left out unless the user asks, and so is every link to them. The three reading aids (principles §4: a Charter, a Guide or a Domain with the mark `x_charter_of`) are always left out, and the foot says so once: a world's front door shows them, never a lore graph.
 - **A cut**: `--focus NAME` (repeatable; a name or an id) keeps that element and what lies within `--depth N` links (default 1; a large N gives its whole cluster). `--type` keeps only the types named.
 - **Size**: above about 300 nodes the picture crowds; the script says so, and you offer a focus or a type before the user squints at a hairball. The page lays out about 200 nodes in well under a second and still draws a thousand.
-- **The page**: a force layout, the family colours, a name search, a legend whose type boxes hide a type, and a side panel with a clicked element's links out and links in, each one a click away. A name is drawn only where it does not crowd one already placed (the most linked first); a hidden name shows on hover and on a click, and the head counts them. On a narrow screen the panel sits under the picture.
+- **The page**: a force layout, the group colours, a name search, a legend whose type boxes hide a type, and a side panel with a clicked element's links out and links in, each one a click away. A name is drawn only where it does not crowd one already placed (the most linked first); a hidden name shows on hover and on a click, and the head counts them. On a narrow screen the panel sits under the picture.
 
 ### 4. Map
 
 `map.py` draws each Map element as a canvas: its `image_url`, `width` × `height` pixels. Maps nest by `parent_map`; the page lists them as a tree and opens on a top-level map.
 
-- **Pins**: integer `x`, `y` counted from the map's **bottom-left** corner (the page flips y), labelled with the element the Pin places (`element_type` + `element_id`), coloured by its family.
+- **Pins**: integer `x`, `y` counted from the map's **bottom-left** corner (the page flips y), labelled with the element the Pin places (`element_type` + `element_id`), coloured by its type's group.
 - **Zones**: a Zone is its Markers on that map, in `order` (markers without one keep the order they were made in), joined by the Zone's `shape`: `polygon` (closed, the default) or `line` (an open path). An empty or unknown shape draws a polygon; Atlas's `atlas_shape` and a supertype `line` are read when `shape` is not set.
 - **Never invent coordinates.** A pin or marker without integer `x` and `y`, on a map the folder lacks, or with no zone is counted as not placed. A map with no stated size takes its image's own size when the image loads; with neither, its pins are not placed.
 - **No Map elements**: the script writes no page, says so, and prints the `parent_location` tree as an outline. Offer that outline; never draw a map from guessed positions.
 
 ### 5. Timeline
 
-`timeline.py` places every integer date field in the world's `time_basic_unit`: `start_date` to `end_date` and `grant_date` to `revoke_date` as spans; `birth_date`, `founding_date`, `formation_date` and `date` as points. Rows group by type in the family order; the world's `time_current` is a dashed line.
+`timeline.py` places every integer date field in the world's `time_basic_unit`: `start_date` to `end_date` and `grant_date` to `revoke_date` as spans; `birth_date`, `founding_date`, `formation_date` and `date` as points. Rows group by type in the colour groups' order; the world's `time_current` is a dashed line.
 
 - **The range** is `time_range_min..time_range_max`. A date outside it is counted, not drawn, and a span crossing an edge is cut there. A world with no range is drawn over its own dates, and the foot says so.
 - **Eras** are Constructs with both a `start_date` and an `end_date`: their own rows at the top, and shaded bands behind every row when they do not overlap.
@@ -77,7 +77,7 @@ Output goes in `draw/` beside the world folder, never into `elements/`, and no e
 
 ## Colour
 
-Colour carries the family, never the type alone: agents, world, abstract and temporal, from schema-dist's `presentation.json`, fetched each run (light and dark values; the page follows the reader's system theme). Offline, or on a value that does not read, the scripts fall back to four neutral greys and say so. The type is always written beside the colour (the node's title, the legend, the panel), because two families can sit close for colour-blind readers.
+Colour carries the type's colour group, never the type alone: four groups named by their colours (blue, green, pink, amber) from schema-dist's `presentation.json`, fetched each run (light and dark values; the page follows the reader's system theme). The groups are a visual aid for drawing the 22 types, not part of the standard, and never a label: the node's `family` key carries the colour word and nothing else. Offline, or on a file that does not read, the scripts fall back to four neutral greys and say so; a file whose colour word is not in its own `colors.order` stops the script and names the word, never a default colour. The type is always written beside the colour (the node's title, the legend, the panel), because two groups can sit close for colour-blind readers.
 
 ## Critical Rules
 
@@ -112,6 +112,6 @@ Whatever else it holds, the answer to a request through this skill carries these
 
 - `knowledge/principles.md`: code counts, say what you didn't do, the room profile (§4)
 - `knowledge/world-folder.md`: reading a folder, exporting an account world to one
-- Family colours: `presentation.json` in github.com/OnlyWorlds/schema-dist
+- The colour groups: `presentation.json` in github.com/OnlyWorlds/schema-dist
 - The calendar profile: `profiles/calendar.md` in github.com/OnlyWorlds/schema-dist, with its fixture
 - Each type's fields, Map, Pin, Marker and Zone included: the model skill
