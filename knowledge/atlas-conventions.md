@@ -41,7 +41,7 @@ A Circle is a Collective used as a knower group: a role, not a type. Atlas may g
 ## What a world hides, and what OnlyWorlds settles
 
 - **`hidden: true` in an element's file keeps it from the people a world is handed to**: its players and members, and a published page's readers (folder spec 4.8, on the [World folders](https://onlyworlds.github.io/docs/schema/folders) page). A GM-only NPC or secret takes it. Atlas shows it to whoever has the folder, with the word Hidden, leaves it out of a published page, and sends it hidden when it makes the element online, or holds it back when the person's role on OnlyWorlds cannot hide. For an element already online, Atlas hides it there before sending the edit, with the owner's or a co-builder's key (conv. 170, 173). Taking the mark out of a file never shows it again online: that is done on onlyworlds.com.
-- **Never write `created_by`, `changed_by`, `changed_via`, `changed_client` or `x_review_proposed`.** OnlyWorlds sets them. Atlas keeps them as served and never sends them in an edit.
+- **Never write `created_by`, `changed_by`, `changed_via`, `changed_client`, `doors` or `x_review_proposed`.** OnlyWorlds sets them (`doors`, since folder format 0.3.21, is the door history a member is served: each tool that wrote the element and when). Atlas keeps them as served and never sends them in an edit.
 - An element whose `x_review_proposed` is an object was proposed by an AI seat and is not canon until a keeper accepts it: Atlas shows it as Proposed and leaves it out of counts and published pages (conv. 168).
 
 ## The world file

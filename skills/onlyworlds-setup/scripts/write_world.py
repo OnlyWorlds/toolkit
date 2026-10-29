@@ -80,7 +80,7 @@ from pathlib import Path
 
 CHARTER_MAX = 4000
 SKILL_MAX = 9000
-FORMAT_VERSION = "0.3.20"
+FORMAT_VERSION = "0.3.21"
 EPOCH = datetime.date(1970, 1, 1)
 PACKS = Path(__file__).resolve().parent.parent / "packs"
 PH = re.compile(r"\{\{([a-z_]+(?::[A-Za-z0-9_-]+)?)\}\}")
