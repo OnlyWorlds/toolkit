@@ -7,8 +7,8 @@ writes nothing; the model cites its numbers and never recounts them.
 
 A link is any field whose value is an id, or a list of ids, found in the id map (extension
 fields included). The room (the room profile: one of its nine type-and-supertype pairs AND the
-mark x_room_of) and placement (map, pin, marker and zone: the draw skill's graph.py names the
-same four) are dropped from the id map before counting, so their links drop with them; the
+mark x_room_of) and placement (map, pin and marker, the map space of the lens profile's graph
+section; a zone is content, as the draw skill's graph.py reads it) are dropped from the id map before counting, so their links drop with them; the
 report opens with the world's whole count and the split, and says how many were left out.
 The three reading aids (the charter profile: a Law with supertype Charter, a Construct with
 supertype Guide or Domain, AND the mark x_charter_of) are dropped the same way and said once
@@ -32,7 +32,7 @@ Usage:
                  (the links report's strongest evidence); the field names come from the skill's
                  copy of the schema reference (../knowledge/schema-reference.md)
     --room       count the room too (only when the user asks)
-    --placement  count map, pin, marker and zone too (--spatial, the older name, still works)
+    --placement  count map, pin and marker too (--spatial, the older name, still works)
     --proposed   count proposed elements too, each labelled "proposed, not yet reviewed"
     --json       the same report as JSON, with every list in full
 
@@ -47,7 +47,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from consistency import ids_of, is_hidden, is_known_of, label, load_schema, load_world, review_mark  # noqa: E402
 
 # Placement, not lore: the same four types the draw skill's graph.py leaves out.
-PLACEMENT = {"map", "pin", "marker", "zone"}
+PLACEMENT = {"map", "pin", "marker"}  # map space; a zone is content
 
 # The room profile's nine pairs (schema-dist profiles/room.md; principles §4). graph.py in the
 # draw skill holds the same table and rule: a skill installs alone, so the two cannot share a
@@ -311,7 +311,7 @@ def capped(items, fmt, what):
 def markdown(r, top):
     out = [f"# Count: {r['world'] or '(unnamed world)'}", "",
            f"{n_of(r['total'], 'element')} in the folder, of which {r['placement']} placement "
-           f"(map, pin, marker, zone). Counted {r['elements']} elements and {r['links']} links "
+           f"(map, pin, marker). Counted {r['elements']} elements and {r['links']} links "
            f"in {r['folder']}."]
     lo = r["left_out"]
     gone = []
