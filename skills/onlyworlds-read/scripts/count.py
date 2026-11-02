@@ -46,7 +46,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from consistency import ids_of, is_hidden, is_known_of, label, load_schema, load_world, review_mark  # noqa: E402
 
-# Placement, not lore: the same four types the draw skill's graph.py leaves out.
+# Placement, not lore: the same three types the draw skill's graph.py leaves out (a Zone is content).
 PLACEMENT = {"map", "pin", "marker"}  # map space; a zone is content
 
 # The room profile's nine pairs (schema-dist profiles/room.md; principles §4). graph.py in the
