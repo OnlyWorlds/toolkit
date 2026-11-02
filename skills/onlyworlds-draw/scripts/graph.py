@@ -5,21 +5,24 @@ on the id inside each file) and writes two files into the output folder, never i
 
     graph.json   {name, nodes:[{id,name,type,family,sup,desc}], edges:[[a,b,field]]}, the shape
                  the platform's graph page draws: a and b index into nodes, one edge per link
-                 field and direction held (a link held on both ends is two edges)
+                 the reader gives (a link held on both ends is two edges)
     graph.html   one page, inline JS, no network: a force layout, the group colours, a search,
                  a legend that hides a type, and a panel with the clicked element's links;
                  a name is drawn only where it meets no name already placed (greedy, by degree),
-                 a hidden one shows on hover and on a click, and the head counts them
+                 a hidden one shows on hover and on a click, and the head counts them; a link
+                 from an element to itself is a small loop at its dot
 
-Map, Pin, Marker and Zone are placement, not a graph: never a node. Room elements (the room
-profile: one of its nine type-and-supertype pairs AND the mark x_room_of), proposed elements
-(x_review_proposed) and hidden ones (hidden: true) are left out unless a flag asks for them.
-The three reading aids (the charter profile: a Law with supertype Charter, a Construct with
-supertype Guide or Domain, AND the mark x_charter_of) are left out and said once in the foot;
-no flag draws them, since a world's front door is where they show, never a lore graph. Either
-mark counts when its value is not null, a string only when something is left after trimming.
-A link is a schema field (no x_, atlas_ or shadow_ prefix) whose value is an id, or a list of
-ids, of a node; a link to a left-out element draws nothing. Every left-out count is printed.
+The nodes and the edges are the onlyworlds package's world_graph (the lens profile's graph
+section in schema-dist), read for the folder's owner, never a scan of this script's own. Its
+rules: Map, Pin and Marker are map space, never a node; a Zone is content and a node. Room
+elements, hidden ones and proposed ones are left out unless --room, --hidden or --proposed asks
+for them; the three reading aids (the charter, its guide, its domains) are always left out, and
+said once in the foot, since a world's front door is where they show, never a lore graph. Each
+schema link field gives one edge per target that is a node, at its place in the list: a link
+from an element to itself is an edge, and a target listed twice is two. The two extension links
+a profile declares, x_lens_leads_to and x_spine_depends_on, are edges too; no other x_ field is.
+A link to an id not in the world, or to an element of another type than its field's target,
+draws nothing. The left-out counts are the reader's own, printed with the script's two filters.
 
 Colours come from schema-dist's presentation.json, fetched at run time (the only network the
 script uses): four colour groups named by their colours (blue, green, pink, amber), a visual
@@ -39,9 +42,12 @@ Usage:
     --offline         skip the fetch: neutral greys
     --presentation P  read presentation.json from a local file instead
 
-The map and timeline scripts beside this one import its reader, leave-out rules, colours and
-page writer. Python 3, stdlib only. Exit 0 when the files are written, 2 when the folder cannot
-be read or the output folder is refused.
+    --focus, --depth and --type cut the reader's graph after the read and never add an edge.
+
+The map and timeline scripts beside this one import its folder reader, leave-out rules, colours
+and page writer; those stay standard library, so map.py runs without the package. Python 3.12+
+and the onlyworlds package (>=0.101.0, for world_graph). Exit 0 when the files are written, 2
+when the folder cannot be read, the output folder is refused or the package is missing.
 """
 import argparse
 import datetime
@@ -51,10 +57,14 @@ import sys
 import urllib.request
 from pathlib import Path
 
-# Placement, not a graph: count.py in the read skill names the same four, so the two counts agree.
-PLACEMENT = {"map", "pin", "marker", "zone"}
-EXT_PREFIXES = ("x_", "atlas_", "shadow_")
-NOT_LINKS = {"id", "world", "type", "element_id"}
+# The package release whose world_graph keeps a Zone as a node and draws the declared x_ links;
+# an older one has a world_graph with other rules, so the version is read, not only the import.
+PACKAGE_MIN = (0, 101, 0)
+PACKAGE_LINE = ('The graph reads the world through the onlyworlds package, which is missing or too '
+                'old: run pip install "onlyworlds>=0.101.0" (Python 3.12+) and draw again.')
+# The reader's left-out counts (its cut, for the owner), in the order the summary says them.
+CUT_WORDS = (("map_space", "map space (map, pin, marker)"), ("reading_aid", "reading aid"),
+             ("room", "room"), ("proposed", "proposed"), ("hidden", "hidden"))
 # The four colour groups, named by their colours (schema-dist serial 86, 2026-10-28): a visual
 # aid for drawing the 22 types, not part of the standard, and never shown as a label. The wire
 # key on a node stays `family`.
@@ -75,9 +85,10 @@ GREYS = {"blue": ("#3d3d3d", "#e0e0e0"), "green": ("#5f5f5f", "#bdbdbd"),
          "pink": ("#818181", "#9a9a9a"), "amber": ("#a3a3a3", "#777777")}
 NO_FAMILY = ("#9e9e9e", "#8a8a8a")
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
-# The room profile's nine pairs (schema-dist profiles/room.md; principles §4). count.py in the
-# read skill holds the same table and rule: a skill installs alone, so the two cannot share a
-# module, and testing/test_room_pairs.py keeps them equal and runs the profile's fixture.
+# The room profile's nine pairs (schema-dist profiles/room.md; principles §4), read here by
+# left_out_reason for map.py and timeline.py: the graph itself takes the package's reading.
+# count.py in the read skill holds the same table and rule: a skill installs alone, so the two
+# cannot share a module, and testing/test_room_pairs.py keeps them equal and runs the fixture.
 ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
               ("construct", "spec"), ("relation", "heart"), ("relation", "take"),
               ("relation", "vote"), ("event", "sitting"), ("character", "member")}
@@ -350,7 +361,7 @@ svg.addEventListener('pointerup',ev=>{const moved=drag&&drag[4];drag=null;if(!mo
 GRAPH_JS = VIEW_JS + r"""
 const G=D.graph,N=G.nodes.length,E=G.edges,t0=performance.now();
 const deg=new Array(N).fill(0),inc=G.nodes.map(()=>[]);
-E.forEach((e,i)=>{deg[e[0]]++;deg[e[1]]++;inc[e[0]].push(i);inc[e[1]].push(i)});
+E.forEach((e,i)=>{deg[e[0]]++;inc[e[0]].push(i);if(e[1]!==e[0]){deg[e[1]]++;inc[e[1]].push(i)}});
 const X=new Float64Array(N),Y=new Float64Array(N),K=40,CUT=(6*K)*(6*K);
 (function(){const it=N>800?60:N>300?150:300,dx=new Float64Array(N),dy=new Float64Array(N);let t=K*2;
  for(let i=0;i<N;i++){const a=i*2.399963,r=K*Math.sqrt(i+.5);X[i]=r*Math.cos(a);Y[i]=r*Math.sin(a)}
@@ -361,7 +372,9 @@ const X=new Float64Array(N),Y=new Float64Array(N),K=40,CUT=(6*K)*(6*K);
   t=Math.max(t*.97,1)}})();
 const vp=el('g',{},svg),eg=el('g',{stroke:dark?'#55554f':'#c4c4bd','stroke-width':1},vp),ng=el('g',{},vp),lg=el('g',{'font-size':11,fill:'currentColor'},vp);
 const R=i=>4+Math.min(10,Math.sqrt(deg[i])*1.6);
-const lines=E.map(e=>el('line',{x1:X[e[0]],y1:Y[e[0]],x2:X[e[1]],y2:Y[e[1]]},eg));
+// A link from an element to itself is a small loop above and right of its dot, so it is seen.
+const loop=i=>{const x=X[i],y=Y[i],L=R(i)+12;return'M'+x+' '+y+'C'+(x+L*.2)+' '+(y-L*1.4)+' '+(x+L*1.4)+' '+(y-L*.2)+' '+x+' '+y};
+const lines=E.map(e=>e[0]===e[1]?el('path',{d:loop(e[0]),fill:'none'},eg):el('line',{x1:X[e[0]],y1:Y[e[0]],x2:X[e[1]],y2:Y[e[1]]},eg));
 const dots=G.nodes.map((n,i)=>{const c=el('circle',{cx:X[i],cy:Y[i],r:R(i),fill:col(n.family),stroke:dark?'#121211':'#fafaf8','stroke-width':1.2},ng);
  c.dataset.i=i;h('title',n.name+' ('+n.type+(n.sup?', '+n.sup:'')+')',c);return c});
 const most=[...G.nodes.keys()].sort((a,b)=>deg[b]-deg[a]).slice(0,N<=60?N:40);
@@ -411,21 +424,40 @@ const ms=Math.round(performance.now()-t0);document.body.dataset.ms=ms;document.g
 
 # ---------------------------------------------------------------- the graph
 
-def link_targets(e):
-    """(field, [ids]) for every schema field whose value is an id or a list of them: the
-    single-valued fields first, then the lists, each in the file's own key order."""
-    singles, multis = [], []
-    for k, v in e.items():
-        if k.startswith("_") or k in NOT_LINKS or k.startswith(EXT_PREFIXES):
-            continue
-        if isinstance(v, str) and v:
-            singles.append((k, [v]))
-        elif isinstance(v, list) and v and all(isinstance(x, str) for x in v):
-            multis.append((k, v))
-    return singles + multis
+def package_reader():
+    """The package's world_graph, or exit 2 with the one line that installs it. Imported here,
+    not at the top, so map.py, which imports this module, runs on the standard library alone."""
+    try:
+        import onlyworlds
+        from onlyworlds import world_graph
+    except ImportError:
+        world_graph = None
+    if world_graph is None or version_of(getattr(onlyworlds, "__version__", "")) < PACKAGE_MIN:
+        print(PACKAGE_LINE, file=sys.stderr)
+        sys.exit(2)
+    return world_graph
 
 
-def build_graph(world_name, kept, fam_of):
+def version_of(v):
+    parts = re.findall(r"\d+", str(v))[:3]
+    return tuple(int(p) for p in parts) if len(parts) == 3 else (0,)
+
+
+def read_graph(world, elements, rooms=False, proposed=False, hidden=False):
+    """The package's graph of the folder, read by its owner: every element, its type as the
+    folder reader read it (the file's type, else its folder's name), and the world's hidden list.
+    Map space stays out; there is no flag for it here."""
+    world_graph = package_reader()
+    body = {"elements": [dict(e, type=e["_type"]) for e in elements.values()],
+            "hidden": world.get("hidden")}
+    return world_graph(body, {"rung": "owner"}, rooms=rooms, proposed=proposed, hidden=hidden,
+                       map_space=False)
+
+
+def build_graph(world_name, kept, fam_of, read_edges):
+    """The output shape: the kept elements as nodes (family, type, name, id), and each of the
+    reader's edges between two kept nodes as [a, b, field], in the reader's order. A self link
+    and a repeated target stay; nothing is added."""
     order = {f: i for i, f in enumerate(FAMILY_ORDER)}
     kept = sorted(kept, key=lambda e: (order.get(fam_of.get(e["_type"]), 9), e["_type"],
                                        fold(e.get("name")), str(e["id"])))
@@ -434,16 +466,8 @@ def build_graph(world_name, kept, fam_of):
               "desc": first_sentence(e["description"]) if isinstance(e.get("description"), str)
               and e["description"].strip() else ""} for e in kept]
     index = {n["id"]: i for i, n in enumerate(nodes)}
-    edges = []
-    for a, e in enumerate(kept):
-        seen = set()
-        for field, targets in link_targets(e):
-            for t in targets:
-                b = index.get(t)
-                if b is None or b == a or (b, field) in seen:
-                    continue
-                seen.add((b, field))
-                edges.append([a, b, field])
+    edges = [[index[x["source"]], index[x["target"]], x["field"]] for x in read_edges
+             if x["source"] in index and x["target"] in index]
     return {"name": world_name, "nodes": nodes, "edges": edges}
 
 
@@ -483,29 +507,31 @@ def main(argv):
     ap.add_argument("--presentation")
     a = ap.parse_args(argv)
 
+    package_reader()  # the package first: a missing one is said before anything is read
     folder, world, elements, skipped = open_folder(a.folder)
     fam_of, colors, colour_source = presentation(a.offline, a.presentation)
-    left = {"placement (map, pin, marker, zone)": 0, "reading aid": 0, "room": 0, "proposed": 0,
-            "hidden": 0, "outside --type": 0, "outside the focus": 0}
+    read = read_graph(world, elements, a.room, a.proposed, a.hidden)
+    cut = read["cut"]
+    left = {word: cut.get(key, 0) for key, word in CUT_WORDS}
+    # What the reader does not read as an element at all (a type outside the 22, an id that is
+    # not text): counted so the drawn and the left out add up to the folder.
+    left["outside the 22 types"] = len(elements) - len(read["nodes"]) - sum(cut.values())
+    left["outside --type"] = left["outside the focus"] = 0
+    types = {t.lower() for t in a.type}
     kept = []
-    for e in elements.values():
-        if e["_type"] in PLACEMENT:
-            left["placement (map, pin, marker, zone)"] += 1
-            continue
-        why = left_out_reason(e, a.room, a.proposed, a.hidden)
-        if why:
-            left[why] += 1
-            continue
-        if a.type and e["_type"] not in {t.lower() for t in a.type}:
+    for n in read["nodes"]:
+        e = elements[n["id"]]
+        if types and e["_type"] not in types:
             left["outside --type"] += 1
             continue
         kept.append(e)
     name = world.get("name") or folder.name
-    graph = build_graph(name, kept, fam_of)
+    graph = build_graph(name, kept, fam_of, read["edges"])
     if a.focus:
         keep = focus_ids(graph["nodes"], graph["edges"], a.focus, max(a.depth, 0))
         left["outside the focus"] = len(graph["nodes"]) - len(keep)
-        graph = build_graph(name, [elements[graph["nodes"][i]["id"]] for i in sorted(keep)], fam_of)
+        graph = build_graph(name, [elements[graph["nodes"][i]["id"]] for i in sorted(keep)], fam_of,
+                            read["edges"])
 
     out = out_folder(folder, a.out)
     with open(out / "graph.json", "w", encoding="utf-8", newline="\n") as fh:
