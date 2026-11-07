@@ -65,7 +65,7 @@ The skills follow the life of a world. Every skill follows the same shared rules
 |                                 | **model**   | How to represent a system in the 22 types, and every type's fields |
 | **Grow it**                     | **read**    | Read a whole world and get one of three reports: a creative brief, the missing connections, or where it contradicts itself |
 |                                 | **draw**    | A world as a graph, its maps with pins and zones, or its events on a timeline, in a file to open in a browser |
-| **Play in it and keep it true** | **context** | Design how your world gets loaded into AI sessions: fresh, scoped, sourced, never a giant chat that forgets |
+| **Play in it and keep it true** | **context** | Design how your world gets loaded into AI sessions: fresh, scoped, sourced, never a giant chat that forgets; on an account world, one character's draught or a saved lens opens the session |
 |                                 | **update**  | Write a finished session (notes, recap, transcript) back into the world, through a change list you approve |
 | **Move it**                     | **carry**   | Move a world between files, tools and homes: one `.owworld` file, another app's export, Markdown, a folder to an account and back |
 | **Build on it**                 | **develop** | Build a tool, game, app or AI agent on world data: the API, the SDK, the MCP server |
@@ -99,7 +99,7 @@ Most of the toolkit runs on nothing but your files:
 - **Import and model** work fully standalone: import writes a world folder, your notes become a world Atlas opens, no account involved.
 - **Read and draw** work on a world folder straight off disk: an Atlas world, converter output, or anything in the [world folder shape](knowledge/world-folder.md).
 - **Carry** packs, unpacks and converts folders on disk; only the move to or from an account needs one.
-- **Context and update** work with whatever holds your world: a folder, your own notes, or an OnlyWorlds world.
+- **Context and update** work with whatever holds your world: a folder, your own notes, or an OnlyWorlds world (where a session can open with one character's draught, what she knows as the world records it, or with a lens, a saved way of reading the world).
 
 With a free OnlyWorlds account ([onlyworlds.com](https://www.onlyworlds.com)), the same world gains cloud sync, API access, sharing, and the growing ecosystem of apps and games. The toolkit connects automatically, and everything stays exportable, always.
 
