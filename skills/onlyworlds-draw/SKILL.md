@@ -33,7 +33,7 @@ Python 3.12+. `graph.py` reads the graph through the `onlyworlds` package (`pip 
 Ask which picture only if the user's words do not say. "Connections", "web", "graph", "who is linked to whom" is the graph; "map", "where", "pins", "regions" is the map; "timeline", "when", "history", "in order" is the timeline.
 
 - **World folder**: the current directory if it holds `world.json`, else the folder the user names (for Atlas, the world's own subfolder, not the `onlyworlds-atlas/` wrapper). The scripts read it as `world-folder.md` says: every `*.json` under `elements/*/` (and a legacy `spatial/`), keyed on the id inside the file.
-- **Account world, graph**: the platform already draws it, so build nothing. Send the user to the world's **Graph view**: the owner's, from the world's page while signed in, or the public page's when the world's public page is on. Describe where it is in words; print no URL you have not opened and seen answer. Draw a local graph of an account world only for a cut the page lacks (one cluster, one type, a character's circle) or a file to keep.
+- **Account world, graph**: the platform already draws it, so build nothing. Send the user to the world's **Graph view**: the owner's, from the world page while signed in, or the public page's when the world's public page is on. Describe where it is in words; print no URL you have not opened and seen answer. Draw a local graph of an account world only for a cut the page lacks (one cluster, one type, a character's circle) or a file to keep.
 - **Account world, map or timeline, or a cut of the graph**: export it to a folder first (`world-folder.md`, "Exporting an account world to a folder"; the credentials as start's Connect an account writes them), then draw the folder. The export is for drawing; it is never pushed back.
 
 ### 2. Code draws, the model chooses
@@ -54,8 +54,8 @@ Principles §2: the script reads the folder and computes every position, link an
 `map.py` draws each Map element as a canvas: its `image_url`, `width` × `height` pixels. Maps nest by `parent_map`; the page lists them as a tree and opens on a top-level map.
 
 - **Pins**: integer `x`, `y` counted from the map's **bottom-left** corner (the page flips y), labelled with the element the Pin places (`element_type` + `element_id`), coloured by its type's group.
-- **Zones**: a Zone is its Markers on that map, in `order` (markers without one keep the order they were made in), joined by the Zone's `shape`: `polygon` (closed, the default) or `line` (an open path). An empty or unknown shape draws a polygon; Atlas's `atlas_shape` and a supertype `line` are read when `shape` is not set.
-- **Never invent coordinates.** A pin or marker without integer `x` and `y`, on a map the folder lacks, or with no zone is counted as not placed. A map with no stated size takes its image's own size when the image loads; with neither, its pins are not placed.
+- **Zones**: a Zone is its Markers on that map, in `order` ascending (a marker without a whole-number `order` comes after every ordered one, and ties go by id), joined by the Zone's `shape` as written: `line` is an open path, and `polygon`, an empty shape or any other value is a closed polygon. These are the map-space profile's rules (`profiles/map-space.md` in github.com/OnlyWorlds/schema-dist).
+- **Never invent coordinates.** A pin or marker without integer `x` and `y`, on a map the folder lacks, or with no zone is counted as not placed. A map missing its `width` or `height` takes the missing one from its placed points (the largest `x` or `y` among its pins and its zones' markers), and the page says the size was measured. With no stated size and no placed point, it takes its image's own size when the image loads; with neither, nothing is placed.
 - **No Map elements**: the script writes no page, says so, and prints the `parent_location` tree as an outline. Offer that outline; never draw a map from guessed positions.
 
 ### 5. Timeline

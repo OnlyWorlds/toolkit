@@ -4,14 +4,17 @@ Reads a world folder with graph.py's reader and writes one page into the output 
 into the world. Every Map element is a canvas: its image_url, width x height pixels. A Pin sits
 at its integer x, y counted from the map's BOTTOM-LEFT corner (the page flips y) and names the
 element it places (element_type + element_id); its label is that element's name. A Zone is its
-Markers on that map, in `order` (markers without one keep the order they were made in), joined
-by the zone's `shape`: polygon (closed, the default) or line (open). Atlas's own `atlas_shape`
-and a supertype `line` are read when `shape` is not set. Maps nest by parent_map; the page
-lists them as a tree and shows one at a time.
+Markers on that map, in `order` ascending (a marker without a whole-number order comes after
+every ordered one; ties go by id), joined by the zone's `shape` as written: `line` is an open
+path, any other value or none a closed polygon. These are the map-space profile's rules (§2,
+§4: profiles/map-space.md in github.com/OnlyWorlds/schema-dist). Maps nest by parent_map; the
+page lists them as a tree and shows one at a time.
 
 Nothing is placed by guess: a pin or marker without integer x and y, or on a map the folder
-lacks, is counted as not placed. A map with no width and height takes its image's own size
-when the image loads; with neither, its pins are not placed. Room, proposed and hidden
+lacks, is counted as not placed. A map missing its width or height takes the missing one from
+its placed points (the largest x or y among its pins and its zones' markers), and the page says
+the size was measured; with no stated size and no placed point, it takes its image's own size
+when the image loads, and with neither its pins are not placed. Room, proposed and hidden
 elements (and pins that place one) are left out unless a flag asks for them; the three
 reading aids (graph.py's docstring) are left out always and said once in the foot.
 
@@ -47,10 +50,20 @@ def whole(v):
 
 
 def shape_of(z):
-    for v in (z.get("shape"), z.get("atlas_shape")):
-        if isinstance(v, str) and v.strip():
-            return "line" if v.strip().lower() == "line" else "polygon"
-    return "line" if fold(z.get("supertype")) == "line" else "polygon"
+    """The Zone's own `shape`, read as written: `line` is an open path, anything else a polygon."""
+    return "line" if z.get("shape") == "line" else "polygon"
+
+
+def frame(m, points):
+    """The Map's width and height, and whether either was measured: a missing slot is the largest
+    x (or y) among the points placed on that Map, its Pins and its zones' Markers."""
+    w, h = whole(m.get("width")), whole(m.get("height"))
+    measured = False
+    if points and w is None:
+        w, measured = max(p[0] for p in points), True
+    if points and h is None:
+        h, measured = max(p[1] for p in points), True
+    return w, h, measured
 
 
 def outline(elements, kept_ids):
@@ -91,7 +104,7 @@ function draw(m){cur=m;svg.textContent='';const w=m.w,hh=m.h;
   const t=el('text',{x:p.x+u*2.6,y:y+u*1.2,'font-size':u*4.2,fill:dark?'#fff':'#111',stroke:dark?'#000':'#fff','stroke-width':u*.9,'paint-order':'stroke'},g);t.textContent=p.label;
   h('title',p.label+(p.type?' ('+p.type+')':'')+' at '+p.x+', '+p.y,g)}
  fitTo(-w*.03,-hh*.03,w*1.03,hh*1.03);panel(m,null)}
-function panel(m,note){side.textContent='';h('h2',m.name,side);h('div',(m.w&&m.h?m.w+' × '+m.h+' px'+(m.sized?' (from its image)':''):'no stated size')+(m.loc?' · '+m.loc:''),side,'k');
+function panel(m,note){side.textContent='';h('h2',m.name,side);h('div',(m.w&&m.h?m.w+' × '+m.h+' px'+(m.sized?' (from its image)':m.measured?' (measured from its points)':''):'no stated size')+(m.loc?' · '+m.loc:''),side,'k');
  if(note)h('p',note,side);if(m.desc)h('p',m.desc,side);
  h('p',m.pins.length+' pins, '+m.zones.length+' zones placed'+(m.unplaced?'; '+m.unplaced+' not placed':''),side,'k');
  if(m.zones.length){h('b','Zones',side);const ul=h('ul',null,side);for(const z of m.zones){const li=h('li',null,ul),s=h('span',null,li,'sw');s.style.background=col(z.family);li.append(z.name+' ('+z.shape+')')}}
@@ -139,8 +152,6 @@ def main(argv):
                   "pins placing a left-out element": 0, "markers without integer x and y": 0,
                   "markers on no map in the folder": 0, "markers with no zone in the folder": 0}
     pins_by, markers_by = {m: [] for m in maps}, {m: {} for m in maps}
-    order_made = {i: n for n, i in enumerate(sorted(
-        kept, key=lambda i: (str(kept[i].get("created_at") or ""), kept[i]["_file"])))}
     for e in kept.values():
         if e["_type"] == "pin":
             m = e.get("map")
@@ -175,15 +186,17 @@ def main(argv):
     for mid, m in sorted(maps.items(), key=lambda kv: (whole(kv[1].get("hierarchy")) or 0, fold(label(kv[1])))):
         zones = []
         for zid, ms in markers_by[mid].items():
-            ms.sort(key=lambda e: (whole(e.get("order")) is None, whole(e.get("order")) or 0, order_made[e["id"]]))
+            ms.sort(key=lambda e: (whole(e.get("order")) is None, whole(e.get("order")) or 0, e["id"]))
             z = kept[zid]
             zones.append({"i": zone_i, "name": label(z), "shape": shape_of(z), "family": fam_of.get("zone", ""),
                           "pts": [[whole(e["x"]), whole(e["y"])] for e in ms]})
             zone_i += 1
         loc = kept.get(m.get("location"))
+        w, h, measured = frame(m, [(p["x"], p["y"]) for p in pins_by[mid]]
+                               + [tuple(p) for z in zones for p in z["pts"]])
         data_maps.append({"id": mid, "name": label(m), "parent": m.get("parent_map") if m.get("parent_map") in maps else None,
                           "image": m.get("image_url") if isinstance(m.get("image_url"), str) and m.get("image_url") else "",
-                          "w": whole(m.get("width")), "h": whole(m.get("height")),
+                          "w": w, "h": h, "measured": measured,
                           "loc": label(loc) if loc else "", "desc": m.get("description") or "",
                           "pins": pins_by[mid], "zones": zones, "unplaced": m.get("_unplaced", 0)})
 
@@ -207,7 +220,8 @@ def main(argv):
         print(f"- {line}")
     for m in data_maps:
         print(f"- {m['name']}: {len(m['pins'])} pins, {len(m['zones'])} zones"
-              + ("" if m["w"] and m["h"] else " (no stated size)"))
+              + ("" if m["w"] and m["h"] and not m["measured"]
+               else " (size measured from its points)" if m["w"] and m["h"] else " (no stated size)"))
     print(f"\nWrote {out / 'map.html'}")
     return 0
 
