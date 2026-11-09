@@ -54,6 +54,16 @@ def shape_of(z):
     return "line" if z.get("shape") == "line" else "polygon"
 
 
+def older_line_mark(z):
+    """A Zone with no `shape` that carries a line mark in an older key (`atlas_shape` or a
+    supertype `line`): drawn closed by shape_of, and named in the summary (older-shape-keys)."""
+    s = z.get("shape")
+    if s is not None and not (isinstance(s, str) and not s.strip()):
+        return False
+    a = z.get("atlas_shape")
+    return (isinstance(a, str) and a.strip().lower() == "line") or fold(z.get("supertype")) == "line"
+
+
 def frame(m, points):
     """The Map's width and height, and whether either was measured: a missing slot is the largest
     x (or y) among the points placed on that Map, its Pins and its zones' Markers."""
@@ -183,11 +193,14 @@ def main(argv):
                 markers_by[m].setdefault(z, []).append(e)
     data_maps = []
     zone_i = 0
+    older = {}
     for mid, m in sorted(maps.items(), key=lambda kv: (whole(kv[1].get("hierarchy")) or 0, fold(label(kv[1])))):
         zones = []
         for zid, ms in markers_by[mid].items():
             ms.sort(key=lambda e: (whole(e.get("order")) is None, whole(e.get("order")) or 0, e["id"]))
             z = kept[zid]
+            if older_line_mark(z):
+                older[zid] = label(z)
             zones.append({"i": zone_i, "name": label(z), "shape": shape_of(z), "family": fam_of.get("zone", ""),
                           "pts": [[whole(e["x"]), whole(e["y"])] for e in ms]})
             zone_i += 1
@@ -210,6 +223,11 @@ def main(argv):
             + ("The map images are not loaded (--no-image)." if a.no_image
                else "The map images load from their image_url; the page makes no other outside request."),
             f"Colours: {colour_source}."]
+    if older:
+        names = sorted(older.values(), key=fold)
+        foot.append(f"{len(older)} {'zone carries' if len(older) == 1 else 'zones carry'} a line mark in an older key (atlas_shape or a supertype "
+                    f"line) and no shape, so {'it is' if len(older) == 1 else 'they are'} drawn closed: {', '.join(names[:5])}"
+                    + (" ..." if len(names) > 5 else "") + ". Set shape to line on each to draw an open path.")
     if skipped:
         foot.append(f"{len(skipped)} files not read: " + "; ".join(skipped[:5]) + (" ..." if len(skipped) > 5 else ""))
     data = {"maps": data_maps, "colors": colors, "families": list(FAMILY_ORDER), "noImage": a.no_image}
