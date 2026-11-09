@@ -124,7 +124,7 @@ No general rule predicts which side holds a link (`Character.objects`, but `Titl
 - Species.aggression, Ability.potency: 0-100
 - Ranges are advisory; the API does not reject out-of-range values
 
-`schema.json` does not carry ranges yet, so this list is their home.
+`schema.json` carries each field's minimum and maximum where the schema sets one; it is the source when this list and it differ.
 
 ### Common Hallucinations
 

@@ -44,7 +44,7 @@ Hidden elements are kept by default, because a world file is a copy. A file made
 
 Unpacking writes into a directory that does not exist or is empty. A file the reader refuses raises `WorldFileError` with one reason (`not_openable`, `unsafe_path`, `link`, `method`, `name` and the rest): report the reason, never repair the zip by hand. Readers are graded by schema-dist's `fixtures/owworld/`.
 
-The portal's one-file download (`format: onlyworlds-world-export`, schema-dist `example/world-export.json`) is another envelope, one JSON document; never call it an `.owworld`.
+The world page's one-file download (**Access**, **This world as a file**, **Download JSON**; `format: onlyworlds-world-export`, schema-dist `example/world-export.json`) is another envelope, one JSON document; never call it an `.owworld`.
 
 ### Step 4: Honesty lines
 

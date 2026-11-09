@@ -128,7 +128,7 @@ Use **full** unless the user does not want the PIN stored in the project.
 Ignore first, write second:
 
 1. **Update `.gitignore`.** Append `.env` and `.ow/` only if not already listed. Create `.gitignore` if none exists.
-2. **Check that `.env` is not already tracked:** `git ls-files .env`. Ignoring a tracked file does nothing. If it prints `.env`, stop: the user runs `git rm --cached .env` and commits that, and any key already committed should be revoked and replaced (Account → your world → API keys).
+2. **Check that `.env` is not already tracked:** `git ls-files .env`. Ignoring a tracked file does nothing. If it prints `.env`, stop: the user runs `git rm --cached .env` and commits that, and any key already committed should be revoked and replaced (**Worlds** → the world → **Access** → **Keys**).
 3. **Create `.env` with empty values.** If `.env` already exists, add only the lines it lacks; a `.env` that already holds the older `ONLYWORLDS_*` names lacks nothing, so leave it as it is. Leave out the PIN line in key-only mode.
 
 ```
@@ -136,7 +136,7 @@ OW_API_KEY=
 OW_API_PIN=
 ```
 
-4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (Account → your world → API keys) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first. For an AI's own seat in a world (theirs or one they are a member of), they press **Make a seat** on that world's page (the owner on **Access**, under **Let someone in**, **An AI agent**, **More options**; a member under **Your AI in this world**) and paste the `.env` lines it shows once: `OW_API_PIN` there is the seat's own secret, not their PIN. A lost key is **New key** beside the seat.
+4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (**Worlds** → the world → **Access** → **Keys**, then **Make a key**; it shows once) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first. For an AI's own seat in a world (theirs or one they are a member of), they press **Make a seat** on its world page (the owner on **Access**, under **Let someone in**, **An AI agent**, **More options**; a member under **Your AI in this world**) and paste the `.env` lines it shows once: `OW_API_PIN` there is the seat's own secret, not their PIN. A lost key is **New key** beside the seat.
 
 What each key shape can do, the PIN's part, the `OW_*` names (the older `ONLYWORLDS_*` ones still work: keep whichever a folder already uses) and the headers every call sends: the develop skill's Credentials.
 
@@ -163,7 +163,7 @@ curl -s "https://www.onlyworlds.com/api/v2/changes?head=true" \
 # → {"cursor": 1234, "changes": [], "has_more": false, "head": 1234}
 ```
 
-Keep `head` for `.ow/config.json`. Then fetch existing elements. World info carries no element counts, so page all 22 types (an empty type costs one request):
+Keep `head` for `.ow/config.json`. Then fetch existing elements. The world info from Step 5 carries `counts`, how many elements this key may read in all (`total`) and per type (`types`): page each type with a count above zero, and check the totals against it:
 
 ```bash
 curl -s "https://www.onlyworlds.com/api/v2/character?limit=100" \

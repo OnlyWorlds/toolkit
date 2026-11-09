@@ -35,7 +35,7 @@ The supertype is the index: read `supertype` (and `subtype`) from the files.
 
 ## Connect
 
-- **Online**: base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`. Every request sends `API-Key` and a real `User-Agent`; writes also `API-Pin`, your seat's own secret (`ow_s_…`). Credentials sit in your environment or a `.env` the repository ignores: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`. Never in a tracked file. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world's page and gives you the `.env` lines it shows once.
+- **Online**: base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`. Every request sends `API-Key` and a real `User-Agent`; writes also `API-Pin`, your seat's own secret (`ow_s_…`). Credentials sit in your environment or a `.env` the repository ignores: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`. Never in a tracked file. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page and gives you the `.env` lines it shows once.
 - MCP, the same data: `https://www.onlyworlds.com/mcp`, same headers.
 - **The folder in the repository** (`{{world_folder}}`): the hosted world's copy, refreshed by export; read it like the code. `world.json` never carries a key.
 

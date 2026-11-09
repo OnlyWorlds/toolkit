@@ -57,7 +57,7 @@ A reconciled import against an existing world, one batch at a time. Each step po
 
 ## Cache freshness (API worlds)
 
-Ask the world, not the clock: `GET /api/v2/changes?head=true` and compare its `head` with `changes_head` in `.ow/config.json`, as start's Connect an account describes (its Cache Freshness section). Same head: use the cache. Higher: apply the changes since, or refresh. Lower: the world was restored; rebuild. Only when offline, fall back to `cached_at` and tell the user its age.
+Ask the world, not the clock: `GET /api/v2/changes?head=true` and compare its `head` with `changes_head` in `.ow/config.json`, as start's Connect an account describes (its Cache Freshness section). Same head: use the cache. Higher: apply the changes since, or refresh. Lower: the world was restored; rebuild. On a guest's key the answer also carries `epoch`, which moves when the guest's view changes with no change to `head`: an epoch other than the one last applied means rebuild, and the changes since the old cursor answer 409 `resync_required`. Only when offline, fall back to `cached_at` and tell the user its age.
 
 ## Model escalation
 

@@ -55,10 +55,10 @@ Look for `.ow/config.json` first: its `credential_mode` says what `.env` holds, 
 
 **Credentials never go through chat.** The user types them into `.env`; you load them and never print or repeat them, even one pasted into chat (ask for it in `.env`).
 
-- **API-Key**: one world's. Prefixed (`ow_w_…` write, `ow_r_…` read, made for sharing) or a legacy 10-digit key (valid, no longer issued): Account → your world → API keys.
+- **API-Key**: one world's. Prefixed (`ow_w_…` write, `ow_r_…` read, made for sharing) or a legacy 10-digit key (valid, no longer issued): on onlyworlds.com, **Worlds** → the world → **Access** → **Keys** (**Make a key**; a new key shows once).
 - **API-Pin**: on every write. The owner writes with their account PIN (Account → Settings → World PIN: one for every world they own); a member of someone else's world with their own account PIN; an agent seat with its seat secret (`ow_s_…`). See [PIN](#pin-the-world-wall).
 - **X-OW-Agent**: as an AI agent, send `X-OW-Agent: 1` on every write (create, PUT, PATCH, DELETE, links, bulk), so your writes are recorded as agent-made (`changed_via: declared`); only its presence counts. A seat's key and the MCP server count as agents without it. Code for a person's app leaves it off ([Step 4](#step-4-credential-handling)).
-- **Account tokens** (`ow_a_…`, Settings → Account, sent as `Authorization: Bearer`) serve the `/api/v2/account/…` routes. Element work never needs one.
+- **Account tokens** (`ow_a_…`, Account settings → Account tokens, sent as `Authorization: Bearer`) serve the `/api/v2/account/…` routes, and also read a world named by `world=<id>`: its elements, search, field metadata and the world itself, as the account may read it (the whole world if it is theirs, their own view as a member, what the public reads otherwise). A token never writes an element: writes take a world key and its PIN.
 
 **The examples** load `.env` into the shell first and build two header sets (reads with a prefixed key need no PIN):
 
@@ -172,7 +172,7 @@ The response is `{"errors": false, "items": [{"status": 201, "id": "{uuid-A}", .
 
 ## PIN (the world wall)
 
-The PIN is the **world's wall**, not a dialect's, Argon2-hashed on the server: every write needs it. Prefixed keys read without it (sending it does no harm); only a legacy 10-digit key reading a private world sends it on reads. Wrong PINs are throttled per key: after 3 failures each retry waits longer, and 10 lock the key for 15 minutes (`429 rate_limited`, `Retry-After`).
+The PIN is the **world's wall**, not a dialect's, Argon2-hashed on the server: every write needs it. Prefixed keys read without it (sending it does no harm); only a legacy 10-digit key reading a private world sends it on reads. Wrong PINs are counted on the key and across every key of the account whose PIN it is (a world's PIN is its owner's; a member's own key counts on the member; a seat's secret on the seat's key alone): after 3 failures each retry waits longer, and 10 with no right PIN between them lock writes with that PIN for 15 minutes on every one of those keys, a key made during the lock included (`429 rate_limited`, `Retry-After`).
 
 ## Errors
 
@@ -184,7 +184,12 @@ v2 and /bulk answer `{"error": {"type", "code", "message", "param", "doc_url"}}`
 | `422` `Unknown field: friends_ids`: a typo, or v1's `_ids` suffix; `param` names it | The bare canonical field name |
 | `400` / per-item `invalid_link`: a link names a UUID that does not exist | A real UUID, or the target in the same batch |
 | `409` `id_conflict`: POST of an id that exists | PUT to upsert |
-| `429` `rate_limited`: failed PINs, throttled per key ([PIN](#pin-the-world-wall)) | Wait `Retry-After` seconds; sooner does not help |
+| `403` `not_author`: a contributor's or a guest's key changed, replaced, relinked or deleted an element someone else created | Change only what that key made, or ask a keeper |
+| `412` `precondition_failed`: an `If-Match` change_seq the element has moved past; the reply's `current` is the element now | Nothing was written: re-read `current`, then re-send or ask the user |
+| `413` `payload_too_large`: a body over 2.5 MB | Split a large /bulk into several calls |
+| `409` `resync_required`: a guest's `/changes` cursor predates a change to what it can see | Pull again from `since=0` |
+| `409` `idempotency_in_flight`: a request with this Idempotency-Key is still running | Retry after `Retry-After`; the same key and body then replay its answer |
+| `429` `rate_limited`: failed PINs, counted per key and per account ([PIN](#pin-the-world-wall)) | Wait `Retry-After` seconds; sooner does not help |
 | `429` `too_many_requests`: over the request budget (the document's Limits) | Wait `Retry-After`; `RateLimit-Remaining` says where you stand |
 | `503` `server_busy`: every request slot is busy | Retry after `Retry-After` |
 
@@ -197,12 +202,12 @@ v2 and /bulk answer `{"error": {"type", "code", "message", "param", "doc_url"}}`
 claude mcp add --transport http onlyworlds https://www.onlyworlds.com/mcp \
   --header "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}" --header "API-Pin: ${OW_API_PIN:-$ONLYWORLDS_API_PIN}"
 ```
-The server has schema, read and write tools, and no delete tool.
+With neither `OW_API_KEY` nor `ONLYWORLDS_API_KEY` set in the shell, the header goes out empty and every data tool answers "API-Key header required" (the schema tools still answer): load `.env` before the line. The server has schema, read and write tools, and no delete tool.
 
 **A seat of its own** suits an agent that writes to someone's world: **Make a seat** on the owner's Access page (Let someone in, An AI agent, More options), or under **Your AI in this world** on a member's; the `.env` lines show once, and a lost key is **New key** beside the seat. Its `ow_s_` secret is its PIN, and its writes count as agent-made. Otherwise declare: the header, `agent: true` in the SDK, `agent=True` in Python's `Client`.
 
 **Patterns that work**:
-- **Agent with a world**: the agent queries typed elements over MCP instead of guessing from context. `update_element` is a server-side read-merge, so partial writes are safe.
+- **Agent with a world**: the agent queries typed elements over MCP instead of guessing from context. `update_element` changes only the fields it is sent, as PATCH does, and a multi-link field it is sent replaces that field's whole array (an empty array clears it): to add or remove links, use `edit_links` (`add`, `remove`), which leaves the rest of the array as it is.
 - **World as RAG corpus**: the folder IS a typed, chunked corpus, one JSON file per entity.
 - **AI proposes, a human approves, one writer applies** (principles §2): the agent drafts a batch with its own minted UUIDs, a human rules on the list, only the approved items go up via `/bulk`, and people read the result back in Atlas.
 - **Game/sim state**: the world as the NPC knowledge base; the app reads typed truth, the LLM voices it. A tool's own data goes in `x_<tool>_...` fields.
@@ -213,7 +218,7 @@ A game takes a world with no key and no network: a world folder, or one `.owworl
 
 - **Unity**: the `unity-sdk` package (Package Manager, Add package from git URL, `https://github.com/OnlyWorlds/unity-sdk.git?path=/Packages/com.onlyworlds.sdk`) reads a folder, an `.owworld` or an account world into typed elements and writes them back; its README is the truth for its calls.
 - **Godot, Unreal and others**: no public package yet. Read the folder (`knowledge/world-folder.md`: one JSON file per element) or the archive by spec §4.7 ([World folders](https://onlyworlds.github.io/docs/schema/folders)).
-- **The map as space**: a Pin's and a Marker's `x`, `y` count in pixels from the Map's bottom-left (an engine whose y runs down flips it); the picture is the Map's `image_url`; Maps nest by `parent_map`. Height is optional: a Pin and a Marker carry `z`, a Map `depth`, and few worlds fill them, so a game brings its own.
+- **The map as space**: a Pin's and a Marker's `x`, `y` count in pixels from the Map's bottom-left (an engine whose y runs down flips it); the picture is the Map's `image_url`; Maps nest by `parent_map`. Height is optional: a Pin's and a Marker's `z` is its elevation in the same pixels, upward, and a Map's `depth` is the z extent; few worlds fill them, so a game brings its own. The rules are the map-space profile (`profiles/map-space.md` in github.com/OnlyWorlds/schema-dist, with its fixture), read by `mapSpace` in the SDK and `map_space` in the Python package: each Map's frame, each Zone's outline, each Pin's point, and the scale in metres per pixel from a Map's `x_metres_per_pixel` (none without it).
 - **An archive reader of your own** is graded by schema-dist's `fixtures/owworld/` (each zip with its verdict): run every case before trusting it. A runtime's own zip reader, JSON parser (numbers as floats) and Unicode tables each fail some.
 
 ## Building a Tool
@@ -301,15 +306,15 @@ A complete project ready to run: `knowledge/scaffold.md`.
 
 ### Map Viewer
 
-A Map's picture is its `image_url`; `width` and `height` are its size in pixels. Each Pin names its `map` and the pinned element (`element_type` + `element_id`) at integer pixel `x`, `y` from the map's **bottom-left** corner. A pin list cannot filter by map: fetch the pins, filter client-side.
+A Map's picture is its `image_url`; `width` and `height` are its size in pixels. Each Pin names its `map` and the pinned element (`element_type` + `element_id`) at integer pixel `x`, `y` from the map's **bottom-left** corner. The pin list filters by map (`GET /pin?map={map id}`); the marker list takes `map` and `zone`.
 
 ```typescript
 const map = await client.get('map', mapId);
-for await (const p of client.listAll('pin')) if (p.map === map.id)
+for await (const p of client.listAll('pin', { filter: { map: map.id } }))
   placePin(p.element_type, p.element_id, (p.x / map.width) * 100, 100 - (p.y / map.height) * 100); // left %, top %: flip y
 ```
 
-No `width`/`height`: use the image's natural size. Zone outlines come from Markers (each names its `map` and `zone`, with `x`, `y`, `z`, `order`). Render world text with `textContent`, never `innerHTML`: it is data, not markup.
+No `width` or `height`: the map-space profile measures the missing one from the map's own placed pins and markers; with no point either, use the image's natural size. Zone outlines come from Markers (each names its `map` and `zone`, with `x`, `y`, `z`, `order`), in `order` and then by id, joined by the Zone's `shape` (`line` an open path, anything else a closed polygon); `mapSpace` returns frames and outlines read this way. Render world text with `textContent`, never `innerHTML`: it is data, not markup.
 
 ### Editor with Save
 
