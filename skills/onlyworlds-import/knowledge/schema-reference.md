@@ -1,9 +1,9 @@
 # OnlyWorlds Schema Reference
 
-**Canonical schema**: 00.33.00
-**Release**: schema-dist v0.33.0-dist.60 (serial 60, published 2026-10-24), github.com/OnlyWorlds/schema-dist
-**schema.json sha256**: `b0bd929d273cbf2201ac414ad98d10bd6759056a0302b838abd6fc7bb8f317b4` (as the release's MANIFEST.json lists it)
-**Generated**: 2026-10-24 by `testing/gen_schema_page.py` from that release; do not edit by hand. A change to a field is a change to the schema; the page follows on the next run.
+**Canonical schema**: 00.34.00
+**Release**: schema-dist v0.34.0-dist.109 (serial 109, published 2026-11-07), github.com/OnlyWorlds/schema-dist
+**schema.json sha256**: `aa671d9454a8cd08cf400e205287d18433d3c05dd6ed5b43ae578be67d40b006` (as the release's MANIFEST.json lists it)
+**Generated**: 2026-11-09 by `testing/gen_schema_page.py` from that release; do not edit by hand. A change to a field is a change to the schema; the page follows on the next run.
 
 Every field of the 22 element types. For a newer schema than the release above, the live `schema.json` at github.com/OnlyWorlds/schema-dist wins. Shared rules: `principles.md`.
 
@@ -27,8 +27,8 @@ Every element has these fields; the type sections below do not repeat them.
 - id (text) - Unique identifier for the element, a UUID. New ids are minted as uuidv7; ids minted earlier as uuidv4 remain valid [Required]
 - name (text) - Name of the element [Required]
 - description (text) - Any kind of details about the element
-- supertype (text) - The top level category to which the element belongs
-- subtype (text) - The sub level category through which the element is further classified
+- supertype (text) - The top level classification of the element within its type
+- subtype (text) - The sub level classification through which the element is further sorted within its type
 - image_url (text) - URL to an image representing the element
 - world (text) - UUID of the world the element is part of
 
@@ -39,7 +39,7 @@ Every element has these fields; the type sections below do not repeat them.
 ### Mechanics
 
 - activation (text) - Method or conditions under which the ability is activated
-- duration (integer) - Length of time the ability remains active or its effects persist, measured in TIME units
+- duration (integer) - Length of time the ability remains active or its effects persist, in the world's time unit (World time_basic_unit)
 - potency (integer) - Relative measure of the ability's inherent potency or force, used for scaling or comparison purposes
 - range (integer) - Effective reach or distance at which the ability can be used, in the world's distance unit (World distance_unit)
 - effects (multi-link → Phenomenon) - Phenomena that result from the ability's use, such as environmental changes or sensory effects
@@ -74,7 +74,7 @@ Every element has these fields; the type sections below do not repeat them.
 
 - background (text) - History, upbringing, or formative experiences of the character
 - motivations (text) - Core desires, goals, or values that drive the character's choices and behavior
-- birth_date (integer) - Moment of birth, expressed in the world's TIME units
+- birth_date (integer) - Moment of birth, in the world's time unit (World time_basic_unit)
 - birthplace (single-link → Location) - Location where the character was born
 - languages (multi-link → Language) - Languages the character can understand, speak, or use for communication
 
@@ -119,7 +119,7 @@ Every element has these fields; the type sections below do not repeat them.
 
 - composition (text) - Internal structure or demographic makeup of the collective
 - count (integer) - Number of members in the collective (approximate or exact)
-- formation_date (integer) - Date the collective was formed, using world TIME units
+- formation_date (integer) - Date the collective was formed, in the world's time unit (World time_basic_unit)
 - operator (single-link → Institution) - Institution that manages or directs the collective
 - equipment (multi-link → Object) - Tools or gear in possession of and/or regularly used by the collective
 
@@ -148,7 +148,7 @@ Every element has these fields; the type sections below do not repeat them.
 - history (text) - The historical development or ideation of the construct, and its place in wider historical contexts
 - status (text) - The present condition or operational status of the construct
 - reach (text) - The geographic, cultural, or political extent of the construct's influence
-- start_date (integer) - The point in time when the construct began or was first established (uses world's TIME definition)
+- start_date (integer) - The point in time when the construct began or was first established, in the world's time unit (World time_basic_unit)
 - end_date (integer) - The point in time when the construct ceased to function or lost its meaning
 - founder (single-link → Character) - Character who conceived or initiated the construct
 - custodian (single-link → Institution) - Institution maintaining, enforcing, or exploiting the construct
@@ -196,7 +196,7 @@ Every element has these fields; the type sections below do not repeat them.
 ### World
 
 - status (text) - Current situation or classification of the creature
-- birth_date (integer) - The time of the creature's birth, recorded in the world's defined TIME unit
+- birth_date (integer) - The time of the creature's birth, in the world's time unit (World time_basic_unit)
 - location (single-link → Location) - Specific location where the creature is currently found or most associated with
 - zone (single-link → Zone) - Larger area or region commonly inhabited or currently claimed by the creature
 
@@ -238,7 +238,7 @@ Every element has these fields; the type sections below do not repeat them.
 - families (multi-link → Family) - Families relevant to the event
 - relations (multi-link → Relation) - Interpersonal or political relations relevant to the event
 - titles (multi-link → Title) - Titles relevant to the event
-- constructs (multi-link → Construct) - Concepts, laws, or built entities relevant to the event
+- constructs (multi-link → Construct) - Concepts, systems or built entities relevant to the event
 
 ---
 
@@ -269,7 +269,7 @@ Every element has these fields; the type sections below do not repeat them.
 ### Foundation
 
 - doctrine (text) - Core belief, mission, or purpose that drives the institution
-- founding_date (integer) - Date when the institution was established, in the world's TIME format
+- founding_date (integer) - Date when the institution was established, in the world's time unit (World time_basic_unit)
 - parent_institution (single-link → Institution) - Institution that governs, embodies, or originated this one
 
 ### Claims
@@ -311,7 +311,7 @@ Every element has these fields; the type sections below do not repeat them.
 
 - declaration (text) - The formal wording, expression, or decree of the law
 - purpose (text) - The intent, motivation, or justification for the law's creation
-- date (integer) - Date the law was formally established, in world TIME units
+- date (integer) - Date the law was formally established, in the world's time unit (World time_basic_unit)
 - parent_law (single-link → Law) - A law that this law derives from, modifies, or enhances
 - penalties (multi-link → Construct) - Consequences intended to be applied when the law is contravened
 
@@ -334,6 +334,7 @@ Every element has these fields; the type sections below do not repeat them.
 - function (text) - Main use, role, or purpose of the location within the world
 - founding_date (integer) - Date on which the location was founded, established, or designated
 - parent_location (single-link → Location) - Wider location that this location is part of
+- vehicle (single-link → Object) - The Object this place is the inside of: a ship, a train, an airship, a walking city, a station that moves. Set it when the place moves with the thing; a place inside another place uses parent_location instead
 - populations (multi-link → Collective) - Distinct collective groups or communities residing within the location
 
 ### Politics
@@ -387,7 +388,7 @@ Every element has these fields; the type sections below do not repeat them.
 ### Details
 
 - background_color (text) - Color of the space around the map when zoomed out
-- hierarchy (integer) - To associate or differentiate between maps with a common parent
+- hierarchy (integer) - An integer to order or group the maps that share a parent; how a tool reads it is the tool's own
 - width (integer) - In pixels
 - height (integer) - In pixels
 - depth (integer) - In pixels
@@ -415,8 +416,8 @@ Every element has these fields; the type sections below do not repeat them.
 
 - story (text) - Content of the narrative, as told or remembered
 - consequences (text) - Outcomes or legacy of the narrative
-- start_date (integer) - Date when the narrative is first told or recorded, measured in world TIME units; the span it recounts lives on its events
-- end_date (integer) - Date when the narrative stops being told, measured in world TIME units; empty while it is still told
+- start_date (integer) - Date when the narrative is first told or recorded, in the world's time unit (World time_basic_unit); the span it recounts lives on its events
+- end_date (integer) - Date when the narrative stops being told, in the world's time unit (World time_basic_unit); empty while it is still told
 - order (integer) - Position of this narrative within a parent narrative's sequence
 - parent_narrative (single-link → Narrative) - Larger narrative that this narrative takes place in
 - protagonist (single-link → Character) - Primary character of the narrative
@@ -480,7 +481,7 @@ Every element has these fields; the type sections below do not repeat them.
 
 - expression (text) - How the phenomenon manifests or takes shape in the world
 - effects (text) - The primary outcomes or changes caused by the phenomenon
-- duration (integer) - The amount of time the phenomenon lasts, measured in world TIME units
+- duration (integer) - The amount of time the phenomenon lasts, in the world's time unit (World time_basic_unit)
 - catalysts (multi-link → Object) - Objects or materials that initiate or enhance the phenomenon
 - empowerments (multi-link → Ability) - Abilities that initiate or enhance the phenomenon, or are initiated or enhanced by it
 
@@ -511,8 +512,8 @@ Every element has these fields; the type sections below do not repeat them.
 ### Nature
 
 - background (text) - History and origin of the relation
-- start_date (integer) - Date when the relation began, defined in world TIME units
-- end_date (integer) - Date when the relation ended if any, defined in world TIME units
+- start_date (integer) - Date when the relation began, in the world's time unit (World time_basic_unit)
+- end_date (integer) - Date when the relation ended if any, in the world's time unit (World time_basic_unit)
 - intensity (integer) - Significance of the relation, on a relative scale of 0 to 100
 - actor (single-link → Character) - Primary character defining the relation
 - events (multi-link → Event) - Events where the relation is involved or relevant
@@ -543,7 +544,7 @@ Every element has these fields; the type sections below do not repeat them.
 ### Biology
 
 - appearance (text) - Typical physical or form features of the species
-- life_span (integer) - Average or typical life expectancy of an individual, defined in world TIME units
+- life_span (integer) - Average or typical life expectancy of an individual, in the world's time unit (World time_basic_unit)
 - weight (integer) - Average or typical adult weight, in the world's mass unit (World mass_unit)
 - nourishment (multi-link → Species) - Other species consumed as food sources
 - reproduction (multi-link → Construct) - Reproductive method(s) of the species
@@ -574,8 +575,8 @@ Every element has these fields; the type sections below do not repeat them.
 
 - authority (text) - Rights or powers granted by the title
 - eligibility (text) - Conditions or qualifications for receiving or holding the title
-- grant_date (integer) - Date on which the title was granted, defined in world TIME units
-- revoke_date (integer) - Date on which the title ended or was revoked, defined in world TIME units
+- grant_date (integer) - Date on which the title was created or first granted, in the world's time unit (World time_basic_unit); a holder's own span is a Relation, not this field
+- revoke_date (integer) - Date on which the title ended or was abolished, in the world's time unit (World time_basic_unit); a holder's own span is a Relation, not this field
 - issuer (single-link → Institution) - Institution that formally created or granted the title
 - body (single-link → Institution) - Institution in which the title functions or holds relevance
 - superior_title (single-link → Title) - Another title that has authority over this one
@@ -635,8 +636,8 @@ Every element has these fields; the type sections below do not repeat them.
 
 - role (text) - The operational function or intent of the zone
 - shape (text) - How the zone's markers are joined: polygon (a closed area: the last marker joins the first) or line (an open path, drawn in marker order). Lowercase. Empty, absent, or any other value means the shape is not stated, and a reader draws a polygon
-- start_date (integer) - Date when the zone becomes extant or relevant, defined in world TIME units
-- end_date (integer) - Date when the zone ceases to be meaningful or enforced, defined in world TIME units
+- start_date (integer) - Date when the zone becomes extant or relevant, in the world's time unit (World time_basic_unit)
+- end_date (integer) - Date when the zone ceases to be meaningful or enforced, in the world's time unit (World time_basic_unit)
 - phenomena (multi-link → Phenomenon) - Phenomena that affect, define, or occur within the zone
 - linked_zones (multi-link → Zone) - Other zones that are associated with the zone
 
@@ -673,7 +674,7 @@ A bond is a field on one side. Set the field where it lives; the other side does
 | Character → Object | Character.objects (multi-link) | Object has no field that links to Character |
 | Construct → Object | Construct.objects (multi-link) | Object links to Construct only through Object.materials, Object.technology, Object.consumes, separate bonds |
 | Title → Character | Title.holders (multi-link) | Character has no field that links to Title |
-| Object → Location | Object.location (single-link) | Location links to Object only through Location.buildings, Location.defensive_objects, separate bonds |
+| Object → Location | Object.location (single-link) | Location links to Object only through Location.vehicle, Location.buildings, Location.defensive_objects, separate bonds |
 | Law → Institution | Law.author (single-link) | Institution has no field that links to Law |
 
 **Links to most types**: Construct, Event, Narrative and Relation carry an Involves group, a multi-link field per type they touch; link from them, not to them.
