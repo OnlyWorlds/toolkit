@@ -81,7 +81,7 @@ Work one document at a time, a unit you can read whole (a chapter, or a book tak
 - **Link by name** at this stage (names become ids in Step 7). Only link what is stated or clearly implied. If a link field does not exist on one side, check the other side (the schema reference's Link Direction Summary shows who holds each link).
 - **Messy sources**: parse what the author decided ("going with", "this is canon now", plain statements); report brainstorming ("maybe", "what if", "???") separately. When sources contradict and the author never settled it, keep both versions for the user's ruling. The thing a question is about may still be an element even if its details are open.
 - **Revise**: when a later passage changes an earlier element (a "battle" turns out to be a massacre), update the element and note it.
-- **GM-only**: what the source marks GM-only (a secret, a twist, a stat block the players never see) goes `hidden: true` in the element's file, the folder format's `hidden` mark. The holder sees it; a published page and every member but the keepers do not.
+- **GM-only**: what the source marks GM-only (a secret, a twist, a stat block the players never see) goes `hidden: true` in the element's file, the folder format's `hidden` mark. The holder sees it; a published page and every member but the keepers and the member who made it do not.
 
 ### Step 4: Check
 

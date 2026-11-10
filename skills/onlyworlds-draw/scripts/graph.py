@@ -1,11 +1,12 @@
-"""Draw a world folder as a graph: graph.json in the platform's own shape, and graph.html.
+"""Draw a world folder as a graph: graph.json in the core of the platform's shape, and graph.html.
 
 Reads a world folder (world.json + elements/<type>/*.json, plus a legacy spatial/ folder, keyed
 on the id inside each file) and writes two files into the output folder, never into the world:
 
-    graph.json   {name, nodes:[{id,name,type,family,sup,desc}], edges:[[a,b,field]]}, the shape
-                 the platform's graph page draws: a and b index into nodes, one edge per link
-                 the reader gives (a link held on both ends is two edges)
+    graph.json   {name, nodes:[{id,name,type,family,sup,desc}], edges:[[a,b,field]]}, the keys
+                 the platform's graph page draws from (a public page's own file carries more
+                 beside them): a and b index into nodes, one edge per link the reader gives
+                 (a link held on both ends is two edges)
     graph.html   one page, inline JS, no network: a force layout, the group colours, a search,
                  a legend that hides a type, and a panel with the clicked element's links;
                  a name is drawn only where it meets no name already placed (greedy, by degree),
