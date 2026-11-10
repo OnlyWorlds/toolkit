@@ -20,9 +20,9 @@ A plain lookup ("what is decided about X?") is moves 1 and 2 only.
 - Open questions about the world itself are work items: the Relation files with supertype `Work item` and subtype `open` or `taken` that name the part.
 <!-- end -->
 <!-- if online -->
-- Search the world for the person's own words and any key they name: `GET /search?q=<words>` finds the elements whose name or text holds every word whole, ignoring case. A word there is letters, digits and underscores, so a key with a hyphen is searched as two words: keep only the results whose text holds the key whole. Nothing found is not proof: read the parts the ask names.
+- Search the world for the person's own words and any key they name: `GET /search?q=<words>&limit=200` finds the elements whose name or text holds every word whole, ignoring case; `truncated` true means more matched than came back. A hit carries only a snippet, and a key with a hyphen is searched as two words: read the hits (`GET /<type>?ids=<hit ids>&fields=id,name,description`) and keep those that hold the key whole. Nothing found is not proof: read the parts the ask names.
 - A decision's history: follow `parent_law` up; `GET /law?parent_law=<its id>` lists what amends or replaces it.
-- Open questions about the world itself are work items: page `GET /relation?supertype=Work item&subtype=open` and keep those that name the part.
+- Open questions about the world itself are work items: page `GET /relation?supertype=Work%20item&subtype=open` and keep those that name the part.
 <!-- end -->
 - The design's state is in the subtypes: a Decision `proposed` is in design, `accepted` is locked, `superseded` is history; a Component `planned` is in design. An unset state is not stated: say so, and do not build on it as locked; the keeper's AI sets it when it next completes a report that touches the part. An accepted decision can still change, by a new decision that supersedes it: say that, and that it is for the component's maintainers (its `characters`) to decide.
 - How far something is built is not in the world: the code and {{tracker}} hold it. Read it there when it matters, or say you have not.

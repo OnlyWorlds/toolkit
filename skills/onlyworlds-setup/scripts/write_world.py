@@ -105,6 +105,7 @@ IF = re.compile(r"^<!-- if (folder|online) -->$")
 END = "<!-- end -->"
 NAMED = 8
 ROLES = {"owner": "owner", "co_builder": "co-builder", "contributor": "contributor", "guest": "guest"}
+RANK = {"owner": 3, "co_builder": 2, "contributor": 1, "guest": 0}
 # The charter profile's three reading-aid pairs, folded; trimmed by Unicode's White_Space set, as the
 # room profile defines (a byte order mark is not whitespace and stays).
 READING_AIDS = {("law", "charter"), ("construct", "guide"), ("construct", "domain")}
@@ -283,6 +284,15 @@ def main(argv):
             ais.append(f"{names[e['key']]} ({kind}, {word}, {names.get(ai_of, ai_of)}'s AI)")
         elif seat.get("role") in people:
             people[seat["role"]].append(names[e["key"]])
+    # An AI's seat is never above its human's: the platform gives a seat at most its sponsor's role
+    # (POST /account/worlds/{world_id}/seats, role: "At most your own role"; the owner may give any).
+    seat_role = {e["key"]: (e.get("seat") or {}).get("role") for e in rows}
+    for e in rows:
+        ai_of = (e.get("seat") or {}).get("ai_of")
+        mine, theirs = seat_role[e["key"]], seat_role.get(ai_of)
+        if ai_of in ids and mine in RANK and theirs in RANK and RANK[mine] > RANK[theirs]:
+            problems.append(f"plan element {e['key']!r}, seat: {names[e['key']]}'s role {mine} is above its "
+                            f"human {names[ai_of]}'s ({theirs}); an AI's seat is at most its human's role")
     # People grouped by role, every AI by name with its role word and its human; past NAMED seats in
     # all (people and AIs), a role's names and the AIs become counts (the roster holds them), so a big
     # team keeps the charter a page. The owner is always named.

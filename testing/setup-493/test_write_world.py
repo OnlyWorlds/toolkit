@@ -43,7 +43,9 @@ harness trial (2026-10-22):
     budget and speaking for its placement; the work skill carries the report profile's keys; a
     team pack's plan without a prefix is refused;
 14. a real team fits: each team pack written at 2, 5, 8, 12 and 20 seats (and 8 with six AIs, the
-    last size the charter names every seat) keeps CHARTER_ROOM characters under the charter budget.
+    last size the charter names every seat) keeps CHARTER_ROOM characters under the charter budget;
+15. no route in a filled online skill carries a query value with a raw space;
+16. the writer refuses an AI seat whose role is above its human's.
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -696,6 +698,39 @@ class SetupWriter(unittest.TestCase):
                         size = len(json.loads(read(world / "elements" / "law" / "charter.json"))["description"])
                         print(f"\n  charter {pack} {n} seats{' (6 AIs)' if heavy else ''} {placement}: {size}")
                         self.assertLessEqual(size, budget - CHARTER_ROOM, f"{size} characters filled")
+
+    def test_15_query_values_are_encoded(self):
+        """No route in a filled online skill (all three in a team pack) carries a query value with a raw
+        space (curl refuses `supertype=Work item` before sending): every code span with a `?`, its
+        <placeholders> set aside, holds no space after the `?`."""
+        def check(run):
+            if run.placement != "online":
+                return
+            texts = [run.skill()] + [b["description"] for b, _ in run.extra_skills().values()]
+            for text in texts:
+                for span in re.findall(r"`([^`\n]*\?[^`\n]*)`", text):
+                    query = re.sub(r"<[^>]*>", "", span.split("?", 1)[1])
+                    self.assertNotIn(" ", query, span)
+        self.each(check)
+
+    def test_16_an_ai_seat_is_never_above_its_human(self):
+        """The writer refuses a plan whose AI seat holds a role above its human's, naming both (the
+        platform gives a seat at most its sponsor's role); the test plans pass (the other tests)."""
+        plan = json.loads(read(PLANS / "company.json"))
+        for e in plan["elements"]:
+            if e["key"] == "tomas":
+                e["seat"]["role"] = "contributor"
+        plan["elements"].append({"key": "ai-tomas", "type": "character",
+                                 "seat": {"role": "co_builder", "ai_of": "tomas"},
+                                 "fields": {"name": "Pell", "supertype": "Agent"}})
+        plan_path = OUT / "plans" / "company-ai-above.json"
+        plan_path.write_text(json.dumps(plan), encoding="utf-8")
+        out = OUT / "company-ai-above"
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(out)],
+                           capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertRegex(r.stdout, r"Pell's role co_builder is above its human Tomas[^']*'s \(contributor\)")
+        self.assertFalse(out.exists() and any(out.iterdir()), "a refused plan wrote files")
 
     def test_13b_a_team_pack_without_a_prefix_is_refused(self):
         plan = json.loads(read(PLANS / "company.json"))

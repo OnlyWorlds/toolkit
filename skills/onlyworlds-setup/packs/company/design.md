@@ -20,9 +20,9 @@ A plain lookup ("what is decided about X?") is moves 1 and 2 only.
 - Open questions are work items: the Relation files with supertype `Work item` and subtype `open` or `taken` that name the part (in `x_packet_elements` or a link field).
 <!-- end -->
 <!-- if online -->
-- Search the world for the person's own words and any key they name: `GET /search?q=<words>` finds the elements whose name or text holds every word whole, ignoring case. A word there is letters, digits and underscores, so a key with a hyphen is searched as two words: keep only the results whose text holds the key whole. Nothing found is not proof: read the parts the ask names.
+- Search the world for the person's own words and any key they name: `GET /search?q=<words>&limit=200` finds the elements whose name or text holds every word whole, ignoring case; `truncated` true means more matched than came back. A hit carries only a snippet, and a key with a hyphen is searched as two words: read the hits (`GET /<type>?ids=<hit ids>&fields=id,name,description`) and keep those that hold the key whole. Nothing found is not proof: read the parts the ask names.
 - What is under a part: `GET /object?parent_object=<its id>`.
-- Open questions are work items: page `GET /relation?supertype=Work item&subtype=open` and keep those that name the part (in `x_packet_elements` or a link field).
+- Open questions are work items: page `GET /relation?supertype=Work%20item&subtype=open` and keep those that name the part (in `x_packet_elements` or a link field).
 <!-- end -->
 - A part's design state is its `subtype`: `in design` or `locked`. An unset state is not stated: say so, and do not build on it as locked; the keeper's AI sets it when it next completes a report that touches the part. A locked part can still change: say that it is locked, and that changing it is a decision for whoever owns it.
 - How far something is built is not in the world. Read that where it lives ({{elsewhere}}) when it matters, or say you have not.
