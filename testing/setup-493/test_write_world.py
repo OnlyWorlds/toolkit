@@ -41,7 +41,9 @@ harness trial (2026-10-22):
 13. the two team packs (company, software-project) land three skills under the plan's prefix,
     `<prefix>-start`, `-design` and `-work`, each an Object with its two copies, each under the
     budget and speaking for its placement; the work skill carries the report profile's keys; a
-    team pack's plan without a prefix is refused.
+    team pack's plan without a prefix is refused;
+14. a real team fits: each team pack written at 2, 5, 8, 12 and 20 seats (and 8 with six AIs, the
+    last size the charter names every seat) keeps CHARTER_ROOM characters under the charter budget.
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -99,6 +101,8 @@ FIXTURE = LINT.parent.parent / "profiles" / "checks.fixture.json"
 # The room a filled world skill keeps under the writer's budget (its SKILL_MAX, read from the
 # writer), so a company's own names never push a world past the writer's refusal.
 ROOM = 500
+# The room a team pack's filled charter keeps under the writer's budget at every team size (test 14).
+CHARTER_ROOM = 300
 
 
 def visit_steps(text):
@@ -636,6 +640,62 @@ class SetupWriter(unittest.TestCase):
                                 "what did this session make untrue?"):
                         self.assertIn(key, text, key)
         self.each(check)
+
+    def test_14_team_sizes_leave_room_in_the_charter(self):
+        """A real team fits: each team pack's test plan grown (or shrunk) to 2, 5, 8, 12 and 20 seats,
+        people and AIs mixed with names of ordinary length, and 8 seats with six of them AIs (8 is the
+        last size the charter names every seat: past NAMED seats the writer counts them), is written
+        without a refusal in a folder and online, and the filled charter keeps CHARTER_ROOM characters
+        under the writer's budget."""
+        budget = int(re.search(r"^CHARTER_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
+        people = ["Morgan Ellis", "Samira Okafor", "Jonas Whitfield", "Priya Ramaswamy", "Lucas Moreau",
+                  "Hannah Lindqvist", "Tobias Achterberg", "Ines Carvalho", "Daniel Osei", "Freya Thornton"]
+        ais = ["Juniper", "Halden", "Marlow", "Sorrow-Lark", "Tamsin", "Quill", "Brennick", "Ostara",
+               "Pell", "Wickham"]
+
+        def sized(base, n, ai_heavy=False):
+            plan = json.loads(json.dumps(base))
+            seated = [e for e in plan["elements"] if e.get("seat")]
+            person = next(e["key"] for e in seated if e["seat"]["role"] == "contributor" and not e["seat"].get("ai_of"))
+            if n < len(seated):  # drop the plain person, and every link to it
+                plan["elements"] = [e for e in plan["elements"] if e["key"] != person]
+                for e in plan["elements"]:
+                    for f, t in list((e.get("links") or {}).items()):
+                        if isinstance(t, list):
+                            e["links"][f] = [k for k in t if k != person]
+                        elif t == person:
+                            del e["links"][f]
+                seated = [e for e in seated if e["key"] != person]
+            human, p, a = "owner", iter(people), iter(ais)
+            for i in range(n - len(seated)):
+                if (i % 4 != 0) if ai_heavy else (i % 2 == 0):
+                    name = next(a)
+                    plan["elements"].append({"key": f"x-ai-{i}", "type": "character",
+                                             "seat": {"role": "contributor", "ai_of": human},
+                                             "fields": {"name": name, "supertype": "Agent"}})
+                else:
+                    human = f"x-p-{i}"
+                    plan["elements"].append({"key": human, "type": "character", "seat": {"role": "contributor"},
+                                             "fields": {"name": next(p), "supertype": "Person"}})
+            return plan
+
+        cases = [(n, False) for n in (2, 5, 8, 12, 20)] + [(8, True)]
+        for pack in ("company", "software-project"):
+            base = json.loads(read(PLANS / f"{pack}.json"))
+            for n, heavy in cases:
+                for placement in ("folder", "online"):
+                    with self.subTest(pack=pack, seats=n, ai_heavy=heavy, placement=placement):
+                        root = OUT / f"size-{pack}-{n}{'-ai' if heavy else ''}-{placement}"
+                        plan, world = variant(sized(base, n, heavy), placement, root)
+                        self.assertEqual(sum(1 for e in plan["elements"] if e.get("seat")), n)
+                        plan_path = OUT / "plans" / f"{root.name}.json"
+                        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+                        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)],
+                                           capture_output=True, text=True, encoding="utf-8")
+                        self.assertEqual(r.returncode, 0, r.stdout)
+                        size = len(json.loads(read(world / "elements" / "law" / "charter.json"))["description"])
+                        print(f"\n  charter {pack} {n} seats{' (6 AIs)' if heavy else ''} {placement}: {size}")
+                        self.assertLessEqual(size, budget - CHARTER_ROOM, f"{size} characters filled")
 
     def test_13b_a_team_pack_without_a_prefix_is_refused(self):
         plan = json.loads(read(PLANS / "company.json"))

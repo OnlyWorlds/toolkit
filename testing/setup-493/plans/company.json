@@ -30,7 +30,7 @@
      "fields": {"name": "Tomas Reyes", "supertype": "Person",
                 "description": "Source: Ada Varga (setup interview) · as of {{today}}\nBackend engineer."},
      "links": {"institutions": ["org"]}},
-    {"key": "ai-kestrel", "type": "character", "seat": {"role": "contributor", "ai_of": "owner"},
+    {"key": "ai-kestrel", "type": "character", "seat": {"role": "co_builder", "ai_of": "owner"},
      "fields": {"name": "Kestrel", "supertype": "Agent",
                 "description": "Source: Ada Varga (setup interview) · as of {{today}}\nAda Varga's AI, on its own seat."},
      "links": {"institutions": ["org"]}},

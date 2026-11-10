@@ -283,11 +283,16 @@ def main(argv):
             ais.append(f"{names[e['key']]} ({kind}, {word}, {names.get(ai_of, ai_of)}'s AI)")
         elif seat.get("role") in people:
             people[seat["role"]].append(names[e["key"]])
-    # People grouped by role, every AI by name with its role word; past NAMED people, a role's
-    # names become a count (the roster holds them), so a big team keeps the charter a page.
-    named = sum(len(n) for n in people.values()) <= NAMED
-    seats = [(f"{', '.join(n)} ({ROLES[r]})" if named or r == "owner" else f"{len(n)} {ROLES[r]}s")
-             for r, n in people.items() if n] + ais
+    # People grouped by role, every AI by name with its role word and its human; past NAMED seats in
+    # all (people and AIs), a role's names and the AIs become counts (the roster holds them), so a big
+    # team keeps the charter a page. The owner is always named.
+    named = sum(len(n) for n in people.values()) + len(ais) <= NAMED
+
+    def count(k, word):
+        return f"{k} {word}" + ("s" if k != 1 else "")
+    seats = [(f"{', '.join(n)} ({ROLES[r]})" if named or r == "owner" else count(len(n), ROLES[r]))
+             for r, n in people.items() if n]
+    seats += ais if named else ([count(len(ais), "AI")] if ais else [])
     who_is_here = ("Seated at setup: " + "; ".join(seats) + ".") if seats else "No one was seated at setup."
 
     # Where the copies go, and the paths an agent there reads.

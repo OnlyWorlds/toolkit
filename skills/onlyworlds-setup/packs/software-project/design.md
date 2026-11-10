@@ -24,7 +24,7 @@ A plain lookup ("what is decided about X?") is moves 1 and 2 only.
 - A decision's history: follow `parent_law` up; `GET /law?parent_law=<its id>` lists what amends or replaces it.
 - Open questions about the world itself are work items: page `GET /relation?supertype=Work item&subtype=open` and keep those that name the part.
 <!-- end -->
-- The design's state is in the subtypes: a Decision `proposed` is in design, `accepted` is locked, `superseded` is history; a Component `planned` is in design. An accepted decision can still change, by a new decision that supersedes it: say that, and that it is for the component's maintainers (its `characters`) to decide.
+- The design's state is in the subtypes: a Decision `proposed` is in design, `accepted` is locked, `superseded` is history; a Component `planned` is in design. An unset state is not stated: say so, and do not build on it as locked; the keeper's AI sets it when it next completes a report that touches the part. An accepted decision can still change, by a new decision that supersedes it: say that, and that it is for the component's maintainers (its `characters`) to decide.
 - How far something is built is not in the world: the code and {{tracker}} hold it. Read it there when it matters, or say you have not.
 
 ## The five moves
@@ -33,7 +33,7 @@ A plain lookup ("what is decided about X?") is moves 1 and 2 only.
 2. **Say what is already decided** that touches the ask, and what the world does not hold. A few lines, each with where you read it (a decision, a commit, a path); not an inventory. "The world does not hold this" is an answer. Never say someone was asked, or agreed, unless you read it.
 3. **Widen the scope; do not execute it yet.** People bring a narrow ask, and the real question is usually wider: what is this for, where does it start from, what would make it a success. Take from the world and the code what they can tell you, then ask the person at most three questions, told as a story about one person who would use it ("someone runs it on two files from different months: what do they expect to see?"). Offer the wider frame yourself and ask if it is right. When the frame is clear and they want details, go to details.
 4. **Stay in the person's lane.** Think the whole question through with them, whatever their role. What another maintainer decides, you write as a question for them, never as a spec and never as a settled line. The code wins: a description that disagrees with the code is a question for the component's maintainer.
-5. **End by filing.** When the talk decided or opened something, hand in a report as `{{work_skill_name}}` says, its text holding: what was decided (each a decision to record, with its why); what is open, each with who decides it (the keeper makes each a work item on its part); what in the world should change because of this talk.
+5. **End by filing.** When the talk decided or opened something, hand in a report as `{{work_skill_name}}` says, its text holding: what was decided (each a decision to record, with its why); what is open, each with who decides it (the keeper's AI makes each a work item on its part); what in the world should change because of this talk.
 
 ## A large design: its anchor
 
@@ -48,4 +48,4 @@ Fixed: <what is already fixed>
 
 Name the anchor and its four lines in your report; the keeper places it in the world. From then on everything about it hangs there: each decision about it names it in its text, each open question is a work item that names it, each session's report links it.
 
-You change the world yourself only if your seat is the keeper's. Otherwise the report is how your work arrives.
+You change the world yourself only if you are the keeper's AI (the Charter says who). Otherwise the report is how your work arrives.

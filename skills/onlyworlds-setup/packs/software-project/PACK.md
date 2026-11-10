@@ -2,7 +2,7 @@
 
 **For**: a repository's context world: what an agent new to the codebase should know and cannot read off the code. The components and what each depends on, the decisions and why (and which later decision replaced which), who maintains what and since when, the services it relies on, the releases. The issue tracker keeps the work and the code keeps the code; the world points at both.
 
-**Who is in such a world**: the maintainers and contributors as person members, their AIs on their own seats. The keeper is the lead maintainer by default.
+**Who is in such a world**: the maintainers and contributors as person members, their AIs on their own seats. The keeper is the lead maintainer by default. **The keeper's AI** is the AI of the person who holds the Title Keeper (its seat's `ai_of`), and setup seats it as a co-builder: the API lets a contributor write only the elements its own membership created, and a co-builder every element, and that AI makes the changes the reports call for. A seat's role is at most its sponsor's, so the keeper is the owner or a co-builder. Every other AI keeps a contributor's seat.
 
 **It lives in the repository.** The world folder is committed with the code, so everyone who pulls has it and every harness that opens the repository finds the skill. That makes it the portable copy of the folder format:
 - `world.json` carries **no `api` block**: the key lives in each person's environment (a `.env` the repository ignores), never in a tracked file.

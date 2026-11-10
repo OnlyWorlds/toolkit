@@ -10,7 +10,7 @@ Every description opens `Source: <who said it> · as of {{today}}`, then one or 
 | `org-<n>` | institution | one of `{{org_kinds}}` | | the organisation's name | `parent_institution`: its group, when the world holds it | question 6 | Saltmere Ferry Cooperative (`Company`), Port of Greyhaven (`Public body`) |
 | `owner` | character | `Person` | | `{{owner}}` | `institutions`: [`org`]; seat `owner` | question 3 | Ada Varga |
 | `person-<n>` | character | `Person` | | each teammate | `institutions`: [`org`]; seat `contributor` | question 3 | Tomas Reyes, Priya Lund |
-| `ai-<n>` | character | `Agent` | | each AI | `institutions`: [`org`]; seat `contributor`, `ai_of` its human | question 4; **a folder world only** | Kestrel (Ada Varga's AI) |
+| `ai-<n>` | character | `Agent` | | each AI | `institutions`: [`org`]; seat `contributor` (the keeper's AI: `co_builder`), `ai_of` its human | question 4; **a folder world only** | Kestrel (Ada Varga's AI) |
 | `contact-<n>` | character | `Contact` | | each outside contact | `institutions`: [their `org-<n>`] | question 6 | Wren Halloway (Saltmere) |
 | `keeper-title` | title | `Role` | | Keeper | `holders`: [the keeper], `body`: `org` | always | Keeper |
 | `keeper-tenure` | relation | `Tenure` | | Keeper: `{{keeper}}` | `actor`: the keeper, `titles`: [`keeper-title`]; `start_date`: `day:{{today}}` | always | Keeper: Ada Varga |

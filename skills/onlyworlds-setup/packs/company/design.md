@@ -24,7 +24,7 @@ A plain lookup ("what is decided about X?") is moves 1 and 2 only.
 - What is under a part: `GET /object?parent_object=<its id>`.
 - Open questions are work items: page `GET /relation?supertype=Work item&subtype=open` and keep those that name the part (in `x_packet_elements` or a link field).
 <!-- end -->
-- A part's design state is its `subtype`: `in design` or `locked`. A locked part can still change: say that it is locked, and that changing it is a decision for whoever owns it.
+- A part's design state is its `subtype`: `in design` or `locked`. An unset state is not stated: say so, and do not build on it as locked; the keeper's AI sets it when it next completes a report that touches the part. A locked part can still change: say that it is locked, and that changing it is a decision for whoever owns it.
 - How far something is built is not in the world. Read that where it lives ({{elsewhere}}) when it matters, or say you have not.
 
 ## The five moves
@@ -33,7 +33,7 @@ A plain lookup ("what is decided about X?") is moves 1 and 2 only.
 2. **Say what is already decided** that touches the ask, and what the world does not hold. A few lines, each with where you read it; not an inventory. "The world does not hold this" is an answer. Never say someone was asked, or agreed, unless you read it.
 3. **Widen the scope; do not execute it yet.** People bring a narrow ask, and the real question is usually wider: what is this for, where does it start from, what would make it a success. Take from the world what it can tell you, then ask the person at most three questions, told as a story about one person who would use it ("a new customer opens it on their first morning: what do they need to see?"). Offer the wider frame yourself and ask if it is right. When the frame is clear and they want details, go to details.
 4. **Stay in the person's lane.** Think the whole question through with them, whatever their role. What another role decides, you write as a question for whoever owns that part (a Role's holders; unsure: the keeper), never as a spec and never as a settled line.
-5. **End by filing.** When the talk decided or opened something, hand in a report as `{{work_skill_name}}` says, its text holding: what was decided; what is open, each with who decides it (the keeper makes each a work item on its part); what in the world should change because of this talk.
+5. **End by filing.** When the talk decided or opened something, hand in a report as `{{work_skill_name}}` says, its text holding: what was decided; what is open, each with who decides it (the keeper's AI makes each a work item on its part); what in the world should change because of this talk.
 
 ## A large design: its anchor
 
@@ -48,4 +48,4 @@ Fixed: <what is already fixed>
 
 Name the anchor and its four lines in your report; the keeper places it in the world. From then on everything about it hangs there: each open question is a work item that names it, each session's report links it, and the parts under it link to it as their `parent_object`. It is done when its parts are `locked`.
 
-You change the world yourself only if your seat is the keeper's. Otherwise the report is how your work arrives.
+You change the world yourself only if you are the keeper's AI (the Charter says who). Otherwise the report is how your work arrives.

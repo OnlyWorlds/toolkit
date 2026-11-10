@@ -30,7 +30,7 @@ Four rules hold throughout:
 - **The design behind a ticket or a pull request**: take its key and `GET /search?q=<key>`. A word there is letters, digits and underscores, so a key with a hyphen is searched as two words: keep only the results whose text holds the key whole. None: page `GET /object?supertype=Product&fields=id,name,subtype,description` and keep the ones whose description holds the key; still none: say so, and search by the ticket's own words.
 <!-- end -->
 - Read the elements a work item names (each with its reason) before you say anything about the work.
-- The element a key leads to is the design, not a report of what runs. Its `subtype` says `locked` (build on it) or `in design` (not settled: ask before building on it). If the code differs, the code is behind, or wrong, or the design moved: say which you think it is, and ask.
+- The element a key leads to is the design, not a report of what runs. Its `subtype` says `locked` (build on it) or `in design` (not settled: ask before building on it). An unset state is not stated: say so, and do not build on it as locked; the keeper's AI sets it when it next completes a report that touches the part. If the code differs, the code is behind, or wrong, or the design moved: say which you think it is, and ask.
 
 Then a short page for your human:
 
@@ -44,8 +44,32 @@ Then a short page for your human:
 
 The work is yours and your human's. Two rules while you do it:
 
-- **You do not change the world's elements.** What you learn goes into your report, and the keeper updates the world from it. Yours to write: your messages, your Note, your Read relation, your report, and a work item you make on the way (the packet profile's shape, `profiles/packet.md` in the schema distribution, with `x_room_of` set as on a report).
+- **You do not change the world's elements.** What you learn goes into your report, and the keeper's AI updates the world from it. Yours to write: your messages, your Note, your Read relation, your report, and a work item for your own next step (below).
 - **An upload to production** happens only on your human's own clear word, each time, and goes into the report: what, where, when, and how to undo it.
+
+**A work item you make** is only for your own or your human's next step. An open that someone else decides goes into your report, with who decides it, and the keeper's AI makes it a work item on its part. The shape (the packet profile, `profiles/packet.md` in the schema distribution, has the rest):
+
+```json
+{
+  "name": "<the step, in a few words>",
+  "supertype": "Work item",
+  "subtype": "open",
+  "description": "<why, in a sentence or two>",
+  "actor": "<whom it is for: your Character or your human's>",
+  "x_packet_elements": [{"type": "<type>", "id": "<element id>", "reason": "<one sentence>"}],
+  "x_packet_source": {"server": <see below>, "world": "<this world's id>"},
+  "x_packet_producer": {"tool": "<your harness>", "version": "<its version>"},
+  "x_room_of": "<this world's id>"
+}
+```
+
+The elements in `x_packet_elements` also go in the Relation's own link fields (`characters`, `objects` and the rest; it has none for a Law, Map, Pin, Marker or Relation). `x_packet_elements` is never empty.
+<!-- if folder -->
+`server` is `null` in a folder; both world ids are the `id` in `world.json`.
+<!-- end -->
+<!-- if online -->
+`server` is `"https://www.onlyworlds.com"`; both world ids are `{{server_world_id}}`.
+<!-- end -->
 
 ## 3. Report: every session ends with one
 
@@ -113,6 +137,7 @@ Page `GET /narrative?supertype=Report&subtype=handed in&fields=id,name,story,nar
 6. Set to `done`, once the work exists, exactly the work items in `x_report_answers` that are still `open` or `taken`; never another.
 7. Set `subtype` to `completed`, with or after `consequences`. Never edit the `story`.
 
-A work item you make (an open from a report, the `Order of work`) follows the packet profile and carries `x_room_of`, as a report does.
+A work item you make (an open from a report, the `Order of work`) takes the shape in part 2, with `actor` the one person it is for, or `x_packet_for` the ids of the Roles it is for.
+**Your own session's report**, as the keeper's AI: you made its changes yourself, so hand it in already `completed`, with its `description` and `consequences` in the same write.
 
 People read the reports; nobody approves each change. A wrong change is corrected like any other, and the correction is said in a later report.

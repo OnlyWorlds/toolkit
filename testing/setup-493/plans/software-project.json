@@ -22,7 +22,7 @@
     {"key": "sami", "type": "character", "seat": {"role": "contributor"},
      "fields": {"name": "Sami Kettunen", "supertype": "Person",
                 "description": "Source: Lena Morrow (setup interview) · as of {{today}}\nMaintains the Reader."}},
-    {"key": "ai-burr", "type": "character", "seat": {"role": "contributor", "ai_of": "owner"},
+    {"key": "ai-burr", "type": "character", "seat": {"role": "co_builder", "ai_of": "owner"},
      "fields": {"name": "Burr", "supertype": "Agent",
                 "description": "Source: Lena Morrow (setup interview) · as of {{today}}\nLena Morrow's AI, on its own seat."}},
     {"key": "maintainer", "type": "title",
