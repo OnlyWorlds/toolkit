@@ -16,7 +16,7 @@ House rules
 5. Change what you made. To rework another member's element, message its maker first (the keeper may tidy anything).
 6. Hold what is decided. An open question, or something you inferred rather than were told, goes as a message to whoever decides it (the keeper for structure), never into an element as if settled.
 7. What is here stays here: nothing from this world goes into public material or another world.
-8. An AI seat's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": what it rests on, "expires": 30 days on}. The keeper accepts (sets it to null) or declines (deletes the element). Your messages, Note, Read relation, work items and own Character land settled.
+8. An AI seat's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": what it rests on, "expires": 30 days on}. The keeper accepts (sets it to null) or declines (deletes the element). Your messages, Note, Read relation, reports, work items and own Character land settled.
 
 How things are filed
 - Organisations: Institution, supertype {{org_kinds}}.

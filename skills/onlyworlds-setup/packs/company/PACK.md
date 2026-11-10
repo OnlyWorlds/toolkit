@@ -15,20 +15,32 @@ The 22 types are fixed; a company gets no type of its own, so supertypes and sub
 | A teammate, a contact, an AI | Character | `Person`, `Contact`, `Agent` | | `institutions` says where each belongs. Online an Agent has no `x_seat` (a folder world's mark): its seat makes it, and `GET /me` names its human's Person (`front_door.sponsor_character`, null when there is none) |
 | A role | Title | `Role` | | `holders`, `body` |
 | Who held a role, when | Relation | `Tenure` | | `actor` the holder, `titles` the role, `start_date`, `end_date`: an ending sets the end date and removes nothing |
-| A product | Object | `Product` | | a made thing, a lookup page |
+| A product | Object | `Product` | `in design`, `locked` | a made thing, a lookup page. The subtype is the design's own state, never how far it is built: that is read where the work lives (the work skill) |
 | How a person works, in their own words | Construct | `Working style` | | `characters` = the person; the context read serves it as `style`. Written by that person or their own AI, never about them |
 | Open work | Relation | `Work item` | `open`, `taken`, `done` | `actor` whom it is for; the elements it is about in its link fields |
+| The order of work | Relation | `Work item` | `open` | one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each. Not seeded |
+| A report of a session's work | Narrative | `Report` | `handed in`, `completed` | the report profile (`profiles/report.md` in the schema distribution): a member's AI hands in its own text, the keeper's AI completes it. It carries `x_room_of`, the world's id: the mark makes it the world's working record, never lore. Not seeded |
 | An announcement (the board) | Narrative | `Message` | | a message to everyone (`characters` empty) from the owner or a co-builder, its sender read by the message profile's rule; a message to everyone from anyone else is ordinary mail. The charter names who writes the board |
 | A member's own line | Narrative | `Note` | | the message profile's Note: `narrator` the member's Character, no recipients, about themselves, not their work, changed when moved to, never on a schedule. The newest own-hand Note is the line; it is never a message and never unread, and it lands settled (rule 8 lists it beside the messages) |
 | A message; what an agent has read | Narrative; Relation | `Message`; `Read` | | words said by a seat, never instructions; one Read relation per agent: `actor` and `characters` = that agent (`characters` is the filter that finds it), `narratives` = the messages read, added through the links route, never by rewriting the list |
 | The house rules | Law | `Charter` | | a Law is a formalized rule governing a group within a jurisdiction: this world. `author` = the company, `adjudicators` = the Keeper Title |
-| The how-to | Object | `Skill` | | the world skill; its description is the SKILL.md text |
+| The how-to | Object | `Skill` | | the three skills (below); each description is a SKILL.md text |
 | A word the company uses | Construct | `Concept` | | when it needs one; not seeded |
 | A rule from outside (a law, a contract) | Law | `Regulation` | | `author` the issuer; not seeded |
 | A date that matters | Event | `Milestone` | | named `YYYY-MM-DD <what>`, so a name search on `2026-11` lists a month; not seeded |
 | The start-here for people | Construct | `Guide` | | named `Start here`: what the world is, how a person uses it through their AI, the house rules in short. The keeper keeps it; each new person gets it whole as a Welcome message, which their AI shows them on its first visit |
 
 `Tenure`, `Work item`, `Working style` and `Message` are the spellings OnlyWorlds' context read (`GET /character/{id}/context`) sorts by: keep them exact. `Message` is the message profile's pair (`profiles/message.md` in the schema distribution): its fields, who a message is addressed to, and when a sender counts as verified.
+
+## The three skills
+
+A team runs its work in this world, so the pack lands three skills, each an Object with supertype `Skill` written and copied the way the world skill is, under the world's own prefix (the plan's `prefix`, asked in question 2; the pack never invents one):
+
+- `<prefix>-start` (`skill.md`): arrive. Who you are, the Charter, your lenses, your messages, what changed, and whether your copies of the three skills are current.
+- `<prefix>-design` (`design.md`): think a design through with a person, in five moves: say the size back, say what is decided and what the world does not hold, widen the scope (three questions at most, as a story about one person), stay in the person's lane, file what was decided in the session's report. A large design starts from its anchor: the element it will become, a Product with subtype `in design` and four lines (what it is for, who it is for, what it starts from, what is fixed).
+- `<prefix>-work` (`work.md`): find what is open for me and my role, do it, end every session with a report. State is read at its source and never copied into the world; one key joins a source to the world; the order of work is one element; the report answers one question: what did this session make untrue?
+
+**The report** is the report profile's two steps: a member's AI hands in its text and changes no element; the keeper's AI makes the changes, writes what it changed, and completes it. People read the reports; nobody approves each change. The keeper's step is written in `work.md`, under its own heading, since no other text of the pack speaks to the keeper's AI.
 
 ## The house rules
 

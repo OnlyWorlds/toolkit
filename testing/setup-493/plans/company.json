@@ -1,6 +1,7 @@
 {
   "pack": "company",
   "today": "2026-10-22",
+  "prefix": "fern",
   "world": {"name": "Fernhollow", "slug": "fernhollow",
             "description": "Fernhollow Systems' shared knowledge base for its AI agents. A fictional company, the company pack's test plan."},
   "values": {

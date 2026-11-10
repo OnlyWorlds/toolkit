@@ -1,7 +1,7 @@
 <!-- template: the world skill for the software-project pack; onlyworlds-setup fills it with write_world.py, which drops this line and keeps only the placement's lines -->
 ---
 name: {{skill_name}}
-description: The context world of {{project}} on OnlyWorlds - its components and what each depends on, the decisions and why, who maintains what, its services and releases. Use when asked why {{project}} does something a certain way, what a component depends on, who maintains it, which decision replaced which, or to record a new decision.
+description: Start every session here. The context world of {{project}} on OnlyWorlds - its components and what each depends on, the decisions and why, who maintains what, its services and releases. Use when asked why {{project}} does something a certain way, what a component depends on, who maintains it, which decision replaced which, or to record a new decision.
 ---
 
 # The {{world_name}} world: the context of {{project}}
@@ -22,8 +22,8 @@ What an agent new to {{project}} should know and cannot read off the code: the c
 2. The Charter, whole.
 3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. None: go on.
 4. Messages addressed to you (below).
-5. What changed since your last visit: `git log --since=<your last visit> -- {{world_folder}}`.
-6. The work.
+5. What changed since your last visit: `git log --since=<your last visit> -- {{world_folder}}`. A changed file under `elements/object/` with supertype `Skill` is one of your three skills: copy it again (below).
+6. The work, with `{{work_skill_name}}` (a design talk: `{{design_skill_name}}`).
 
 **What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
@@ -46,8 +46,8 @@ The supertype is the index: read `supertype` (and `subtype`) from the files.
 2. The Charter, whole.
 3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut). Its `lenses` holds the reading, or why that lens was skipped.
 4. Messages addressed to you (below).
-5. What changed since your last visit: `GET /changes?since=<your kept cursor>` or `?after=<the time of your last visit>`, else `GET /changes?head=true` once. Never walk the feed from zero.
-6. The work.
+5. What changed since your last visit: `GET /changes?since=<your kept cursor>` or `?after=<the time of your last visit>`, else `GET /changes?head=true` once. Never walk the feed from zero. An Object with supertype `Skill` among them is one of your skills: copy it again (below).
+6. The work, with `{{work_skill_name}}` (a design talk: `{{design_skill_name}}`).
 
 **What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
@@ -71,10 +71,10 @@ Dates are days since 1970-01-01; the text carries the ISO date and the commit.
 ## Lookups
 
 <!-- if folder -->
-- "Why does X work this way?" The decisions that name X: `grep -l X {{world_folder}}elements/law/`, kept where `supertype` is `Decision`; then follow `parent_law` both ways to see what it replaced and what replaced it.
+- "Why does X work this way?" The decisions that name X: `grep -l X {{world_folder}}elements/law/`, kept where `supertype` is `Decision`; then follow `parent_law` both ways to see what it replaced and what replaced it: the files whose `parent_law` is its id amend or replace it.
 <!-- end -->
 <!-- if online -->
-- "Why does X work this way?" The decisions that name X: `GET /law?supertype=Decision&subtype=accepted`; then follow `parent_law` both ways to see what it replaced and what replaced it.
+- "Why does X work this way?" The decisions that name X: `GET /law?supertype=Decision&subtype=accepted`; then follow `parent_law` both ways to see what it replaced and what replaced it: `GET /law?parent_law=<its id>` lists what amends or replaces it.
 <!-- end -->
 - "What does component C depend on, and who maintains it?" C's `constructs`, `objects` and `characters`.
 - "What is still true?" A `superseded` decision is history: say so when you cite it.
@@ -86,7 +86,7 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 
 ## Writing
 
-- A new element you write carries `x_review_proposed` (Charter rule 7).
+- A new element you write carries `x_review_proposed` (Charter rule 7), unless it is your message, your report, your Read relation or your work item.
 - A decision is never edited after `accepted`: write a new one with `parent_law`, then set the old one's subtype to `superseded`.
 <!-- if folder -->
 - Read before you change: keep every field you do not change; links = the merged list. Link only ids that exist here.
@@ -96,6 +96,6 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 <!-- end -->
 - No secrets in any element: the world is committed.
 
-## Keeping this skill current
+## Keeping the skills current
 
-This text is the Object "{{world_name}} world skill" (supertype `Skill`). The repository carries copies at `.agents/skills/{{skill_name}}/SKILL.md` (Codex, OpenCode) and `.claude/skills/{{skill_name}}/SKILL.md` (Claude Code), so everyone who pulls has them. Their first line after the front matter names the element's `updated_at` they came from; when the element is newer, copy its description again, whole, and commit. Front matter: `name` and `description` only. A courtesy line in `AGENTS.md` (and in `CLAUDE.md` where one exists, since Claude Code then reads only that): "{{agents_line}}"
+This text and the design and work skills are three Objects with supertype `Skill`. The repository carries copies at `.agents/skills/<name>/SKILL.md` (Codex, OpenCode) and `.claude/skills/<name>/SKILL.md` (Claude Code), so everyone who pulls has them. A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole, and commit. Front matter: `name` and `description` only. A courtesy line in `AGENTS.md` (and in `CLAUDE.md` where one exists, since Claude Code then reads only that): "{{agents_line}}"

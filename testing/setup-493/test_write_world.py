@@ -37,7 +37,11 @@ harness trial (2026-10-22):
     the world it is in (world.json's for a folder, the server's online), in the files and the bulk
     body; no other element carries the key; a Domain matches by its pair trimmed and folded, a
     near-word does not; a plan that names an `x_charter_` key, or a plan row with the pair
-    law/Charter, is refused.
+    law/Charter, is refused;
+13. the two team packs (company, software-project) land three skills under the plan's prefix,
+    `<prefix>-start`, `-design` and `-work`, each an Object with its two copies, each under the
+    budget and speaking for its placement; the work skill carries the report profile's keys; a
+    team pack's plan without a prefix is refused.
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -176,6 +180,20 @@ class Run:
     def skill(self):
         slug = self.plan["world"]["slug"]
         return json.loads(read(self.world / "elements" / "object" / f"{slug}-skill.json"))["description"]
+
+    @property
+    def skill_name(self):
+        """The world skill's name: <prefix>-start in a three-skill pack, else ow-<slug>."""
+        return f"{self.plan['prefix']}-start" if self.plan.get("prefix") else "ow-" + self.plan["world"]["slug"]
+
+    def extra_skills(self):
+        """A three-skill pack's design and work skills: {kind: (Object body, its name)}."""
+        slug, out = self.plan["world"]["slug"], {}
+        for kind in ("design", "work"):
+            p = self.world / "elements" / "object" / f"{slug}-{kind}-skill.json"
+            if p.exists():
+                out[kind] = (json.loads(read(p)), f"{self.plan['prefix']}-{kind}")
+        return out
 
     def written(self):
         """Every file the run wrote: the world folder, the copies, the AGENTS.md line."""
@@ -320,7 +338,7 @@ class SetupWriter(unittest.TestCase):
         def check(run):
             line = read(run.copy_root / "AGENTS.md").strip()
             self.assertTrue(line)
-            copy = read(run.copy_root / ".claude" / "skills" / ("ow-" + run.plan["world"]["slug"]) / "SKILL.md")
+            copy = read(run.copy_root / ".claude" / "skills" / run.skill_name / "SKILL.md")
             self.assertIn(line, copy)
             self.assertIn(line, run.skill())
         self.each(check)
@@ -579,6 +597,54 @@ class SetupWriter(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0, r.stdout)
         self.assertRegex(r.stdout, r"REFUSED plan element 'rules-two': the pack writes the Charter; "
                                    r"a plan row cannot be a second one")
+        self.assertFalse(out.exists() and any(out.iterdir()), "a refused plan wrote files")
+
+    def test_13_team_packs_land_three_skills(self):
+        """The company and software-project packs land three skills under the plan's prefix
+        (<prefix>-start, -design, -work): each an Object with supertype Skill, under the budget with
+        ROOM to spare, front matter name and description only, each with its two harness copies
+        carrying the copied-from line; each speaks for its placement as the world skill does; the
+        world skill names the other two; the work skill carries the report profile's keys. Every
+        other pack keeps one skill, ow-<slug>."""
+        budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
+
+        def check(run):
+            extra = run.extra_skills()
+            if run.pack not in ("company", "software-project"):
+                self.assertEqual(extra, {})
+                return
+            self.assertEqual(sorted(extra), ["design", "work"])
+            for kind, (body, name) in extra.items():
+                text = body["description"]
+                self.assertEqual(body["supertype"], "Skill")
+                self.assertLess(len(text), budget - ROOM, f"{kind}: {len(text)} characters filled")
+                self.assertTrue(text.startswith(f"---\nname: {name}\ndescription: "), text[:80])
+                self.assertIn(f"`{name}`", run.skill())
+                self.assertNotIn(run.world_json["id"], text, "the minted folder id is no address")
+                if run.placement == "online":
+                    if kind == "work":  # the report's mark names the server's world
+                        self.assertIn(SERVER_ID, text)
+                else:
+                    self.assertIsNone(API_ROUTE.search(text), f"an API route in a folder world's {kind} skill")
+                for h in (".agents", ".claude"):
+                    copy = read(run.copy_root / h / "skills" / name / "SKILL.md")
+                    self.assertIn(f"<!-- copied from the world: Object {body['id']}; updated_at none yet", copy)
+                if kind == "work":
+                    for key in ("x_report_answers", "x_room_of", '"handed in"', "consequences",
+                                "what did this session make untrue?"):
+                        self.assertIn(key, text, key)
+        self.each(check)
+
+    def test_13b_a_team_pack_without_a_prefix_is_refused(self):
+        plan = json.loads(read(PLANS / "company.json"))
+        del plan["prefix"]
+        plan_path = OUT / "plans" / "company-no-prefix.json"
+        plan_path.write_text(json.dumps(plan), encoding="utf-8")
+        out = OUT / "company-no-prefix"
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(out)],
+                           capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("the pack never invents one", r.stdout)
         self.assertFalse(out.exists() and any(out.iterdir()), "a refused plan wrote files")
 
 

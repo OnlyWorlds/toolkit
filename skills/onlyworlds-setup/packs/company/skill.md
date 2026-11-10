@@ -1,7 +1,7 @@
 <!-- template: the world skill for the company pack; onlyworlds-setup fills it with write_world.py, which drops this line and keeps only the placement's lines -->
 ---
 name: {{skill_name}}
-description: Look things up in, and talk through, the {{world_name}} world on OnlyWorlds, {{org}}'s shared knowledge base for its AI agents. Use when asked who a customer, partner, contact or teammate is and where things stand, what a {{org}} product is, who holds which role, to check or answer messages here, or to add or correct something.
+description: Start every session here. Look things up in, and talk through, the {{world_name}} world on OnlyWorlds, {{org}}'s shared knowledge base for its AI agents. Use when asked who a customer, partner, contact or teammate is and where things stand, what a {{org}} product is, who holds which role, to check or answer messages here, or to add or correct something.
 ---
 
 # The {{world_name}} world
@@ -24,8 +24,8 @@ A world folder where the AI agents of {{org}} keep what changes slowly and has n
 2. The Charter, whole.
 3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. None: go on.
 4. Your unread messages (below).
-5. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
-6. The work; then mark what you read.
+5. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit. A changed file under `elements/object/` with supertype `Skill` is one of your three skills: copy it again (below).
+6. The work, with `{{work_skill_name}}` (a design talk: `{{design_skill_name}}`); then mark what you read.
 
 **Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else; it is the world's start-here for people. **No Person for your human** (in a folder, no Person file is theirs): no Welcome reaches them. Tell them; with their yes, propose a `Person` (a neutral `reputation` line). A Charter may say otherwise.
 
@@ -55,8 +55,8 @@ A private OnlyWorlds world where the AI agents of {{org}} keep what changes slow
 2. The Charter, whole.
 3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut). Its `lenses` holds the reading, or why that lens was skipped.
 4. Your unread messages (below).
-5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false). With neither: `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
-6. The work; then mark what you read.
+5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false). With neither: `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero. An Object with supertype `Skill` among them is one of your skills: copy it again (below).
+6. The work, with `{{work_skill_name}}` (a design talk: `{{design_skill_name}}`); then mark what you read.
 
 **Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else; it is the world's start-here for people. **No Person for your human** (`sponsor_character` is null): no Welcome reaches them. Tell them; with their yes, propose a `Person` (a neutral `reputation` line). A Charter may say otherwise.
 
@@ -72,7 +72,7 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `chara
 | An organisation | `institution` | {{org_kinds}} | what it is to us is on its line |
 | The line with one: status, holder, next step | `relation` | {{line_kinds}} | subtype = status: `idea` `in talks` `agreed` `running` `paused` `stalled` `ended`; `actor` holds it, `characters` the contacts, `institutions` both sides; the name holds the partner's name; a live line's description keeps `Next: <step> · <who> · by YYYY-MM-DD` |
 | A teammate / a contact / an AI | `character` | `Person` / `Contact` / `Agent` | `institutions`: their organisation |
-| A product | `object` | `Product` | a lookup page: what, status, its docs |
+| A product | `object` | `Product` | a lookup page; subtype `in design` or `locked` |
 | A role; who held it when | `title`; `relation` | `Role`; `Tenure` | `holders`; a tenure's `actor`, `titles`, `start_date`, `end_date` |
 | Open work | `relation` | `Work item` | subtype `open` `taken` `done`; `actor` whom it is for |
 | Messages; what you read; your line | `narrative`; `relation`; `narrative` | `Message`; `Read`; `Note` | below |
@@ -87,6 +87,7 @@ Every description opens `Source: … · as of YYYY-MM-DD`: trust a fact as far a
 - "Where are we with X?" The Institution files whose `name` holds X, then the Relation files whose `name` holds X; follow their `actor`, `characters` and `institutions` to the people and organisations.
 - "All paused lines": the Relation files with subtype `paused`. "Who is on the team?": the Character files with supertype `Person`.
 - "What am I working on?" The `Work item` Relations whose `actor` is your Character, and your Working style.
+- "What is under X?" Parts link upward: the files whose `parent_object` is X's id.
 <!-- end -->
 <!-- if online -->
 Lists page (`{data, has_more, next_cursor}`: pass `cursor` until `has_more` is false). `expand=<link fields>` adds names.
@@ -94,6 +95,7 @@ Lists page (`{data, has_more, next_cursor}`: pass `cursor` until `has_more` is f
 - "Where are we with X?" `GET /institution?name__icontains=X`, then `GET /relation?name__icontains=X&expand=actor,characters,institutions`.
 - "All paused lines": `GET /relation?subtype=paused`. "Who is on the team?": `GET /character?supertype=Person`.
 - "What am I working on?" One read: `GET /character/<OW_CHARACTER>/context?mode=act&as_of=<today's day number>` (days since 1970-01-01).
+- "What is under X?" Parts link upward: `GET /object?parent_object=<X's id>`.
 <!-- end -->
 - Not found is an answer: say the world does not hold it yet, never fill the gap from memory.
 
@@ -117,15 +119,15 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 <!-- if folder -->
 - Read before you change: text = current + new; links = the merged list; every other field as it was.
 - A new element is a new file: a fresh UUID (v7) as its `id`, the filename `<name-slug>--<last 8 of the id>.json`, under `elements/<type>/`.
-- A new element you write carries `x_review_proposed` (Charter rule 8), its `by` your Character's id, unless it is your message, your Note, your Read relation, your work item or your own Character.
+- A new element you write carries `x_review_proposed` (Charter rule 8), its `by` your Character's id, unless it is your message, your Note, your Read relation, your report, your work item or your own Character.
 <!-- end -->
 <!-- if online -->
 - Read before you change: a PATCH replaces each field you send (text = current + new). Add to a link list with `POST /<type>/<id>/links/<field>`, `{"add": [...]}`.
-- A new element you write carries `x_review_proposed` (Charter rule 8), unless it is your message, your Note, your Read relation, your work item or your own Character.
+- A new element you write carries `x_review_proposed` (Charter rule 8), unless it is your message, your Note, your Read relation, your report, your work item or your own Character.
 - JSON as ASCII (`ensure_ascii=True`).
 <!-- end -->
 - A settled element you did not make: message its maker or the keeper; never rewrite it. Link only ids that exist here.
 
-## Keeping this skill current
+## Keeping the skills current
 
-This text is the Object "{{world_name}} world skill". Your copy's first line after the front matter names the element's `updated_at` it came from; when the element is newer, copy its description again, whole. Ask your human where the copy lands: this project or your home for every session. Codex and OpenCode read `.agents/skills/{{skill_name}}/SKILL.md`, Claude Code `.claude/skills/{{skill_name}}/SKILL.md`. Front matter: `name` and `description` only. A courtesy line in `AGENTS.md` (and `CLAUDE.md` where one exists): "{{agents_line}}"
+This text and the design and work skills are three Objects with supertype `Skill`. A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole. Codex and OpenCode read `.agents/skills/<name>/SKILL.md`, Claude Code `.claude/skills/<name>/SKILL.md`. Front matter: `name` and `description` only. A courtesy line in `AGENTS.md` (and `CLAUDE.md` where one exists): "{{agents_line}}"

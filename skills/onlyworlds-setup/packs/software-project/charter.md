@@ -15,7 +15,7 @@ House rules
 4. A decision is never rewritten. A new decision supersedes it through parent_law; the old one's subtype becomes superseded.
 5. The code wins. A description that disagrees with the code is a message to the component's maintainer, never a guess written in.
 6. No secrets in the world, ever: it is committed. No key in world.json, no token in a description.
-7. An AI seat's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": a commit or a path, "expires": 30 days on}. The keeper accepts (sets it to null) or declines (deletes the element). Your messages, Read relation and work items land settled.
+7. An AI seat's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": a commit or a path, "expires": 30 days on}. The keeper accepts (sets it to null) or declines (deletes the element). Your messages, reports, Read relation and work items land settled.
 
 How things are filed
 - The project: Institution, supertype Project.

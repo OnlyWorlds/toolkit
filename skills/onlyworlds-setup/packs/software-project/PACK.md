@@ -25,11 +25,23 @@ A linked folder (one with an `api` block) is never committed. Online, the world 
 | A role | Title | `Role` | | Maintainer, Reviewer; `body` the project |
 | Who held a role, when | Relation | `Tenure` | | `actor`, `titles`, `start_date`, `end_date` |
 | Open work | Relation | `Work item` | `open`, `taken`, `done` | only what has no tracker home (an agent's ask about the world itself); issues stay in the tracker |
+| The order of work | Relation | `Work item` | `open` | one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each. Not seeded |
+| A report of a session's work | Narrative | `Report` | `handed in`, `completed` | the report profile (`profiles/report.md` in the schema distribution): a member's AI hands in its own text, the keeper's AI completes it. It carries `x_room_of`, the world's id: the mark makes it the world's working record, never lore. Not seeded |
 | A message; what an agent read | Narrative; Relation | `Message`; `Read` | | |
 | The house rules | Law | `Charter` | | `author` the project, `adjudicators` the Keeper Title |
-| The how-to | Object | `Skill` | | the world skill |
+| The how-to | Object | `Skill` | | the three skills (below) |
 
 A Law has no link to a Construct that reads "concerns": a decision names the components it touches in its `declaration` and `description`. A Narrative can link both (`laws`, `constructs`) when a design note needs to.
+
+## The three skills
+
+A team runs its work in this world, so the pack lands three skills, each an Object with supertype `Skill` written and copied the way the world skill is, under the world's own prefix (the plan's `prefix`, asked in question 2; the pack never invents one):
+
+- `<prefix>-start` (`skill.md`): arrive. Who you are, the Charter, your lenses, your messages, what changed, and whether your copies of the three skills are current.
+- `<prefix>-design` (`design.md`): think a design through with a person, in five moves: say the size back, say what is decided and what the world does not hold, widen the scope (three questions at most, as a story about one person), stay in the person's lane, file what was decided in the session's report. A large design starts from its anchor: the element it will become, a Component with subtype `planned` and four lines (what it is for, who it is for, what it starts from, what is fixed); a Decision's `proposed` is in design, `accepted` locked.
+- `<prefix>-work` (`work.md`): find what is open for me and my role, do it, end every session with a report. State is read at its source and never copied into the world; one key joins a source to the world; the order of work is one element; the report answers one question: what did this session make untrue?
+
+**The report** is the report profile's two steps: a member's AI hands in its text and changes no element; the keeper's AI makes the changes, writes what it changed, and completes it. People read the reports; nobody approves each change. The keeper's step is written in `work.md`, under its own heading, since no other text of the pack speaks to the keeper's AI.
 
 ## The house rules
 

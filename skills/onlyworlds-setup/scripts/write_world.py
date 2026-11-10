@@ -19,6 +19,8 @@ The plan (JSON):
       "charter": {"links": {"author": "org", "adjudicators": ["keeper-title"]},
                   "x_checks_rules": []},         # optional: the checks slot (below)
       "skill": {"utility": "one line: what the skill is for"},
+      "prefix": "fern",                        # a pack with design.md and work.md: the world's own short
+                                               # lower-case word for its three skills (asked; never guessed)
       "elements": [
         {"key": "org", "type": "institution",
          "fields": {"name": "...", "supertype": "Company", "description": "..."},
@@ -59,8 +61,17 @@ and, for an AI, "ai_of" (the key of its human). The file carries it as `x_seat`;
 "Who is here" lists every seat. Online, an AI's Character comes from its seat (keel's "its own new
 Character"), so its row is not written and nothing may link it.
 
+A pack that holds `design.md` and `work.md` beside `skill.md` (a team world: company,
+software-project) lands three skills, each written as `skill.md` is: an Object with supertype Skill
+whose description is the filled text, under the same budget and front-matter test, and its two
+harness copies. Their names take the plan's "prefix": `<prefix>-start` (the world skill),
+`<prefix>-design`, `<prefix>-work`. Such a plan without a prefix is refused: the pack never invents
+one. Any other pack keeps one skill, `ow-<slug>`.
+
 Placeholders: `{{name}}` from "values", plus the ones this script knows: world_name, world_slug,
-charter_id, skill_id, skill_name (ow-<slug>), today (ISO), today_day (the day number),
+charter_id, skill_id, skill_name (ow-<slug>, or <prefix>-start), prefix, design_skill_id,
+design_skill_name, work_skill_id, work_skill_name (the last five in a three-skill pack only),
+today (ISO), today_day (the day number),
 server_world_id (online only), world_folder (the world folder as the copies' root sees it),
 who_is_here, roster, proposer_id, agents_line, and `{{id:<key>}}` for any element's id. They are
 filled in the charter, the skill and every string field of every element, before any shape test:
@@ -86,6 +97,10 @@ PACKS = Path(__file__).resolve().parent.parent / "packs"
 PH = re.compile(r"\{\{([a-z_]+(?::[A-Za-z0-9_-]+)?)\}\}")
 DAY = re.compile(r"^day:(\d{4}-\d{2}-\d{2})$")
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+PREFIX = re.compile(r"^[a-z][a-z0-9]{0,15}$")
+# A team world's two skills beside the world skill: the template, the Object's name and utility.
+EXTRA_SKILLS = (("design", "design skill", "How an agent talks a design through with a person here."),
+                ("work", "work skill", "How an agent does a session of work here and hands in its report."))
 IF = re.compile(r"^<!-- if (folder|online) -->$")
 END = "<!-- end -->"
 NAMED = 8
@@ -221,7 +236,15 @@ def main(argv):
         problems.append(f"online.world_id {server_id!r}: the id onlyworlds.com gave the empty world, a UUID")
     w = plan["world"]
     world_slug = w.get("slug") or slug(w["name"])
-    skill_name = "ow-" + world_slug
+    # A team world's pack lands three skills under the world's own prefix; any other pack, one.
+    extras = [x for x in EXTRA_SKILLS if (pack / f"{x[0]}.md").exists()]
+    prefix = plan.get("prefix")
+    if extras and not (isinstance(prefix, str) and PREFIX.match(prefix)):
+        problems.append(f"prefix {prefix!r}: the {plan['pack']} pack's skills take the world's own prefix "
+                        f"(question 2), one short lower-case word (a letter first, 16 at most); the pack "
+                        f"never invents one")
+        prefix = "prefix"
+    skill_name = f"{prefix}-start" if extras else "ow-" + world_slug
     if not SKILL_NAME.match(skill_name) or len(skill_name) > 64:
         problems.append(f"skill name {skill_name!r}: lowercase letters, digits and hyphens, 64 at most")
     today = plan["today"]
@@ -229,6 +252,7 @@ def main(argv):
     ids = {e["key"]: uuid7() for e in rows}
     names = {e["key"]: e.get("fields", {}).get("name", e["key"]) for e in rows}
     world_id, charter_id, skill_id = uuid7(), uuid7(), uuid7()
+    extra_ids = {x[0]: uuid7() for x in extras}
     # The reading aids' mark names the world the element is in: online, the server's world, never the
     # folder's minted id (which is no address there).
     charter_of = server_id if online else world_id
@@ -283,6 +307,11 @@ def main(argv):
                   proposer_id=PROPOSER[placement], agents_line=agents_line)
     if online:
         values["server_world_id"] = server_id
+    if extras:
+        values["prefix"] = prefix
+        for kind, _, _ in extras:
+            values[f"{kind}_skill_id"] = extra_ids[kind]
+            values[f"{kind}_skill_name"] = f"{prefix}-{kind}"
 
     def fill(text, where, first_line=1):
         """Every placeholder filled; a line that still holds `{{` after filling is a problem."""
@@ -334,15 +363,22 @@ def main(argv):
         return body
 
     charter_text = fill_template("charter.md")
-    skill_text = fill_template("skill.md")
     if len(charter_text) >= CHARTER_MAX:
         problems.append(f"charter: {len(charter_text)} characters, the budget is under {CHARTER_MAX}")
-    if len(skill_text) >= SKILL_MAX:
-        problems.append(f"world skill: {len(skill_text)} characters, the budget is under {SKILL_MAX}")
-    fm = re.match(r"---\n(.*?)\n---\n", skill_text, re.S)
-    keys = [ln.split(":", 1)[0] for ln in fm.group(1).split("\n") if ln and not ln.startswith(" ")] if fm else []
-    if keys != ["name", "description"]:
-        problems.append(f"world skill front matter: keys {keys}, want exactly name and description")
+
+    def skill_of(template_name, label):
+        """A filled skill text, checked: under the budget, front matter name and description only."""
+        text = fill_template(template_name)
+        if len(text) >= SKILL_MAX:
+            problems.append(f"{label}: {len(text)} characters, the budget is under {SKILL_MAX}")
+        fm_ = re.match(r"---\n(.*?)\n---\n", text, re.S)
+        keys = [ln.split(":", 1)[0] for ln in fm_.group(1).split("\n") if ln and not ln.startswith(" ")] if fm_ else []
+        if keys != ["name", "description"]:
+            problems.append(f"{label} front matter: keys {keys}, want exactly name and description")
+        return text, fm_
+
+    skill_text, fm = skill_of("skill.md", "world skill")
+    extra_texts = {kind: skill_of(f"{kind}.md", f"{kind} skill") for kind, _, _ in extras}
 
     files = {}  # relative path -> text
     world_json = {"id": world_id, "name": w["name"], "description": fill(w.get("description", ""), "plan world, description"),
@@ -364,8 +400,13 @@ def main(argv):
              "utility": fill(plan.get("skill", {}).get("utility", "How an agent reaches this world. Copy the "
                              "description, whole, to where your harness reads skills, as SKILL.md."), "plan skill, utility")}
     files[f"elements/object/{world_slug}-skill.json"] = dump(skill)
+    for kind, label, utility in extras:
+        files[f"elements/object/{world_slug}-{kind}-skill.json"] = dump(
+            {"id": extra_ids[kind], "name": f"{w['name']} {label}", "supertype": "Skill",
+             "description": extra_texts[kind][0],
+             "utility": utility + " Copy the description, whole, to where your harness reads skills, as SKILL.md."})
 
-    counts = {"law": 1, "object": 1}
+    counts = {"law": 1, "object": 1 + len(extras)}
     taken = set(files)
     for e in rows:
         if e["key"] in from_seat:
@@ -390,21 +431,28 @@ def main(argv):
         files[rel] = dump(body)
         counts[t] = counts.get(t, 0) + 1
 
-    copy_text = skill_text
-    if fm:
-        head = fm.group(0)
-        copy_text = (head + f"<!-- copied from the world: Object {skill_id}; updated_at none yet "
-                     f"(made by the set-up skill on {today}) -->\n" + skill_text[len(head):])
+    def copy_of(text, fm_, object_id):
+        """The harness copy: the text with one line after the front matter naming where it came from."""
+        if not fm_:
+            return text
+        head = fm_.group(0)
+        return (head + f"<!-- copied from the world: Object {object_id}; updated_at none yet "
+                f"(made by the set-up skill on {today}) -->\n" + text[len(head):])
+
+    skills = [(skill_name, copy_of(skill_text, fm, skill_id))]
+    for kind, _, _ in extras:
+        skills.append((f"{prefix}-{kind}", copy_of(*extra_texts[kind], extra_ids[kind])))
     # Harnesses read .agents/skills/ and .claude/skills/ from the directory they run in up to the
     # repository root, never from a sub-folder: the copies go to that root, and into the world folder
     # only when the world folder is that root ("world").
-    copy_paths = []
+    copy_paths = []  # (path, text)
     if copy_root is not None:
-        for harness in (".agents", ".claude"):
-            p = copy_root / harness / "skills" / skill_name / "SKILL.md"
-            if p.exists():
-                problems.append(f"{p} exists: a copy is the user's; not overwritten")
-            copy_paths.append(p)
+        for name_, text_ in skills:
+            for harness in (".agents", ".claude"):
+                p = copy_root / harness / "skills" / name_ / "SKILL.md"
+                if p.exists():
+                    problems.append(f"{p} exists: a copy is the user's; not overwritten")
+                copy_paths.append((p, text_))
     line, line_files, line_print = None, [], None
     if plan.get("agents_md") and copy_root is not None:
         line = agents_line
@@ -427,7 +475,7 @@ def main(argv):
 
     if not problems:  # the net: nothing this run would write still holds a `{{`
         outputs = dict(files)
-        outputs.update({str(p): copy_text for p in copy_paths})
+        outputs.update({str(p): t for p, t in copy_paths})
         if line:
             outputs["the AGENTS.md line"] = line + "\n"
         for rel, text in outputs.items():
@@ -443,8 +491,8 @@ def main(argv):
 
     for rel, text in files.items():
         write(out / rel, text)
-    for p in copy_paths:
-        write(p, copy_text)
+    for p, t in copy_paths:
+        write(p, t)
     if root_attrs is not None:
         write(root_attrs, GITATTRIBUTES)
     line_done = []
@@ -473,13 +521,15 @@ def main(argv):
           f"({', '.join(f'{t} {c}' for t, c in sorted(counts.items()))})")
     print(f"charter {len(charter_text)} of under {CHARTER_MAX} characters; "
           f"world skill {len(skill_text)} of under {SKILL_MAX}; skill name {skill_name}")
+    for kind, _, _ in extras:
+        print(f"{kind} skill {len(extra_texts[kind][0])} of under {SKILL_MAX}; skill name {prefix}-{kind}")
     if not ais:
         print("note: no AI is seated (question 4's default is one, the user's): its AI will find no Character")
     for k in sorted(from_seat):
         print(f"seat: {names[k]}'s Character comes from its seat (Make a seat, its own new Character)")
     if online and plan.get("repo"):
         print("online in a repository: world.json carries no api block; the server id is in the world skill")
-    for p in copy_paths:
+    for p, _ in copy_paths:
         print(f"copy: {p}")
     for d in line_done:
         print(f"agents line: {d}")

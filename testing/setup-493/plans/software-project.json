@@ -1,6 +1,7 @@
 {
   "pack": "software-project",
   "today": "2026-10-22",
+  "prefix": "qrl",
   "world": {"name": "Quarrel", "slug": "quarrel",
             "description": "The context world of Quarrel, a command-line tool that diffs two spreadsheets. Fictional, the software-project pack's test plan."},
   "values": {
