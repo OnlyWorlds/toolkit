@@ -86,13 +86,14 @@ GREYS = {"blue": ("#3d3d3d", "#e0e0e0"), "green": ("#5f5f5f", "#bdbdbd"),
          "pink": ("#818181", "#9a9a9a"), "amber": ("#a3a3a3", "#777777")}
 NO_FAMILY = ("#9e9e9e", "#8a8a8a")
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
-# The room profile's nine pairs (schema-dist profiles/room.md; principles §4), read here by
+# The room profile's ten pairs (schema-dist profiles/room.md; principles §4), read here by
 # left_out_reason for map.py and timeline.py: the graph itself takes the package's reading.
 # count.py in the read skill holds the same table and rule: a skill installs alone, so the two
 # cannot share a module, and testing/test_room_pairs.py keeps them equal and runs the fixture.
-ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
-              ("construct", "spec"), ("relation", "heart"), ("relation", "take"),
-              ("relation", "vote"), ("event", "sitting"), ("character", "member")}
+ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("narrative", "report"),
+              ("relation", "work item"), ("construct", "spec"), ("relation", "heart"),
+              ("relation", "take"), ("relation", "vote"), ("event", "sitting"),
+              ("character", "member")}
 # The charter profile's three reading aids (schema-dist profiles/charter.md), matched like the
 # room's pairs with the mark x_charter_of; count.py holds the same table, kept equal by the test.
 CHARTER_PAIRS = {("law", "charter"), ("construct", "guide"), ("construct", "domain")}

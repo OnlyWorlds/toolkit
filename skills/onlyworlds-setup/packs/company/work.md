@@ -137,7 +137,7 @@ Page `GET /narrative?supertype=Report&subtype=handed%20in&fields=id,name,story,n
 <!-- if online -->
 4. Link every element it touched or changed: `POST /narrative/<id>/links/<field>`, `{"add": [...]}`.
 <!-- end -->
-   A Map, Pin, Marker or other Narrative has no link field here (but `parent_narrative`): name it by address (`ow://<type>/<id>`), in `consequences` if changed, else in the `description`.
+   A Map, Pin, Marker or other Narrative is never linked, not even as `parent_narrative`: name it by address (`ow://<type>/<id>`), in `consequences` if changed, else in the `description`.
 5. Write `consequences`, one line per change: the element in words as it was, then its address (`Renamed the product Tidetable to Tidetable Go: ow://object/<id>`). `nothing changed` when nothing was.
 6. Set to `done`, once the work exists, exactly the work items in `x_report_answers` that are still `open` or `taken`; never another.
 7. Set `subtype` to `completed`, with or after `consequences`. Never edit the `story`.

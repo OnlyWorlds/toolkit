@@ -49,12 +49,13 @@ from consistency import ids_of, is_hidden, is_known_of, label, load_schema, load
 # Placement, not lore: the same three types the draw skill's graph.py leaves out (a Zone is content).
 PLACEMENT = {"map", "pin", "marker"}  # map space; a zone is content
 
-# The room profile's nine pairs (schema-dist profiles/room.md; principles §4). graph.py in the
+# The room profile's ten pairs (schema-dist profiles/room.md; principles §4). graph.py in the
 # draw skill holds the same table and rule: a skill installs alone, so the two cannot share a
 # module, and testing/test_room_pairs.py keeps them equal and runs the profile's fixture.
-ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
-              ("construct", "spec"), ("relation", "heart"), ("relation", "take"),
-              ("relation", "vote"), ("event", "sitting"), ("character", "member")}
+ROOM_PAIRS = {("narrative", "message"), ("narrative", "board"), ("narrative", "report"),
+              ("relation", "work item"), ("construct", "spec"), ("relation", "heart"),
+              ("relation", "take"), ("relation", "vote"), ("event", "sitting"),
+              ("character", "member")}
 # The charter profile's three reading aids (schema-dist profiles/charter.md), matched like the
 # room's pairs with the mark x_charter_of; graph.py holds the same table, kept equal by the test.
 CHARTER_PAIRS = {("law", "charter"), ("construct", "guide"), ("construct", "domain")}

@@ -5,7 +5,7 @@ The draw skill's graph.py and the read skill's count.py each hold the room profi
 (schema-dist `profiles/room.md`) and the charter profile's three (`profiles/charter.md`): a skill
 installs alone, so the two cannot share one module. This test keeps the two copies one table:
 
-1. the two tables are equal, and hold the profile's nine pairs (relation + Take among them);
+1. the two tables are equal, and hold the profile's ten pairs (relation + Take and narrative + Report among them);
 2. a planted Take (a Relation with supertype Take and the mark x_room_of) is left out of the
    graph and out of the count, and a Take without the mark stays in both as lore;
 3. when the schema-dist checkout sits beside this repository's main checkout, every case of
@@ -46,9 +46,10 @@ import graph  # noqa: E402
 import count as counter  # noqa: E402
 import write_world  # noqa: E402
 
-NINE = {("narrative", "message"), ("narrative", "board"), ("relation", "work item"),
-        ("construct", "spec"), ("relation", "heart"), ("relation", "take"),
-        ("relation", "vote"), ("event", "sitting"), ("character", "member")}
+TEN = {("narrative", "message"), ("narrative", "board"), ("narrative", "report"),
+       ("relation", "work item"), ("construct", "spec"), ("relation", "heart"),
+       ("relation", "take"), ("relation", "vote"), ("event", "sitting"),
+       ("character", "member")}
 WORLD = "0199c3a1-7b2e-7c3d-8e4f-000000000001"
 
 
@@ -121,7 +122,7 @@ def plant(folder):
 
 def test_the_two_tables_are_one():
     assert graph.ROOM_PAIRS == counter.ROOM_PAIRS, graph.ROOM_PAIRS ^ counter.ROOM_PAIRS
-    assert graph.ROOM_PAIRS == NINE, NINE - graph.ROOM_PAIRS
+    assert graph.ROOM_PAIRS == TEN, TEN ^ graph.ROOM_PAIRS
     print(f"pairs: graph.py {len(graph.ROOM_PAIRS)}, count.py {len(counter.ROOM_PAIRS)}")
 
 
