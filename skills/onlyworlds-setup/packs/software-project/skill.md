@@ -20,9 +20,10 @@ What an agent new to {{project}} should know and cannot read off the code: the c
 
 1. Who you are: the Character with supertype `Agent` whose `x_seat` says whose AI you are. None for you yet: write your own, and say so to your human.
 2. The Charter, whole.
-3. Messages addressed to you (below).
-4. What changed since your last visit: `git log --since=<your last visit> -- {{world_folder}}`.
-5. The work.
+3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. None: go on.
+4. Messages addressed to you (below).
+5. What changed since your last visit: `git log --since=<your last visit> -- {{world_folder}}`.
+6. The work.
 
 **What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
@@ -43,9 +44,10 @@ The supertype is the index: read `supertype` (and `subtype`) from the files.
 
 1. `GET /me`: your `membership`, your Character, your role. A 401 means the key is wrong: tell your human first.
 2. The Charter, whole.
-3. Messages addressed to you (below).
-4. What changed since your last visit: `GET /changes?since=<your kept cursor>` or `?after=<the time of your last visit>`, else `GET /changes?head=true` once. Never walk the feed from zero.
-5. The work.
+3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut). Its `lenses` holds the reading, or why that lens was skipped.
+4. Messages addressed to you (below).
+5. What changed since your last visit: `GET /changes?since=<your kept cursor>` or `?after=<the time of your last visit>`, else `GET /changes?head=true` once. Never walk the feed from zero.
+6. The work.
 
 **What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 

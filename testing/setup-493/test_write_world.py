@@ -92,6 +92,19 @@ ORDER = ("This order is in the skill itself because harnesses differ on whether 
          "or a skill is read first.")
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
 FIXTURE = LINT.parent.parent / "profiles" / "checks.fixture.json"
+# The room a filled world skill keeps under the writer's budget (its SKILL_MAX, read from the
+# writer), so a company's own names never push a world past the writer's refusal.
+ROOM = 500
+
+
+def visit_steps(text):
+    """The numbered lines of the visit list that holds "2. The Charter, whole.": from its "1. " line
+    to the first blank line after the Charter step, lines that are not numbered left out."""
+    lines = text.split("\n")
+    at = lines.index("2. The Charter, whole.")
+    start = max(i for i in range(at) if lines[i].startswith("1. "))
+    end = next((i for i in range(at, len(lines)) if not lines[i].strip()), len(lines))
+    return [ln for ln in lines[start:end] if re.match(r"\d+\. ", ln)]
 OUT = Path(os.environ.get("OW_SETUP_TEST_OUT") or
            REPO / ".scratch" / "tests" / time.strftime("%Y%m%d-%H%M%S"))
 
@@ -238,6 +251,32 @@ class SetupWriter(unittest.TestCase):
                                   f"{API_ROUTE.search(text) and text[API_ROUTE.search(text).start() - 60:][:120]!r}")
                 self.assertIn("world.json", text)
                 self.assertNotIn("api", run.world_json)
+        self.each(check)
+
+    def test_2b_lenses_at_the_door_and_room_for_names(self):
+        """Every pack's world skill sends the visitor to its lenses right after the Charter, in its
+        placement's own words (online: the ids from GET /me, each lens read through the draught with
+        as_of, since a reading with none is fenced on the world's own clock; a folder: the Character's
+        x_lens_uses and which links are anchors), the visit list reads 1 to 6, and the filled text
+        keeps ROOM characters under the writer's budget."""
+        budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
+        wrong = "1. a\n2. The Charter, whole.\n3. b\n3. c\n5. d\n\nafter"
+        self.assertEqual([s.split(". ")[0] for s in visit_steps(wrong)], ["1", "2", "3", "3", "5"],
+                         "the list reader must see a wrong numbering as it is")
+
+        def check(run):
+            text = run.skill()
+            steps = visit_steps(text)
+            self.assertEqual([s.split(". ")[0] for s in steps], ["1", "2", "3", "4", "5", "6"], steps)
+            self.assertTrue(steps[2].startswith("3. Your lenses, the readings set for you"), steps[2])
+            if run.placement == "online":
+                self.assertIn("`GET /me` lists their ids in `lenses`", steps[2])
+                self.assertIn("/context?lens=<id>&as_of=<today's day number>&compact=true", steps[2])
+                self.assertNotIn("x_lens_uses", text)
+            else:
+                self.assertIn("`x_lens_uses`", steps[2])
+                self.assertIn("never `founder`, `custodian` or `titles`", steps[2])
+            self.assertLess(len(text), budget - ROOM, f"{len(text)} characters filled, budget {budget}")
         self.each(check)
 
     def test_3_who_is_here_names_the_seats(self):

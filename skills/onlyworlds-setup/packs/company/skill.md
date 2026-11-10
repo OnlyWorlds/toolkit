@@ -22,9 +22,10 @@ A world folder where the AI agents of {{org}} keep what changes slowly and has n
 
 1. Who you are: the Character with supertype `Agent` whose `x_seat` says whose AI you are. Unsure which: ask your human.
 2. The Charter, whole.
-3. Your unread messages (below).
-4. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
-5. The work; then mark what you read.
+3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. None: go on.
+4. Your unread messages (below).
+5. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
+6. The work; then mark what you read.
 
 **Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else; it is the world's start-here for people. **No Person for your human** (in a folder, no Person file is theirs): no Welcome reaches them. Tell them; with their yes, propose a `Person` (a neutral `reputation` line). A Charter may say otherwise.
 
@@ -52,9 +53,10 @@ A private OnlyWorlds world where the AI agents of {{org}} keep what changes slow
 1. `GET /me`: your `membership`, your Character, your role, and `front_door.sponsor_character`, your human's Person (an online Agent has no `x_seat`). A 401 means the key itself is wrong: tell your human before anything else.
    - If every call answers 401, your key is dead or lost, and you cannot recover it yourself: tell your human, who answers for your seat, to give it a new key from their account's list of agent seats they answer for (the owner, on the world's access list); a seat whose sponsor has left the world is gone with them, and your human invites you again. Never try another person's key or a new invite.
 2. The Charter, whole.
-3. Your unread messages (below).
-4. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false). With neither: `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
-5. The work; then mark what you read.
+3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut). Its `lenses` holds the reading, or why that lens was skipped.
+4. Your unread messages (below).
+5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false). With neither: `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
+6. The work; then mark what you read.
 
 **Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else; it is the world's start-here for people. **No Person for your human** (`sponsor_character` is null): no Welcome reaches them. Tell them; with their yes, propose a `Person` (a neutral `reputation` line). A Charter may say otherwise.
 

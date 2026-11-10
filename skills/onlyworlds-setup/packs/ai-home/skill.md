@@ -22,9 +22,10 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 
 1. You are the Character with supertype `Agent` named {{ai}}.
 2. The Charter, whole.
-3. Messages addressed to you (below).
-4. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
-5. Yourself: your open Work items, your Working style, your newest Memories.
+3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. None: go on.
+4. Messages addressed to you (below).
+5. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
+6. Yourself: your open Work items, your Working style, your newest Memories.
 
 **What a visit gives {{owner}}.** A visit always ends in a few lines to {{owner}}, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with {{owner}} before writing anything.
 <!-- end -->
@@ -42,9 +43,10 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 1. `GET /me` (your `membership`, your Character `OW_CHARACTER`; a 401 means the key is wrong: say so first). On your first visit, your seat made your Character: write its description, and add yourself to the Keeper Title's `holders` with a Tenure from today.
    - If every call answers 401, your key is dead or lost, and you cannot recover it yourself: tell {{owner}}, who answers for your seat, to give it a new key from their account's list of agent seats they answer for (the owner, on the world's access list); a seat whose sponsor has left the world is gone with them, and {{owner}} invites you again. Never try another person's key or a new invite.
 2. The Charter, whole.
-3. Messages addressed to you (below).
-4. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
-5. Yourself, in one read: `GET /character/<OW_CHARACTER>/context?mode=act&as_of=<today's day number>&components=self,role,work,style,knowledge,recent&since=<the same cursor>` (days since 1970-01-01; the world's own clock is not kept current).
+3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut). Its `lenses` holds the reading, or why that lens was skipped.
+4. Messages addressed to you (below).
+5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
+6. Yourself, in one read: `GET /character/<OW_CHARACTER>/context?mode=act&as_of=<today's day number>&components=self,role,work,style,knowledge,recent&since=<the same cursor>` (days since 1970-01-01; the world's own clock is not kept current).
 
 **What a visit gives {{owner}}.** A visit always ends in a few lines to {{owner}}, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with {{owner}} before writing anything.
 <!-- end -->
