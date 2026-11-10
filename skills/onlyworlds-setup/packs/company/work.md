@@ -12,7 +12,7 @@ Four rules hold throughout:
 
 - **State is read at its source, never copied into the world.** {{elsewhere}}. The world holds what is decided and true; how far a thing is built, a ticket's status, a pull request, a build is read where it lives, and never typed into an element.
 - **One key joins a source to the world**: the key the team already writes, such as a ticket key in a pull request's title. An element that a ticket builds names that key on its own line in its description (`Ticket: APP-142`).
-- **The order of work is one element**: a standing work item named `Order of work`, the keeper's, whose list is the order, each entry with its reason. Read it first.
+- **The order of work is one element**: a standing work item named `Order of work`, the keeper's (it carries `x_room_of`), whose list is the order, each entry with its reason. Read it first.
 - **A report answers one standing question: what did this session make untrue?**
 
 ## 1. Find
@@ -112,5 +112,7 @@ Page `GET /narrative?supertype=Report&subtype=handed in&fields=id,name,story,nar
 5. Write `consequences`, one line per change: the element in words as it was, then its address (`Renamed the product Tidetable to Tidetable Go: ow://object/<id>`). `nothing changed` when nothing was.
 6. Set to `done`, once the work exists, exactly the work items in `x_report_answers` that are still `open` or `taken`; never another.
 7. Set `subtype` to `completed`, with or after `consequences`. Never edit the `story`.
+
+A work item you make (an open from a report, the `Order of work`) follows the packet profile and carries `x_room_of`, as a report does.
 
 People read the reports; nobody approves each change. A wrong change is corrected like any other, and the correction is said in a later report.

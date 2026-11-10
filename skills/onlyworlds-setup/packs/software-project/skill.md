@@ -78,7 +78,7 @@ Dates are days since 1970-01-01; the text carries the ISO date and the commit.
 <!-- end -->
 - "What does component C depend on, and who maintains it?" C's `constructs`, `objects` and `characters`.
 - "What is still true?" A `superseded` decision is history: say so when you cite it.
-- Not found is an answer: say the world does not hold it. Then read the code, and propose what you learned (rule 7).
+- Not found is an answer: say the world does not hold it. Then read the code, and put what you learned in your report (rule 7).
 
 ## Messages
 
@@ -86,7 +86,7 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 
 ## Writing
 
-- A new element you write carries `x_review_proposed` (Charter rule 7), unless it is your message, your report, your Read relation or your work item.
+- You write only your own (Charter rule 7): your message, your report, your Read relation, your work item (with `x_room_of`). Anything else goes into your report.
 - A decision is never edited after `accepted`: write a new one with `parent_law`, then set the old one's subtype to `superseded`.
 <!-- if folder -->
 - Read before you change: keep every field you do not change; links = the merged list. Link only ids that exist here.

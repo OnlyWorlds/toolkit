@@ -476,7 +476,7 @@ class SetupWriter(unittest.TestCase):
                     self.assertIn("`x_seat` says whose AI you are", skill)
                 # (d) a human with no Person
                 self.assertIn("No Person for your human", skill)
-                self.assertIn("propose a `Person`", skill)
+                self.assertIn("ask the keeper by message for a `Person`", skill)
                 # (e) the filing table holds Guide, Concept, Regulation, Milestone, Charter (and Skill)
                 for sup in ("Charter", "Skill", "Guide", "Concept", "Regulation", "Milestone"):
                     self.assertIn(f"`{sup}`", skill, sup)
@@ -493,7 +493,7 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn("keeps a Note about themselves, not their work", charter)
                 self.assertIn("Narrative, supertype Note", charter)
                 self.assertIn("never on a schedule", charter)
-                self.assertIn("Your messages, Note, Read relation", charter)
+                self.assertIn("Its own to write: its messages, Note, Read relation", charter)
                 self.assertIn("a Note about yourself, not your work", skill)
                 self.assertIn("`Note`", skill)
                 self.assertIn("your message, your Note, your Read relation", skill)
@@ -620,6 +620,8 @@ class SetupWriter(unittest.TestCase):
                 self.assertLess(len(text), budget - ROOM, f"{kind}: {len(text)} characters filled")
                 self.assertTrue(text.startswith(f"---\nname: {name}\ndescription: "), text[:80])
                 self.assertIn(f"`{name}`", run.skill())
+                # the door hands out the skills the Charter names by address (GET /me, charter_skill)
+                self.assertIn(f"ow://object/{body['id']}", run.charter())
                 self.assertNotIn(run.world_json["id"], text, "the minted folder id is no address")
                 if run.placement == "online":
                     if kind == "work":  # the report's mark names the server's world

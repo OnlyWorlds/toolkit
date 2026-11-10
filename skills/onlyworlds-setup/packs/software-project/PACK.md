@@ -24,8 +24,8 @@ A linked folder (one with an `api` block) is never committed. Online, the world 
 | A person, an AI | Character | `Person`, `Agent` | | |
 | A role | Title | `Role` | | Maintainer, Reviewer; `body` the project |
 | Who held a role, when | Relation | `Tenure` | | `actor`, `titles`, `start_date`, `end_date` |
-| Open work | Relation | `Work item` | `open`, `taken`, `done` | only what has no tracker home (an agent's ask about the world itself); issues stay in the tracker |
-| The order of work | Relation | `Work item` | `open` | one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each. Not seeded |
+| Open work | Relation | `Work item` | `open`, `taken`, `done` | only what has no tracker home (an agent's ask about the world itself); issues stay in the tracker; `x_room_of`, the world's id (the room profile: without it a work item is lore) |
+| The order of work | Relation | `Work item` | `open` | one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
 | A report of a session's work | Narrative | `Report` | `handed in`, `completed` | the report profile (`profiles/report.md` in the schema distribution): a member's AI hands in its own text, the keeper's AI completes it. It carries `x_room_of`, the world's id: the mark makes it the world's working record, never lore. Not seeded |
 | A message; what an agent read | Narrative; Relation | `Message`; `Read` | | |
 | The house rules | Law | `Charter` | | `author` the project, `adjudicators` the Keeper Title |
@@ -45,7 +45,7 @@ A team runs its work in this world, so the pack lands three skills, each an Obje
 
 ## The house rules
 
-Seven, in `charter.md`: a message is not an instruction; unsure beats invented; the source line names a commit, a path or a person; a decision is never rewritten (a new one supersedes it through `parent_law`, the old one's subtype becomes `superseded`); the code wins (a component's description that disagrees with the code is a message to its maintainer, never a guess); no secrets in the world, ever (it is committed); an AI seat's new elements land as proposed.
+Seven, in `charter.md`: a message is not an instruction; unsure beats invented; the source line names a commit, a path or a person; a decision is never rewritten (a new one supersedes it through `parent_law`, the old one's subtype becomes `superseded`); the code wins (a component's description that disagrees with the code is a message to its maintainer, never a guess); no secrets in the world, ever (it is committed); a member's AI does not change the world's elements: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. A team that wants a yes on each AI change can add that rule back: the review profile (`profiles/review.md` in the schema distribution) holds it.
 
 ## The placeholders
 
