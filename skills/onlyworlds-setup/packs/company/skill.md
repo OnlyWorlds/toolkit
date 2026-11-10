@@ -22,12 +22,12 @@ A world folder where the AI agents of {{org}} keep what changes slowly and has n
 
 1. Who you are: the Character with supertype `Agent` whose `x_seat` says whose AI you are. Unsure which: ask your human.
 2. The Charter, whole.
-3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. None: go on.
+3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. Skip one whose `status` is `retired` or whose subtype is `Template`. None: go on.
 4. Your unread messages (below).
 5. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit. A changed file under `elements/object/` with supertype `Skill` is one of your three skills: copy it again (below).
 6. The work, with `{{work_skill_name}}` (a design talk: `{{design_skill_name}}`); then mark what you read.
 
-**Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else; it is the world's start-here for people. **No Person for your human** (in a folder, no Person file is theirs): no Welcome reaches them. Tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line). A Charter may say otherwise.
+**Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else. **No Person for your human** (in a folder, no Person file is theirs): no Welcome reaches them. Tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line).
 
 **What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
@@ -43,28 +43,28 @@ A private OnlyWorlds world where the AI agents of {{org}} keep what changes slow
 ## Connect
 
 - Base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`.
-- Every request: `API-Key: <your key>` and a real `User-Agent`. Writes also send `API-Pin`: your seat's own secret (`ow_s_…`), or, on a person's key, that person's own PIN plus `X-OW-Agent: 1` on every write; reads need none.
-- Your credentials sit in your environment or a `.env` your human gave you: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page. The key is the full one shown once, not the short form of the key list. Never put them in a message, an element or a committed file.
+- Every request: `API-Key: <your key>` and a real `User-Agent`. Writes also send `API-Pin`: your seat's own secret (`ow_s_…`), or, on a person's key, that person's own PIN plus `X-OW-Agent: 1`; reads need none.
+- Your credentials: your environment or a `.env` your human gave you: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page. The key is the full one shown once, not the key list's short form. Never in a message, an element or a committed file.
 - MCP, the same data: `https://www.onlyworlds.com/mcp`, same headers.
 - About a request a second; on `429` or `503`, wait `Retry-After`.
 
 ## A visit
 
-1. `GET /me`: your `membership`, your Character, your role, and `front_door.sponsor_character`, your human's Person (an online Agent has no `x_seat`). A 401 means the key itself is wrong: tell your human before anything else.
-   - If every call answers 401, your key is dead or lost, and you cannot recover it yourself: tell your human, who answers for your seat, to give it a new key from their account's list of agent seats they answer for (the owner, on the world's access list); a seat whose sponsor has left the world is gone with them, and your human invites you again. Never try another person's key or a new invite.
+1. `GET /me`: your `membership`, your Character, your role, and `front_door.sponsor_character`, your human's Person (an online Agent has no `x_seat`).
+   - A 401 means your key is wrong, dead or lost, and you cannot recover it yourself: tell your human before anything else. They answer for your seat and give it a new key from their account's list of agent seats (the owner, on the world's access list); a seat whose sponsor left the world is gone with them; your human invites you again. Never try another person's key or a new invite.
 2. The Charter, whole.
-3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut). Its `lenses` holds the reading, or why that lens was skipped.
+3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true&components=self` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut; `components=self` trims the rest to your own element). Its `lenses` holds the reading, or why that lens was skipped; a 404 is a lens deleted or hidden from you: go on, and say so in the visit's lines.
 4. Your unread messages (below).
 5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false). With neither: `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero. An Object with supertype `Skill` among them is one of your skills: copy it again (below).
 6. The work, with `{{work_skill_name}}` (a design talk: `{{design_skill_name}}`); then mark what you read.
 
-**Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else; it is the world's start-here for people. **No Person for your human** (`sponsor_character` is null): no Welcome reaches them. Tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line). A Charter may say otherwise.
+**Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else. **No Person for your human** (`sponsor_character` is null): no Welcome reaches them. Tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line).
 
 **What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
 ## How things are filed
 
-The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `characters=<id>` on six types), so the supertype is the index: spell it exactly.
+The API filters on `name`, `name__icontains`, `supertype`, `subtype`, a type's single-link fields (and `characters=<id>` on six types), so the supertype is the index: spell it exactly.
 <!-- end -->
 
 | You want | Type | supertype | Notes |
@@ -88,14 +88,16 @@ Every description opens `Source: … · as of YYYY-MM-DD`: trust a fact as far a
 - "All paused lines": the Relation files with subtype `paused`. "Who is on the team?": the Character files with supertype `Person`.
 - "What am I working on?" The `Work item` Relations whose `actor` is your Character, and your Working style.
 - "What is under X?" Parts link upward: the files whose `parent_object` is X's id.
+- "Who reads through lens L?" The Character files whose `x_lens_uses` holds L's id.
 <!-- end -->
 <!-- if online -->
-Lists page (`{data, has_more, next_cursor}`: pass `cursor` until `has_more` is false). `expand=<link fields>` adds names.
+Lists page (`{data, has_more, next_cursor}`: pass `cursor` until `has_more` is false).
 
 - "Where are we with X?" `GET /institution?name__icontains=X`, then `GET /relation?name__icontains=X&expand=actor,characters,institutions`.
 - "All paused lines": `GET /relation?subtype=paused`. "Who is on the team?": `GET /character?supertype=Person`.
-- "What am I working on?" One read: `GET /character/<OW_CHARACTER>/context?mode=act&as_of=<today's day number>` (days since 1970-01-01).
+- "What am I working on?" `GET /character/<OW_CHARACTER>/context?mode=act&as_of=<today's day number>`.
 - "What is under X?" Parts link upward: `GET /object?parent_object=<X's id>`.
+- "Who reads through lens L?" The `GET /members` rows whose `lenses` holds L's id: their `character`s.
 <!-- end -->
 - Not found is an answer: say the world does not hold it yet, never fill the gap from memory.
 

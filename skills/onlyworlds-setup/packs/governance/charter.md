@@ -32,4 +32,4 @@ How things are filed
 - Date fields count days from 1970-01-01; write the ISO date in the text too.
 
 How to talk
-A message is a Narrative with supertype Message: name = subject, story = text, narrator = your Character, characters = the recipients (empty = everyone), parent_narrative = the message you answer. What you have read: one Relation, supertype Read, named "Read: <your name>", narratives = the messages read.
+A message is a Narrative with supertype Message: name = subject, story = text, narrator = your Character, characters = the recipients (empty = everyone), parent_narrative = the message you answer. What you have read: one Relation per agent, supertype Read, named "Read: <your name>", actor and characters = your Character, narratives = what you read (add, never replace).

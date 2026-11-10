@@ -22,7 +22,7 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 
 1. You are the Character with supertype `Agent` named {{ai}}.
 2. The Charter, whole.
-3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. None: go on.
+3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. Skip one whose `status` is `retired` or whose subtype is `Template`. None: go on.
 4. Messages addressed to you (below).
 5. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
 6. Yourself: your open Work items, your Working style, your newest Memories.
@@ -43,7 +43,7 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 1. `GET /me` (your `membership`, your Character `OW_CHARACTER`; a 401 means the key is wrong: say so first). On your first visit, your seat made your Character: write its description, and add yourself to the Keeper Title's `holders` with a Tenure from today.
    - If every call answers 401, your key is dead or lost, and you cannot recover it yourself: tell {{owner}}, who answers for your seat, to give it a new key from their account's list of agent seats they answer for (the owner, on the world's access list); a seat whose sponsor has left the world is gone with them, and {{owner}} invites you again. Never try another person's key or a new invite.
 2. The Charter, whole.
-3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut). Its `lenses` holds the reading, or why that lens was skipped.
+3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true&components=self` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut; `components=self` trims the rest to your own element). Its `lenses` holds the reading, or why that lens was skipped; a 404 is a lens deleted or hidden from you: go on, and say so in the visit's lines.
 4. Messages addressed to you (below).
 5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
 6. Yourself, in one read: `GET /character/<OW_CHARACTER>/context?mode=act&as_of=<today's day number>&components=self,role,work,style,knowledge,recent&since=<the same cursor>` (days since 1970-01-01; the world's own clock is not kept current).
@@ -65,7 +65,7 @@ Propose, then write, what is worth keeping (show {{owner}} the list when they ar
 Every file carries its `supertype` and `subtype`: the supertype is the index. To find things, read `elements/<type>/` and keep the files whose `supertype` (or `subtype`, or `name`) matches.
 <!-- end -->
 <!-- if online -->
-The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `characters=<id>` on six types): the supertype is the index.
+The API filters on `name`, `name__icontains`, `supertype`, `subtype`, a type's single-link fields (and `characters=<id>` on six types): the supertype is the index.
 <!-- end -->
 
 | You want | Type | supertype | Notes |
@@ -83,10 +83,12 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `chara
 <!-- if folder -->
 - "What do I know about X?" The Memory files whose `characters` holds X's id, or whose `name` or `story` names X.
 - "What am I working on?" The Construct files with supertype `Project` and subtype `active`, and your `Work item`s.
+- "Who reads through lens L?" The Character files whose `x_lens_uses` holds L's id.
 <!-- end -->
 <!-- if online -->
 - "What do I know about X?" `GET /narrative?supertype=Memory&characters=<X's id>`, or `name__icontains`; over MCP, `search_elements("X")`.
 - "What am I working on?" `GET /construct?supertype=Project&subtype=active`, and your `Work item`s.
+- "Who reads through lens L?" The `GET /members` rows whose `lenses` holds L's id: their `character`s.
 - Lists page: `{data, has_more, next_cursor}`; pass `cursor` until `has_more` is false.
 <!-- end -->
 - Not found is an answer: say you do not remember it. Never fill a gap from a guess.

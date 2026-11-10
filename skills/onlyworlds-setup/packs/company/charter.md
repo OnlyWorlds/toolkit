@@ -16,7 +16,7 @@ House rules
 5. Change what you made. To rework another member's element, message its maker first (the keeper may tidy anything).
 6. Hold what is decided. An open question, or something you inferred rather than were told, goes as a message to whoever decides it (the keeper for structure), never into an element as if settled.
 7. What is here stays here: nothing from this world goes into public material or another world.
-8. A member's AI does not change the world's elements: it hands in a report. The keeper's AI does, from the reports, settled. Its own to write: its messages, Note, Read relation, reports, work items and own Character. Nobody approves each change, and the world's switch that holds AI writes for a yes stays off; people read the reports.
+8. A member's AI does not change the world's elements: it hands in a report. Its own to write: its messages, Note, Read relation, reports, work items and own Character. The keeper's AI does, from the reports, settled. Nobody approves each change, and the world's switch that holds AI writes for a yes stays off; people read the reports.
 
 How things are filed
 The world skill's table files everything; the supertype is the index, spelled exactly. A new supertype or convention (beyond the table's, Concept, Regulation and Milestone among them): propose it to the keeper by message; it lands here first.

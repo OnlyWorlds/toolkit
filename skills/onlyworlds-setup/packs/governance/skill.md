@@ -22,7 +22,7 @@ The record of {{body}}, kept so that "what did we decide, when, and why" has one
 
 1. Who you are: the Character with supertype `Agent` whose `x_seat` says whose AI you are. Unsure which: ask your human.
 2. The Charter, whole.
-3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. None: go on.
+3. Your lenses, the readings set for you: your Character's `x_lens_uses` lists them, each the id of a Construct with supertype `Lens`. A lens's links are where its reading starts (never `founder`, `custodian` or `titles`; a Lens it links is read by its own recipe), and its `x_lens` is the recipe. Skip one whose `status` is `retired` or whose subtype is `Template`. None: go on.
 4. Your unread messages (below).
 5. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit.
 6. The work; then mark what you read.
@@ -49,7 +49,7 @@ Every file carries its `supertype` and `subtype`: the supertype is the index. To
 
 1. `GET /me`: your `membership`, your Character, your role. A 401 means the key itself is wrong: tell your human first.
 2. The Charter, whole.
-3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut). Its `lenses` holds the reading, or why that lens was skipped.
+3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true&components=self` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut; `components=self` trims the rest to your own element). Its `lenses` holds the reading, or why that lens was skipped; a 404 is a lens deleted or hidden from you: go on, and say so in the visit's lines.
 4. Your unread messages (below).
 5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
 6. The work; then mark what you read.
@@ -58,7 +58,7 @@ Every file carries its `supertype` and `subtype`: the supertype is the index. To
 
 ## How things are filed
 
-The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `characters=<id>` on six types): the supertype is the index. Dates are days since 1970-01-01.
+The API filters on `name`, `name__icontains`, `supertype`, `subtype`, a type's single-link fields (and `characters=<id>` on six types): the supertype is the index. Dates are days since 1970-01-01.
 <!-- end -->
 
 | You want | Type | supertype | Notes |
@@ -81,6 +81,7 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `chara
 - "Is rule X in force, and what amended it?" The Law file whose `name` holds X, its `subtype`, and the Laws whose `parent_law` is its id.
 - "How did member M vote on motion X?" The `Vote` Relations whose `name` holds X; their `actor` is the voter.
 - "What did the meeting of day D decide?" The `Decision` Events with `start_date` = D; the minutes of that day hold the text.
+- "Who reads through lens L?" The Character files whose `x_lens_uses` holds L's id.
 <!-- end -->
 <!-- if online -->
 Lists page: `{data, has_more, next_cursor}`; pass `cursor` until `has_more` is false. `expand=<link fields>` adds names.
@@ -89,6 +90,7 @@ Lists page: `{data, has_more, next_cursor}`; pass `cursor` until `has_more` is f
 - "Is rule X in force, and what amended it?" `GET /law?name__icontains=X`, then its `subtype`, and the rules whose `parent_law` is its id.
 - "How did member M vote on motion X?" `GET /relation?supertype=Vote&name__icontains=X&expand=actor`.
 - "What did the meeting of day D decide?" `GET /event?supertype=Decision` and keep `start_date` = D; the minutes of that day hold the text.
+- "Who reads through lens L?" The `GET /members` rows whose `lenses` holds L's id: their `character`s.
 <!-- end -->
 - Not found is an answer: say the record does not hold it. Never fill it from memory.
 

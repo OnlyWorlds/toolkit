@@ -2,7 +2,7 @@
 
 **For**: a repository's context world: what an agent new to the codebase should know and cannot read off the code. The components and what each depends on, the decisions and why (and which later decision replaced which), who maintains what and since when, the services it relies on, the releases. The issue tracker keeps the work and the code keeps the code; the world points at both.
 
-**Who is in such a world**: the maintainers and contributors as person members, their AIs on their own seats. The keeper is the lead maintainer by default. **The keeper's AI** is the AI of the person who holds the Title Keeper (its seat's `ai_of`), and setup seats it as a co-builder: the API lets a contributor write only the elements its own membership created, and a co-builder every element, and that AI makes the changes the reports call for. A seat's role is at most its sponsor's (the writer refuses an AI seat above its human's), so the keeper is the owner or a co-builder. Every other AI keeps a contributor's seat. When the Title Keeper moves to someone else, the owner moves the seats' roles with it.
+**Who is in such a world**: the maintainers and contributors as person members, their AIs on their own seats. The keeper is the user by default (question 5), usually the lead maintainer in a team. **The keeper's AI** is the AI of the person who holds the Title Keeper (its seat's `ai_of`), and setup seats it as a co-builder: the API lets a contributor write only the elements its own membership created, and a co-builder every element, and that AI makes the changes the reports call for. A seat's role is at most its sponsor's (the writer refuses an AI seat above its human's), so the keeper is the owner or a co-builder. Every other AI keeps a contributor's seat. When the Title Keeper moves to someone else, the owner moves the seats' roles with it.
 
 **The door.** The writer marks the Charter with `x_charter_of`, and the upload carries the mark with the owner's key, so from the first visit `GET /me` answers `front_door.charter` and, in `front_door.charter_skill`, the three skills the Charter names by address. A folder world has no door: the Charter file, which the world skill reads first, and the harness copies of the three skills stand for it.
 
@@ -12,7 +12,7 @@
 - Every tool's dot-folder is ignored **except `.agents/` and `.claude/`**, so the skill's copy reaches everyone who pulls. They are the repository's, not the world's: no tool packs them into a world archive.
 - Two layouts: the world folder is the repository (a world repository; `write_world.py` writes the `.gitignore` with `"repo": true`, and the copies and the `AGENTS.md` line go in it with `"copies": "world"`), or a `world/` folder inside a code repository (then `"copies"` names the repository root, where every harness looks; the `AGENTS.md` line is appended to the root's own file, and to its `CLAUDE.md` if there is one; the root's `.gitignore` gets the two un-ignore lines by the user's hand). Harnesses never read the copies from a sub-folder.
 
-A linked folder (one with an `api` block) is never committed. Online, the world is the hosted copy and the folder in the repository is refreshed from it by export; pick one as the source of truth and say which in the charter.
+A linked folder (one with an `api` block) is never committed. Online, the world is the hosted copy, and the keeper refreshes the repository's folder from it by export (the carry skill's `export_world`, which writes a new folder) and commits it like code; pick one as the source of truth and say which in the charter.
 
 ## The types and why
 
@@ -26,7 +26,7 @@ A linked folder (one with an `api` block) is never committed. Online, the world 
 | A person, an AI | Character | `Person`, `Agent` | | |
 | A role | Title | `Role` | | Maintainer, Reviewer; `body` the project |
 | Who held a role, when | Relation | `Tenure` | | `actor`, `titles`, `start_date`, `end_date` |
-| Open work | Relation | `Work item` | `open`, `taken`, `done` | only what the tracker does not hold: a decision someone owes, an open on a part, a step in the world itself; tickets, and their order when the tracker keeps one, stay in the tracker; `x_room_of`, the world's id (the room profile: without it a work item is lore) |
+| Open work | Relation | `Work item` | `open`, `taken`, `done` | only what the tracker does not hold: a decision someone owes, an open on a part, a step in the world itself; tickets, and their order when the tracker keeps one, stay in the tracker; `x_room_of`, the world's id (the room profile, `profiles/room.md` in `github.com/OnlyWorlds/schema-dist`, the schema distribution: without it a work item is lore) |
 | The order of work | Relation | `Work item` | `open` | only when the team keeps its order nowhere else: one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
 | A report of a session's work | Narrative | `Report` | `handed in`, `completed` | the report profile (`profiles/report.md` in the schema distribution): a member's AI hands in its own text, the keeper's AI completes it. It carries `x_room_of`, the world's id: the mark makes it the world's working record, never lore. Not seeded |
 | A message; what an agent read | Narrative; Relation | `Message`; `Read` | | |
