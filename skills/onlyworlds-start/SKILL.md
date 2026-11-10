@@ -1,6 +1,6 @@
 ---
 name: onlyworlds-start
-description: "Where to begin with worldbuilding material: notes, a novel, campaign docs, a folder of world files, or nothing yet. Use when the user asks 'what is OnlyWorlds', 'where do I start', 'help me organise my world', 'which tool should I use', or wants to connect this folder to their onlyworlds.com account (a key and PIN in .env). Routes to the right skill; no account needed."
+description: "Where to begin with worldbuilding material: notes, a novel, campaign docs, a folder of world files, or nothing yet. Use when the user asks 'what is OnlyWorlds', 'where do I start', 'help me organise my world', 'which tool should I use', 'give my world a public page', or wants to connect this folder to their onlyworlds.com account (a key and PIN in .env). Routes to the right skill; no account needed."
 ---
 
 # OnlyWorlds Start
@@ -34,7 +34,8 @@ A world folder on disk (`world.json` + `elements/`) never needs credentials; onl
 |---|---|
 | Which tools exist | The tools page, `https://onlyworlds.github.io/docs/tools/` |
 | A visual app to build and browse their world | **Atlas** (`atlas.onlyworlds.com`) |
-| To share a world publicly | Atlas publish, then the world's public page |
+| To open an account world to everyone | the world page, **Settings**, **Who can see this world**: **Anyone can read it, with no account** (the API and tools then read it keyless), and **Give it a public page** for a public page at `onlyworlds.com/w/<address>`, with its graph; hidden elements stay hidden. [The public page](https://onlyworlds.github.io/docs/development/api/public.html) |
+| To try the API with no account | the practice world: a shared key and PIN on the docs' [Keys page](https://onlyworlds.github.io/docs/getting-started/keys.html#the-practice-world), reset every night; the develop skill's Credentials |
 | To read the schema in their own tool | schema-dist (`github.com/OnlyWorlds/schema-dist`): vendor its walk; the develop skill |
 | To report a bug or ask for a feature | `onlyworlds.com/feedback` |
 
@@ -216,6 +217,8 @@ Ask the world, not the clock. `GET /api/v2/changes?head=true` is one cheap reque
 | Same `head` | Cache is current; use it |
 | Higher `head` | The world changed since caching. Refresh, or apply just the changes: `GET /api/v2/changes?since={changes_head}`, following `cursor` until `has_more` is false |
 | Lower `head` | The world was restored from a backup. Rebuild the cache from scratch |
+
+A guest's or contributor's key also reads `epoch` on each page: keep it beside `changes_head`. An `epoch` other than the kept one, at any `head`, means what the key may see changed (a Character given or taken, a role, an element hidden or unhidden): pull again from `since=0`. A stored cursor then answers `409 resync_required`, whose `reason` says what to do with what the new walk does not name: `role`, keep it; `view`, drop it.
 
 World-meta edits (name, description) do not enter the change feed, so re-read `GET /api/v2/world` if those matter. Without network access, fall back to `cached_at` and tell the user how old the cache is.
 
