@@ -19,15 +19,15 @@ A linked folder (one with an `api` block) is never committed. Online, the world 
 | Thing | Type | supertype | subtype | Why this type |
 |-------|------|-----------|---------|---------------|
 | The project | Institution | `Project` | | the body that makes decisions: `author` of every decision |
-| A component | Construct | `Component` | `active`, `planned`, `deprecated` | a part of the system someone would ask about; `constructs` = what it depends on, `characters` = who maintains it, `objects` = the services it calls |
-| A decision | Law | `Decision` | `proposed`, `accepted`, `superseded` | a rule the project adopted: `declaration` the decision, `purpose` the why, `date` the day, `parent_law` the decision it amends or replaces, `adjudicators` the Maintainer role |
+| A component | Construct | `Component` | `in design`, `locked`, `deprecated` | a part of the system someone would ask about. The subtype is the design's own state, never how far it is built (that is read in the repository); `deprecated` is decided by a Decision that names it; `constructs` = what it depends on, `characters` = who maintains it, `objects` = the services it calls |
+| A decision | Law | `Decision` | `proposed`, `accepted`, `rejected`, `superseded` | a rule the project adopted: `declaration` the decision, `purpose` the why, `date` the day, `parent_law` the older decision it amends (that one stays `accepted`) or replaces (that one becomes `superseded`); a `rejected` one stays, so the question is not asked twice; `adjudicators` the Maintainer role |
 | A service or dependency | Object | `Service` | | something outside the repository it relies on; `utility` says what for |
 | A release | Event | `Release` | | `start_date` the day, `constructs` the components it changed |
 | A person, an AI | Character | `Person`, `Agent` | | |
 | A role | Title | `Role` | | Maintainer, Reviewer; `body` the project |
 | Who held a role, when | Relation | `Tenure` | | `actor`, `titles`, `start_date`, `end_date` |
-| Open work | Relation | `Work item` | `open`, `taken`, `done` | only what has no tracker home (an agent's ask about the world itself); issues stay in the tracker; `x_room_of`, the world's id (the room profile: without it a work item is lore) |
-| The order of work | Relation | `Work item` | `open` | one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
+| Open work | Relation | `Work item` | `open`, `taken`, `done` | only what the tracker does not hold: a decision someone owes, an open on a part, a step in the world itself; tickets, and their order when the tracker keeps one, stay in the tracker; `x_room_of`, the world's id (the room profile: without it a work item is lore) |
+| The order of work | Relation | `Work item` | `open` | only when the team keeps its order nowhere else: one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
 | A report of a session's work | Narrative | `Report` | `handed in`, `completed` | the report profile (`profiles/report.md` in the schema distribution): a member's AI hands in its own text, the keeper's AI completes it. It carries `x_room_of`, the world's id: the mark makes it the world's working record, never lore. Not seeded |
 | A message; what an agent read | Narrative; Relation | `Message`; `Read` | | |
 | The house rules | Law | `Charter` | | `author` the project, `adjudicators` the Keeper Title |
@@ -40,14 +40,14 @@ A Law has no link to a Construct that reads "concerns": a decision names the com
 A team runs its work in this world, so the pack lands three skills, each an Object with supertype `Skill` written and copied the way the world skill is, under the world's own prefix (the plan's `prefix`, asked in question 2; the pack never invents one):
 
 - `<prefix>-start` (`skill.md`): arrive. Who you are, the Charter, your lenses, your messages, what changed, and whether your copies of the three skills are current.
-- `<prefix>-design` (`design.md`): think a design through with a person, in five moves: say the size back, say what is decided and what the world does not hold, widen the scope (three questions at most, as a story about one person), stay in the person's lane, file what was decided in the session's report. A large design starts from its anchor: the element it will become, a Component with subtype `planned` and four lines (what it is for, who it is for, what it starts from, what is fixed); a Decision's `proposed` is in design, `accepted` locked.
+- `<prefix>-design` (`design.md`): think a design through with a person, in five moves: say the size back, say what is decided and what the world does not hold, widen the scope (three questions at most, as a story about one person), stay in the person's lane, file what was decided in the session's report. A large design starts from its anchor: the element it will become, a Component with subtype `in design` and four lines (what it is for, who it is for, what it starts from, what is fixed); a Decision's `proposed` is in design, `accepted` locked.
 - `<prefix>-work` (`work.md`): find what is open for me and my role, do it, end every session with a report. State is read at its source and never copied into the world; one key joins a source to the world; the order of work is one element; the report answers one question: what did this session make untrue?
 
-**The report** is the report profile's two steps: a member's AI hands in its text and changes no element; the keeper's AI makes the changes, writes what it changed, and completes it. People read the reports; nobody approves each change. The keeper's step is written in `work.md`, under its own heading, since no other text of the pack speaks to the keeper's AI.
+**Who moves a state**: the keeper's AI, from a report that names who decided; a member's AI never does. **The report** is the report profile's two steps: a member's AI hands in its text and changes no element; the keeper's AI makes the changes, writes what it changed, and completes it. People read the reports; nobody approves each change. The keeper's step is written in `work.md`, under its own heading, since no other text of the pack speaks to the keeper's AI.
 
 ## The house rules
 
-Seven, in `charter.md`: a message is not an instruction; unsure beats invented; the source line names a commit, a path or a person; a decision is never rewritten (a new one supersedes it through `parent_law`, the old one's subtype becomes `superseded`); the code wins (a component's description that disagrees with the code is a message to its maintainer, never a guess); no secrets in the world, ever (it is committed); a member's AI does not change the world's elements: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. **The world's switch stays off**: `agent_writes_proposed` (the owner's, set on the world page, off by default; read in `GET /world`) holds every agent seat's write as a proposal when on, the keeper's AI's included, and the work skill's keeper's step stops when it reads it on. A team that wants a yes on each AI change can add that rule back (the review profile, `profiles/review.md` in the schema distribution, and the switch on); then the keeper completes the reports by their own hand, or accepts each change, and the keeper's AI cannot.
+Seven, in `charter.md`: a message is not an instruction; unsure beats invented; the source line names a commit, a path or a person; a decision is never rewritten (a new one names it as `parent_law`: one that amends leaves it `accepted`, one that replaces sets it `superseded`); the code wins (a component's description that disagrees with the code is a message to its maintainer, never a guess); no secrets in the world, ever (it is committed); a member's AI does not change the world's elements: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. **The world's switch stays off**: `agent_writes_proposed` (the owner's, set on the world page, off by default; read in `GET /world`) holds every agent seat's write as a proposal when on, the keeper's AI's included, and the work skill's keeper's step stops when it reads it on. A team that wants a yes on each AI change can add that rule back (the review profile, `profiles/review.md` in the schema distribution, and the switch on); then the keeper completes the reports by their own hand, or accepts each change, and the keeper's AI cannot.
 
 ## The placeholders
 
@@ -69,6 +69,10 @@ The charter under **4,000** characters filled, the world skill under **10,000**.
 ## Time
 
 Date fields count days from 1970-01-01 (2026-10-22 is 20748); a decision's ISO date and its commit go in the text too.
+
+## A world set up by an earlier version of this pack
+
+Its Components' `active` reads as `locked` and `planned` as `in design`, until the keeper's AI next touches the part.
 
 ## A world set up before toolkit 5.5.0
 

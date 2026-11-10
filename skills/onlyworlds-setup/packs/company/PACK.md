@@ -42,7 +42,7 @@ A team runs its work in this world, so the pack lands three skills, each an Obje
 - `<prefix>-design` (`design.md`): think a design through with a person, in five moves: say the size back, say what is decided and what the world does not hold, widen the scope (three questions at most, as a story about one person), stay in the person's lane, file what was decided in the session's report. A large design starts from its anchor: the element it will become, a Product with subtype `in design` and four lines (what it is for, who it is for, what it starts from, what is fixed).
 - `<prefix>-work` (`work.md`): find what is open for me and my role, do it, end every session with a report. State is read at its source and never copied into the world; one key joins a source to the world; the order of work is one element; the report answers one question: what did this session make untrue?
 
-**The report** is the report profile's two steps: a member's AI hands in its text and changes no element; the keeper's AI makes the changes, writes what it changed, and completes it. People read the reports; nobody approves each change. The keeper's step is written in `work.md`, under its own heading, since no other text of the pack speaks to the keeper's AI.
+**Who moves a state**: the keeper's AI, from a report that names who decided; a member's AI never does. **The report** is the report profile's two steps: a member's AI hands in its text and changes no element; the keeper's AI makes the changes, writes what it changed, and completes it. People read the reports; nobody approves each change. The keeper's step is written in `work.md`, under its own heading, since no other text of the pack speaks to the keeper's AI.
 
 ## The house rules
 

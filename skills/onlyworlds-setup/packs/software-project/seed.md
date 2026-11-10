@@ -12,7 +12,7 @@ What a fresh project world starts with, as rows of the plan `write_world.py` rea
 | `tenure-<n>` | relation | `Tenure` | | `Maintainer: <name>` | `actor`, `titles`: [`maintainer`]; `start_date` when known | question 3 | Maintainer: Lena Morrow, from 2024-06-01 |
 | `keeper-title` | title | `Role` | | Keeper | `holders`: [the keeper], `body`: `project` | always | Keeper |
 | `keeper-tenure` | relation | `Tenure` | | Keeper: `{{keeper}}` | `actor`, `titles`: [`keeper-title`]; `start_date`: `day:{{today}}` | always | Keeper: Lena Morrow |
-| `component-<n>` | construct | `Component` | `active` | each component | `constructs`: what it depends on; `characters`: its maintainers; `objects`: services it calls | question 6 | Reader (parses the two files), Differ (depends on Reader), Report |
+| `component-<n>` | construct | `Component` | `locked` when the team says it is settled, else `in design` | each component | `constructs`: what it depends on; `characters`: its maintainers; `objects`: services it calls | question 6 | Reader (parses the two files), Differ (depends on Reader), Report |
 | `service-<n>` | object | `Service` | | each outside service or key dependency | `utility` | question 6 | The package registry |
 | `decision-<n>` | law | `Decision` | `accepted` | each decision already made | `author`: `project`; `parent_law` when it replaced one; `date`: `day:<the day>`; `declaration`, `purpose`; the source line names the commit or the person | question 6 | "Rows match by key column, never by position" (2024-09-12, because inserted rows broke every diff after them) |
 | `welcome` | narrative | `Message` | | Welcome | `narrator`: `owner`; `characters`: [] | always | "This repository has a context world. Read the Charter first." |

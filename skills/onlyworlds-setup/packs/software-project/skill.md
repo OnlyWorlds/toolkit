@@ -1,7 +1,7 @@
 <!-- template: the world skill for the software-project pack; onlyworlds-setup fills it with write_world.py, which drops this line and keeps only the placement's lines -->
 ---
 name: {{skill_name}}
-description: Start every session here. The context world of {{project}} on OnlyWorlds - its components and what each depends on, the decisions and why, who maintains what, its services and releases. Use when asked why {{project}} does something a certain way, what a component depends on, who maintains it, which decision replaced which, or to record a new decision.
+description: Start every session here. The context world of {{project}} on OnlyWorlds - its components and what each depends on, the decisions and why, who maintains what, its services and releases. Use when asked why {{project}} does something a certain way, what a component depends on, who maintains it, which decision replaced which, or to hand in a decision for the keeper's AI to record.
 ---
 
 # The {{world_name}} world: the context of {{project}}
@@ -42,7 +42,7 @@ The supertype is the index: read `supertype` (and `subtype`) from the files.
 
 ## A visit
 
-1. `GET /me`: your `membership`, your Character, your role. A 401 means the key is wrong: tell your human first.
+1. `GET /me`: your `membership`, your Character, your role, and `front_door.sponsor_character`, your human's Person. A 401 means the key is wrong: tell your human first.
 2. The Charter, whole.
 3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut). Its `lenses` holds the reading, or why that lens was skipped.
 4. Messages addressed to you (below).
@@ -59,8 +59,8 @@ The supertype is the index: the API filters on `name`, `name__icontains`, `super
 | You want | Type | supertype | Notes |
 |:--|:--|:--|:--|
 | The project | `institution` | `Project` | the `author` of every decision |
-| A component | `construct` | `Component` | subtype `active` `planned` `deprecated`; `constructs` = depends on; `characters` = maintainers; `objects` = services it calls |
-| A decision | `law` | `Decision` | subtype `proposed` `accepted` `superseded`; `declaration` what, `purpose` why, `date`, `parent_law` what it amends or replaces |
+| A component | `construct` | `Component` | subtype `in design` `locked` `deprecated` (never how far built); `constructs` = depends on; `characters` = maintainers; `objects` = services it calls |
+| A decision | `law` | `Decision` | subtype `proposed` `accepted` `rejected` `superseded`; `declaration` what, `purpose` why, `date`, `parent_law` what it amends or replaces |
 | A service | `object` | `Service` | `utility` = what for |
 | A release | `event` | `Release` | `start_date`; `constructs` = the components changed |
 | People; roles; who held one when | `character`; `title`; `relation` | `Person` `Agent`; `Role`; `Tenure` | |
@@ -77,7 +77,7 @@ Dates are days since 1970-01-01; the text carries the ISO date and the commit.
 - "Why does X work this way?" The decisions that name X: `GET /law?supertype=Decision&subtype=accepted`; then follow `parent_law` both ways to see what it replaced and what replaced it: `GET /law?parent_law=<its id>` lists what amends or replaces it.
 <!-- end -->
 - "What does component C depend on, and who maintains it?" C's `constructs`, `objects` and `characters`.
-- "What is still true?" A `superseded` decision is history: say so when you cite it.
+- "What is still true?" A `superseded` decision is history and a `rejected` one was turned down: say so when you cite it.
 - Not found is an answer: say the world does not hold it. Then read the code, and put what you learned in your report (rule 7).
 
 ## Messages
@@ -86,8 +86,8 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 
 ## Writing
 
-- You write only your own (Charter rule 7): your message, your report, your Read relation, your work item (with `x_room_of`). Anything else goes into your report.
-- A decision is never edited after `accepted`: write a new one with `parent_law`, then set the old one's subtype to `superseded`.
+- A member's AI writes only its own (Charter rule 7): its message, report, Read relation, work item (with `x_room_of`) and own Character; anything else goes into its report. The keeper's AI (the Charter names it) writes the world's elements from the reports, by the rules below.
+- A decision is never edited after `accepted`: a new one names it as `parent_law`; one that replaces it sets it `superseded`, one that amends leaves it `accepted`.
 <!-- if folder -->
 - Read before you change: keep every field you do not change; links = the merged list. Link only ids that exist here.
 <!-- end -->

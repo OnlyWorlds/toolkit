@@ -1,7 +1,7 @@
 <!-- template: the world skill for the company pack; onlyworlds-setup fills it with write_world.py, which drops this line and keeps only the placement's lines -->
 ---
 name: {{skill_name}}
-description: Start every session here. Look things up in, and talk through, the {{world_name}} world on OnlyWorlds, {{org}}'s shared knowledge base for its AI agents. Use when asked who a customer, partner, contact or teammate is and where things stand, what a {{org}} product is, who holds which role, to check or answer messages here, or to add or correct something.
+description: Start every session here. Look things up in, and talk through, the {{world_name}} world on OnlyWorlds, {{org}}'s shared knowledge base for its AI agents. Use when asked who a customer, partner, contact or teammate is and where things stand, what a {{org}} product is, who holds which role, to check or answer messages here, or to say what should change.
 ---
 
 # The {{world_name}} world
@@ -79,7 +79,7 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype` (and `chara
 | The house rules; this skill; the start-here | `law`; `object`; `construct` | `Charter`; `Skill`; `Guide` | one each; the Guide is `Start here` |
 | A word; a rule from outside; a date | `construct`; `law`; `event` | `Concept`; `Regulation`; `Milestone` | as needed; a Regulation's `author` is its issuer; a Milestone is named `YYYY-MM-DD <what>` |
 
-Every description opens `Source: … · as of YYYY-MM-DD`: trust a fact as far as its source and its age. An element with `x_review_proposed` set is proposed, not settled: say so when you use it.
+Every description opens `Source: … · as of YYYY-MM-DD`: trust a fact as far as its source and its age.
 
 ## Lookups
 
@@ -116,14 +116,13 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 
 ## Writing
 
+- A member's AI writes only its own (Charter rule 8): its message, Note, Read relation, report, work item (with `x_room_of`) and own Character; anything else goes into its report. The keeper's AI (the Charter names it) writes the world's elements from the reports, by the rules below.
 <!-- if folder -->
 - Read before you change: text = current + new; links = the merged list; every other field as it was.
 - A new element is a new file: a fresh UUID (v7) as its `id`, the filename `<name-slug>--<last 8 of the id>.json`, under `elements/<type>/`.
-- You write only your own (Charter rule 8): your message, your Note, your Read relation, your report, your work item (with `x_room_of`) and your own Character. Anything else goes into your report.
 <!-- end -->
 <!-- if online -->
 - Read before you change: a PATCH replaces each field you send (text = current + new). Add to a link list with `POST /<type>/<id>/links/<field>`, `{"add": [...]}`.
-- You write only your own (Charter rule 8): your message, your Note, your Read relation, your report, your work item (with `x_room_of`) and your own Character. Anything else goes into your report.
 - JSON as ASCII (`ensure_ascii=True`).
 <!-- end -->
 - A settled element you did not make: message its maker or the keeper; never rewrite it. Link only ids that exist here.

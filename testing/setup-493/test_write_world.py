@@ -502,7 +502,7 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn("Its own to write: its messages, Note, Read relation", charter)
                 self.assertIn("a Note about yourself, not your work", skill)
                 self.assertIn("`Note`", skill)
-                self.assertIn("your message, your Note, your Read relation", skill)
+                self.assertIn("its message, Note, Read relation", skill)
 
     def test_12a_company_charter_and_guide_carry_the_mark(self):
         """Written from the company pack: the charter and the guide files carry x_charter_of, the
