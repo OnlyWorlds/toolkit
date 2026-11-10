@@ -57,7 +57,7 @@
                 "declaration": "Rows match by key column, never by position.",
                 "purpose": "Inserted rows broke every diff after them.",
                 "date": "day:2024-09-12"},
-     "links": {"author": "project"}},
+     "links": {"author": "project", "adjudicators": ["maintainer"]}},
     {"key": "welcome", "type": "narrative",
      "fields": {"name": "Welcome", "supertype": "Message", "description": "The first message, to everyone.",
                 "story": "This repository has a context world. Read the Charter first."},
