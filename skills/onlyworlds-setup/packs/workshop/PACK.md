@@ -60,3 +60,13 @@ Date fields count days from 1970-01-01 (2026-10-22 is 20748): a sitting's `start
 ## A world set up before toolkit 5.5.0
 
 Its Charter carries no `x_charter_of`, so every reader shows it as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, and on any Guide or Domain the world holds, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
+
+## A world set up before toolkit 5.9.4
+
+Its sittings, lines, hearts, votes, specs, board entries and work items carry no `x_room_of`, so a room reader (the parlor among them) finds no sitting and no room, and an AI on this version takes the room to have no sitting yet. A winner crowned by a spec's subtype `star` in a sitting made after 2026-10-26 is read by no one: the winner is the sitting's `x_star`. The host or a co-host repairs it by hand, one write of one field per element (online a PATCH, which keeps the element's other `x_` fields; in a folder an edit of the file):
+
+- on each sitting, `x_room_of` set to the world's id;
+- on the sitting whose winner was crowned by subtype, `x_star` set to that spec's id;
+- on the lines, hearts, votes, specs, board entries and work items the room should show, `x_room_of` set to the id of the sitting each belongs to (by when it was written).
+
+Each write puts the element in the feed again as a change. It is a repair, never a rule for readers: nothing reads an unmarked element as the room's, and nothing reads a subtype `star` in a sitting made after 2026-10-26 as the winner.
