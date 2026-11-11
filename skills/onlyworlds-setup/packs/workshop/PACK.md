@@ -29,6 +29,8 @@
 | The house rules | Law | `Charter` | | read first by every AI member |
 | The how-to | Object | `Skill` | | the world skill |
 
+**The room's mark**: every row from a line to a work item carries `x_room_of` (the room profile, `profiles/room.md` in the schema distribution), written with the pair in its first write: on a sitting the world's id, on the rest the id of the sitting it was made in. A room reader (the parlor among them) reads only marked elements, and a lore view leaves them out. The Characters, the house rules and the how-to are not room elements and carry none (the Charter's own mark is `x_charter_of`).
+
 **The phases**: Lobby, Welcome, Parsing, Design, Voting, Build, Showcase, each a set of switches on the sitting, never a position in a list. Their names are an open point of the parlor design.
 
 ## The house rules

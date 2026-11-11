@@ -73,11 +73,14 @@ charter_id, skill_id, skill_name (ow-<slug>, or <prefix>-start), prefix, design_
 design_skill_name, work_skill_id, work_skill_name (the last five in a three-skill pack only),
 today (ISO), today_day (the day number),
 server_world_id (online only), world_folder (the world folder as the copies' root sees it),
-who_is_here, roster, proposer_id, agents_line, and `{{id:<key>}}` for any element's id. They are
+who_is_here, roster, proposer_id, agents_line, world_id (the id of the world the elements are in, the
+value `x_charter_of` takes: a mark's value, such as a sitting's `x_room_of`), and `{{id:<key>}}` for
+any element's id (a seeded room element's `x_room_of` names its sitting by it). They are
 filled in the charter, the skill and every string field of every element, before any shape test:
 a date field written as "day:YYYY-MM-DD" (or "day:{{today}}") becomes its day number, since a work
-world counts time in days, day 0 = 1970-01-01. The folder's own minted id is no placeholder: an
-online world does not share it, so no text can name it as an address.
+world counts time in days, day 0 = 1970-01-01. The folder's own minted id is no placeholder of its
+own: an online world does not share it, so `world_id` is the server's there, and no text names it
+as an address.
 
 Python 3, stdlib only.
 """
@@ -319,7 +322,7 @@ def main(argv):
     values.update(world_name=w["name"], world_slug=world_slug, charter_id=charter_id, skill_id=skill_id,
                   skill_name=skill_name, today=today, today_day=str(day_number(today)),
                   world_folder=world_folder, who_is_here=who_is_here, roster=ROSTER[placement],
-                  proposer_id=PROPOSER[placement], agents_line=agents_line)
+                  proposer_id=PROPOSER[placement], agents_line=agents_line, world_id=charter_of)
     if online:
         values["server_world_id"] = server_id
     if extras:

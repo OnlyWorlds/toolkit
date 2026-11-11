@@ -732,6 +732,30 @@ class SetupWriter(unittest.TestCase):
         self.assertRegex(r.stdout, r"Pell's role co_builder is above its human Tomas[^']*'s \(contributor\)")
         self.assertFalse(out.exists() and any(out.iterdir()), "a refused plan wrote files")
 
+    def test_17_workshop_room_elements_carry_the_mark(self):
+        """The workshop's seeded room elements carry x_room_of (the room profile): the sitting the
+        world's id (the server's online), the board entry and the line the sitting's own id, in every
+        placement; nothing else the writer wrote carries the key (the Charter, the skill, the people)."""
+        room_pairs = {("narrative", "message"), ("narrative", "board"), ("event", "sitting")}
+        for placement in PLACEMENTS:
+            run = RUNS["workshop", placement]
+            with self.subTest(placement=placement):
+                self.assertEqual(run.code, 0, run.out)
+                world = SERVER_ID if placement == "online" else run.world_json["id"]
+                bodies = [(p.parts[-2], b) for p, b in run.elements()]
+                sittings = [b for t, b in bodies if (t, (b.get("supertype") or "").casefold()) == ("event", "sitting")]
+                self.assertEqual(len(sittings), 1)
+                self.assertEqual(sittings[0].get("x_room_of"), world, "the sitting's mark is the world's id")
+                marked = 0
+                for t, b in bodies:
+                    pair = (t, (b.get("supertype") or "").casefold())
+                    if pair in room_pairs and pair != ("event", "sitting"):
+                        self.assertEqual(b.get("x_room_of"), sittings[0]["id"], b.get("name"))
+                        marked += 1
+                    elif pair not in room_pairs:
+                        self.assertNotIn("x_room_of", b, b.get("name"))
+                self.assertEqual(marked, 2, "the board's welcome and the welcome line")
+
     def test_13b_a_team_pack_without_a_prefix_is_refused(self):
         plan = json.loads(read(PLANS / "company.json"))
         del plan["prefix"]
