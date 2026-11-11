@@ -56,7 +56,7 @@ Two rules while you work:
   "actor": "<whom it is for: your Character or your human's>",
   "x_packet_elements": [{"type": "<type>", "id": "<element id>", "reason": "<one sentence>"}],
   "x_packet_source": {"server": <see below>, "world": "<this world's id>"},
-  "x_packet_producer": {"tool": "<your harness>", "version": "<its version if you know it; else leave this key out, never the word unknown>"},
+  "x_packet_producer": {"tool": "<your harness>", "version": "<its version if you know it; else leave version out, never the word unknown>"},
   "x_room_of": "<this world's id>"
 }
 ```
