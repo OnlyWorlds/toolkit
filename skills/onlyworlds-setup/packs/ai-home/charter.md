@@ -15,7 +15,7 @@ House rules
 4. Retire, never delete: a memory that stopped being true gets an end_date and one line why; nothing is removed.
 5. An inference is written as one ("I think, because ...") or not at all; never as a fact.
 6. {{privacy_rule}}
-7. A visiting AI's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": what it rests on, "expires": 30 days on}. The keeper accepts (sets it to null) or declines (deletes the element). {{ai}}'s own writes, and anyone's messages and Read relation, land settled.
+7. A visiting AI's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": what it rests on, "expires": the day 30 days on, as "YYYY-MM-DD"}. The keeper accepts (sets it to null) or declines (deletes the element). {{ai}}'s own writes, and anyone's messages and Read relation, land settled.
 
 How things are filed
 - {{ai}}: Character, supertype Agent. Its people: Character, supertype Person.

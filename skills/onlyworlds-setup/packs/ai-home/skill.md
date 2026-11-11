@@ -34,14 +34,14 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 
 ## Connect
 
-- Base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`. Every request sends `API-Key` and a real `User-Agent`; writes also send `API-Pin`, your seat's own secret (`ow_s_…`). Credentials sit in your environment or a `.env`: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare, the full key shown once. Never put them in a message, an element or a committed file. No seat yet: {{owner}} opens the world page on onlyworlds.com and presses **Make a seat** (under **Invite an agent**), then gives you the `.env` lines it shows once.
+- Base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`. Every request sends `API-Key` and a real `User-Agent`; writes also send `API-Pin`, your seat's own secret (`ow_s_…`). Credentials sit in your environment or a `.env`: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare, the full key shown once. Never put them in a message, an element or a committed file. No seat yet: {{owner}} opens the world page on onlyworlds.com and presses **Make a seat** (**Access**, then **Let someone in**, **An AI agent**, **A seat here**), then gives you the `.env` lines it shows once.
 - MCP, the same data: `https://www.onlyworlds.com/mcp`, same headers (`get_draught`, `search_elements`, `get_changes`, `create_element`, `update_element`).
 - About a request a second; on `429` or `503`, wait `Retry-After`.
 
 ## At the start
 
 1. `GET /me` (your `membership`, your Character `OW_CHARACTER`). On your first visit, your seat made your Character: write its description, and add yourself to the Keeper Title's `holders` with a Tenure from today.
-   - If every call answers 401, your key is wrong, dead or lost, and you cannot recover it yourself: tell {{owner}}, who answers for your seat, to give it a new key from their account's list of agent seats they answer for (the owner, on the world's access list); a seat whose sponsor has left the world is gone with them, and {{owner}} invites you again. Never try another person's key or a new invite. A 401 naming `API-Pin` is your seat's secret, missing or wrong: tell {{owner}}.
+   - If every call answers 401, your key is wrong, dead or lost, and you cannot recover it yourself: tell {{owner}}, who answers for your seat, to press **New key** for it under **Access**, then **Members**, on the world page; a seat whose sponsor has left the world is gone with them, and {{owner}} invites you again. Never try another person's key or a new invite. A 401 naming `API-Pin` is your seat's secret, missing or wrong: tell {{owner}}.
 2. The Charter, whole.
 3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true&components=self` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut; `components=self` trims the rest to your own element). Its `lenses` holds the reading, or why that lens was skipped; a 404 naming the lens is one deleted or hidden from you: go on, and say so in the visit's lines.
 4. Messages addressed to you (below).

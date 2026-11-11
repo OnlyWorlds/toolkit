@@ -16,7 +16,7 @@ House rules
 5. Retire, never delete: a tenure ends with an end_date; a repealed rule gets subtype repealed.
 6. A motion is not a decision until a Decision Event records it, with its date and the body.
 7. {{privacy_rule}}
-8. An AI seat's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": the minutes or source, "expires": 30 days on}. Only the keeper settles them (sets it to null) or declines them (deletes the element). Your messages, Read relation and work items land settled.
+8. An AI seat's new elements land as proposed: x_review_proposed = {"by": {{proposer_id}}, "evidence": the minutes or source, "expires": the day 30 days on, as "YYYY-MM-DD"}. Only the keeper settles them (sets it to null) or declines them (deletes the element). Your messages, Read relation and work items land settled.
 
 How things are filed
 - The body: Institution, supertype Council, Board or Committee.

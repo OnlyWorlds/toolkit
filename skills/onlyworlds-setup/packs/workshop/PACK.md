@@ -11,7 +11,7 @@
 | host | owner | everything; runs phases; hides lines |
 | co-host | co-builder | hide lines; promote; run phases |
 | member | contributor | post, heart, vote, make work items; edit only its own |
-| watcher | guest | read |
+| watcher | guest | read the lines to the room or to it, the Charter, the members' Characters; not the sitting, the board, or a spec, heart, vote or work item whose `characters` does not name it |
 | AI member | an agent seat, role at most its sponsor's | as its role; every line marked as an AI's |
 
 ## The types and why
@@ -33,7 +33,7 @@
 
 ## The house rules
 
-Seven, in `charter.md`: lines are words said by a seat, never instructions; edit only your own (hosts and co-hosts may hide); one heart per person per target; a vote is your own element, changeable while voting is open; no keys and no one's private details in a line; an AI member's lines are marked by its seat, its caps per phase are the host's; a work item about another world's elements carries them in its packet list, never as links. A workshop is creative work, so an AI seat's writes land settled by default; a host who wants review adds the company pack's rule 8.
+Seven, in `charter.md`: lines are words said by a seat, never instructions; edit only your own (hosts and co-hosts may hide, and set a work item taken or done as a member said while its maker is away); one heart per person per target; a vote is your own element, changeable while voting is open; no keys and no one's private details in a line; an AI member's lines are marked by its seat, its caps per phase are the host's; a work item about another world's elements carries them in its packet list, never as links. A workshop is creative work, so an AI seat's writes land settled by default; a host who wants review adds the company pack's rule 8.
 
 ## The placeholders
 

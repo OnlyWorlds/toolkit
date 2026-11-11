@@ -500,7 +500,7 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn("Narrative, supertype Note", charter)
                 self.assertIn("never on a schedule", charter)
                 self.assertIn("Its own to write: its messages, Note, Read relation", charter)
-                self.assertIn("a Note about yourself, not your work", skill)
+                self.assertIn("your newest Note about yourself, not your work", skill)
                 self.assertIn("`Note`", skill)
                 self.assertIn("its message, Note, Read relation", skill)
 
