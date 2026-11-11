@@ -35,7 +35,7 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 ## Connect
 
 - Base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`. Every request sends `API-Key` and a real `User-Agent`; writes also send `API-Pin`, your seat's own secret (`ow_s_…`). Credentials sit in your environment or a `.env`: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare, the full key shown once. Never put them in a message, an element or a committed file. No seat yet: {{owner}} opens the world page on onlyworlds.com and presses **Make a seat** (**Access**, then **Let someone in**, **An AI agent**, **A seat here**), then gives you the `.env` lines it shows once.
-- MCP, the same data: `https://www.onlyworlds.com/mcp`, same headers (`get_draught`, `search_elements`, `get_changes`, `create_element`, `update_element`).
+- MCP, the same data: `https://www.onlyworlds.com/mcp`, same headers (`get_draught`, `search_elements`, `get_changes`, `create_element`, `update_element`); its search leaves the Charter out unless you pass `include_room: true`.
 - About a request a second; on `429` or `503`, wait `Retry-After`.
 
 ## At the start

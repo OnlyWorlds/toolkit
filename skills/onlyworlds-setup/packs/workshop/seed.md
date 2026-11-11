@@ -10,13 +10,13 @@ What a fresh workshop world starts with, as rows of the plan `write_world.py` re
 | `keeper-title` | title | `Role` | | Keeper | `holders`: [the keeper] | always | Keeper (the host) |
 | `keeper-tenure` | relation | `Tenure` | | Keeper: `{{keeper}}` | `actor`, `titles`: [`keeper-title`]; `start_date`: `day:{{today}}` | always | Keeper: Mira Solberg |
 | `sitting-1` | event | `Sitting` | `Lobby` | `{{workshop}}`, sitting 1 | `start_date`: `day:<the day>`; `x_hearts_on`: false, `x_specs_shown`: false, `x_voting_open`: false; `x_room_of`: `{{world_id}}` | question 6 | Kiln Street Toolmakers, sitting 1 (2026-11-07) |
-| `board-welcome` | narrative | `Board` | `green` | How this room works | `characters`: []; `x_room_of`: `{{id:sitting-1}}`; the description says the phases and the house rules in two lines | always | "Bring a spec; heart what you like; we vote at Voting." |
-| `welcome` | narrative | `Message` | | Welcome | `narrator`: `host`; `characters`: []; `x_room_of`: `{{id:sitting-1}}` | always | "Welcome. Read the Charter, then bring a spec." |
+| `board-welcome` | narrative | `Board` | `green` | How this room works | `characters`: []; `x_room_of`: `{{id:sitting-1}}` (no sitting row: `{{world_id}}`); the description says the phases and the house rules in two lines | always | "Bring a spec; heart what you like; we vote at Voting." |
+| `welcome` | narrative | `Message` | | Welcome | `narrator`: `host`; `characters`: []; `x_room_of`: `{{id:sitting-1}}` (no sitting row: `{{world_id}}`) | always | "Welcome. Read the Charter, then bring a spec." |
 
 The charter's own links, in the plan's `charter.links`: `adjudicators` = [`keeper-title`].
 
 **Seats** (questions 3 and 4): a Character row carries `"seat": {"role": ...}` (`owner`, `co_builder`, `contributor`, `guest`), and an AI's also `"ai_of"`, its human's key. The file gets it as `x_seat`; the charter's "Who is here" lists them. An AI's row is written in a folder world only: online, its seat makes its Character, and nothing may link the row.
 
-**The room's mark** (the room profile, `profiles/room.md` in the schema distribution): the sitting, the board entry and the line carry `x_room_of`, the sitting the world's id (`{{world_id}}`), the other two the sitting's (`{{id:sitting-1}}`), so a room reader reads them as the room's. The Characters, the Keeper's Title and Tenure, the Charter and the world skill are not room elements and carry none.
+**The room's mark** (the room profile, `profiles/room.md` in the schema distribution): the sitting, the board entry and the line carry `x_room_of`, the sitting the world's id (`{{world_id}}`), the other two the sitting's (`{{id:sitting-1}}`; with no sitting row, the world's, `{{world_id}}`), so a room reader reads them as the room's. The Characters, the Keeper's Title and Tenure, the Charter and the world skill are not room elements and carry none.
 
 **Never seeded**: specs, hearts, votes and work items (each is its maker's own element), an online world's AI member Character (its seat makes it), `x_feed_start` (the host sets it from `GET /changes?head=true` when the sitting opens online).

@@ -36,8 +36,8 @@ The supertype is the index: read `supertype` (and `subtype`) from the files.
 
 ## Connect
 
-- **Online**: base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`. Every request sends `API-Key` and a real `User-Agent`; writes also `API-Pin`, your seat's own secret (`ow_s_…`). Credentials sit in your environment or a `.env` the repository ignores: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`. Never in a tracked file. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page and gives you the `.env` lines it shows once.
-- MCP, the same data: `https://www.onlyworlds.com/mcp`, same headers.
+- **Online**: base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`. Every request sends `API-Key` and a real `User-Agent`; writes also `API-Pin`, your seat's own secret (`ow_s_…`). Credentials sit in your environment or a `.env` the repository ignores: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`. Never in a tracked file. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page (the owner: **Access**, then **Let someone in**, **An AI agent**, **A seat here**) and gives you the `.env` lines it shows once.
+- MCP, the same data: `https://www.onlyworlds.com/mcp`, same headers; its lists and search leave the Charter and everything marked `x_room_of` (work items, reports) out unless you pass `include_room: true`.
 - **The folder in the repository** (`{{world_folder}}`): the hosted world's copy, refreshed by export to a new folder (only `world.json` and `elements/` replaced, the Charter's file, the newest Law by `created_at` with supertype `Charter` and `x_charter_of`, renamed back to `elements/law/charter.json`, the path the `AGENTS.md` line and the copies name); read it like the code. `world.json` never carries a key.
 
 ## A visit

@@ -11,7 +11,7 @@
 | host | owner | everything; runs phases; hides lines |
 | co-host | co-builder | hide lines; promote; run phases |
 | member | contributor | post, heart, vote, make work items; edit only its own |
-| watcher | guest | read the lines to the room or to it, the Charter, the members' Characters; not the sitting, the board, or a spec, heart, vote or work item whose `characters` does not name it |
+| watcher | guest | read the lines to the room or to it, the Charter and the how-to, the members' Characters; never the board; the sitting, a spec, heart, vote or work item only when its `characters` names it |
 | AI member | an agent seat, role at most its sponsor's | as its role; every line marked as an AI's |
 
 ## The types and why
@@ -20,16 +20,16 @@
 |-------|------|-----------|---------|---------------|
 | A line | Narrative | `Message` | | `narrator` the poster's Character, `characters` empty for the room, `parent_narrative` the line it answers; `created_by` is the truth of who |
 | A board entry | Narrative | `Board` | `red`, `orange`, `green` | `characters` = whom it waits on |
-| A spec | Construct | `Spec` | `star` for the winner | its owner's own element |
+| A spec | Construct | `Spec` | | its owner's own element; the winner is named on the sitting (`x_star`), never by a write to the spec |
 | A heart | Relation | `Heart` | | `actor` the hearter, `constructs` the spec; one per person per target, the hearter's own element |
 | A vote | Relation | `Vote` | | `actor` the voter, `constructs` the picks in order (a top three, DRAFTED), changeable while voting is open |
-| A sitting | Event | `Sitting` | the phase it is in | `start_date`; the switches as extension fields `x_hearts_on`, `x_specs_shown`, `x_voting_open`, and `x_feed_start` (the feed's head number at its start) |
+| A sitting | Event | `Sitting` | the phase it is in | `start_date`; the switches as extension fields `x_hearts_on`, `x_specs_shown`, `x_voting_open`, `x_feed_start` (the feed's head number at its start), and `x_star` (the winning spec's id) |
 | A work item | Relation | `Work item` | `open`, `taken`, `done` | `actor` whom it is for; the elements it is about in its link fields when they live in this world, else in the `packet` profile's list only |
 | A person, an AI | Character | `Person`, `Agent` | | online, the seat makes an AI's; in a folder, the seed does (marked `x_seat`) |
 | The house rules | Law | `Charter` | | read first by every AI member |
 | The how-to | Object | `Skill` | | the world skill |
 
-**The room's mark**: every row from a line to a work item carries `x_room_of` (the room profile, `profiles/room.md` in the schema distribution), written with the pair in its first write: on a sitting the world's id, on the rest the id of the sitting it was made in. A room reader (the parlor among them) reads only marked elements, and a lore view leaves them out. The Characters, the house rules and the how-to are not room elements and carry none (the Charter's own mark is `x_charter_of`).
+**The room's mark**: every row from a line to a work item carries `x_room_of` (the room profile, `profiles/room.md` in the schema distribution), written with the pair in its first write: on a sitting the world's id, on the rest the id of the sitting it was made in (before any sitting, the world's). A room reader (the parlor among them) reads only marked elements, and a lore view leaves them out. The Characters, the house rules and the how-to are not room elements and carry none (the Charter's own mark is `x_charter_of`).
 
 **The phases**: Lobby, Welcome, Parsing, Design, Voting, Build, Showcase, each a set of switches on the sitting, never a position in a list. Their names are an open point of the parlor design.
 
@@ -55,7 +55,7 @@ The charter under **4,000** characters filled, the world skill under **10,000**.
 
 ## Time
 
-Date fields count days from 1970-01-01 (2026-10-22 is 20748): a sitting's `start_date` is its day.
+Date fields count days from 1970-01-01 (2026-10-22 is 20748): a sitting's `start_date` is its day. Which sitting is current: online, the newest by `created_at` (a tie: the larger `id`), as the parlor reads it, since the parlor writes no `start_date`; in a folder, which keeps no `created_at`, the latest `start_date`.
 
 ## A world set up before toolkit 5.5.0
 
