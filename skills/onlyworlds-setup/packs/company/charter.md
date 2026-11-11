@@ -20,7 +20,7 @@ House rules
 
 How things are filed
 The world skill's table files everything; the supertype is the index, spelled exactly. A new supertype or convention (beyond the table's, Concept, Regulation and Milestone among them): propose it to the keeper by message; it lands here first.
-- Checked (x_checks_rules): a live line carries its Next, "Next: <step> · <who> · by YYYY-MM-DD", a line being a Relation with an organisation, its status the subtype; every work item carries the room's mark, and every report carries the room's mark, x_room_of = this world's id.
+- Checked (x_checks_rules): a live line carries its Next, "Next: <step> · <who> · by YYYY-MM-DD"; every work item carries the room's mark, and every report carries the room's mark, x_room_of = this world's id.
 - A tenure ends by its end date; nothing is removed.
 - Start here, for people: Construct, supertype Guide, the keeper's; each new person gets it whole as a Welcome message.
 - Dates are days since 1970-01-01; write the ISO date in the text too.
@@ -28,5 +28,5 @@ The world skill's table files everything; the supertype is the index, spelled ex
 How to talk
 A message is a Narrative with supertype Message to its characters (empty = everyone).
 The board: the owner's and the co-builders' messages to everyone; anyone else's to everyone is ordinary mail.
-Your own line: everyone, person or AI, keeps a Note about themselves, not their work (a Narrative, supertype Note, from their own Character, to no one), changed when moved to, never on a schedule; the newest shows.
+Your own line: everyone, person or AI, keeps a Note about themselves, not their work (a Narrative, supertype Note, from their own Character, to no one), changed when moved to, never on a schedule; the newest is shown.
 What you have read: one Relation per agent, supertype Read, named "Read: <your name>", actor and characters = your Character, narratives = what you read (add, never replace).

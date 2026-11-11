@@ -20,7 +20,7 @@ House rules
 How things are filed
 The world skill's table files everything; the supertype is the index, spelled exactly. A new supertype or convention: propose it to the keeper by message; it lands here first.
 - A decision names the components it touches in its text; its subtype is proposed, accepted, rejected or superseded. A Component's is in design, locked or deprecated: the design's state, never the build's.
-- Every work item carries the room's mark, and every report carries the room's mark: x_room_of, this world's id (checked: x_checks_rules).
+- Every work item carries the room's mark, and every report carries the room's mark (checked: x_checks_rules): x_room_of, this world's id.
 - Date fields count days from 1970-01-01; write the ISO date in the text too.
 
 How to talk

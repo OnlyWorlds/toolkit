@@ -69,7 +69,7 @@ Its Charter carries no `x_charter_of`, so every reader shows it as lore (the cha
 
 ## A world set up before toolkit 5.9.4
 
-Its sittings, lines, hearts, votes, specs, board entries and work items carry no `x_room_of`, so a room reader (the parlor among them) finds no sitting and no room, and an AI on this version takes the room to have no sitting yet. A winner crowned by a spec's subtype `star` in a sitting made after 2026-10-26 is read by no one: the winner is the sitting's `x_star`. It is repaired by hand, one write of one field per element (online a PATCH, which keeps the element's other `x_` fields; in a folder an edit of the file); the first two bullets are the host's or a co-host's to write:
+Its sittings, lines, hearts, votes, specs, board entries and work items carry no `x_room_of`, so a room reader (the parlor among them) finds no sitting and no room, and an AI on this version takes the room to have no sitting yet. A winner crowned by a spec's subtype `star` in a sitting made after 2026-10-26 is read by no one: the winner is the sitting's `x_star`. It is repaired by hand, one write of one field per element (online a PATCH, which keeps the element's other `x_` fields; in a folder an edit of the file); the first two bullets are the host's to write:
 
 - on each sitting, `x_room_of` set to the world's id;
 - on the sitting whose winner was crowned by subtype, `x_star` set to that spec's id;
@@ -79,4 +79,4 @@ Each write puts the element in the feed again as a change. The third bullet is e
 
 ## A world set up before toolkit 5.9.6
 
-Its Charter's `x_checks_rules` is empty, and no refresh adds the rule (the writer writes only new folders), so the keeper adds it by hand: the Charter's line on the room's mark, under "How things are filed", begins "Every work item carries the room's mark (checked: x_checks_rules), and so does each of these", and the rule above goes in its `x_checks_rules` (online one PATCH of both fields, each read first and written whole; in a folder an edit of the file).
+Its Charter's `x_checks_rules` is empty or absent, and no refresh adds the rule (the writer writes only new folders), so the keeper adds it by hand. Under "How things are filed", the Charter's line on the room's mark becomes "- Every work item carries the room's mark (checked: x_checks_rules), and so does each of these: x_room_of, on a sitting the world's id, on the rest the id of the sitting it was made in (before any sitting, the world's). This Charter and the how-to carry none." (replace that line, or add it after the work-item line when the Charter has none), and the rule above goes in its `x_checks_rules` (online one PATCH of both fields, each read first and written whole; in a folder an edit of the file). The doctor then lists the older unmarked work items: their makers mark them, or they stay a known finding.

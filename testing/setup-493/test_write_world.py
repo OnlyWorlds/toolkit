@@ -26,7 +26,8 @@ harness trial (2026-10-22):
 9. every pack's charter file carries the checks slot `x_checks_rules`: empty only in a pack
    with no rule; the company pack ships three rules (the Next line and the two room marks), the
    software-project pack two (the room marks), the workshop pack one (a work item's room mark),
-   each taken from schema-dist's published fixture and each sentence in its charter; it reaches
+   each taken from schema-dist's published fixture (9f, skipped with its reason when the
+   fixture is not found) and each sentence in its charter; it reaches
    the bulk body, a plan's list replaces the pack's, and the Python package's doctor (0.24.0 or
    newer, when installed) applies it;
 10. the company pack answers the five points a cold visit to a live company world guessed
@@ -46,6 +47,8 @@ harness trial (2026-10-22):
     team pack's plan without a prefix is refused;
 14. a real team fits: each team pack written at 2, 5, 8, 12 and 20 seats (and 8 with six AIs, the
     last size the charter names every seat) keeps CHARTER_ROOM characters under the charter budget;
+    and the longest charter (14b), one owner with a 31-character name and seven AIs of theirs, in
+    the company, software-project and workshop packs, stays under each pack's measured ceiling;
 15. no route in a filled online skill carries a query value with a raw space;
 16. the writer refuses an AI seat whose role is above its human's.
 
@@ -101,7 +104,7 @@ LINES_CLAUSE = "which of the lines they keep are over two weeks old or past thei
 ORDER = ("This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line "
          "or a skill is read first.")
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
-FIXTURE = LINT.parent.parent / "profiles" / "checks.fixture.json"
+FIXTURE = Path(os.environ.get("OW_CHECKS_FIXTURE") or LINT.parent.parent / "profiles" / "checks.fixture.json")
 # The room a filled world skill keeps under the writer's budget (its SKILL_MAX, read from the
 # writer), so a company's own names never push a world past the writer's refusal.
 ROOM = 500
@@ -396,8 +399,7 @@ class SetupWriter(unittest.TestCase):
 
     def test_9_checks_slot_every_pack(self):
         """Every charter file carries x_checks_rules, empty only in a pack with no rule; a pack's
-        rules are the published fixture's, each sentence in its charter."""
-        fixture = FIXTURE.exists() and json.loads(read(FIXTURE))
+        rules each a sentence in its charter (test 9f compares them with the published fixture)."""
         shipped = {"company": 3, "software-project": 2, "workshop": 1}
         def check(run):
             body = json.loads(read(run.world / "elements" / "law" / "charter.json"))
@@ -412,8 +414,20 @@ class SetupWriter(unittest.TestCase):
             for rule in rules:
                 self.assertEqual(set(rule), {"rule", "where", "require"})
                 self.assertIn(rule["rule"].lower(), run.charter().lower(), "the rule's sentence is in the charter's own words")
-                if fixture:  # taken from the published fixture's rules, not paraphrased
-                    self.assertIn(rule, fixture["rules"])
+        self.each(check)
+
+    def test_9f_pack_rules_are_the_published_fixtures(self):
+        """Every rule a pack ships is one of the published checks fixture's rules, byte for byte as
+        JSON, never paraphrased. Skipped, with the path it looked at, when the fixture is not there
+        (OW_CHECKS_FIXTURE names it; by default it sits beside OW_LINT's schema-dist)."""
+        if not FIXTURE.exists():
+            self.skipTest(f"the published checks fixture is not at {FIXTURE}: set OW_CHECKS_FIXTURE "
+                          "(or OW_LINT) to the schema distribution's copy")
+        fixture = json.loads(read(FIXTURE))
+
+        def check(run):
+            for rule in json.loads(read(run.world / "elements" / "law" / "charter.json"))["x_checks_rules"]:
+                self.assertIn(rule, fixture["rules"])
         self.each(check)
 
     def test_9b_checks_slot_reaches_the_bulk_body(self):
@@ -702,6 +716,53 @@ class SetupWriter(unittest.TestCase):
                         size = len(json.loads(read(world / "elements" / "law" / "charter.json"))["description"])
                         print(f"\n  charter {pack} {n} seats{' (6 AIs)' if heavy else ''} {placement}: {size}")
                         self.assertLessEqual(size, budget - CHARTER_ROOM, f"{size} characters filled")
+
+    def test_14b_an_owner_with_seven_ais_fits(self):
+        """The longest charter a real plan writes: one owner with a 31-character name and seven AIs of
+        theirs, no other seat (each AI's entry repeats its human's name), in all three packs that ship
+        rules, folder and online. The company charter is no longer than 5.9.5 wrote it (3,926), so no
+        plan 5.9.5 wrote is refused for this version's sentences; the other two keep the length
+        measured when their rule sentences landed."""
+        ceiling = {"company": 3926, "software-project": 3894, "workshop": 3768}
+        owner_name = "Anastasia Wilhelmina Ravensbury"
+        ais = ["Juniper", "Halden", "Marlow", "Sorrow-Lark", "Tamsin", "Quill", "Brennick"]
+
+        def owner_with_seven(base):
+            plan = json.loads(json.dumps(base))
+            owner = next(e for e in plan["elements"] if (e.get("seat") or {}).get("role") == "owner")
+            gone = {e["key"] for e in plan["elements"] if e.get("seat") and e is not owner}
+            plan["elements"] = [e for e in plan["elements"] if e["key"] not in gone]
+            for e in plan["elements"]:
+                for f, t in list((e.get("links") or {}).items()):
+                    if isinstance(t, list):
+                        e["links"][f] = [k for k in t if k not in gone]
+                    elif t in gone:
+                        del e["links"][f]
+            owner["fields"]["name"] = owner_name
+            for i, name in enumerate(ais):
+                plan["elements"].append({"key": f"x-ai-{i}", "type": "character",
+                                         "seat": {"role": "contributor", "ai_of": owner["key"]},
+                                         "fields": {"name": name, "supertype": "Agent"}})
+            for k in ("keeper", "owner"):
+                if plan["values"].get(k):
+                    plan["values"][k] = owner_name
+            return plan
+
+        self.assertEqual(len(owner_name), 31)
+        for pack, most in ceiling.items():
+            base = json.loads(read(PLANS / f"{pack}.json"))
+            for placement in ("folder", "online"):
+                with self.subTest(pack=pack, placement=placement):
+                    root = OUT / f"owner7-{pack}-{placement}"
+                    plan, world = variant(owner_with_seven(base), placement, root)
+                    plan_path = OUT / "plans" / f"{root.name}.json"
+                    plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+                    r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)],
+                                       capture_output=True, text=True, encoding="utf-8")
+                    self.assertEqual(r.returncode, 0, r.stdout)
+                    size = len(json.loads(read(world / "elements" / "law" / "charter.json"))["description"])
+                    print(f"\n  charter {pack} owner and 7 AIs {placement}: {size}")
+                    self.assertLessEqual(size, most, f"{size} characters filled")
 
     def test_15_query_values_are_encoded(self):
         """No route in a filled online skill (all three in a team pack) carries a query value with a raw

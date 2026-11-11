@@ -5,9 +5,9 @@ What a fresh project world starts with, as rows of the plan `write_world.py` rea
 | Key | Type | supertype | subtype | name | Links and fields | Fills it | Example |
 |-----|------|-----------|---------|------|------------------|----------|---------|
 | `project` | institution | `Project` | | `{{project}}` | | question 2 | Quarrel |
-| `owner` | character | `Person` | | `{{owner}}` | seat `owner` | question 3 | Lena Morrow |
-| `person-<n>` | character | `Person` | | each maintainer or contributor | seat `contributor` | question 3 | Sami Kettunen |
-| `ai-<n>` | character | `Agent` | | each AI | seat `contributor` (the keeper's AI: `co_builder`), `ai_of` its human | question 4; **a folder world only** | Burr (Lena Morrow's AI) |
+| `owner` | character | `Person` | | `{{owner}}` | `institutions`: [`project`]; seat `owner` | question 3 | Lena Morrow |
+| `person-<n>` | character | `Person` | | each maintainer or contributor | `institutions`: [`project`]; seat `contributor` | question 3 | Sami Kettunen |
+| `ai-<n>` | character | `Agent` | | each AI | `institutions`: [`project`]; seat `contributor` (the keeper's AI: `co_builder`), `ai_of` its human | question 4; **a folder world only** | Burr (Lena Morrow's AI) |
 | `maintainer` | title | `Role` | | Maintainer | `holders`, `body`: `project` | question 3 | Maintainer |
 | `tenure-<n>` | relation | `Tenure` | | `Maintainer: <name>` | `actor`, `titles`: [`maintainer`]; `start_date` when known | question 3 | Maintainer: Lena Morrow, from 2024-06-01 |
 | `keeper-title` | title | `Role` | | Keeper | `holders`: [the keeper], `body`: `project` | always | Keeper |
