@@ -69,4 +69,4 @@ Its sittings, lines, hearts, votes, specs, board entries and work items carry no
 - on the sitting whose winner was crowned by subtype, `x_star` set to that spec's id;
 - on the lines, hearts, votes, specs, board entries and work items the room should show, `x_room_of` set to the id of the sitting each belongs to (by when it was written).
 
-Each write puts the element in the feed again as a change. It is a repair, never a rule for readers: nothing reads an unmarked element as the room's, and nothing reads a subtype `star` in a sitting made after 2026-10-26 as the winner.
+Each write puts the element in the feed again as a change. The third bullet writes other members' elements, which the Charter's rule 2 does not allow: post a line first that the host is marking the old room's elements, that nobody's words change, and that each will show as edited by the host; or leave them unmarked, as lore. It is a repair, never a rule for readers: nothing reads an unmarked element as the room's, and nothing reads a subtype `star` in a sitting made after 2026-10-26 as the winner.
