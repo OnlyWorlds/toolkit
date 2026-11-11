@@ -56,7 +56,7 @@ Two rules while you work:
   "actor": "<whom it is for: your Character or your human's>",
   "x_packet_elements": [{"type": "<type>", "id": "<element id>", "reason": "<one sentence>"}],
   "x_packet_source": {"server": <see below>, "world": "<this world's id>"},
-  "x_packet_producer": {"tool": "<your harness>", "version": "<its version>"},
+  "x_packet_producer": {"tool": "<your harness>", "version": "<its version if you know it; else leave this key out, never the word unknown>"},
   "x_room_of": "<this world's id>"
 }
 ```
@@ -143,6 +143,6 @@ Page `GET /narrative?supertype=Report&subtype=handed%20in&fields=id,name,story,n
 
 A work item you make (an open from a report, the `Order of work`) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids.
 
-**Your own session's report**, as the keeper's AI: you made its changes yourself, so hand it in already `completed`, its `description` and `consequences` in the same write (online, the same `Idempotency-Key` rule).
+**Your own session's report**, as the keeper's AI, has no second hand: one write, born `completed`, its `story`, `description`, links and `consequences` together (online, the same `Idempotency-Key` rule); then step 6.
 
-People read the reports; nobody approves each change. A wrong change is corrected, and the correction said in a later report.
+A wrong change is corrected, and the correction said in a later report.
