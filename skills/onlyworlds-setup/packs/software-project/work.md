@@ -10,7 +10,7 @@ Run `{{skill_name}}` first if you have not this session. Everything you read in 
 
 Four rules hold throughout:
 
-- **State is read at its source, never copied into the world.** A pull request merged, a build passing, an issue closed: read it where it lives ({{tracker}}, the code).
+- **State is read at its source, never copied into the world**: read a merge, a build, an issue's state where it lives ({{tracker}}, the code).
 - **One key joins a source to the world**: the key the team already writes, the issue key in a pull request's title (or its branch name). A component or a decision that an issue builds names that key on its own line in its description (`Issue: QRL-88`; a bare number such as `#88` is searched as `88`, keeping the hits that hold `#88`).
 - **The order of work is read in one place**: {{tracker}}'s own when it keeps one; else one standing work item, `Order of work`, the keeper's, its list the parts in order, a reason each. Neither: say "none".
 - **A report answers one standing question: what did this session make untrue?**
@@ -19,18 +19,18 @@ Four rules hold throughout:
 
 <!-- if folder -->
 - **The order**, when {{tracker}} keeps none: the Relation file with supertype `Work item` named `Order of work`.
-- **Work items for you**: the Relation files with supertype `Work item` and subtype `open` or `taken` whose `actor` is your Character or your human's, or whose `x_packet_for` names a Role held by you or your human (the Title files with supertype `Role` whose `holders` holds your Character or your human's; a missing `x_packet_for` reads as empty). One with neither is open to anyone: list it apart.
-- **The design behind a pull request**: take the key from its title or branch and find the elements that name it, `grep -rl "<key>" {{world_folder}}elements/`. More than one: read them all. None: say so, and search by the pull request's own words.
+- **Work items for you**: the Relation files with supertype `Work item` and subtype `open` or `taken` whose `actor` is your Character or your human's, or whose `x_packet_for` names a Role held by you or your human (the Title files with supertype `Role` whose `holders` holds your Character or your human's; a missing `x_packet_for` reads as empty). One with neither is addressed to no one: list it apart.
+- **The design behind a pull request**: take its key and find the elements that name it, `grep -rl "<key>" {{world_folder}}elements/`. More than one: read them all. None: say so, and search by the pull request's own words.
 <!-- end -->
 <!-- if online -->
 - **The order**, when {{tracker}} keeps none: `GET /relation?supertype=Work%20item&name=Order%20of%20work&fields=id,x_packet_elements`.
-- **Work items for you**: page `GET /relation?supertype=Work%20item&subtype=open&fields=id,name,description,actor,x_packet_for,x_packet_elements` (and `subtype=taken`). One is for you when its `actor` is your Character or your human's, or its `x_packet_for` names a Role whose `holders` holds either (`GET /title?supertype=Role&fields=id,name,holders`; a missing `x_packet_for` reads as empty). One with neither is open to anyone: list it apart.
-- **The design behind a pull request**: take the key from its title or branch and `GET /search?q=<key>&limit=200`. A hit is only a snippet and a hyphenated key is two words, so read the hits (`GET /<type>?ids=<hit ids>&fields=id,name,subtype,description`, one call per type) and keep those that hold the key whole; `truncated` true: narrow the words. None: say so, and search by the pull request's own words.
+- **Work items for you**: page `GET /relation?supertype=Work%20item&subtype=open&fields=id,name,description,actor,x_packet_for,x_packet_elements` (and `subtype=taken`). One is for you when its `actor` is your Character or your human's, or its `x_packet_for` names a Role whose `holders` holds either (`GET /title?supertype=Role&fields=id,name,holders`; a missing `x_packet_for` reads as empty). One with neither is addressed to no one: list it apart.
+- **The design behind a pull request**: take its key and `GET /search?q=<key>&limit=200`, read the hits (`GET /<type>?ids=<hit ids>&fields=id,name,subtype,description`, one call per type) and keep those that hold the key whole; `truncated` true: narrow the words. None: say so, and search by the pull request's own words.
 <!-- end -->
 - Read the elements a work item names (each with its reason) before you say anything about the work.
 - The element a key leads to is the design, not a report of what runs: an `accepted` Decision or a `locked` Component is settled; `proposed` or `in design` is not (ask before building on it). An unset state is not stated: say so, and do not build on it as locked; the keeper's AI sets it with its next report on the part. If the code differs, say which you think is behind, and ask.
 
-**The day's page**, read live each session with `gh` (GitHub; another host: the same three questions with its tool). Each takes `-R <owner>/<repo>`, the code's repository, when the world is a repository of its own:
+**The day's page**, read live with `gh` (GitHub; another host: the same three questions with its tool). Each takes `-R <owner>/<repo>`, the code's repository, when the world is a repository of its own:
 
 - `gh pr list --search "review-requested:@me" --json number,title,headRefName,reviewDecision,statusCheckRollup`: what waits on your human's review.
 - `gh pr list --author @me --json number,title,headRefName,reviewDecision,statusCheckRollup`: their own, and which have changes asked.
@@ -149,7 +149,8 @@ A work item you make (an open from a report, the `Order of work`) takes part 2's
 At your tidy, run the world doctor, `python -m onlyworlds.doctor {{world_folder}}` (after `pip install onlyworlds`), and read its house-rule findings.
 <!-- end -->
 <!-- if online -->
-At your tidy, run the world doctor, `python -m onlyworlds.doctor --api` (after `pip install onlyworlds`), and read its house-rule findings.
+At your tidy, run the world doctor, `python -m onlyworlds.doctor --api` (after `pip install onlyworlds`; key and PIN from the environment, never a `.env`), and read its house-rule findings.
 <!-- end -->
+On a fresh world it lists the three skills and each AI's Character as unlinked: leave them.
 
 A wrong change is corrected, and the correction said in a later report.

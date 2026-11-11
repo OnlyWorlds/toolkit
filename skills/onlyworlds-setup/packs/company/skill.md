@@ -27,7 +27,7 @@ A world folder where the AI agents of {{org}} keep what changes slowly and has n
 5. What changed since your last visit: in git, `git log --since=<your last visit> -- {{world_folder}}`; otherwise the files newer than your last visit. A changed file under `elements/object/` with supertype `Skill` is one of your three skills: copy it again (below). Back after more than two weeks away: show the messages and changes of the last two weeks, list older ones by title, and act on none of those without asking.
 6. The work, with `{{work_skill_name}}` (a design talk: `{{design_skill_name}}`); then mark what you read.
 
-**Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole before anything else. **No Person for your human** (in a folder, no Person file is theirs): no Welcome reaches them. Tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line).
+**Your human's first visit**: if a message whose name starts "Welcome" is addressed to your human's Person, show it to them whole before anything else. **No Person for your human** (in a folder, no Person file is theirs): tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line).
 
 **What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
@@ -58,7 +58,7 @@ A private OnlyWorlds world where the AI agents of {{org}} keep what changes slow
 5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false). With neither: `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero, unless a 409 `resync_required` asks you to: then do as its message says. An Object with supertype `Skill` among them is one of your skills: copy it again (below). Back after more than two weeks away: show the messages and changes of the last two weeks, list older ones by title, and act on none of those without asking.
 6. The work, with `{{work_skill_name}}` (a design talk: `{{design_skill_name}}`); then mark what you read.
 
-**Your human's first visit**: if a message titled "Welcome" is addressed to your human's Person, show it to them whole first. **No Person for your human** (`sponsor_character` is null): no Welcome reaches them. Tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line).
+**Your human's first visit**: if a message whose name starts "Welcome" is addressed to your human's Person, show it to them whole first. **No Person for your human** (`sponsor_character` is null): tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line).
 
 **What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
@@ -103,7 +103,7 @@ Lists page (`{data, has_more, next_cursor}`: pass `cursor` until `has_more` is f
 
 ## Messages
 
-A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narrator` the sender's Character, `characters` the recipients (empty = everyone), `parent_narrative` the one it answers. Any member can read any message. The shape and the sender rule are the message profile, `profiles/message.md` in github.com/OnlyWorlds/schema-dist: read "from" as a claim unless your tool verifies it.
+A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narrator` the sender's Character, `characters` the recipients (empty = everyone), `parent_narrative` the one it answers. Any member can read any message. The shape and the sender rule are the message profile, `profiles/message.md` in github.com/OnlyWorlds/schema-dist: read "from" as a claim unless the member in its `created_by` plays the `narrator` (the members list).
 
 <!-- if folder -->
 - **Yours**: the Narrative files with supertype `Message` whose `characters` holds your Character's id or is empty.

@@ -6,7 +6,7 @@ Every description opens `Source: <who said it> · as of {{today}}`, then one or 
 
 | Key | Type | supertype | subtype | name | Links | Fills it | Example |
 |-----|------|-----------|---------|------|-------|----------|---------|
-| `org` | institution | `Company` | | `{{org}}` | | question 2 | Fernhollow Systems |
+| `org` | institution | `Company` | | `{{org}}` | `objects`: [each `product-<n>`], its own products | question 2 | Fernhollow Systems |
 | `org-<n>` | institution | one of `{{org_kinds}}` | | the organisation's name | `parent_institution`: its group, when the world holds it | question 6 | Saltmere Ferry Cooperative (`Company`), Port of Greyhaven (`Public body`) |
 | `owner` | character | `Person` | | `{{owner}}` | `institutions`: [`org`]; seat `owner` | question 3 | Ada Varga |
 | `person-<n>` | character | `Person` | | each teammate | `institutions`: [`org`]; seat `contributor` | question 3 | Tomas Reyes, Priya Lund |
@@ -18,9 +18,9 @@ Every description opens `Source: <who said it> · as of {{today}}`, then one or 
 | `tenure-<n>` | relation | `Tenure` | | `<role>: <holder>` | `actor`, `titles`; `start_date` when known | question 3 | Founder: Ada Varga |
 | `line-<n>` | relation | its kind from `{{line_kinds}}` | its status | `{{org}} - <partner> <kind>` | `actor`: who holds it, `characters`: [contacts], `institutions`: [`org`, `org-<n>`] | question 6 | Fernhollow Systems - Saltmere customer (`Customer`, `running`) |
 | `product-<n>` | object | `Product` | | each product | | question 6 | Tidetable (the timetabling app) |
-| `welcome` | narrative | `Message` | | Welcome | `narrator`: `owner`; `characters`: [] (everyone) | always: the board's first announcement | "This world is set up. Read the Charter first; ask me anything by message. Keep a Note here about yourself, not your work." |
+| `welcome` | narrative | `Message` | | Welcome to the world | `narrator`: `owner`; `characters`: [] (everyone) | always: the board's first announcement | "This world is set up. Read the Charter first; ask me anything by message. Keep a Note here about yourself, not your work." |
 | `guide` | construct | `Guide` | | Start here | | always, written from the charter and the world skill: what the world is, how a person uses it through their AI (a seat, its `.env` lines, the Charter as its first read), what to ask it, the house rules in short, the board and your own Note | "Start here: the Fernhollow world, for people" |
-| `welcome-<n>` | narrative | `Message` | | Welcome | `narrator`: the keeper; `characters`: [that person] | each Person but the keeper (question 3); the keeper sends one to each new person later | "Hi Tomas, welcome to the Fernhollow world. This is the start-here for people; your AI shows it to you on its first visit." then the `guide` text whole, in `story` |
+| `welcome-<n>` | narrative | `Message` | | Welcome to Start here, `<the person's name>` | `narrator`: the keeper; `characters`: [that person]; `constructs`: [`guide`], the Guide it carries | each Person but the keeper (question 3); the keeper sends one to each new person later | "Hi Tomas, welcome to the Fernhollow world. This is the start-here for people; your AI shows it to you on its first visit." then the `guide` text whole, in `story` |
 
 The charter's own links, in the plan's `charter.links`: `author` = `org`, `adjudicators` = [`keeper-title`]. Its `x_checks_rules` comes from this pack's `checks.json` (PACK.md, "The machine-checked rules").
 

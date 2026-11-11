@@ -387,8 +387,8 @@ class SetupWriter(unittest.TestCase):
                 guides = [b for b in bodies if b.get("supertype") == "Guide"]
                 self.assertEqual([g["name"] for g in guides], ["Start here"])
                 people = {b["id"] for b in bodies if b.get("supertype") == "Person"}
-                welcomes = [b for b in bodies if b.get("supertype") == "Message" and b.get("name") == "Welcome"
-                            and len(b.get("characters") or []) == 1]
+                welcomes = [b for b in bodies if b.get("supertype") == "Message"
+                            and b.get("name", "").startswith("Welcome") and len(b.get("characters") or []) == 1]
                 self.assertTrue(welcomes and all(w["characters"][0] in people for w in welcomes),
                                 "a Welcome message to a person")
                 self.assertIn("Start here, for people: Construct, supertype Guide", run.charter())
