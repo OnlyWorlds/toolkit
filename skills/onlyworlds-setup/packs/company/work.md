@@ -103,6 +103,7 @@ A new file `{{world_folder}}elements/narrative/<name-slug>--<last 8 of its id>.j
 
 <!-- if folder -->
 - `x_room_of` is the `id` in `world.json`: the mark makes it a report; without it, it is lore.
+- A design note goes whole into the `story`, below its short part.
 <!-- end -->
 <!-- if online -->
 - `x_room_of` is `{{server_world_id}}`: the mark makes it a report; without it, it is lore.

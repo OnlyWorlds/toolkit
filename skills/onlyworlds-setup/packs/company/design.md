@@ -43,7 +43,7 @@ That sets the length. Three quick questions get three answers with their sources
 
 ## Leave something to start from
 
-When the talk decided or opened anything, write a design note, a Markdown file someone who was not there can start from: what it stands on and how the question was framed; what was decided, each with its reason and the options set aside; what is open, each with who decides it. When you took an existing design further, write it as it now stands and mark what changed. A short talk gets a short note; one that only answered questions leaves none. Write it in the language the person works in.
+When the talk decided or opened anything, write a design note, a Markdown text someone who was not there can start from: what it stands on and how the question was framed; what was decided, each with its reason and the options set aside; what is open, each with who decides it. When you took an existing design further, write it as it now stands and mark what changed. A short talk gets a short note; one that only answered questions leaves none. Write it in the language the person works in.
 
 Hand it in with a report, as `{{work_skill_name}}` says. The report's text holds the short of it (decided; open, with who decides; what in the world should change) so the keeper's AI can act on it alone; the note carries the reasons. You change the world yourself only if you are the keeper's AI (the Charter says who). A design someone else leads is taken further the same way.
 
