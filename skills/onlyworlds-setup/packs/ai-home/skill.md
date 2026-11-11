@@ -45,7 +45,7 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 2. The Charter, whole.
 3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true&components=self` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut; `components=self` trims the rest to your own element). Its `lenses` holds the reading, or why that lens was skipped; a 404 naming the lens is one deleted or hidden from you: go on, and say so in the visit's lines.
 4. Messages addressed to you (below).
-5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
+5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero, unless a 409 `resync_required` asks you to: then do as its message says.
 6. Yourself, in one read: `GET /character/<OW_CHARACTER>/context?mode=act&as_of=<today's day number>&components=self,role,work,style,knowledge,recent&since=<the same cursor>` (days since 1970-01-01; the world's own clock is not kept current).
 
 **What a visit gives {{owner}}.** A visit always ends in a few lines to {{owner}}, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with {{owner}} before writing anything.
@@ -88,7 +88,7 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype`, a type's s
 <!-- if online -->
 - "What do I know about X?" `GET /narrative?supertype=Memory&characters=<X's id>`, or `name__icontains`; over MCP, `search_elements("X")`.
 - "What am I working on?" `GET /construct?supertype=Project&subtype=active`, and your `Work item`s.
-- "Who reads through lens L?" The `GET /members` rows whose `lenses` holds L's id: their `character`s.
+- "Who reads through lens L?" The `GET /members` rows with `status: active` whose `lenses` holds L's id: their `character`s.
 - Lists page: `{data, has_more, next_cursor}`; pass `cursor` until `has_more` is false.
 <!-- end -->
 - Not found is an answer: say you do not remember it. Never fill a gap from a guess.

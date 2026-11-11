@@ -51,7 +51,7 @@ Every file carries its `supertype` and `subtype`: the supertype is the index. To
 2. The Charter, whole.
 3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true&components=self` (days since 1970-01-01; without `as_of` everything dated after the world's own clock is cut; `components=self` trims the rest to your own element). Its `lenses` holds the reading, or why that lens was skipped; a 404 naming the lens is one deleted or hidden from you: go on, and say so in the visit's lines.
 4. Your unread messages (below).
-5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero.
+5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero, unless a 409 `resync_required` asks you to: then do as its message says.
 6. The work; then mark what you read.
 
 **What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
@@ -90,7 +90,7 @@ Lists page: `{data, has_more, next_cursor}`; pass `cursor` until `has_more` is f
 - "Is rule X in force, and what amended it?" `GET /law?name__icontains=X`, then its `subtype`, and the rules whose `parent_law` is its id.
 - "How did member M vote on motion X?" `GET /relation?supertype=Vote&name__icontains=X&expand=actor`.
 - "What did the meeting of day D decide?" `GET /event?supertype=Decision` and keep `start_date` = D; the minutes of that day hold the text.
-- "Who reads through lens L?" The `GET /members` rows whose `lenses` holds L's id: their `character`s.
+- "Who reads through lens L?" The `GET /members` rows with `status: active` whose `lenses` holds L's id: their `character`s.
 <!-- end -->
 - Not found is an answer: say the record does not hold it. Never fill it from memory.
 
@@ -104,6 +104,7 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 - A new element you write carries `x_review_proposed` (Charter rule 8): you draft, the keeper settles. Minutes you draft name their source (the recording, the notes) in `evidence`.
 <!-- if folder -->
 - Read before you change: keep every field you do not change; links = the merged list. Link only ids that exist here.
+- On onlyworlds.com, below co-builder a review mark's `by` must be the writer's own membership id, or the mark sent back as the element holds it (else 403 `review_by_another`): a folder's Character id there passes only in a write by the owner's keys or a co-builder.
 <!-- end -->
 <!-- if online -->
 - Read before you change: a PATCH replaces each field you send. JSON as ASCII; link only ids that exist here.
