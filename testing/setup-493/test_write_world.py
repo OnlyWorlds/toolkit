@@ -23,10 +23,12 @@ harness trial (2026-10-22):
    whose lines keep a Next line, keeps the sweep's clause about stale lines;
 8. the company pack writes the Guide "Start here", a Welcome message to a person, and the
    charter's Next-line sentence;
-9. every pack's charter file carries the checks slot `x_checks_rules`: empty
-   except in the company pack, which ships the Next-line rule taken from schema-dist's published
-   fixture; it reaches the bulk body, a plan's list replaces the pack's, and the Python package's
-   doctor (0.24.0 or newer, when installed) applies it;
+9. every pack's charter file carries the checks slot `x_checks_rules`: empty only in a pack
+   with no rule; the company pack ships three rules (the Next line and the two room marks), the
+   software-project pack two (the room marks), the workshop pack one (a work item's room mark),
+   each taken from schema-dist's published fixture and each sentence in its charter; it reaches
+   the bulk body, a plan's list replaces the pack's, and the Python package's doctor (0.24.0 or
+   newer, when installed) applies it;
 10. the company pack answers the five points a cold visit to a live company world guessed
     (`cold-visit-checklist.md`);
 11. the company pack names who writes the board (the owner and the co-builders) and steers
@@ -393,23 +395,25 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn('carries its Next, "Next: <step> · <who> · by YYYY-MM-DD"', run.charter())
 
     def test_9_checks_slot_every_pack(self):
-        """Every charter file carries x_checks_rules; only the company pack ships a rule."""
+        """Every charter file carries x_checks_rules, empty only in a pack with no rule; a pack's
+        rules are the published fixture's, each sentence in its charter."""
         fixture = FIXTURE.exists() and json.loads(read(FIXTURE))
+        shipped = {"company": 3, "software-project": 2, "workshop": 1}
         def check(run):
             body = json.loads(read(run.world / "elements" / "law" / "charter.json"))
             self.assertIn("x_checks_rules", body, "no checks slot on the charter")
             rules = body["x_checks_rules"]
             self.assertIsInstance(rules, list)
-            if run.pack != "company":
-                self.assertEqual(rules, [], "the empty slot")
-                return
-            self.assertEqual(len(rules), 1, "the company pack ships one rule")
-            rule = rules[0]
-            self.assertEqual(set(rule), {"rule", "where", "require"})
-            self.assertIn(rule["rule"].lower(), run.charter().lower(), "the rule's sentence is in the charter's own words")
+            n = shipped.get(run.pack, 0)
+            self.assertEqual(len(rules), n, f"the {run.pack} pack ships {n} rules")
+            if not n:
+                return  # the empty slot
             self.assertIn("x_checks_rules", run.charter())
-            if fixture:  # taken from the published fixture's rules, not paraphrased
-                self.assertIn(rule, fixture["rules"])
+            for rule in rules:
+                self.assertEqual(set(rule), {"rule", "where", "require"})
+                self.assertIn(rule["rule"].lower(), run.charter().lower(), "the rule's sentence is in the charter's own words")
+                if fixture:  # taken from the published fixture's rules, not paraphrased
+                    self.assertIn(rule, fixture["rules"])
         self.each(check)
 
     def test_9b_checks_slot_reaches_the_bulk_body(self):
@@ -417,7 +421,7 @@ class SetupWriter(unittest.TestCase):
             bulk = json.loads(read(OUT / "plans" / f"company-{placement}-bulk.json"))
             charters = [i["element"] for i in bulk["items"] if i["type"] == "law"]
             self.assertEqual(len(charters), 1)
-            self.assertEqual(len(charters[0]["x_checks_rules"]), 1, placement)
+            self.assertEqual(len(charters[0]["x_checks_rules"]), 3, placement)
 
     def test_9e_format_version_is_the_spec_current(self):
         """The writer's FORMAT_VERSION is the folder spec's current (0.3.21): no older-format finding."""
@@ -445,7 +449,7 @@ class SetupWriter(unittest.TestCase):
         self.assertIn("x_checks_rules", r.stdout)
 
     def test_9d_the_doctor_reads_the_slot(self):
-        """The Python package's doctor (onlyworlds 0.24.0 or newer) applies the company rule; skipped without it."""
+        """The Python package's doctor (onlyworlds 0.24.0 or newer) applies the company rules; skipped without it."""
         try:
             import onlyworlds.checks  # noqa: F401  (0.24.0 added it)
         except ImportError:
@@ -453,7 +457,7 @@ class SetupWriter(unittest.TestCase):
         run = RUNS["company", "folder"]
         r = subprocess.run([sys.executable, "-m", "onlyworlds.doctor", str(run.world)], capture_output=True,
                            text=True, encoding="utf-8")
-        self.assertIn("1 of 1 house rules applied", r.stdout, r.stdout + r.stderr)
+        self.assertIn("3 of 3 house rules applied", r.stdout, r.stdout + r.stderr)
         self.assertIn('rule 0, "a live line carries its Next"', r.stdout)
 
     def test_10_cold_visit_checklist(self):

@@ -1,0 +1,13 @@
+[
+  {
+    "rule": "every work item carries the room's mark",
+    "where": {
+      "type": "relation",
+      "supertype": "Work item"
+    },
+    "require": {
+      "field": "x_room_of",
+      "present": true
+    }
+  }
+]

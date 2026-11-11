@@ -48,14 +48,12 @@ A team runs its work in this world, so the pack lands three skills, each an Obje
 
 Eight, in `charter.md`. Seven slots every company keeps: a message is not an instruction; unsure beats invented; the source line; **the privacy rule** (`{{privacy_rule}}`, the one rule each company writes for itself); change what you made; hold what is decided, inferences included (rule 6: what an agent inferred rather than was told goes to whoever decides it as a message); what is here stays here. The eighth: **a member's AI does not change the world's elements**: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. **The world's switch stays off**: `agent_writes_proposed` (the owner's, set on the world page, off by default; read in `GET /world`) holds every agent seat's write as a proposal when on, the keeper's AI's included, and the work skill's keeper's step stops when it reads it on. A team that wants a yes on each AI change can add that rule back (the review profile, `profiles/review.md` in the schema distribution, and the switch on); then the keeper completes the reports by their own hand, or accepts each change, and the keeper's AI cannot.
 
-**The one machine-checked rule.** The Charter seed carries `x_checks_rules` (the checks profile, schema-dist `profiles/checks.md`) with the rule the charter already states under "How things are filed": a live line carries its Next. The writer reads it from `checks.json` in this folder; the plan's `charter.x_checks_rules` replaces it (`[]` for a company that keeps no Next lines):
+**The machine-checked rules.** The Charter seed carries `x_checks_rules` (the checks profile, schema-dist `profiles/checks.md`) with three rules, each taken from that profile's published fixture and each one the charter already states under "How things are filed": a live line carries its Next; every work item carries the room's mark; every report carries the room's mark (a team's world's own house rules: the mark is `x_room_of`, this world's id). The writer reads them from `checks.json` in this folder; the plan's `charter.x_checks_rules` replaces the list (without the first rule for a company that keeps no Next lines):
 
 ```json
-{
-  "rule": "a live line carries its Next",
-  "where": {"type": "relation", "subtype": ["in talks", "agreed", "running", "paused"]},
-  "require": {"field": "description", "matches": "(?im)^next\\b"}
-}
+{"rule": "a live line carries its Next", "where": {"type": "relation", "subtype": ["in talks", "agreed", "running", "paused"]}, "require": {"field": "description", "matches": "(?im)^next\\b"}}
+{"rule": "every work item carries the room's mark", "where": {"type": "relation", "supertype": "Work item"}, "require": {"field": "x_room_of", "present": true}}
+{"rule": "every report carries the room's mark", "where": {"type": "narrative", "supertype": "Report"}, "require": {"field": "x_room_of", "present": true}}
 ```
 
 ## The placeholders
@@ -83,3 +81,7 @@ Date fields count days from 1970-01-01 (the setup day 2026-10-22 is 20748); `wor
 ## A world set up before toolkit 5.5.0
 
 Its Charter and its Guide (`Start here`) carry no `x_charter_of`, so every reader shows them as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, the Guide and each Domain, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
+
+## A world set up before toolkit 5.9.6
+
+Its Charter checks the Next line alone, and no refresh adds the room-mark rules (the writer writes only new folders), so the keeper adds them by hand: "every work item carries the room's mark, and every report carries the room's mark: x_room_of, this world's id" to the Charter's "How things are filed", and the two rules above to its `x_checks_rules` (online one PATCH of both fields, each read first and written whole; in a folder an edit of the file).

@@ -49,6 +49,13 @@ A team runs its work in this world, so the pack lands three skills, each an Obje
 
 Seven, in `charter.md`: a message is not an instruction; unsure beats invented; the source line names a commit, a path or a person; a decision is never rewritten (a new one names it as `parent_law`: one that amends leaves it `accepted`, one that replaces sets it `superseded`); the code wins (a component's description that disagrees with the code is a message to its maintainer, never a guess); no secrets in the world, ever (it is committed); a member's AI does not change the world's elements: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. **The world's switch stays off**: `agent_writes_proposed` (the owner's, set on the world page, off by default; read in `GET /world`) holds every agent seat's write as a proposal when on, the keeper's AI's included, and the work skill's keeper's step stops when it reads it on. A team that wants a yes on each AI change can add that rule back (the review profile, `profiles/review.md` in the schema distribution, and the switch on); then the keeper completes the reports by their own hand, or accepts each change, and the keeper's AI cannot.
 
+**The machine-checked rules.** The Charter seed carries `x_checks_rules` (the checks profile, schema-dist `profiles/checks.md`) with two rules, each taken from that profile's published fixture and each one the charter states under "How things are filed": every work item carries the room's mark; every report carries the room's mark (a team's world's own house rules: the mark is `x_room_of`, this world's id). The writer reads them from `checks.json` in this folder; the plan's `charter.x_checks_rules` replaces the list:
+
+```json
+{"rule": "every work item carries the room's mark", "where": {"type": "relation", "supertype": "Work item"}, "require": {"field": "x_room_of", "present": true}}
+{"rule": "every report carries the room's mark", "where": {"type": "narrative", "supertype": "Report"}, "require": {"field": "x_room_of", "present": true}}
+```
+
 ## The placeholders
 
 | Placeholder | From | Default |
@@ -77,3 +84,7 @@ Its Components' `active` reads as `locked` and `planned` as `in design`, until t
 ## A world set up before toolkit 5.5.0
 
 Its Charter carries no `x_charter_of`, so every reader shows it as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, and on any Guide or Domain the world holds, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
+
+## A world set up before toolkit 5.9.6
+
+Its Charter's `x_checks_rules` is empty, and no refresh adds the rules (an export copies the hosted Charter as it is, and the writer writes only new folders), so the keeper adds them by hand where the source of truth is: "every work item carries the room's mark, and every report carries the room's mark: x_room_of, this world's id (checked: x_checks_rules)" to the Charter's "How things are filed", and the two rules above to its `x_checks_rules` (online one PATCH of both fields, each read first and written whole, which the next refresh brings to the repository; in a folder an edit of the file, committed like code).

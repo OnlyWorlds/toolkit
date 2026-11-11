@@ -30,6 +30,6 @@ How things are filed
 - A vote: Relation, supertype Vote, named "<you> votes"; actor = you, constructs = your picks in order.
 - A sitting: Event, supertype Sitting, subtype its phase (Lobby, Welcome, Parsing, Design, Voting, Build, Showcase); in a folder, start_date its day; the host's switches x_hearts_on, x_specs_shown, x_voting_open; x_star the winner; x_feed_start the feed's head at its start.
 - A work item: Relation, supertype Work item, subtype open, taken or done; actor = whom it is for.
-- Each of these carries x_room_of: a sitting the world's id, the rest the id of the sitting it was made in (before any sitting, the world's). This Charter and the how-to carry none.
+- Every work item carries the room's mark (checked: x_checks_rules), and so does each of these: x_room_of, on a sitting the world's id, on the rest the id of the sitting it was made in (before any sitting, the world's). This Charter and the how-to carry none.
 - This Charter: Law, supertype Charter. The how-to: Object, supertype Skill.
 - Date fields count days from 1970-01-01.

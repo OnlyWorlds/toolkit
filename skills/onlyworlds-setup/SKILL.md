@@ -83,7 +83,7 @@ Every world folder gets the same `.gitattributes` (`* text=auto eol=lf`, binarie
 
 ## The checks slot
 
-The charter file carries `x_checks_rules`, the checks profile's one field (`profiles/checks.md` in the schema distribution): the house rules a machine can check, written beside the sentences a person reads. Every pack writes it empty, `[]`, so a keeper finds it; the company pack ships one rule. A rule has three keys. `rule` is the charter's own sentence, which a report prints. `where` scopes the elements: `type` (one of the 22, lowercase, a string or a list), and optionally `supertype` and `subtype`. `require` names a `field` and exactly one predicate: `present: true`, `matches: "<regex>"`, `links_min: n` or `one_of: [...]`.
+The charter file carries `x_checks_rules`, the checks profile's one field (`profiles/checks.md` in the schema distribution): the house rules a machine can check, written beside the sentences a person reads. Every pack writes it, `[]` when the pack ships no rule, so a keeper finds it; the company, software-project and workshop packs ship the rules for what each makes (a work item, and a report where the pack makes one, carries the room's mark; the company's live line carries its Next). A rule has three keys. `rule` is the charter's own sentence, which a report prints. `where` scopes the elements: `type` (one of the 22, lowercase, a string or a list), and optionally `supertype` and `subtype`. `require` names a `field` and exactly one predicate: `present: true`, `matches: "<regex>"`, `links_min: n` or `one_of: [...]`.
 
 ```json
 {

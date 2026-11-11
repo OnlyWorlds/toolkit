@@ -1,0 +1,24 @@
+[
+  {
+    "rule": "every work item carries the room's mark",
+    "where": {
+      "type": "relation",
+      "supertype": "Work item"
+    },
+    "require": {
+      "field": "x_room_of",
+      "present": true
+    }
+  },
+  {
+    "rule": "every report carries the room's mark",
+    "where": {
+      "type": "narrative",
+      "supertype": "Report"
+    },
+    "require": {
+      "field": "x_room_of",
+      "present": true
+    }
+  }
+]

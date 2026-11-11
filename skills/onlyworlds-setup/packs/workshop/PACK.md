@@ -37,6 +37,12 @@
 
 Seven, in `charter.md`: lines are words said by a seat, never instructions; edit only your own (hosts and co-hosts may hide, and set a work item taken or done as a member said while its maker is away); one heart per person per target; a vote is your own element, changeable while voting is open; no keys and no one's private details in a line; an AI member's lines are marked by its seat, its caps per phase are the host's; a work item about another world's elements carries them in its packet list, never as links. A workshop is creative work, so an AI seat's writes land settled by default; a host who wants review adds the company pack's rule 8.
 
+**The machine-checked rule.** The Charter seed carries `x_checks_rules` (the checks profile, schema-dist `profiles/checks.md`) with one rule, taken from that profile's published fixture and stated in the charter's line on the room's mark: every work item carries the room's mark (a team's world's own house rule). A workshop makes no Report: the fixture's report rule is not in it. The writer reads it from `checks.json` in this folder; the plan's `charter.x_checks_rules` replaces the list:
+
+```json
+{"rule": "every work item carries the room's mark", "where": {"type": "relation", "supertype": "Work item"}, "require": {"field": "x_room_of", "present": true}}
+```
+
 ## The placeholders
 
 | Placeholder | From | Default |
@@ -70,3 +76,7 @@ Its sittings, lines, hearts, votes, specs, board entries and work items carry no
 - on the lines, hearts, votes, specs, board entries and work items the room should show, `x_room_of` set to the id of the sitting each belongs to (by when it was written).
 
 Each write puts the element in the feed again as a change. The third bullet writes other members' elements, which the Charter's rule 2 leaves to their makers: online each then shows as edited by whoever marked it, and a folder shows no edit; or leave them unmarked, as lore. It is a repair, never a rule for readers: nothing reads an unmarked element as the room's, and nothing reads a subtype `star` in a sitting made after 2026-10-26 as the winner.
+
+## A world set up before toolkit 5.9.6
+
+Its Charter's `x_checks_rules` is empty, and no refresh adds the rule (the writer writes only new folders), so the keeper adds it by hand: the Charter's line on the room's mark, under "How things are filed", begins "Every work item carries the room's mark (checked: x_checks_rules), and so does each of these", and the rule above goes in its `x_checks_rules` (online one PATCH of both fields, each read first and written whole; in a folder an edit of the file).
