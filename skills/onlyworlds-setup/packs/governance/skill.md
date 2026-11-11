@@ -104,7 +104,7 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 - A new element you write carries `x_review_proposed` (Charter rule 8): you draft, the keeper settles. Minutes you draft name their source (the recording, the notes) in `evidence`.
 <!-- if folder -->
 - Read before you change: keep every field you do not change; links = the merged list. Link only ids that exist here.
-- On onlyworlds.com, below co-builder a review mark's `by` must be the writer's own membership id, or the mark sent back as the element holds it (else 403 `review_by_another`): a folder's Character id there passes only in a write by the owner's keys or a co-builder.
+- On onlyworlds.com, below co-builder a review mark's `by` must be the writer's own membership id, or the mark sent back as the element holds it (else 403 `review_by_another`): a folder's Character id there passes in a write by the owner's keys or a co-builder.
 <!-- end -->
 <!-- if online -->
 - Read before you change: a PATCH replaces each field you send. JSON as ASCII; link only ids that exist here.
