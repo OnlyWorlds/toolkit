@@ -20,6 +20,7 @@ A design talk usually fails one of four ways: an answer from the ask alone, besi
 <!-- end -->
 <!-- if online -->
 - Search the world for the person's own words and any key they name: `GET /search?q=<words>&limit=200` finds the elements whose name or text holds every word whole, ignoring case; `truncated` true means more matched than came back. A hit carries only a snippet, and a key with a hyphen is searched as two words: read the hits (`GET /<type>?ids=<hit ids>&fields=id,name,description`) and keep those that hold the key whole. Nothing found is not proof: read the parts the ask names.
+- A report's design notes are its files: `GET /narrative/<its id>/files` lists them, and `GET /narrative/<its id>/files/<file id>/download` gives each a link that lives 5 minutes.
 - What is under a part: `GET /object?parent_object=<its id>`.
 - Open questions are work items: page `GET /relation?supertype=Work%20item&subtype=open` and keep those that name the part (in `x_packet_elements` or a link field).
 <!-- end -->
