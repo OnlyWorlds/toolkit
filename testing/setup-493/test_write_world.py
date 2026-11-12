@@ -52,8 +52,9 @@ harness trial (2026-10-22):
 15. no route in a filled online skill carries a query value with a raw space;
 16. the writer refuses an AI seat whose role is above its human's;
 18. a skill's size never refuses a plan: a world skill (18a) and a team pack's work skill (18b)
-    filled past the size the packs aim for are written, exit 0, with one note naming each; a
-    charter over its budget is still refused (18c).
+    filled to SKILL_MAX characters or more (the packs aim for under it) are written, exit 0, with one
+    note naming each; at exactly SKILL_MAX - 1, SKILL_MAX and SKILL_MAX + 1 the size line and the note
+    are true (18d); a charter over its budget is still refused (18c).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -109,8 +110,8 @@ ORDER = ("This order is in the skill itself because harnesses differ on whether 
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
 FIXTURE = Path(os.environ.get("OW_CHECKS_FIXTURE") or LINT.parent.parent / "profiles" / "checks.fixture.json")
 # The room a filled world skill keeps under the size the packs aim for (the writer's SKILL_MAX, read
-# from the writer), so a company's own names rarely push a skill past it (the writer writes one past
-# it whole, and says so: test 18).
+# from the writer), so a company's own names rarely bring a skill to it (the writer writes one of
+# SKILL_MAX or more whole, and says so: test 18).
 ROOM = 500
 # The room a team pack's filled charter keeps under the writer's budget at every team size (test 14).
 CHARTER_ROOM = 300
@@ -126,6 +127,17 @@ def visit_steps(text):
     return [ln for ln in lines[start:end] if re.match(r"\d+\. ", ln)]
 OUT = Path(os.environ.get("OW_SETUP_TEST_OUT") or
            REPO / ".scratch" / "tests" / time.strftime("%Y%m%d-%H%M%S"))
+
+
+def size_line(label, size, budget, name):
+    """The writer's size line for one skill: its length and the packs' aim, no comparison."""
+    return f"{label} {size} characters, the packs aim for under {budget}; skill name {name}"
+
+
+def size_note(label, size, budget):
+    """The note the writer prints for a skill of SKILL_MAX characters or more."""
+    return (f"note: the {label} is {size} characters, and the packs aim for under {budget}; it is "
+            f"written whole, and nothing needs changing")
 
 
 def ai_keys(plan):
@@ -863,15 +875,14 @@ class SetupWriter(unittest.TestCase):
         return r.returncode, r.stdout + r.stderr, world, root
 
     def assert_over_written(self, code, out, label, path, name, root, budget):
-        """A skill at or over SKILL_MAX: exit 0, its file and both copies written, its size line saying
-        it is past, one note naming it that asks for nothing."""
+        """A skill at or over SKILL_MAX: exit 0, its file and both copies written, its size line giving
+        its size and the aim, one note naming it that asks for nothing."""
         self.assertEqual(code, 0, out)
         size = len(json.loads(read(path))["description"])
-        self.assertGreaterEqual(size, budget, f"the case must fill the {label} past {budget}")
-        note = (f"note: the {label} is {size} characters, past the {budget} the packs aim for; it is "
-                f"written whole, and nothing needs changing")
-        self.assertEqual([ln for ln in out.splitlines() if ln.startswith(f"note: the {label} ")], [note], out)
-        self.assertIn(f"{label} {size}, past {budget}; skill name {name}", out)
+        self.assertGreaterEqual(size, budget, f"the case must fill the {label} to {budget} or more")
+        self.assertEqual([ln for ln in out.splitlines() if ln.startswith(f"note: the {label} ")],
+                         [size_note(label, size, budget)], out)
+        self.assertIn(size_line(label, size, budget, name), out)
         for h in (".agents", ".claude"):
             self.assertTrue((root / h / "skills" / name / "SKILL.md").exists(), f"{h} copy of {name}")
 
@@ -911,6 +922,36 @@ class SetupWriter(unittest.TestCase):
         self.assert_over_written(code, out, "world skill",
                                  world / "elements" / "object" / f"{plan['world']['slug']}-skill.json",
                                  f"{plan['prefix']}-start", root, budget)
+
+    def test_18d_the_size_lines_at_the_boundary(self):
+        """The real writer with the workshop's online world skill filled to exactly SKILL_MAX - 1,
+        SKILL_MAX and SKILL_MAX + 1 (the `workshop` value padded): the size line gives the size and the
+        aim at each, the note prints at SKILL_MAX and above and not below, and no printed line about
+        the skill holds a comparing word that could be false at that size."""
+        budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
+        base = json.loads(read(PLANS / "workshop.json"))
+        pad = "and Friends of the Old Brickworks Open Build Night " * 30
+        slug = base["world"]["slug"]
+
+        def size_with(n, tag):
+            plan = json.loads(json.dumps(base))
+            plan["values"]["workshop"] += " " + pad[:n] if n else ""
+            code, out, world, root = self.write_plan(plan, "online", f"edge-{tag}")
+            self.assertEqual(code, 0, out)
+            return len(json.loads(read(world / "elements" / "object" / f"{slug}-skill.json"))["description"]), out
+
+        s0, _ = size_with(0, "base")
+        s1, _ = size_with(10, "probe")
+        self.assertEqual(s1 - s0, 11, "the `workshop` value fills the world skill once")
+        for target in (budget - 1, budget, budget + 1):
+            with self.subTest(size=target):
+                size, out = size_with(target - s0 - 1, str(target))
+                self.assertEqual(size, target)
+                self.assertIn(size_line("world skill", size, budget, "ow-" + slug), out)
+                notes = [ln for ln in out.splitlines() if ln.startswith("note: the world skill ")]
+                self.assertEqual(notes, [size_note("world skill", size, budget)] if size >= budget else [], out)
+                for part in (p for ln in out.splitlines() for p in ln.split(";") if "world skill" in p):
+                    self.assertIsNone(re.search(r"\b(past|over|above|below|exceeds?)\b|of under", part), part)
 
     def test_18c_a_charter_over_its_budget_is_still_refused(self):
         """The charter's budget stands: a workshop whose `about` fills the charter past CHARTER_MAX is
