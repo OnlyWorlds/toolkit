@@ -83,7 +83,11 @@ harness trial (2026-10-22):
     interrupt at any step of the undo still ends the run, and every path left is named (20g); an error
     of any kind in the undo is named and the undo goes on (20h); the summary is one write, the run's
     last act (20i); a file this run changed twice is described by what it holds (20j); a folder pass
-    whose undo leaves a folder never says that nothing is written (20k).
+    whose undo leaves a folder never says that nothing is written (20k); the journal's own step
+    interrupted in place of or just after each act's undo stops the undo, every path left named (20l);
+    an interrupt just after the undo says only what the journal holds (20m); a run with no output at
+    all writes as one with it, exit 0, and a refusal then goes to the error output (20n); the writer
+    names no signal (20o).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -1900,9 +1904,151 @@ class TakenBack(unittest.TestCase):
         with UndoFault(ww, 1, "before", perm, ("mkdir", 3, perm)):
             code, out = self.run_in(ww, argv)
         self.assertEqual(code, 1, out)
-        self.assertRegex(out, r"REFUSED [^\n]*: the folder [^\n]* cannot be made \(Permission denied \(made to fail\)\)\n")
+        self.assertRegex(out, r"REFUSED [^\n]*: the folder [^\n]* cannot be made \(Permission denied \(made to fail\)\); "
+                              r"the writer took back the folders it had made, but for \d+ path\(s\) below\n")
         self.assertIn("the folder this run made could not be removed", out)
         self.assertGreater(self.assert_told(before, contents(proj, case), out), 0)
+
+    def test_20l_an_interrupt_at_or_between_the_undos_steps(self):
+        """The journal's own step (Journal.undo_one) interrupted at every act of the undo: in place of the
+        step (between it and the act before, whose answer is recorded) or just after it (the step done,
+        its answer not yet recorded). The undo stops; the interrupt comes through; every path that differs
+        from before is named, and "nothing left behind" is never printed. No signal is sent."""
+        ww = self.writer("20l")
+        firsts = {"bulk": ("bulk", lambda: PermissionError(13, "Permission denied (made to fail)")),
+                  "folder": ("mkdir", 5, lambda: PermissionError(13, "Permission denied (made to fail)"))}
+        real_step = ww.Journal.undo_one
+        runs, counts = 0, []
+        for tag, first in firsts.items():
+            seen = []
+            ww.Journal.undo_one = staticmethod(lambda act: (seen.append(act), real_step(act))[1])
+            try:
+                argv, proj, case = self.project("governance", f"undo-step-{tag}-count")
+                with UndoFault(ww, 0, "before", KeyboardInterrupt, first):
+                    self.run_in(ww, argv)
+            finally:
+                ww.Journal.undo_one = staticmethod(real_step)
+            steps = len(seen)
+            counts.append(f"{tag} {steps} steps")
+            for j in range(1, steps + 1):
+                for when in ("before", "after"):
+                    with self.subTest(first=tag, j=j, when=when):
+                        n = [0]
+
+                        hit = []
+
+                        def step(act, j=j, when=when, n=n, hit=hit):
+                            n[0] += 1
+                            if n[0] == j:
+                                hit.append(act["path"])
+                            if n[0] == j and when == "before":
+                                raise KeyboardInterrupt
+                            got = real_step(act)
+                            if n[0] == j:
+                                raise KeyboardInterrupt
+                            return got
+                        argv, proj, case = self.project("governance", f"undo-step-{tag}-{j}-{when}")
+                        before = contents(proj, case)
+                        buf = io.StringIO()
+                        ww.Journal.undo_one = staticmethod(step)
+                        try:
+                            with UndoFault(ww, 0, "before", KeyboardInterrupt, first):
+                                with self.assertRaises(KeyboardInterrupt):
+                                    self.run_in(ww, argv, buf)
+                        finally:
+                            ww.Journal.undo_one = staticmethod(real_step)
+                        self.assert_told(before, contents(proj, case), buf.getvalue())
+                        self.assertNotIn("nothing left behind", buf.getvalue())
+                        # the undo stopped there: the act in hand is named as never answered for
+                        self.assertIn(f"NOT PUT BACK {hit[0]}: the undo was interrupted before it answered for "
+                                      f"this act", buf.getvalue())
+                        runs += 1
+        print(f"\n20l: {', '.join(counts)}; each step two ways: {runs} runs")
+
+    def test_20m_an_interrupt_just_after_the_undo(self):
+        """An interrupt cannot land after a handler is given back: the writer takes no signal handler.
+        The nearest shape: an interrupt right after the undo returns, with one folder the undo could not
+        remove, and with none. The words read the journal: the folder named and no "nothing left behind";
+        or, when everything was taken back, the refusal's whole words ("nothing written") over a listing
+        equal to before."""
+        ww = self.writer("20m")
+        perm = lambda: PermissionError(13, "Permission denied (made to fail)")  # noqa: E731
+        for tag, j in (("one folder left", 1), ("all taken back", 0)):
+            with self.subTest(case=tag):
+                real_undo = ww.Journal.undo
+                argv, proj, case = self.project("governance", f"undo-after-{j}")
+                before = contents(proj, case)
+                buf = io.StringIO()
+                with UndoFault(ww, j, "before", perm, ("mkdir", 3, perm)):
+                    wrapped = ww.Journal.undo
+
+                    def undo(journal, wrapped=wrapped):
+                        wrapped(journal)
+                        raise KeyboardInterrupt
+                    ww.Journal.undo = undo
+                    try:
+                        with self.assertRaises(KeyboardInterrupt):
+                            self.run_in(ww, argv, buf)
+                    finally:
+                        ww.Journal.undo = wrapped
+                ww.Journal.undo = real_undo
+                changed = self.assert_told(before, contents(proj, case), buf.getvalue())
+                if j:
+                    self.assertGreater(changed, 0, buf.getvalue())
+                else:
+                    self.assertEqual(changed, 0)
+                    self.assertIn("nothing written; 1 problem(s)", buf.getvalue())
+
+    def test_20n_no_output_at_all(self):
+        """A run given no output at all writes what it writes with one, and exits 0; a refusal with no
+        output goes to the error output. In-process (sys.stdout None), and as a command whose output is
+        closed (`>&-`, where a POSIX shell is found)."""
+        import shutil
+        ww = self.writer("20n")
+        made = {}
+        for tag in ("with", "without"):
+            argv, proj, case = self.project("company", f"undo-out-{tag}")
+            n = [0]
+            ww.uuid7 = lambda n=n: (n.__setitem__(0, n[0] + 1), f"019a0000-0000-7000-8000-{n[0]:012d}")[1]
+            saved = sys.stdout
+            sys.stdout = io.StringIO() if tag == "with" else None
+            try:
+                code = ww.main(argv)
+            finally:
+                sys.stdout = saved
+            self.assertEqual(code, 0, tag)
+            made[tag] = {rel: data for (folder, rel), data in contents(proj).items()}
+        self.assertEqual(made["without"], made["with"], "no output changed what was written")
+        self.assertGreater(len(made["with"]), 10)
+        bash = shutil.which("bash")
+        if not bash:
+            self.skipTest("no POSIX shell to close the output with")
+        for tag, put, refused in (("written", None, None), ("bulk a folder", "bulk", "REFUSED "),
+                                  ("today", "today", "REFUSED today")):
+            with self.subTest(case=tag):
+                argv, proj, case = self.project("governance", f"undo-closed-{tag.split()[0]}")
+                if put == "bulk":
+                    (proj / "bulk-folder").mkdir(exist_ok=True)
+                    argv[-1] = str(proj / "bulk-folder")
+                if put == "today":
+                    plan = json.loads(read(Path(argv[0])))
+                    plan["today"] = "2026-13-45"
+                    Path(argv[0]).write_text(json.dumps(plan), encoding="utf-8")
+                before = contents(proj, case)
+                r = subprocess.run([bash, "-c", 'exec "$0" "$@" >&-', sys.executable, str(WRITER), *argv],
+                                   capture_output=True, text=True, encoding="utf-8")
+                if refused:
+                    self.assertEqual(r.returncode, 1, r.stderr)
+                    self.assertIn(refused, r.stderr)
+                    self.assertEqual(contents(proj, case), before)
+                else:
+                    self.assertEqual(r.returncode, 0, r.stderr)
+                    self.assertTrue((Path(argv[1]) / "world.json").exists())
+
+    def test_20o_the_writer_takes_no_signal(self):
+        """The writer touches no signal handler: its source never names the signal module."""
+        source = read(WRITER)
+        self.assertIsNone(re.search(r"\bsignal\b", source), "the writer names `signal`")
 
 
 if __name__ == "__main__":

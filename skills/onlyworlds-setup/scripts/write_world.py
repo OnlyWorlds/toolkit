@@ -17,6 +17,7 @@ characters is written too, with a note giving its length and the specification's
 nothing it did not make: when it stops on an error, or an interrupt, after its first act, it takes the
 run back, last act first (a file it made removed, a line it appended cut off, a file it wrote over
 given its bytes back, a folder it made removed while empty), and says each path it could not put back.
+An interrupt during that take-back stops it, and each path not yet taken back is said too.
 
 The plan (JSON):
 
@@ -97,7 +98,6 @@ import datetime
 import json
 import os
 import re
-import signal
 import sys
 import time
 from pathlib import Path
@@ -321,13 +321,17 @@ class Journal:
     appended to (its length before), a file written over (its bytes before). undo() takes them back,
     last act first, and only what this run did: a folder only while empty (rmdir), a file only while it
     is the same file and holds nothing but a start of what this run wrote there (bytes the run did not
-    write are never cut or removed; such a file is reported, and left as it is)."""
+    write are never cut or removed; such a file is reported, and left as it is).
+
+    The journal is the only record of what the undo did. Each act done gets its answer in one
+    assignment, act["answer"]: None when taken back, else the state it is left in. So its two lists are
+    read off the acts, never kept beside them: unanswered() (the acts done that have no answer yet)
+    and not_put_back() (the acts answered with a state); every sentence about what is left reads them."""
 
     def __init__(self):
-        self.acts = []  # dicts: kind, path, before, data, id, done
+        self.acts = []  # dicts: kind, path, before, data, id, done, and answer once undone
         self.at = None  # the path of the act being attempted
         self.last = None  # the path of the last act done
-        self.interrupt = None  # the first interrupt that landed in the undo, raised again after it
         self.refused = False  # the folder pass refused, and said so
 
     # An act counts as done from just before it is attempted: an interrupt can land after the system
@@ -366,35 +370,26 @@ class Journal:
             fh.write(data)
         self.at, self.last = None, path
 
+    def unanswered(self):
+        """The acts done that the undo has not answered for, last first."""
+        return [a for a in reversed(self.acts) if a["done"] and "answer" not in a]
+
+    def not_put_back(self):
+        """The acts the undo answered for with a state: what it could not put back, last first."""
+        return [a for a in reversed(self.acts) if a.get("answer")]
+
     def undo(self):
-        """Every act taken back, last first, each through to an answer; [(path, the state it is left in)]
-        for each that could not be. Whatever is raised while one act is undone (an interrupt, or any
-        other error) is that act's answer, and the loop goes on to the acts before it; an act leaves the
-        list only once its answer is known. Ctrl-C during the undo is held until the last act; the first
-        interrupt, held or raised, is kept in self.interrupt for the caller to raise again."""
-        left, held = [], []
-        previous = hold_interrupts(held)
-        try:
-            while self.acts:
-                act = self.acts[-1]
-                state = None
-                if act["done"]:
-                    try:
-                        state = self.undo_one(act)
-                    except OSError as err:
-                        state = f"could not be read back to be undone ({said(err)}); left as it is"
-                    except BaseException as err:  # an interrupt among them: the act's answer, not the loop's end
-                        if isinstance(err, KeyboardInterrupt) and self.interrupt is None:
-                            self.interrupt = err
-                        state = f"its undo was stopped by {said(err)}, and not finished; left as it stands"
-                if state:
-                    left.append((act["path"], state))
-                self.acts.pop()
-        finally:
-            release_interrupts(previous)
-        if held and self.interrupt is None:
-            self.interrupt = KeyboardInterrupt()
-        return left
+        """Every act done taken back, last first, each answered in one assignment. An error inside one
+        act's undo is that act's answer, and the undo goes on to the act before. An interrupt stops the
+        undo where it lands: the act in hand and the ones before it stay unanswered, and it is raised."""
+        for act in self.unanswered():
+            try:
+                state = self.undo_one(act)
+            except OSError as err:
+                state = f"could not be read back to be undone ({said(err)}); left as it is"
+            except Exception as err:
+                state = f"its undo was stopped by {said(err)}, and not finished; left as it stands"
+            act["answer"] = state
 
     @staticmethod
     def undo_one(act):
@@ -442,69 +437,68 @@ class Journal:
 
 def said(err):
     """An error in its own words: its type, and its system message when it has one."""
-    if isinstance(err, KeyboardInterrupt):
-        return "an interrupt (KeyboardInterrupt)"
     if isinstance(err, OSError) and err.strerror:
         return f"{type(err).__name__}: {err.strerror}"
     return f"{type(err).__name__}: {err}" if str(err) else type(err).__name__
 
 
-def hold_interrupts(held):
-    """Ctrl-C noted in `held` instead of raised, so an undo runs to its last act; the handler before, or
-    None where none can be set (not the main thread)."""
-    try:
-        return signal.signal(signal.SIGINT, lambda signum, frame: held.append(signum))
-    except (ValueError, OSError, AttributeError):
-        return None
-
-
-def release_interrupts(previous):
-    if previous is not None:
-        signal.signal(signal.SIGINT, previous)
-
-
 def say(text):
-    """Text to the output in one write, flushed: inside the journal's span, its failure undoes the run."""
+    """Text to the output in one write, flushed: inside the journal's span, its failure undoes the run.
+    A run with no output at all (none was given it) has nowhere to put the text, and that is no error."""
+    if sys.stdout is None:
+        return
     sys.stdout.write(text)
     sys.stdout.flush()
 
 
 def say_refusal(text):
-    """A refusal after an undo: when the output itself is gone, the same words go to the error output,
-    and when that is gone too, the exit code still says it."""
+    """A refusal: to the output; when there is none, or it fails, to the error output; when that is
+    gone too, the exit code still says it."""
     try:
-        say(text)
+        if sys.stdout is not None:
+            say(text)
+            return
     except (OSError, ValueError):
-        try:
+        pass
+    try:
+        if sys.stderr is not None:
             sys.stderr.write(text)
             sys.stderr.flush()
-        except (OSError, ValueError):
-            pass
+    except (OSError, ValueError):
+        pass
+
+
+def refusal(journal, whole, head):
+    """The one place that says what a refused run left, read from the journal's two lists alone: `whole`
+    (its own lines) when both are empty; else `head`, then each act answered as not put back and each
+    act the undo never answered for (an interrupt stopped it), and the count."""
+    left = [(a["path"], a["answer"]) for a in journal.not_put_back()]
+    left += [(a["path"], "the undo was interrupted before it answered for this act; left as the interrupt "
+                         "found it") for a in journal.unanswered()]
+    if not left:
+        return whole
+    return (f"{head}{len(left)} path(s) below\n" + "".join(f"NOT PUT BACK {p}: {state}\n" for p, state in left)
+            + f"left behind: the {len(left)} path(s) above; 1 problem(s)\n")
 
 
 def undone(journal, err):
     """The refusal after an error mid-run: the journal undone, then the path that failed, the error's
-    own words, and what is left behind (nothing, or each path that could not be put back)."""
-    left = journal.undo()
+    own words, and what is left behind, read from the journal. An interrupt in the undo is raised
+    after the refusal is said."""
     where = journal.at or getattr(err, "filename", None)
     words = (f"{type(err).__name__}: {err.strerror}" if isinstance(err, OSError) and err.strerror
              else "interrupted (KeyboardInterrupt)" if isinstance(err, KeyboardInterrupt)
              else f"{type(err).__name__}: {err}")
     head = (f"{where}: {words}" if where else f"after {journal.last}: {words}" if journal.last
             else f"before its first act: {words}")
-    if not left:
-        say_refusal(f"REFUSED {head}; the writer stopped there and took back everything it had written\n"
-                    f"nothing left behind; 1 problem(s)\n")
-    else:
-        say_refusal(f"REFUSED {head}; the writer stopped there and took back what it had written, but for "
-                    f"{len(left)} path(s) below\n" + left_lines(left))
+    try:
+        journal.undo()
+    finally:  # an interrupt in the undo too: the refusal is said from the journal, then it goes on
+        say_refusal(refusal(journal,
+                            f"REFUSED {head}; the writer stopped there and took back everything it had written\n"
+                            f"nothing left behind; 1 problem(s)\n",
+                            f"REFUSED {head}; the writer stopped there and took back what it had written, but for "))
     return 1
-
-
-def left_lines(left):
-    """Each path an undo could not put back, the state it is in, and the count: never 'nothing left'."""
-    return "".join(f"NOT PUT BACK {p}: {state}\n" for p, state in left) + \
-        f"left behind: the {len(left)} path(s) above; 1 problem(s)\n"
 
 
 def dump(obj):
@@ -535,8 +529,9 @@ def main(argv):
             raise
         what = (f"KeyError: no key {err.args[0]!r} where one is read" if isinstance(err, KeyError)
                 else f"{type(err).__name__}: {err}")
-        print(f"REFUSED the writer stopped before writing anything ({what})")
-        print("nothing written; 1 problem(s)")
+        to = sys.stdout or sys.stderr  # with no output at all, a refusal goes to the error output
+        print(f"REFUSED the writer stopped before writing anything ({what})", file=to)
+        print("nothing written; 1 problem(s)", file=to)
         return 1
 
 
@@ -617,8 +612,8 @@ def write_world(argv, state):
                             f"types, lowercase ({', '.join(TYPES)})")
     if problems:
         for p in problems:
-            print("REFUSED", p)
-        print(f"nothing written; {len(problems)} problem(s)")
+            print("REFUSED", p, file=sys.stdout or sys.stderr)
+        print(f"nothing written; {len(problems)} problem(s)", file=sys.stdout or sys.stderr)
         return 1
 
     server_id = (online or {}).get("world_id", "")
@@ -968,8 +963,8 @@ def write_world(argv, state):
 
     if problems:
         for p in problems:
-            print("REFUSED", p)
-        print(f"nothing written; {len(problems)} problem(s)")
+            print("REFUSED", p, file=sys.stdout or sys.stderr)
+        print(f"nothing written; {len(problems)} problem(s)", file=sys.stdout or sys.stderr)
         return 1
 
     # From the first folder the run makes to its last line of output, every act is the journal's: on any
@@ -1003,13 +998,13 @@ def write_world(argv, state):
                 break
             if failed:
                 break
-        if failed:  # the words say "nothing is written" only when the undo left nothing
-            left = journal.undo()
+        if failed:  # the words say "nothing is written" only when the journal's two lists are empty
             journal.refused = True
-            say_refusal(f"REFUSED {failed}; nothing is written\nnothing written; 1 problem(s)\n" if not left
-                        else f"REFUSED {failed}\n" + left_lines(left))
-            if journal.interrupt is not None:
-                raise journal.interrupt
+            try:
+                journal.undo()
+            finally:  # an interrupt in the undo too: said from the journal, then it goes on
+                say_refusal(refusal(journal, f"REFUSED {failed}; nothing is written\nnothing written; 1 problem(s)\n",
+                                    f"REFUSED {failed}; the writer took back the folders it had made, but for "))
             return 1
 
         # The summary is composed whole before the first file, and printed in one write after the last,
@@ -1048,13 +1043,11 @@ def write_world(argv, state):
         say("".join(line + "\n" for line in summary))
         return 0
     except BaseException as err:  # an interrupt too: undone, then let through
-        if journal.refused:  # the folder pass refused and printed already; only its interrupt is left
+        if journal.refused:  # the folder pass refused and said so already; only its interrupt is left
             raise
         code = undone(journal, err)
         if not isinstance(err, Exception):
             raise
-        if journal.interrupt is not None:  # an interrupt that landed in the undo ends the run as one
-            raise journal.interrupt
         return code
 
 
