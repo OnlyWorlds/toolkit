@@ -754,8 +754,7 @@ class SetupWriter(unittest.TestCase):
                 for word in ("hand in", "wrap up", "'report'", "end with a report"):  # the keeper's
                     self.assertNotIn(word, work, word)  # "complete the reports handed in" stays
                 text = read(folder / "work.md")
-                self.assertIn("The report's own `parent_narrative`, set at hand-in (the first report of its thread, "
-                              "or a talk's board entry), is left as it is.", text)
+                self.assertIn("The report's own `parent_narrative`, set at hand-in, is left as it is.", text)
                 self.assertEqual(len(re.findall(r"^#+ .*\b[Rr]eports?\b", text, re.M)), 1,
                                  "the work skill keeps one heading on reports: the keeper's")
                 for placement in ("folder", "online"):
