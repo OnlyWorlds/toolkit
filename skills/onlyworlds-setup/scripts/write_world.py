@@ -109,7 +109,7 @@ TYPES = ("ability", "character", "collective", "construct", "creature", "event",
          "relation", "species", "title", "trait", "zone")
 # What a line break is (str.splitlines' set): refused where the writer puts a value on one line.
 LINE_BREAKS = "\n\r\x0b\x0c\x1c\x1d\x1e\x85" + chr(0x2028) + chr(0x2029)
-FORMAT_VERSION = "0.3.21"
+FORMAT_VERSION = "0.3.22"
 EPOCH = datetime.date(1970, 1, 1)
 PACKS = Path(__file__).resolve().parent.parent / "packs"
 PH = re.compile(r"\{\{([a-z_]+(?::[A-Za-z0-9_-]+)?)\}\}")
