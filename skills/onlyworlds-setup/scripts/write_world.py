@@ -13,8 +13,10 @@ or more is written whole, with a note giving its size and the aim and saying tha
 changing: its length follows the plan's own names. A skill's front matter description is written as
 a YAML double-quoted scalar, so a reader reads exactly the filled text whatever the names hold. A
 skill whose description is over DESCRIPTION_MAX
-characters is written too, with a note giving its length and the specification's number. It never
-deletes anything.
+characters is written too, with a note giving its length and the specification's number. It deletes
+nothing it did not make: when it stops on an error, or an interrupt, after its first act, it takes the
+run back, last act first (a file it made removed, a line it appended cut off, a file it wrote over
+given its bytes back, a folder it made removed while empty), and says each path it could not put back.
 
 The plan (JSON):
 
@@ -308,11 +310,143 @@ def checks_of(charter_plan, pack, problems):
     return rules
 
 
-def write(path, data, append=False):
-    """Write (or append) bytes already encoded; the folders made as needed."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "ab" if append else "wb") as fh:
-        fh.write(data)
+def file_id(st):
+    """A file's identity on its volume, or None where the system gives none (st_ino 0)."""
+    return (st.st_dev, st.st_ino) if st.st_ino else None
+
+
+class Journal:
+    """The run's acts, each recorded before it is attempted: a folder made, a file made new, a file
+    appended to (its length before), a file written over (its bytes before). undo() takes them back,
+    last act first, and only what this run did: a folder only while empty (rmdir), a file only while it
+    is the same file and holds nothing but a start of what this run wrote there (another process's
+    bytes are never cut or removed; such a file is reported, and left as it is)."""
+
+    def __init__(self):
+        self.acts = []  # dicts: kind, path, before, data, id, done
+        self.at = None  # the path of the act being attempted
+        self.last = None  # the path of the last act done
+
+    # An act counts as done from just before it is attempted: an interrupt can land after the system
+    # made the folder or opened the file and before the next line runs. Only an OSError from the
+    # attempt itself says it changed nothing, and takes it off.
+
+    def mkdir(self, folder):
+        self.at = folder
+        act = {"kind": "folder", "path": folder, "done": True}
+        self.acts.append(act)
+        try:
+            folder.mkdir()
+        except OSError:
+            act["done"] = False
+            raise
+        self.at, self.last = None, folder
+
+    def write(self, path, data, append):
+        self.at = path
+        if append:
+            act = {"kind": "appended", "before": os.path.getsize(path)}
+        elif path.exists():
+            with open(path, "rb") as fh:
+                act = {"kind": "overwritten", "before": fh.read()}
+        else:
+            act = {"kind": "new"}  # opened "xb": a file another process made meanwhile is refused, never taken
+        act.update(path=path, data=data, done=True)
+        self.acts.append(act)
+        try:
+            fh = open(path, "ab" if append else "wb" if act["kind"] == "overwritten" else "xb")
+        except OSError:
+            act["done"] = False
+            raise
+        with fh:
+            act["id"] = file_id(os.fstat(fh.fileno()))
+            fh.write(data)
+        self.at, self.last = None, path
+
+    def undo(self):
+        """Every act taken back, last first; [(path, the state it is left in)] for each that could not be."""
+        left = []
+        while self.acts:
+            act = self.acts.pop()
+            if not act["done"]:
+                continue
+            try:
+                state = self.undo_one(act)
+            except OSError as err:
+                state = f"could not be read back to be undone ({type(err).__name__}: {err.strerror or err}); left as it is"
+            if state:
+                left.append((act["path"], state))
+        return left
+
+    @staticmethod
+    def undo_one(act):
+        p, kind = act["path"], act["kind"]
+        if kind == "folder":
+            try:
+                p.rmdir()
+            except FileNotFoundError:
+                return None
+            except OSError as err:
+                return f"the folder this run made is still there ({type(err).__name__}: {err.strerror or err})"
+            return None
+        try:
+            st = os.stat(p)
+        except FileNotFoundError:
+            return None if kind == "new" else "gone: removed during the run by something other than the writer"
+        if act.get("id") and file_id(st) and file_id(st) != act["id"]:
+            return "replaced during the run by another file; left as it is"
+        with open(p, "rb") as fh:
+            now = fh.read()
+        ours = now[act["before"]:] if kind == "appended" else now
+        if (kind == "appended" and len(now) == act["before"]) or (kind == "overwritten" and now == act["before"]):
+            return None  # the act never reached the file (an interrupt before the open)
+        if (kind == "appended" and len(now) < act["before"]) or not act["data"].startswith(ours):
+            what = {"new": "made by this run", "overwritten": "written over by this run",
+                    "appended": "appended to by this run"}[kind]
+            return f"{what}, and changed since by something other than the writer; left as it is"
+        try:
+            if kind == "new":
+                os.remove(p)
+            elif kind == "overwritten":
+                with open(p, "wb") as fh:
+                    fh.write(act["before"])
+            else:
+                with open(p, "r+b") as fh:
+                    fh.truncate(act["before"])
+        except OSError as err:
+            why = f"({type(err).__name__}: {err.strerror or err})"
+            return {"new": f"made by this run, and still there {why}",
+                    "overwritten": f"written over by this run, and its bytes before could not be written back "
+                                   f"{why}; it holds what this run wrote, or only part of its bytes before",
+                    "appended": f"still ends with the line this run appended {why}"}[kind]
+        return None
+
+
+def undone(journal, err):
+    """The refusal after an error mid-run: the journal undone, then the path that failed, the error's
+    own words, and what is left behind (nothing, or each path that could not be put back)."""
+    left = journal.undo()
+    where = journal.at or getattr(err, "filename", None)
+    words = (f"{type(err).__name__}: {err.strerror}" if isinstance(err, OSError) and err.strerror
+             else "interrupted (KeyboardInterrupt)" if isinstance(err, KeyboardInterrupt)
+             else f"{type(err).__name__}: {err}")
+    head = (f"{where}: {words}" if where else f"after {journal.last}: {words}" if journal.last
+            else f"before its first act: {words}")
+    if not left:
+        print(f"REFUSED {head}; the writer stopped there and took back everything it had written")
+        print("nothing left behind; 1 problem(s)")
+        return 1
+    print(f"REFUSED {head}; the writer stopped there and took back what it had written, but for "
+          f"{len(left)} path(s) below")
+    print_left(left)
+    return 1
+
+
+def print_left(left):
+    """Each path an undo could not put back, the state it is in, and the count: never 'nothing left'."""
+    for p, state in left:
+        print(f"NOT PUT BACK {p}: {state}")
+    print(f"left behind: the {len(left)} path(s) above; 1 problem(s)")
 
 
 def dump(obj):
@@ -331,18 +465,19 @@ def shown(path, root):
 
 
 def main(argv):
-    """The writer, with one catch before its first write: a plan in a shape it does not read (a list
-    where a name goes, a number where a link goes) is refused with the key when it is known and the
-    error's own words when it is not, and nothing is written."""
+    """The writer, with one catch before its first act: an error there (a plan in a shape it does not
+    read, such as a list where a name goes, or a fault of the writer's own) stops it with the error's
+    own words, and the key when a key is missing, and nothing is written. From its first act on, the
+    run's journal catches every error, and the interrupt, and takes the run back (write_world)."""
     state = {"writing": False}
     try:
         return write_world(argv, state)
     except (KeyError, TypeError, AttributeError, ValueError, IndexError, OSError) as err:
         if state["writing"]:
             raise
-        what = (f"the plan has no key {err.args[0]!r} where one is read" if isinstance(err, KeyError)
+        what = (f"KeyError: no key {err.args[0]!r} where one is read" if isinstance(err, KeyError)
                 else f"{type(err).__name__}: {err}")
-        print(f"REFUSED the plan is not in a shape the writer reads ({what})")
+        print(f"REFUSED the writer stopped before writing anything ({what})")
         print("nothing written; 1 problem(s)")
         return 1
 
@@ -773,16 +908,27 @@ def write_world(argv, state):
                 problems.append(f"{p}: {err.reason} at character {err.start}; nothing is written")
         writes = encoded
 
-    # Every folder the run writes into is made before the first file. When one cannot be made (a name
-    # the system refuses, a file where a folder goes), the folders this run made are removed (only
-    # those, each still empty, deepest first) and the run refuses, leaving nothing behind.
-    if not problems:
+    if problems:
+        for p in problems:
+            print("REFUSED", p)
+        print(f"nothing written; {len(problems)} problem(s)")
+        return 1
+
+    # From the first folder the run makes to its last line of output, every act is the journal's: on any
+    # error, or an interrupt, the journal is undone, last act first, and the run refuses (an interrupt
+    # is let through after the undo).
+    journal = Journal()
+    state["writing"] = True
+    try:
+        # Every folder the run writes into is made before the first file, each an act of the journal.
+        # When one cannot be made (a name the system refuses, a file where a folder goes), the journal
+        # is undone and the run refuses, leaving nothing behind.
         owner = {}  # each folder to make -> the plan key and value that put it there
         for p, _, _ in writes:
             key = (("--bulk", str(bulk)) if bulk is not None and p == bulk else
                    ("OUT_FOLDER", str(out)) if not outside(p, out) else ("copies", copies))
             owner.setdefault(Path(os.path.abspath(p.parent)), key)
-        made = []
+        failed = None
         for folder in sorted(owner, key=lambda f: len(f.parts)):
             for step in [*reversed(folder.parents), folder]:
                 if step.is_dir():
@@ -790,60 +936,60 @@ def write_world(argv, state):
                 why = "a file is there" if step.exists() else None
                 if why is None:
                     try:
-                        step.mkdir()
-                        made.append(step)
+                        journal.mkdir(step)
                         continue
                     except OSError as err:
                         why = err.strerror or str(err)
                 key, value = owner[folder]
-                problems.append(f"{key} {value!r}: the folder {step} cannot be made ({why}); nothing is written")
+                failed = f"{key} {value!r}: the folder {step} cannot be made ({why}); nothing is written"
                 break
-            if problems:
+            if failed:
                 break
-        if problems:
-            for step in reversed(made):
-                try:
-                    step.rmdir()  # empty, and made by this run
-                except OSError:
-                    pass
+        if failed:
+            left = journal.undo()
+            print("REFUSED", failed)
+            if left:
+                print_left(left)
+            else:
+                print("nothing written; 1 problem(s)")
+            return 1
 
-    if problems:
-        for p in problems:
-            print("REFUSED", p)
-        print(f"nothing written; {len(problems)} problem(s)")
-        return 1
+        for p, data, append in writes:
+            journal.write(p, data, append)
+        if bulk and len(items) > 1000:
+            print(f"bulk: {len(items)} items, over 1000 a request: split it before sending")
+        n = sum(1 for r in files if r.startswith("elements/"))
+        print(f"wrote {out} ({placement}): world.json and {n} elements "
+              f"({', '.join(f'{t} {c}' for t, c in sorted(counts.items()))})")
 
-    state["writing"] = True
-    for p, data, append in writes:
-        write(p, data, append)
-    if bulk and len(items) > 1000:
-        print(f"bulk: {len(items)} items, over 1000 a request: split it before sending")
-    n = sum(1 for r in files if r.startswith("elements/"))
-    print(f"wrote {out} ({placement}): world.json and {n} elements "
-          f"({', '.join(f'{t} {c}' for t, c in sorted(counts.items()))})")
-    def sized(n):  # two facts and no comparison, true at any size: the skill's length and the aim
-        return f"{n} characters, the packs aim for under {SKILL_MAX}"
-    print(f"charter {len(charter_text)} of under {CHARTER_MAX} characters; "
-          f"world skill {sized(len(skill_text))}; skill name {skill_name}")
-    for kind, _, _ in extras:
-        print(f"{kind} skill {sized(len(extra_texts[kind][0]))}; skill name {prefix}-{kind}")
-    for note in over:
-        print(note)
-    if not ais:
-        print("note: no AI is seated (question 4's default is one, the user's): its AI will find no Character")
-    for k in sorted(from_seat):
-        print(f"seat: {names[k]}'s Character comes from its seat (Make a seat, its own new Character)")
-    if online and plan.get("repo"):
-        print("online in a repository: world.json carries no api block; the server id is in the world skill")
-    for p, _ in copy_paths:
-        print(f"copy: {p}")
-    for d in line_done:
-        print(f"agents line: {d}")
-    if line_print:
-        print(f"agents line, for the user to place (the copies went to a home folder): {line_print}")
-    if bulk:
-        print(f"bulk body: {bulk} ({n} items)")
-    return 0
+        def sized(n):  # two facts and no comparison, true at any size: the skill's length and the aim
+            return f"{n} characters, the packs aim for under {SKILL_MAX}"
+        print(f"charter {len(charter_text)} of under {CHARTER_MAX} characters; "
+              f"world skill {sized(len(skill_text))}; skill name {skill_name}")
+        for kind, _, _ in extras:
+            print(f"{kind} skill {sized(len(extra_texts[kind][0]))}; skill name {prefix}-{kind}")
+        for note in over:
+            print(note)
+        if not ais:
+            print("note: no AI is seated (question 4's default is one, the user's): its AI will find no Character")
+        for k in sorted(from_seat):
+            print(f"seat: {names[k]}'s Character comes from its seat (Make a seat, its own new Character)")
+        if online and plan.get("repo"):
+            print("online in a repository: world.json carries no api block; the server id is in the world skill")
+        for p, _ in copy_paths:
+            print(f"copy: {p}")
+        for d in line_done:
+            print(f"agents line: {d}")
+        if line_print:
+            print(f"agents line, for the user to place (the copies went to a home folder): {line_print}")
+        if bulk:
+            print(f"bulk body: {bulk} ({n} items)")
+        return 0
+    except BaseException as err:  # an interrupt too: undone, then let through
+        code = undone(journal, err)
+        if not isinstance(err, Exception):
+            raise
+        return code
 
 
 if __name__ == "__main__":

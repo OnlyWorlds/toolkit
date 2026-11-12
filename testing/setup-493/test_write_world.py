@@ -72,7 +72,14 @@ harness trial (2026-10-22):
     (19g); a plan the writer refuses leaves the folder empty, also for a lone surrogate, a value
     that is no string, a setup day not written YYYY-MM-DD and a plan in a shape the writer does not
     read (19h); every folder is made before the first file, and a copies root that cannot be made
-    leaves nothing behind (19i).
+    leaves nothing behind (19i);
+20. a run that stops after its first act takes itself back: for one plan of each pack, every act
+    made to fail in turn (before it, half way through its bytes, by an interrupt) and a failure after
+    the last file leave the output folder's parent and the copies' parent byte for byte as before,
+    an appended AGENTS.md and CLAUDE.md and a written-over bulk file among them (20a); a read-only
+    AGENTS.md or CLAUDE.md (20b) and a --bulk path that is a folder (20c) refuse, nothing left; the
+    bulk file written over gets its bytes back (20d); an undo that cannot remove a file says so,
+    each path named (20e); an error of the writer's own before its first act blames nobody (20f).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -1386,15 +1393,15 @@ class SetupWriter(unittest.TestCase):
             ("today-week", lambda p: p.__setitem__("today", "2026-W46-4"),
              "REFUSED today '2026-W46-4': the setup day, a date written YYYY-MM-DD"),
             ("description", lambda p: p["world"].__setitem__("description", 5),
-             "REFUSED the plan is not in a shape the writer reads"),
+             "REFUSED the writer stopped before writing anything ("),
             ("utility", lambda p: p.__setitem__("skill", {"utility": ["a"]}),
-             "REFUSED the plan is not in a shape the writer reads"),
+             "REFUSED the writer stopped before writing anything ("),
             ("world-id", lambda p: p.__setitem__("online", {"world_id": 5}),
-             "REFUSED the plan is not in a shape the writer reads"),
+             "REFUSED the writer stopped before writing anything ("),
             ("pack", lambda p: p.__setitem__("pack", 5),
-             "REFUSED the plan is not in a shape the writer reads"),
+             "REFUSED the writer stopped before writing anything ("),
             ("no-elements", lambda p: p.pop("elements"),
-             "REFUSED the plan is not in a shape the writer reads (the plan has no key 'elements'"),
+             "REFUSED the writer stopped before writing anything (KeyError: no key 'elements' where one is read)"),
         ]
         for tag, put, message in cases:
             with self.subTest(case=tag):
@@ -1433,6 +1440,266 @@ class SetupWriter(unittest.TestCase):
                 self.assertRegex(r.stdout, r"REFUSED copies [^\n]*: the folder [^\n]* cannot be made")
                 self.assertNotIn("Traceback", r.stdout + r.stderr)
                 self.assertEqual((self.listing(case), self.listing(base)), before, "the run left something")
+
+
+def contents(*folders):
+    """Each folder's listing with every file's bytes: {(folder, relative path): bytes, or None for a folder}."""
+    out = {}
+    for folder in folders:
+        for p in sorted(folder.rglob("*")) if folder.exists() else []:
+            out[str(folder), str(p.relative_to(folder))] = p.read_bytes() if p.is_file() else None
+    return out
+
+
+def first_print_fails():
+    """A print that fails the first time (the writer's first line after its last file), then prints."""
+    calls = []
+
+    def print_(*a, **kw):
+        calls.append(a)
+        if len(calls) == 1:
+            raise OSError(5, "Input/output error (made to fail)")
+        return print(*a, **kw)
+    return print_
+
+
+class Fault:
+    """The k-th act of a run made to fail: an act is a folder made (Path.mkdir) or a file opened to
+    write (`open` with w, a, x or +). `how` is "open" (an OSError before the act), "half" (the file
+    opened and half its bytes written, then an OSError; a folder: as "open") or "interrupt" (the act
+    done, half the bytes written, then KeyboardInterrupt). k = 0 counts the acts and fails none."""
+
+    def __init__(self, ww, k, how):
+        self.ww, self.k, self.how, self.n = ww, k, how, 0
+        self.real_open, self.real_mkdir = open, Path.mkdir
+
+    def hit(self):
+        self.n += 1
+        return self.n == self.k
+
+    def __enter__(self):
+        fault = self
+
+        def mkdir(path, *a, **kw):
+            if fault.hit():
+                if fault.how == "interrupt":
+                    fault.real_mkdir(path, *a, **kw)
+                    raise KeyboardInterrupt
+                raise PermissionError(13, "Permission denied (made to fail)", str(path))
+            return fault.real_mkdir(path, *a, **kw)
+
+        def open_(file, mode="r", *a, **kw):
+            if not any(c in mode for c in "wax+") or not fault.hit():
+                return fault.real_open(file, mode, *a, **kw)
+            if fault.how == "open":
+                raise PermissionError(13, "Permission denied (made to fail)", str(file))
+            fh = fault.real_open(file, mode, *a, **kw)
+            real_write = fh.write
+
+            def write(data):
+                real_write(data[:len(data) // 2])
+                fh.flush()
+                raise KeyboardInterrupt if fault.how == "interrupt" else OSError(28, "No space left on device (made to fail)")
+            fh.write = write
+            return fh
+
+        Path.mkdir, self.ww.open = mkdir, open_
+        return self
+
+    def __exit__(self, *exc):
+        Path.mkdir = self.real_mkdir
+        del self.ww.open
+        return False
+
+
+class TakenBack(unittest.TestCase):
+    """A run that stops on an error, or an interrupt, after its first act leaves every folder it was
+    given as it was, byte for byte: the folders and files it made removed, a line it appended cut
+    off, a file it wrote over given its bytes back; an undo that cannot put a path back says so."""
+
+    def writer(self, tag):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(f"write_world_{tag}", WRITER)
+        ww = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(ww)
+        return ww
+
+    def project(self, pack, name):
+        """A project holding the user's AGENTS.md and CLAUDE.md, and an older bulk file the run writes
+        over; the world written into a new folder in it, the copies at its root. (plan path, argv,
+        the output folder's parent, the copies' parent)."""
+        case = OUT / name
+        proj = case / "proj"
+        proj.mkdir(parents=True, exist_ok=True)
+        (proj / "AGENTS.md").write_bytes(b"# House rules\n\nKeep it short.")  # no line end: one is added
+        (proj / "CLAUDE.md").write_bytes(b"# Claude\r\n\r\nRead AGENTS.md.\r\n")
+        (proj / "bulk.json").write_bytes(b'{"items": []}\n')
+        plan, world = variant(json.loads(read(PLANS / f"{pack}.json")), "folder", proj)
+        plan["agents_md"] = True
+        plan_path = case / "plan.json"
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        return [str(plan_path), str(world), "--bulk", str(proj / "bulk.json")], proj, case
+
+    def run_in(self, ww, argv):
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = ww.main(argv)
+        return code, buf.getvalue()
+
+    def test_20a_any_act_that_fails_is_taken_back(self):
+        """For one plan of each pack, in a project with an AGENTS.md and a CLAUDE.md the run appends to
+        and a bulk file it writes over: for every k from the first act to the last, the k-th act fails
+        (before it, half way through its bytes, or by an interrupt), and once after the last file (the
+        first line printed fails); after each, the two listings with every file's bytes are as before,
+        and the exit is 1, or the interrupt comes through."""
+        ww = self.writer("20a")
+        runs, counts = 0, []
+        for pack in PACKS:
+            count_argv, _, _ = self.project(pack, f"undo-{pack}-count")
+            with Fault(ww, 0, "open") as count:  # the same plan in a project of its own: the acts counted
+                code, out = self.run_in(ww, count_argv)
+            self.assertEqual(code, 0, out)
+            self.assertEqual(out.count("the line appended"), 2, out)
+            acts = count.n
+            counts.append(f"{pack} {acts}")
+            argv, proj, case = self.project(pack, f"undo-{pack}")
+            before = contents(proj, case)
+            for k in range(1, acts + 1):
+                for how in ("open", "half", "interrupt"):
+                    with self.subTest(pack=pack, k=k, how=how):
+                        with Fault(ww, k, how):
+                            if how == "interrupt":
+                                with self.assertRaises(KeyboardInterrupt):
+                                    self.run_in(ww, argv)
+                            else:
+                                code, out = self.run_in(ww, argv)
+                                self.assertEqual(code, 1, out)
+                        self.assertEqual(contents(proj, case), before, f"act {k} of {acts} ({how}) left something")
+                        runs += 1
+            with self.subTest(pack=pack, k="after the last file"):
+                ww.print = first_print_fails()
+                try:
+                    code, _ = self.run_in(ww, argv)
+                finally:
+                    del ww.print
+                self.assertEqual(code, 1)
+                self.assertEqual(contents(proj, case), before, "a failure after the last file left something")
+                runs += 1
+        print(f"\n20a: acts per run: {', '.join(counts)}; every k run three ways and once after the last "
+              f"file: {runs} failing runs")
+        self.assertGreater(runs, 100)
+
+    def run_writer(self, argv):
+        r = subprocess.run([sys.executable, str(WRITER), *argv], capture_output=True, text=True, encoding="utf-8")
+        return r.returncode, r.stdout + r.stderr
+
+    def test_20b_a_read_only_agents_or_claude_md(self):
+        """The user's AGENTS.md read-only; or their CLAUDE.md read-only beside a writable AGENTS.md, which
+        the run appends to first: the run refuses, naming the file, and both listings are as before."""
+        import stat
+        for tag, locked in (("agents", "AGENTS.md"), ("claude", "CLAUDE.md")):
+            with self.subTest(case=tag):
+                argv, proj, case = self.project("governance", f"undo-ro-{tag}")
+                os.chmod(proj / locked, stat.S_IREAD)
+                try:
+                    before = contents(proj, case)
+                    code, out = self.run_writer(argv)
+                    self.assertEqual(code, 1, out)
+                    self.assertIn(f"REFUSED {proj / locked}: PermissionError", out)
+                    self.assertIn("nothing left behind; 1 problem(s)", out)
+                    self.assertNotIn("Traceback", out)
+                    self.assertEqual(contents(proj, case), before, "the run left something")
+                finally:
+                    os.chmod(proj / locked, stat.S_IREAD | stat.S_IWRITE)
+
+    def test_20c_a_bulk_path_that_is_a_folder(self):
+        """--bulk names a folder: the run refuses, naming it, and both listings are as before."""
+        argv, proj, case = self.project("governance", "undo-bulk-folder")
+        (proj / "bulk-folder").mkdir(exist_ok=True)
+        argv[-1] = str(proj / "bulk-folder")
+        before = contents(proj, case)
+        code, out = self.run_writer(argv)
+        self.assertEqual(code, 1, out)
+        self.assertIn(f"REFUSED {proj / 'bulk-folder'}: ", out)
+        self.assertNotIn("Traceback", out)
+        self.assertEqual(contents(proj, case), before, "the run left something")
+
+    def test_20d_a_file_written_over_gets_its_bytes_back(self):
+        """The one file the writer writes over when it is there, the --bulk file: a failure after it
+        was written (the first line printed fails) gives it its bytes before."""
+        ww = self.writer("20d")
+        argv, proj, case = self.project("company", "undo-over")
+        old = (proj / "bulk.json").read_bytes()
+        before = contents(proj, case)
+
+        ww.print = first_print_fails()
+        try:
+            code, _ = self.run_in(ww, argv)
+        finally:
+            del ww.print
+        self.assertEqual(code, 1)
+        self.assertEqual((proj / "bulk.json").read_bytes(), old)
+        self.assertEqual(contents(proj, case), before, "the run left something")
+
+    def test_20e_an_undo_that_cannot_put_a_path_back_says_so(self):
+        """A file the run made is held open by another (Windows; elsewhere its folder is made read-only)
+        when a later act fails: the undo cannot remove it, and the message names it and its folders,
+        never "nothing left behind"; exit 1."""
+        import stat
+        ww = self.writer("20e")
+        argv, proj, case = self.project("governance", "undo-held")
+        held = {}
+        real_open = open
+
+        def hold():  # the first copy, written and closed, is held by another
+            if os.name == "nt":
+                held["fh"] = real_open(held["path"], "rb")
+            else:
+                os.chmod(held["path"].parent, stat.S_IREAD | stat.S_IEXEC)
+                held["fh"] = None
+
+        def open_(file, mode="r", *a, **kw):
+            if any(c in mode for c in "wax"):
+                p = Path(file)
+                if "path" in held and "fh" not in held:  # the next file after the first copy
+                    hold()
+                if p.name == "bulk.json":
+                    raise PermissionError(13, "Permission denied (made to fail)", str(file))
+                if p.name == "SKILL.md" and "path" not in held:
+                    held["path"] = p
+            return real_open(file, mode, *a, **kw)
+        ww.open = open_
+        try:
+            code, out = self.run_in(ww, argv)
+        finally:
+            del ww.open
+            if held.get("fh"):
+                held["fh"].close()
+            elif "path" in held and os.name != "nt":
+                os.chmod(held["path"].parent, stat.S_IRWXU)
+        self.assertEqual(code, 1, out)
+        self.assertIn(f"NOT PUT BACK {held['path']}: ", out)
+        self.assertIn(f"NOT PUT BACK {held['path'].parent}: the folder this run made is still there", out)
+        self.assertRegex(out, r"left behind: the \d+ path\(s\) above; 1 problem\(s\)")
+        self.assertNotIn("nothing left behind", out)
+
+    def test_20f_an_error_of_the_writers_own_blames_nobody(self):
+        """An error of the writer's own before its first act (a helper raises TypeError): the refusal
+        says the writer stopped before writing anything, with the error's words, and names no culprit."""
+        ww = self.writer("20f")
+        argv, proj, case = self.project("governance", "undo-own")
+        before = contents(proj, case)
+
+        def broken(text):
+            raise TypeError("a fault inside the writer")
+        ww.double_quoted = broken
+        code, out = self.run_in(ww, argv)
+        self.assertEqual(code, 1, out)
+        self.assertIn("REFUSED the writer stopped before writing anything (TypeError: a fault inside the writer)", out)
+        self.assertNotIn("the plan", out)
+        self.assertEqual(contents(proj, case), before, "the run left something")
 
 
 if __name__ == "__main__":
