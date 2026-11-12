@@ -56,7 +56,10 @@ harness trial (2026-10-22):
     note naming each; at exactly SKILL_MAX - 1, SKILL_MAX and SKILL_MAX + 1 the size line and the note
     are true (18d); a charter over its budget is still refused (18c), at exactly CHARTER_MAX too, and
     one of CHARTER_MAX - 1 is written (18e);
-19. a plan's own text never breaks a written skill or leaves the folder: a line break or a control
+19. a plan's own text never breaks a written skill or leaves the folder: in every pack and every skill
+    template, names holding a colon and a space, a trailing colon, a space and a hash, a run of dashes,
+    a double quote or a backslash give a front matter whose description, read by PyYAML (and by
+    skills-ref's parser where it is installed), is the filled text (19a); a line break or a control
     character in any plan value written into a text is refused, the key named, nothing written, while
     the free texts that land only in JSON keep theirs (19b); a world slug or an element type that
     climbs out of the world folder is refused, nothing written anywhere, and the writer's own check
@@ -1012,11 +1015,73 @@ class SetupWriter(unittest.TestCase):
         self.assertFalse((root / ".claude").exists(), "a refused plan wrote copies")
 
     # 19: a plan's own text never breaks a written skill or leaves the folder.
+    SHAPES = {"colon-space": "Fernhollow: Ferry", "trailing-colon": "Fernhollow Ferry:",
+              "space-hash": "Studio #9", "dashes": "Beta---Lab", "double-quote": 'The "Beta" Lab',
+              "backslash": "Beta\\Lab"}
+
+    @staticmethod
+    def description_template(pack, kind):
+        """A skill template's own description line, unfilled: the text after `description: `."""
+        text = read(REPO / "skills" / "onlyworlds-setup" / "packs" / pack / f"{kind}.md").replace("\r\n", "\n")
+        return next(ln for ln in text.split("\n") if ln.startswith("description: "))[len("description: "):]
+
     @staticmethod
     def front_matter(text):
         """The front matter between the opening `---` line and the next line that is `---`."""
         assert text.startswith("---\n"), text[:40]
         return text[4:text.index("\n---\n", 4)]
+
+    def test_19a_names_never_break_the_front_matter(self):
+        """Every pack, every skill template: names holding each shape a plain YAML scalar breaks on (or a
+        quoted one must escape) give a front matter whose description is the filled text, in the
+        Object and both copies, read by PyYAML and, where it is installed, by skills-ref's parser; and
+        no `---` inside the front matter, where skills-ref and Claude Code would end it."""
+        try:
+            import yaml
+        except ImportError:
+            self.skipTest("PyYAML is not installed")
+        try:
+            from skills_ref.parser import parse_frontmatter
+        except ImportError:
+            parse_frontmatter = None
+        ph = re.compile(r"\{\{([a-z_]+)\}\}")
+        for pack in PACKS:
+            base = json.loads(read(PLANS / f"{pack}.json"))
+            kinds = ["skill"] + [k for k in ("design", "work") if (REPO / "skills" / "onlyworlds-setup" / "packs"
+                                                                   / pack / f"{k}.md").exists()]
+            templates = {k: self.description_template(pack, k) for k in kinds}
+            named = {m for t in templates.values() for m in ph.findall(t)}
+            for shape, name in self.SHAPES.items():
+                with self.subTest(pack=pack, shape=shape):
+                    plan = json.loads(json.dumps(base))
+                    values = dict(plan["values"])
+                    for key in named & set(values):
+                        plan["values"][key] = values[key] = name
+                    if "world_name" in named:
+                        plan["world"]["name"] = name
+                    values.update(world_name=plan["world"]["name"], work_skill_name=f"{plan.get('prefix')}-work")
+                    code, out, world, root = self.write_plan(plan, "folder", f"shape-{pack}-{shape}")
+                    self.assertEqual(code, 0, out)
+                    slug = plan["world"]["slug"]
+                    for kind in kinds:
+                        want = ph.sub(lambda m: values[m.group(1)], templates[kind])
+                        self.assertIn(name, want)
+                        skill_name = (f"{plan['prefix']}-{'start' if kind == 'skill' else kind}" if len(kinds) > 1
+                                      else "ow-" + slug)
+                        obj = world / "elements" / "object" / (f"{slug}-skill.json" if kind == "skill"
+                                                               else f"{slug}-{kind}-skill.json")
+                        texts = {"Object": json.loads(read(obj))["description"]}
+                        for h in (".agents", ".claude"):
+                            texts[h] = read(root / h / "skills" / skill_name / "SKILL.md")
+                        self.assertEqual(texts[".agents"], texts[".claude"])
+                        for where, text in texts.items():
+                            fm = self.front_matter(text)
+                            # skills-ref and Claude Code end the front matter at a `---` anywhere
+                            self.assertNotIn("---", fm, f"{kind} {where}")
+                            meta = yaml.safe_load(fm)
+                            self.assertEqual(meta, {"name": skill_name, "description": want}, f"{kind} {where}")
+                            if parse_frontmatter:
+                                self.assertEqual(parse_frontmatter(text)[0]["description"], want, f"{kind} {where}")
 
     def test_19b_a_line_break_in_a_name_is_refused(self):
         """A line break or a control character in any plan value written into a text (the charter, a

@@ -10,7 +10,9 @@ no element, the charter is over its budget, a plan value it puts on a line of a 
 break or a control character (it names the key), or a path would land outside the folders it is
 given (it names the path). The packs aim for skills under SKILL_MAX characters; a skill of SKILL_MAX
 or more is written whole, with a note giving its size and the aim and saying that nothing needs
-changing: its length follows the plan's own names. A skill whose description is over DESCRIPTION_MAX
+changing: its length follows the plan's own names. A skill's front matter description is written as
+a YAML double-quoted scalar, so a reader reads exactly the filled text whatever the names hold. A
+skill whose description is over DESCRIPTION_MAX
 characters is written too, with a note giving its length and the specification's number. It never
 deletes anything.
 
@@ -163,6 +165,30 @@ def slug(text, cap=40):
 def line_breaker(value):
     """The first line break or control character in a text (Unicode's Cc, and U+2028, U+2029), or None."""
     return next((c for c in value if ord(c) < 0x20 or 0x7F <= ord(c) <= 0x9F or c in "\u2028\u2029"), None)
+
+
+def double_quoted(text):
+    """`text` as a YAML double-quoted scalar, which a YAML reader reads back as exactly `text`: a
+    backslash and a double quote escaped, and every character YAML does not print as itself (a
+    control character, a line break, a byte order mark, a non-character) as its \\x or \\u escape.
+    And a third dash in a row as \\x2d, so the line never holds `---`: skills-ref and Claude Code end
+    the front matter at a `---` anywhere, even inside a quoted scalar, and drop it whole.
+    PyYAML 6.0 and skills-ref 0.1.0's parser read `---` back from it (2026-11-12).
+    Claude Code's `plugin validate --strict` passes the file but does not show the description it read."""
+    out, dashes = [], 0
+    for c in text:
+        o = ord(c)
+        dashes = dashes + 1 if c == "-" else 0
+        if dashes == 3:
+            out.append("\\x2d")
+            dashes = 0
+        elif c in '\\"':
+            out.append("\\" + c)
+        elif o < 0x20 or 0x7F <= o <= 0x9F or c in "\u2028\u2029\ufeff\ufffe\uffff" or 0xD800 <= o <= 0xDFFF:
+            out.append(f"\\x{o:02x}" if o <= 0xFF else f"\\u{o:04x}")
+        else:
+            out.append(c)
+    return '"' + "".join(out) + '"'
 
 
 def outside(path, root):
@@ -440,13 +466,15 @@ def main(argv):
     over = []  # a skill at or over SKILL_MAX, a description over DESCRIPTION_MAX: written, and a note says so
 
     def skill_of(template_name, label):
-        """A filled skill text, checked: front matter name and description only; its sizes noted."""
+        """A filled skill text, checked: front matter name and description only; its sizes noted. The
+        description line is written by double_quoted() from the filled description, so a YAML reader
+        reads exactly the filled text, whatever the names hold."""
         where, lines, fence, description = f"packs/{plan['pack']}/{template_name}", [], 0, None
         for src, ln in template(pack / template_name, placement, problems):
             fence += ln == "---"
             if fence == 1 and ln.startswith("description: "):
                 description = fill(ln[len("description: "):], where, src)
-                lines.append("description: " + description)
+                lines.append("description: " + double_quoted(description))
             else:
                 lines.append(fill(ln, where, src))
         text = "\n".join(lines) + "\n"
