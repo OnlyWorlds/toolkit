@@ -30,8 +30,8 @@ The plan (JSON):
       "charter": {"links": {"author": "org", "adjudicators": ["keeper-title"]},
                   "x_checks_rules": []},         # optional: the checks slot (below)
       "skill": {"utility": "one line: what the skill is for"},
-      "prefix": "fern",                        # a pack with design.md and work.md: the world's own short
-                                               # lower-case word for its three skills (asked; never guessed)
+      "prefix": "fern",                        # a team pack (design.md, work.md, report.md): the world's own
+                                               # short lower-case word for its skills (asked; never guessed)
       "elements": [
         {"key": "org", "type": "institution",
          "fields": {"name": "...", "supertype": "Company", "description": "..."},
@@ -72,16 +72,18 @@ and, for an AI, "ai_of" (the key of its human). The file carries it as `x_seat`;
 "Who is here" lists every seat. Online, an AI's Character comes from its seat (keel's "its own new
 Character"), so its row is not written and nothing may link it.
 
-A pack that holds `design.md` and `work.md` beside `skill.md` (a team world: company,
-software-project) lands three skills, each written as `skill.md` is: an Object with supertype Skill
+A pack that holds `design.md`, `work.md` and `report.md` beside `skill.md` (a team world: company,
+software-project) lands four skills, each written as `skill.md` is: an Object with supertype Skill
 whose description is the filled text, under the same size note and front-matter test, and its two
 harness copies. Their names take the plan's "prefix": `<prefix>-start` (the world skill),
-`<prefix>-design`, `<prefix>-work`. Such a plan without a prefix is refused: the pack never invents
-one. Any other pack keeps one skill, `ow-<slug>`.
+`<prefix>-design`, `<prefix>-work`, `<prefix>-report` (EXTRA_SKILLS: a template the pack holds is a
+skill it lands). Such a plan without a prefix is refused: the pack never invents one. Any other pack
+keeps one skill, `ow-<slug>`.
 
 Placeholders: `{{name}}` from "values", plus the ones this script knows: world_name, world_slug,
 charter_id, skill_id, skill_name (ow-<slug>, or <prefix>-start), prefix, design_skill_id,
-design_skill_name, work_skill_id, work_skill_name (the last five in a three-skill pack only),
+design_skill_name, work_skill_id, work_skill_name, report_skill_id, report_skill_name (the last seven
+in a team pack only),
 today (ISO), today_day (the day number),
 server_world_id (online only), world_folder (the world folder as the copies' root sees it),
 who_is_here, roster, proposer_id, agents_line, world_id (the id of the world the elements are in, the
@@ -124,9 +126,11 @@ PH = re.compile(r"\{\{([a-z_]+(?::[A-Za-z0-9_-]+)?)\}\}")
 DAY = re.compile(r"^day:(\d{4}-\d{2}-\d{2})$")
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 PREFIX = re.compile(r"^[a-z][a-z0-9]{0,15}$")
-# A team world's two skills beside the world skill: the template, the Object's name and utility.
+# A team world's skills beside the world skill: the template, the Object's name and utility.
 EXTRA_SKILLS = (("design", "design skill", "How an agent talks a design through with a person here."),
-                ("work", "work skill", "How an agent does a session of work here and hands in its report."))
+                ("work", "work skill", "How an agent finds and does the work here, and how the keeper's AI "
+                                       "completes the reports handed in."),
+                ("report", "report skill", "How an agent hands in a report on a stretch of work here."))
 IF = re.compile(r"^<!-- if (folder|online) -->$")
 END = "<!-- end -->"
 NAMED = 8
@@ -214,7 +218,7 @@ def one_line_places(pack, placement):
     row without a leading pipe are not seen. No template holds one; a template that adds one adds its
     shape here first."""
     found = {}
-    for name in ("charter.md", "skill.md", "design.md", "work.md"):
+    for name in ("charter.md", "skill.md", *(f"{kind}.md" for kind, _, _ in EXTRA_SKILLS)):
         if not (pack / name).exists():
             continue
         fence = 0
@@ -637,7 +641,7 @@ def write_world(argv, state):
         problems.append(f"world.slug {w['slug']!r}: lowercase letters and digits, one hyphen between, "
                         f"{SLUG_MAX} at most, as a slug made from the name")
     world_slug = w.get("slug") or slug(w["name"])
-    # A team world's pack lands three skills under the world's own prefix; any other pack, one.
+    # A team world's pack lands four skills under the world's own prefix; any other pack, one.
     extras = [x for x in EXTRA_SKILLS if (pack / f"{x[0]}.md").exists()]
     prefix = plan.get("prefix")
     if extras and not (isinstance(prefix, str) and PREFIX.match(prefix)):

@@ -41,19 +41,21 @@ harness trial (2026-10-22):
     body; no other element carries the key; a Domain matches by its pair trimmed and folded, a
     near-word does not; a plan that names an `x_charter_` key, or a plan row with the pair
     law/Charter, is refused;
-13. the two team packs (company, software-project) land three skills under the plan's prefix,
-    `<prefix>-start`, `-design` and `-work`, each an Object with its two copies, each under the
-    budget and speaking for its placement; the work skill carries the report profile's keys; a
-    team pack's plan without a prefix is refused;
+13. the two team packs (company, software-project) land four skills under the plan's prefix,
+    `<prefix>-start`, `-design`, `-work` and `-report`, each an Object with its two copies, each
+    under the budget and speaking for its placement; the report skill carries the report profile's
+    keys and the work skill the keeper's step; a team pack's plan without a prefix is refused (13b);
+    the report skill alone fires on handing work in, no team pack text says a session ends with a
+    report, and the keeper's link rule leaves a report's own parent as it is (13c);
 14. a real team fits: each team pack written at 2, 5, 8, 12 and 20 seats (and 8 with six AIs, the
     last size the charter names every seat) keeps CHARTER_ROOM characters under the charter budget;
     and no pack's charter is longer than 5.9.5 (ac34e55) filled it, for the test's own plans (14c)
     and for one owner with a 31-character name and seven AIs of theirs (14b);
 15. no route in a filled online skill carries a query value with a raw space;
 16. the writer refuses an AI seat whose role is above its human's;
-18. a skill's size never refuses a plan: a world skill (18a) and a team pack's work skill (18b)
-    filled to SKILL_MAX characters or more (the packs aim for under it) are written, exit 0, with one
-    note naming each; at exactly SKILL_MAX - 1, SKILL_MAX and SKILL_MAX + 1 the size line and the note
+18. a skill's size never refuses a plan: a world skill (18a) and a team pack's work and report
+    skills (18b, from a padded copy of the pack) filled to SKILL_MAX characters or more (the packs aim
+    for under it) are written, exit 0, with one note naming each; at exactly SKILL_MAX - 1, SKILL_MAX and SKILL_MAX + 1 the size line and the note
     are true (18d); a charter over its budget is still refused (18c), at exactly CHARTER_MAX too, and
     one of CHARTER_MAX - 1 is written (18e);
 19. a plan's own text never breaks a written skill or leaves the folder: in every pack and every skill
@@ -150,6 +152,15 @@ FIXTURE = Path(os.environ.get("OW_CHECKS_FIXTURE") or LINT.parent.parent / "prof
 ROOM = 500
 # The room a team pack's filled charter keeps under the writer's budget at every team size (test 14).
 CHARTER_ROOM = 300
+# A team pack's skills beside the world skill, each a template `<kind>.md` (test 13).
+TEAM_KINDS = ("design", "work", "report")
+TEAM_PACKS = ("company", "software-project")
+# The shape of "every session ends with a report", which no team pack text says any more (test 13c):
+# a report is made at any point, as often as there is something new, and never closes the chat.
+SESSION_ENDS = re.compile(r"(?i)(every|each|any) (working )?session ends|end (every|each) session|"
+                          r"end (it )?with a report|at the end of (any|every|each|a) (working )?session|"
+                          r"report: every session")
+REPORT_PAGE = "https://raw.githubusercontent.com/OnlyWorlds/schema-dist/v0.34.0-dist.120/profiles/report.md"
 
 
 def visit_steps(text):
@@ -245,13 +256,13 @@ class Run:
 
     @property
     def skill_name(self):
-        """The world skill's name: <prefix>-start in a three-skill pack, else ow-<slug>."""
+        """The world skill's name: <prefix>-start in a team pack, else ow-<slug>."""
         return f"{self.plan['prefix']}-start" if self.plan.get("prefix") else "ow-" + self.plan["world"]["slug"]
 
     def extra_skills(self):
-        """A three-skill pack's design and work skills: {kind: (Object body, its name)}."""
+        """A team pack's skills beside the world skill: {kind: (Object body, its name)}."""
         slug, out = self.plan["world"]["slug"], {}
-        for kind in ("design", "work"):
+        for kind in TEAM_KINDS:
             p = self.world / "elements" / "object" / f"{slug}-{kind}-skill.json"
             if p.exists():
                 out[kind] = (json.loads(read(p)), f"{self.plan['prefix']}-{kind}")
@@ -357,7 +368,7 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn("`x_lens_uses`", steps[2])
                 self.assertIn("never `founder`, `custodian` or `titles`", steps[2])
             self.assertLess(len(text), budget - ROOM, f"{len(text)} characters filled, budget {budget}")
-            self.assertIsNone(re.search(r"^note: the (world|design|work) skill ", run.out, re.M), run.out)
+            self.assertIsNone(re.search(r"^note: the (world|design|work|report) skill ", run.out, re.M), run.out)
         self.each(check)
 
     def test_3_who_is_here_names_the_seats(self):
@@ -675,21 +686,24 @@ class SetupWriter(unittest.TestCase):
                                    r"a plan row cannot be a second one")
         self.assertFalse(out.exists() and any(out.iterdir()), "a refused plan wrote files")
 
-    def test_13_team_packs_land_three_skills(self):
-        """The company and software-project packs land three skills under the plan's prefix
-        (<prefix>-start, -design, -work): each an Object with supertype Skill, under the budget with
-        ROOM to spare, front matter name and description only, each with its two harness copies
-        carrying the copied-from line; each speaks for its placement as the world skill does; the
-        world skill names the other two; the work skill carries the report profile's keys. Every
+    def test_13_team_packs_land_four_skills(self):
+        """The company and software-project packs land four skills under the plan's prefix
+        (<prefix>-start, -design, -work, -report): each an Object with supertype Skill, under the
+        budget with ROOM to spare, front matter name and description only, each with its two harness
+        copies carrying the copied-from line; each speaks for its placement as the world skill does;
+        the world skill names the other three; the report skill carries the report profile's keys and
+        the page it follows, the work skill the keeper's step and the report skill's name. Every
         other pack keeps one skill, ow-<slug>."""
         budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
 
         def check(run):
             extra = run.extra_skills()
-            if run.pack not in ("company", "software-project"):
+            if run.pack not in TEAM_PACKS:
                 self.assertEqual(extra, {})
                 return
-            self.assertEqual(sorted(extra), ["design", "work"])
+            self.assertEqual(sorted(extra), sorted(TEAM_KINDS))
+            self.assertRegex(run.out, rf"(?m)^report skill \d+ characters, the packs aim for under {budget}; "
+                                      rf"skill name {re.escape(run.plan['prefix'])}-report$")
             for kind, (body, name) in extra.items():
                 text = body["description"]
                 self.assertEqual(body["supertype"], "Skill")
@@ -700,18 +714,55 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn(f"ow://object/{body['id']}", run.charter())
                 self.assertNotIn(run.world_json["id"], text, "the minted folder id is no address")
                 if run.placement == "online":
-                    if kind == "work":  # the report's mark names the server's world
+                    if kind in ("work", "report"):  # a work item's and a report's mark name the server's world
                         self.assertIn(SERVER_ID, text)
                 else:
                     self.assertIsNone(API_ROUTE.search(text), f"an API route in a folder world's {kind} skill")
                 for h in (".agents", ".claude"):
                     copy = read(run.copy_root / h / "skills" / name / "SKILL.md")
                     self.assertIn(f"<!-- copied from the world: Object {body['id']}; updated_at none yet", copy)
+                if kind == "report":
+                    for key in ('"supertype": "Report"', '"subtype": "handed in"', "x_report_answers", "x_room_of",
+                                "parent_narrative", '"narrator"', '"relations"', "Skills:", "Continues:",
+                                "Covers:", "World read:", "Not checked:", "what this made untrue",
+                                f"`{extra['design'][1]}`", f"`{extra['work'][1]}`"):
+                        self.assertIn(key, text, key)
+                    self.assertTrue(text.rstrip("\n").endswith(REPORT_PAGE + "`. Where this skill and that page "
+                                                               "differ, the page is right."), text[-200:])
+                    if run.placement == "online":
+                        self.assertIn("Idempotency-Key", text)
                 if kind == "work":
-                    for key in ("x_report_answers", "x_room_of", '"handed in"', "consequences",
-                                "what did this session make untrue?"):
+                    for key in ("x_report_answers", "x_room_of", "consequences", "subtype` to `completed`",
+                                f"`{extra['report'][1]}`"):
                         self.assertIn(key, text, key)
         self.each(check)
+
+    def test_13c_the_report_skill_alone_hands_work_in(self):
+        """The report skill fires on a stretch of work done and handed in, and the work skill no longer
+        does; no text of a team pack (its templates and PACK.md, and the writer's notes) says that a
+        session ends with a report; the keeper's rule that a report never links a Narrative leaves the
+        report's own `parent_narrative` as it is. Read off the templates, both placements."""
+        for pack in TEAM_PACKS:
+            folder = REPO / "skills" / "onlyworlds-setup" / "packs" / pack
+            with self.subTest(pack=pack):
+                for f in sorted(folder.glob("*.md")):
+                    hit = SESSION_ENDS.search(read(f))
+                    self.assertIsNone(hit, f"{f.name}: {hit and hit.group(0)!r}")
+                report = self.description_template(pack, "report")
+                self.assertIn("a stretch of work is done and has to be handed in", report)
+                work = self.description_template(pack, "work")
+                for word in ("hand in", "wrap up", "'report'", "end with a report"):  # the keeper's
+                    self.assertNotIn(word, work, word)  # "complete the reports handed in" stays
+                text = read(folder / "work.md")
+                self.assertIn("The report's own `parent_narrative`, set at hand-in (the first report of its thread, "
+                              "or a talk's board entry), is left as it is.", text)
+                self.assertEqual(len(re.findall(r"^#+ .*\b[Rr]eports?\b", text, re.M)), 1,
+                                 "the work skill keeps one heading on reports: the keeper's")
+                for placement in ("folder", "online"):
+                    rows = self.writer_module(f"13c-{pack}-{placement}").template(folder / "report.md", placement, [])
+                    self.assertTrue(rows, placement)
+        self.assertIsNone(SESSION_ENDS.search(read(REPO / "skills" / "onlyworlds-setup" / "SKILL.md")))
+        self.assertIsNone(SESSION_ENDS.search(read(WRITER)))
 
     def test_14_team_sizes_leave_room_in_the_charter(self):
         """A real team fits: each team pack's test plan grown (or shrunk) to 2, 5, 8, 12 and 20 seats,
@@ -936,28 +987,34 @@ class SetupWriter(unittest.TestCase):
                                  world / "elements" / "object" / f"{plan['world']['slug']}-skill.json",
                                  "ow-" + plan["world"]["slug"], root, budget)
 
-    def test_18b_a_work_skill_over_the_size_is_written(self):
-        """The same for a team pack's extra skill: a company online whose long organisation name and
-        long answer on where else its knowledge lives fill the work skill past SKILL_MAX (and the world
-        skill with it: a note for each)."""
+    def test_18b_a_team_skill_over_the_size_is_written(self):
+        """The same for a team pack's own skills. Since 5.10.0 the work skill no longer holds the
+        hand-in, and no plan value fills a team skill to SKILL_MAX before it fills the charter past
+        its budget (the values those skills hold, the charter holds too, but for the names). So the
+        writer runs as itself, from a copy beside a copy of the company pack whose work and report
+        templates end in a long paragraph: both are written, exit 0, one note each, and the world
+        skill, untouched, gets none."""
+        import shutil
         budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
-        plan = json.loads(read(PLANS / "company.json"))
-        plan["values"]["org"] = ("The Worshipful Company of Northern Cartographers, Surveyors, Instrument "
-                                 "Makers and Allied Draughtsmen of the Lower Tyne Valley and the Port of Blyth")
-        plan["values"]["elsewhere"] = (
-            "the members' handbook in the shared drive (Governance, then Handbook, then the current year), "
-            "the apprentices' logbooks kept by each workshop master, the survey archive on the plan chest "
-            "server with its own index, the minutes of the court of assistants in the clerk's binder, the "
-            "instrument register in the stores spreadsheet, and the chat channels of each of the five "
-            "workshops, where most day-to-day decisions are first talked through and later written up by "
-            "the clerk for the members' monthly letter")
-        code, out, world, root = self.write_plan(plan, "online", "over-company-online")
-        self.assert_over_written(code, out, "work skill",
-                                 world / "elements" / "object" / f"{plan['world']['slug']}-work-skill.json",
-                                 f"{plan['prefix']}-work", root, budget)
-        self.assert_over_written(code, out, "world skill",
-                                 world / "elements" / "object" / f"{plan['world']['slug']}-skill.json",
-                                 f"{plan['prefix']}-start", root, budget)
+        tree = OUT / "over-team-tree"
+        (tree / "scripts").mkdir(parents=True)
+        shutil.copy2(WRITER, tree / "scripts" / WRITER.name)
+        shutil.copytree(WRITER.parent.parent / "packs" / "company", tree / "packs" / "company")
+        for kind in ("work", "report"):
+            path = tree / "packs" / "company" / f"{kind}.md"
+            with open(path, "a", encoding="utf-8", newline="") as fh:
+                fh.write("\n" + "A long house note that the size test adds to this template. " * 50 + "\n")
+        plan, world = variant(json.loads(read(PLANS / "company.json")), "online", OUT / "over-team")
+        plan_path = OUT / "plans" / "over-team.json"
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        r = subprocess.run([sys.executable, str(tree / "scripts" / WRITER.name), str(plan_path), str(world)],
+                           capture_output=True, text=True, encoding="utf-8")
+        code, out, root = r.returncode, r.stdout + r.stderr, OUT / "over-team"
+        for kind in ("work", "report"):
+            self.assert_over_written(code, out, f"{kind} skill",
+                                     world / "elements" / "object" / f"{plan['world']['slug']}-{kind}-skill.json",
+                                     f"{plan['prefix']}-{kind}", root, budget)
+        self.assertNotIn("note: the world skill ", out)
 
     def test_18d_the_size_lines_at_the_boundary(self):
         """The real writer with the workshop's online world skill filled to exactly SKILL_MAX - 1,
@@ -1075,8 +1132,8 @@ class SetupWriter(unittest.TestCase):
         ph = re.compile(r"\{\{([a-z_]+)\}\}")
         for pack in PACKS:
             base = json.loads(read(PLANS / f"{pack}.json"))
-            kinds = ["skill"] + [k for k in ("design", "work") if (REPO / "skills" / "onlyworlds-setup" / "packs"
-                                                                   / pack / f"{k}.md").exists()]
+            kinds = ["skill"] + [k for k in TEAM_KINDS if (REPO / "skills" / "onlyworlds-setup" / "packs"
+                                                           / pack / f"{k}.md").exists()]
             templates = {k: self.description_template(pack, k) for k in kinds}
             named = {m for t in templates.values() for m in ph.findall(t)}
             for shape, name in self.SHAPES.items():
@@ -1087,7 +1144,10 @@ class SetupWriter(unittest.TestCase):
                         plan["values"][key] = values[key] = name
                     if "world_name" in named:
                         plan["world"]["name"] = name
-                    values.update(world_name=plan["world"]["name"], work_skill_name=f"{plan.get('prefix')}-work")
+                    values.update(world_name=plan["world"]["name"],
+                                  skill_name=(f"{plan['prefix']}-start" if plan.get("prefix")
+                                              else "ow-" + plan["world"]["slug"]),
+                                  **{f"{k}_skill_name": f"{plan.get('prefix')}-{k}" for k in TEAM_KINDS})
                     code, out, world, root = self.write_plan(plan, "folder", f"shape-{pack}-{shape}")
                     self.assertEqual(code, 0, out)
                     slug = plan["world"]["slug"]
@@ -1314,7 +1374,7 @@ class SetupWriter(unittest.TestCase):
                     by_name[body["name"]] = (n, body["id"])
                 name, sid = by_name["東京 world skill"]
                 self.assertEqual(name, f"{sid}-skill.json")
-                for kind in ("design", "work"):
+                for kind in TEAM_KINDS:
                     self.assertEqual(by_name[f"東京 {kind} skill"][0], f"{sid}-{kind}-skill.json")
         with self.subTest(pack="governance"):
             plan = json.loads(read(PLANS / "governance.json"))

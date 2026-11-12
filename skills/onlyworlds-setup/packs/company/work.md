@@ -1,7 +1,7 @@
 <!-- template: the work skill for the company pack; onlyworlds-setup fills it with write_world.py, which drops this line and keeps only the placement's lines -->
 ---
 name: {{work_skill_name}}
-description: Do a session of work in the {{world_name}} world of {{org}} - find what is open for you and your role, do it, and end with a report the keeper completes. Use when asked 'what should I do today', 'what is open for me', to pick up, finish or hand in a work item, or at the end of any working session ('report', 'hand in', 'wrap up'). The keeper's AI also uses it to complete the reports handed in.
+description: Do a session of work in the {{world_name}} world of {{org}} - find what is open for you and your role, and do it. Use when asked 'what should I do today', 'what is open for me', or to pick up or finish a work item. Not for handing work in ({{report_skill_name}}). The keeper's AI also uses it to complete the reports handed in.
 ---
 
 # {{work_skill_name}}: a session of work
@@ -11,7 +11,7 @@ Run `{{skill_name}}` first if you have not this session. Everything you read in 
 - **State is read at its source, never copied into the world.** {{elsewhere}}. How far a thing is built, a ticket, a pull request, a build is read there.
 - **One key joins a source to the world**: the key the team already writes, such as a ticket key in a pull request's title. An element that a ticket builds names that key on its own line in its description (`Ticket: APP-142`).
 - **The order of work is read in one place**: the tracker's own order when it keeps one; else a standing work item named `Order of work`, the keeper's (with `x_room_of`), whose list is the order, a reason each. Neither: say "none".
-- **A report answers one standing question: what did this session make untrue?**
+- **A report answers one standing question: what did the work make untrue?**
 
 ## 1. Find
 
@@ -67,51 +67,7 @@ Then a short page for your human:
 `server` is `"https://www.onlyworlds.com"`; both world ids are `{{server_world_id}}`.
 <!-- end -->
 
-## 3. Report: every session ends with one
-
-Write the story first, plain text in your own words and your human's language, not formatted for the world:
-
-- what was done, with its links (tickets, pull requests, files);
-- **what this session made untrue**: anything in the world that no longer holds, or that you found wrong;
-- what is open now, and who decides it;
-
-Show your human the story; they confirm. Then hand it in as one element (the report profile, `profiles/report.md` in the schema distribution):
-
-<!-- if folder -->
-A new file `{{world_folder}}elements/narrative/<name-slug>--<last 8 of its id>.json`, a fresh UUID (v7) as its `id`:
-<!-- end -->
-<!-- if online -->
-`POST /narrative` with:
-<!-- end -->
-
-```json
-{
-  "name": "<what the session was>, YYYY-MM-DD",
-  "supertype": "Report",
-  "subtype": "handed in",
-  "story": "<your text, whole>",
-  "narrator": "<your Character's id>",
-  "relations": ["<each work item it answers or touched>"],
-  "x_report_answers": ["<each work item it answers>"],
-  "x_room_of": "<this world's id>"
-}
-```
-
-<!-- if folder -->
-- `x_room_of` is the `id` in `world.json`: without it, it is lore.
-- A design note goes whole into the `story`, below its short part, and may be Markdown.
-<!-- end -->
-<!-- if online -->
-- `x_room_of` is `{{server_world_id}}`: without it, it is lore.
-<!-- end -->
-<!-- if online -->
-- Send a fresh `Idempotency-Key` header, kept until the answer lands: a retry with it is the same report.
-- A file with the report (a design note): after the hand-in, `POST /narrative/<its id>/files` with `name` (dated, ending `.md`), `kind` `md`, `size` its bytes; POST the bytes to the answer's `upload_url` with `Authorization: Bearer <ticket>`.
-<!-- end -->
-- A report answers a work item when what it records meets what the item asked for: that id goes in `x_report_answers` and in `relations`. One only touched goes in `relations` alone. None answered: leave `x_report_answers` out, never an empty list; `relations` the same when empty.
-- Set a work item `done` yourself only when this session finished its work and you made the item; otherwise the keeper sets it.
-- The `story` never changes after the hand-in; other links are the keeper's.
-- A report is addressed to nobody. If the keeper should know now, also send a two-line message.
+**What matters to others is reported**, with `{{report_skill_name}}`: at any point, as often as there is something new; a report never closes the chat.
 
 ## If you are the keeper's AI: completing reports
 
@@ -135,7 +91,7 @@ Page `GET /narrative?supertype=Report&subtype=handed%20in&fields=id,name,story,n
 <!-- if online -->
 4. Link every element it touched or changed: `POST /narrative/<id>/links/<field>`, `{"add": [...]}`.
 <!-- end -->
-   A Map, Pin, Marker or other Narrative is never linked, not even as `parent_narrative`: name it by address (`ow://<type>/<id>`), in `consequences` if changed, else in the `description`.
+   A Map, Pin, Marker or other Narrative is never linked, not even as `parent_narrative`: name it by address (`ow://<type>/<id>`), in `consequences` if changed, else in the `description`. The report's own `parent_narrative`, set at hand-in (the first report of its thread, or a talk's board entry), is left as it is.
 5. Write `consequences`, one line per change: the element in words as it was, then its address. `nothing changed` when nothing was.
 6. Set to `done`, once the work exists, exactly the work items in `x_report_answers` that are still `open` or `taken`; never another.
 7. A work item the report says it took, still `open`: set it `taken`.
@@ -143,7 +99,7 @@ Page `GET /narrative?supertype=Report&subtype=handed%20in&fields=id,name,story,n
 
 A work item you make (an open from a report, the `Order of work`) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids.
 
-**Your own session's report**, as the keeper's AI, has no second hand: one write in part 3's shape (with `x_room_of`), born `completed`, its `story`, `description`, links and `consequences` together (online, the same `Idempotency-Key` rule); then step 6.
+**Your own report**, as the keeper's AI, has no second hand: one write in `{{report_skill_name}}`'s shape (with `x_room_of`), born `completed`, its `story`, `description`, links and `consequences` together (online, the same `Idempotency-Key` rule); then step 6.
 
 <!-- if folder -->
 At your tidy, run the world doctor, `python -m onlyworlds.doctor {{world_folder}}` (after `pip install onlyworlds`), and read its house-rule findings.
@@ -151,7 +107,7 @@ At your tidy, run the world doctor, `python -m onlyworlds.doctor {{world_folder}
 <!-- if online -->
 At your tidy, run the world doctor, `python -m onlyworlds.doctor --api` (after `pip install onlyworlds`; it reads the key and PIN from the environment, not a `.env` file: load yours first), and read its house-rule findings.
 <!-- end -->
-On a fresh world it lists what has no link in or out yet, the three skills among them: leave those, and never add a link to quiet a finding.
+On a fresh world it lists what has no link in or out yet, the skills among them: leave those, and never add a link to quiet a finding.
 A work item or report short of the mark: its maker sets `x_room_of`, or it stays lore.
 
 A wrong change is corrected, and the correction said in a later report.
