@@ -512,9 +512,12 @@ def main(argv):
     skill = {"id": skill_id, "name": f"{w['name']} world skill", "supertype": "Skill", "description": skill_text,
              "utility": fill(plan.get("skill", {}).get("utility", "How an agent reaches this world. Copy the "
                              "description, whole, to where your harness reads skills, as SKILL.md."), "plan skill, utility")}
-    files[f"elements/object/{world_slug}-skill.json"] = dump(skill)
+    # A name the slug drops whole (no letters it keeps) names the skill files by the world skill's id,
+    # as an element's file takes its id; in a one-skill pack the name `ow-` is refused above.
+    file_slug = world_slug or skill_id
+    files[f"elements/object/{file_slug}-skill.json"] = dump(skill)
     for kind, label, utility in extras:
-        files[f"elements/object/{world_slug}-{kind}-skill.json"] = dump(
+        files[f"elements/object/{file_slug}-{kind}-skill.json"] = dump(
             {"id": extra_ids[kind], "name": f"{w['name']} {label}", "supertype": "Skill",
              "description": extra_texts[kind][0],
              "utility": utility + " Copy the description, whole, to where your harness reads skills, as SKILL.md."})

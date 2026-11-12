@@ -65,7 +65,8 @@ harness trial (2026-10-22):
     climbs out of the world folder is refused, nothing written anywhere, and the writer's own check
     refuses a copy path that climbs out of its root (19c); a description of 1,024 characters is
     written with no note, one of 1,025 with a note giving its length and the specification's 1,024
-    (19d).
+    (19d); a world named in a script the slug drops whole, with no slug, names a team pack's skill
+    files by the world skill's id, and a one-skill pack still refuses the name `ow-` (19e).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -1210,6 +1211,38 @@ class SetupWriter(unittest.TestCase):
                 want = ([f"note: the world skill's description is {size} characters, and the Agent Skills "
                          f"specification gives 1024"] if size > 1024 else [])
                 self.assertEqual(notes, want, out)
+
+    def test_19e_a_name_with_no_letters_a_slug_keeps(self):
+        """A world named in a script the slug drops whole, with no slug in the plan: in a team pack the
+        skill Objects' files take the world skill's own id where the slug would stand (no file name
+        starts with a hyphen); in a one-skill pack the skill's name would be `ow-`, which the name
+        rule refuses, as before, and nothing is written."""
+        for pack in ("company", "software-project"):
+            with self.subTest(pack=pack):
+                plan = json.loads(read(PLANS / f"{pack}.json"))
+                plan["world"]["name"] = "東京"
+                del plan["world"]["slug"]
+                code, out, world, root = self.write_plan(plan, "folder", f"noslug-{pack}")
+                self.assertEqual(code, 0, out)
+                folder = world / "elements" / "object"
+                objects = sorted(p.name for p in folder.glob("*.json"))
+                self.assertFalse([n for n in objects if n.startswith("-")], objects)
+                by_name = {}
+                for n in objects:
+                    body = json.loads(read(folder / n))
+                    by_name[body["name"]] = (n, body["id"])
+                name, sid = by_name["東京 world skill"]
+                self.assertEqual(name, f"{sid}-skill.json")
+                for kind in ("design", "work"):
+                    self.assertEqual(by_name[f"東京 {kind} skill"][0], f"{sid}-{kind}-skill.json")
+        with self.subTest(pack="governance"):
+            plan = json.loads(read(PLANS / "governance.json"))
+            plan["world"]["name"] = "Москва"
+            del plan["world"]["slug"]
+            code, out, world, root = self.write_plan(plan, "folder", "noslug-governance")
+            self.assertEqual(code, 1, out)
+            self.assertIn("REFUSED skill name 'ow-': lowercase letters, digits and hyphens, 64 at most", out)
+            self.assertFalse(world.exists() and any(world.iterdir()), "a refused plan wrote files")
 
 
 if __name__ == "__main__":
