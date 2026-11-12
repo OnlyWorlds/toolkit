@@ -55,7 +55,14 @@ harness trial (2026-10-22):
     filled to SKILL_MAX characters or more (the packs aim for under it) are written, exit 0, with one
     note naming each; at exactly SKILL_MAX - 1, SKILL_MAX and SKILL_MAX + 1 the size line and the note
     are true (18d); a charter over its budget is still refused (18c), at exactly CHARTER_MAX too, and
-    one of CHARTER_MAX - 1 is written (18e).
+    one of CHARTER_MAX - 1 is written (18e);
+19. a plan's own text never breaks a written skill or leaves the folder: a line break or a control
+    character in any plan value written into a text is refused, the key named, nothing written, while
+    the free texts that land only in JSON keep theirs (19b); a world slug or an element type that
+    climbs out of the world folder is refused, nothing written anywhere, and the writer's own check
+    refuses a copy path that climbs out of its root (19c); a description of 1,024 characters is
+    written with no note, one of 1,025 with a note giving its length and the specification's 1,024
+    (19d).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -870,6 +877,7 @@ class SetupWriter(unittest.TestCase):
         root = OUT / name
         plan, world = variant(plan, placement, root)
         plan_path = OUT / "plans" / f"{name}.json"
+        plan_path.parent.mkdir(parents=True, exist_ok=True)
         plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
         r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)],
                            capture_output=True, text=True, encoding="utf-8")
@@ -1002,6 +1010,141 @@ class SetupWriter(unittest.TestCase):
         self.assertGreaterEqual(size, budget)
         self.assertFalse(world.exists() and any(world.iterdir()), "a refused plan wrote files")
         self.assertFalse((root / ".claude").exists(), "a refused plan wrote copies")
+
+    # 19: a plan's own text never breaks a written skill or leaves the folder.
+    @staticmethod
+    def front_matter(text):
+        """The front matter between the opening `---` line and the next line that is `---`."""
+        assert text.startswith("---\n"), text[:40]
+        return text[4:text.index("\n---\n", 4)]
+
+    def test_19b_a_line_break_in_a_name_is_refused(self):
+        """A line break or a control character in any plan value written into a text (the charter, a
+        skill, the AGENTS.md line) is refused, naming the key, and nothing is written; the free texts
+        that land only in an element's JSON (world.description, skill.utility, a field's description)
+        keep their line breaks."""
+        chars = ["\n", "\t", "\r", "\x00", "\x1f", "\x7f", "\x85", "\u2028"]
+        cases = []  # (pack, label, how to set it)
+
+        def setter(path):
+            def put(plan, value):
+                node = plan
+                for k in path[:-1]:
+                    node = node[k]
+                node[path[-1]] = (node[path[-1]] or "") + value if path[-1] in node else value
+            return put
+        for pack in PACKS:
+            plan = json.loads(read(PLANS / f"{pack}.json"))
+            for key in plan["values"]:
+                cases.append((pack, f"values.{key}", setter(["values", key])))
+        cases += [("company", "world.name", setter(["world", "name"])),
+                  ("workshop", "world.name", setter(["world", "name"])),
+                  ("company", "world.slug", setter(["world", "slug"])),
+                  ("governance", "world.slug", setter(["world", "slug"])),
+                  ("company", "prefix", setter(["prefix"])),
+                  ("company", "today", setter(["today"]))]
+
+        def seated(plan, value, field, ai):
+            e = next(e for e in plan["elements"] if e.get("seat") and bool(e["seat"].get("ai_of")) == ai)
+            e["fields"][field] = e["fields"].get(field, "Agent") + value
+        cases += [("company", "plan element 'owner', name", lambda p, v: seated(p, v, "name", False)),
+                  ("software-project", "plan element 'ai-burr', supertype",
+                   lambda p, v: seated(p, v, "supertype", True))]
+        for i, (pack, label, put) in enumerate(cases):
+            ch = chars[i % len(chars)]
+            with self.subTest(pack=pack, key=label, char=f"U+{ord(ch):04X}"):
+                plan = json.loads(read(PLANS / f"{pack}.json"))
+                put(plan, ch + "Lab")
+                code, out, world, root = self.write_plan(plan, "folder", f"ctrl-{i}")
+                self.assertEqual(code, 1, out)
+                self.assertRegex(out, rf"REFUSED [^\n]*{re.escape(label)}[^\n]*: holds a line break or a control "
+                                      rf"character \(U\+{ord(ch):04X}\)")
+                self.assertFalse(world.exists() and any(world.iterdir()), "a refused plan wrote files")
+                self.assertFalse(root.exists() and any(p for p in root.iterdir() if p != world), "copies written")
+        with self.subTest(pack="company", key="copies", char="U+000A"):
+            root = OUT / "ctrl-copies"
+            plan, world = variant(json.loads(read(PLANS / "company.json")), "folder", root)
+            plan["copies"] = str(root / "pro\nject")
+            plan_path = OUT / "plans" / "ctrl-copies.json"
+            plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+            r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)],
+                               capture_output=True, text=True, encoding="utf-8")
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertRegex(r.stdout, r"REFUSED copies [^\n]*: holds a line break or a control character \(U\+000A\)")
+            self.assertEqual(self.listing(root), [], "a refused plan wrote files")
+        with self.subTest(case="free texts keep their line breaks"):
+            plan = json.loads(read(PLANS / "company.json"))
+            plan["world"]["description"] = "One line.\nAnother line."
+            plan["skill"] = {"utility": "How an agent reaches this world.\nCopy it whole."}
+            plan["elements"][0]["fields"]["description"] = "First.\n\nSecond."
+            code, out, world, root = self.write_plan(plan, "folder", "ctrl-free")
+            self.assertEqual(code, 0, out)
+            self.assertEqual(json.loads(read(world / "world.json"))["description"], "One line.\nAnother line.")
+
+    def listing(self, folder):
+        return sorted(str(p.relative_to(folder)) for p in folder.rglob("*")) if folder.exists() else []
+
+    def test_19c_nothing_is_written_outside_the_folders(self):
+        """A plan's world.slug that climbs (`../../escaped`, the two team packs, where no skill name
+        gates it) or an element type that climbs out of the world folder is refused, the path or the
+        key named, and nothing is written anywhere under the case's own folder; the writer's own
+        containment check refuses a copy path that climbs out of its copies root."""
+        cases = [("company", "slug-2", "../../escaped", r"world\.slug '\.\./\.\./escaped'"),
+                 ("software-project", "slug-2", "../../escaped", r"world\.slug '\.\./\.\./escaped'"),
+                 ("company", "slug-4", "../../../../escaped", r"world\.slug '\.\./\.\./\.\./\.\./escaped'"),
+                 ("governance", "type", "../../../escaped", r"escaped.*outside")]
+        for pack, tag, bad, message in cases:
+            with self.subTest(pack=pack, case=tag):
+                plan = json.loads(read(PLANS / f"{pack}.json"))
+                if tag == "type":
+                    plan["elements"].append({"key": "x-climb", "type": bad, "fields": {"name": "Climber"}})
+                else:
+                    plan["world"]["slug"] = bad
+                case = OUT / f"climb-{pack}-{tag}"
+                case.mkdir(parents=True, exist_ok=True)
+                before = self.listing(case)
+                code, out, world, root = self.write_plan(plan, "folder", f"climb-{pack}-{tag}/a/b/c")
+                self.assertEqual(code, 1, out)
+                self.assertRegex(out, "REFUSED .*" + message)
+                self.assertEqual(self.listing(case), before, "a refused plan wrote files")
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("write_world_19c", WRITER)
+        ww = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(ww)
+        root = OUT / "climb-copies"
+        self.assertTrue(ww.outside(root / ".claude" / "skills" / ".." / ".." / ".." / "x" / "SKILL.md", root))
+        self.assertFalse(ww.outside(root / ".claude" / "skills" / "ow-x" / "SKILL.md", root))
+
+    def test_19d_a_description_past_the_specification(self):
+        """The workshop world skill's description filled to exactly 1,024 characters is written with no
+        note; at 1,025 it is written, exit 0, with one note giving its length and the 1,024 the Agent
+        Skills specification gives, and no comparing word."""
+        try:
+            import yaml
+        except ImportError:
+            self.skipTest("PyYAML is not installed")
+        base = json.loads(read(PLANS / "workshop.json"))
+        pad = "and Friends of the Old Brickworks Open Build Night " * 20
+
+        def described(n, tag):
+            plan = json.loads(json.dumps(base))
+            plan["values"]["workshop"] += " " + pad[:n] if n else ""
+            code, out, world, root = self.write_plan(plan, "folder", f"desc-{tag}")
+            self.assertEqual(code, 0, out)
+            text = read(root / ".claude" / "skills" / ("ow-" + plan["world"]["slug"]) / "SKILL.md")
+            return len(yaml.safe_load(self.front_matter(text))["description"]), out
+
+        s0, _ = described(0, "base")
+        s1, _ = described(10, "probe")
+        self.assertEqual(s1 - s0, 11, "the `workshop` value fills the description once")
+        for target in (1024, 1025):
+            with self.subTest(size=target):
+                size, out = described(target - s0 - 1, str(target))
+                self.assertEqual(size, target)
+                notes = [ln for ln in out.splitlines() if "description" in ln and ln.startswith("note: ")]
+                want = ([f"note: the world skill's description is {size} characters, and the Agent Skills "
+                         f"specification gives 1024"] if size > 1024 else [])
+                self.assertEqual(notes, want, out)
 
 
 if __name__ == "__main__":

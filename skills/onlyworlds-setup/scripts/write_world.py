@@ -6,9 +6,13 @@ The model fills the plan from the interview; this script does the counting: it m
 fills every placeholder, writes each file by the folder format's writer rules, checks the sizes,
 and writes the harness copies of the world skill. It refuses, and writes nothing, when OUT_FOLDER
 already holds files, a `{{` is left after filling (it names the file and the line), a link names
-no element, or the charter is over its budget. The packs aim for skills under SKILL_MAX characters;
-a skill of SKILL_MAX or more is written whole, with a note giving its size and the aim and saying
-that nothing needs changing: its length follows the plan's own names. It never deletes anything.
+no element, the charter is over its budget, a plan value it puts on a line of a text holds a line
+break or a control character (it names the key), or a path would land outside the folders it is
+given (it names the path). The packs aim for skills under SKILL_MAX characters; a skill of SKILL_MAX
+or more is written whole, with a note giving its size and the aim and saying that nothing needs
+changing: its length follows the plan's own names. A skill whose description is over DESCRIPTION_MAX
+characters is written too, with a note giving its length and the specification's number. It never
+deletes anything.
 
 The plan (JSON):
 
@@ -95,6 +99,8 @@ from pathlib import Path
 
 CHARTER_MAX = 4000
 SKILL_MAX = 10000
+DESCRIPTION_MAX = 1024  # the Agent Skills specification's description length (agentskills.io)
+SLUG_MAX = 61  # a plan's own slug: the made slug's alphabet; `ow-<slug>` within a skill name's 64
 FORMAT_VERSION = "0.3.21"
 EPOCH = datetime.date(1970, 1, 1)
 PACKS = Path(__file__).resolve().parent.parent / "packs"
@@ -152,6 +158,20 @@ def day_number(iso):
 def slug(text, cap=40):
     s = re.sub(r"[^a-z0-9]+", "-", text.lower().encode("ascii", "ignore").decode()).strip("-")
     return s[:cap].strip("-")
+
+
+def line_breaker(value):
+    """The first line break or control character in a text (Unicode's Cc, and U+2028, U+2029), or None."""
+    return next((c for c in value if ord(c) < 0x20 or 0x7F <= ord(c) <= 0x9F or c in "\u2028\u2029"), None)
+
+
+def outside(path, root):
+    """True when `path`, resolved, does not lie under `root`, resolved."""
+    try:
+        Path(path).resolve().relative_to(Path(root).resolve())
+        return False
+    except ValueError:
+        return True
 
 
 def template(path, placement, problems):
@@ -234,12 +254,44 @@ def main(argv):
     if not (pack / "PACK.md").exists():
         sys.exit(f"no pack {plan['pack']!r} under {PACKS}")
 
+    # A plan value the writer puts on a line of a text (the charter, a skill, the AGENTS.md line, a
+    # path) holds no line break and no control character: refused first, since the checks below would
+    # trip on it. The free texts that land only in an element's JSON (world.description, skill.utility,
+    # a field's description) keep their line breaks.
+    w = plan["world"]
+    one_line = [("world.name", w.get("name")), ("world.slug", w.get("slug")), ("prefix", plan.get("prefix")),
+                ("copies", plan.get("copies")), ("today", plan.get("today"))]
+    one_line += [(f"values.{k}", v) for k, v in plan.get("values", {}).items()]
+    humans = {(e.get("seat") or {}).get("ai_of") for e in plan["elements"]}
+    for e in plan["elements"]:  # the seats and their humans reach the charter's "Who is here"
+        seat = e.get("seat") or {}
+        if seat or e["key"] in humans:
+            one_line.append((f"plan element {e['key']!r}, name", e.get("fields", {}).get("name")))
+        if seat.get("ai_of") is not None:
+            one_line.append((f"plan element {e['key']!r}, supertype", e.get("fields", {}).get("supertype")))
+    for label, v in one_line:
+        c = line_breaker(str(v)) if v is not None else None
+        if c:
+            v = str(v) if len(str(v)) <= 60 else str(v)[:60] + "..."
+            problems.append(f"{label} {v!r}: holds a line break or a control character (U+{ord(c):04X}), "
+                            f"and the writer puts this value on one line of a text")
+    if problems:
+        for p in problems:
+            print("REFUSED", p)
+        print(f"nothing written; {len(problems)} problem(s)")
+        return 1
+
     online = plan.get("online")
     placement = "online" if online else "folder"
     server_id = (online or {}).get("world_id", "")
     if online and not re.fullmatch(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", server_id):
         problems.append(f"online.world_id {server_id!r}: the id onlyworlds.com gave the empty world, a UUID")
-    w = plan["world"]
+    # A plan's own slug keeps the made slug's rule (lowercase letters and digits, one hyphen between),
+    # up to SLUG_MAX: it names files and, in a one-skill pack, the skill.
+    if w.get("slug") and not (isinstance(w["slug"], str) and SKILL_NAME.fullmatch(w["slug"])
+                              and len(w["slug"]) <= SLUG_MAX):
+        problems.append(f"world.slug {w['slug']!r}: lowercase letters and digits, one hyphen between, "
+                        f"{SLUG_MAX} at most, as a slug made from the name")
     world_slug = w.get("slug") or slug(w["name"])
     # A team world's pack lands three skills under the world's own prefix; any other pack, one.
     extras = [x for x in EXTRA_SKILLS if (pack / f"{x[0]}.md").exists()]
@@ -385,14 +437,25 @@ def main(argv):
     if len(charter_text) >= CHARTER_MAX:
         problems.append(f"charter: {len(charter_text)} characters, the budget is under {CHARTER_MAX}")
 
-    over = []  # a skill at or over SKILL_MAX: written, and a note says so (never a refusal)
+    over = []  # a skill at or over SKILL_MAX, a description over DESCRIPTION_MAX: written, and a note says so
 
     def skill_of(template_name, label):
-        """A filled skill text, checked: front matter name and description only; its size noted."""
-        text = fill_template(template_name)
+        """A filled skill text, checked: front matter name and description only; its sizes noted."""
+        where, lines, fence, description = f"packs/{plan['pack']}/{template_name}", [], 0, None
+        for src, ln in template(pack / template_name, placement, problems):
+            fence += ln == "---"
+            if fence == 1 and ln.startswith("description: "):
+                description = fill(ln[len("description: "):], where, src)
+                lines.append("description: " + description)
+            else:
+                lines.append(fill(ln, where, src))
+        text = "\n".join(lines) + "\n"
         if len(text) >= SKILL_MAX:
             over.append(f"note: the {label} is {len(text)} characters, and the packs aim for under "
                         f"{SKILL_MAX}; it is written whole, and nothing needs changing")
+        if description is not None and len(description) > DESCRIPTION_MAX:
+            over.append(f"note: the {label}'s description is {len(description)} characters, and the Agent "
+                        f"Skills specification gives {DESCRIPTION_MAX}")
         fm_ = re.match(r"---\n(.*?)\n---\n", text, re.S)
         keys = [ln.split(":", 1)[0] for ln in fm_.group(1).split("\n") if ln and not ln.startswith(" ")] if fm_ else []
         if keys != ["name", "description"]:
@@ -494,6 +557,16 @@ def main(argv):
             root_attrs = copy_root / ".gitattributes"
     if plan.get("repo"):
         files[".gitignore"] = GITIGNORE
+
+    # Nothing is written outside the folders the run is given, whatever value reaches a path: the world
+    # folder's files under OUT_FOLDER; the copies, the AGENTS.md line and the root's .gitattributes under
+    # the copies' root the plan names. (The --bulk file is the caller's own path.)
+    targets = [(out / rel, out) for rel in files] + [(p, copy_root) for p, _ in copy_paths]
+    targets += [(p, copy_root) for p in line_files + ([root_attrs] if root_attrs is not None else [])]
+    for p, root in targets:
+        if outside(p, root):
+            problems.append(f"{Path(p).resolve()}: outside {Path(root).resolve()}, the folder it is written in; "
+                            f"the writer writes nothing outside the folders it is given")
 
     if not problems:  # the net: nothing this run would write still holds a `{{`
         outputs = dict(files)
