@@ -50,7 +50,10 @@ harness trial (2026-10-22):
     and no pack's charter is longer than 5.9.5 (ac34e55) filled it, for the test's own plans (14c)
     and for one owner with a 31-character name and seven AIs of theirs (14b);
 15. no route in a filled online skill carries a query value with a raw space;
-16. the writer refuses an AI seat whose role is above its human's.
+16. the writer refuses an AI seat whose role is above its human's;
+18. a skill's size never refuses a plan: a world skill (18a) and a team pack's work skill (18b)
+    filled past the writer's comfortable size are written, exit 0, with one note naming each; a
+    charter over its budget is still refused (18c).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -105,8 +108,9 @@ ORDER = ("This order is in the skill itself because harnesses differ on whether 
          "or a skill is read first.")
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
 FIXTURE = Path(os.environ.get("OW_CHECKS_FIXTURE") or LINT.parent.parent / "profiles" / "checks.fixture.json")
-# The room a filled world skill keeps under the writer's budget (its SKILL_MAX, read from the
-# writer), so a company's own names never push a world past the writer's refusal.
+# The room a filled world skill keeps under the writer's comfortable size (its SKILL_MAX, read from
+# the writer), so a company's own names rarely push a skill past it (the writer writes one over, and
+# says so: test 18).
 ROOM = 500
 # The room a team pack's filled charter keeps under the writer's budget at every team size (test 14).
 CHARTER_ROOM = 300
@@ -846,6 +850,75 @@ class SetupWriter(unittest.TestCase):
         self.assertEqual(r.returncode, 1, r.stdout)
         self.assertIn("the pack never invents one", r.stdout)
         self.assertFalse(out.exists() and any(out.iterdir()), "a refused plan wrote files")
+
+    def write_plan(self, plan, placement, name):
+        """One writer run on a plan in a placement: (exit code, output, world folder, copies root)."""
+        root = OUT / name
+        plan, world = variant(plan, placement, root)
+        plan_path = OUT / "plans" / f"{name}.json"
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)],
+                           capture_output=True, text=True, encoding="utf-8")
+        return r.returncode, r.stdout + r.stderr, world, root
+
+    def assert_over_written(self, code, out, label, path, name, root, budget):
+        """A skill at or over SKILL_MAX: exit 0, its file and both copies written, one note naming it."""
+        self.assertEqual(code, 0, out)
+        size = len(json.loads(read(path))["description"])
+        self.assertGreaterEqual(size, budget, f"the case must fill the {label} past {budget}")
+        note = (f"note: the {label} is {size} characters, over its comfortable size (under {budget}), "
+                f"and was written anyway; shorter names or answers in the plan make it shorter")
+        self.assertEqual([ln for ln in out.splitlines() if ln.startswith(f"note: the {label} ")], [note], out)
+        for h in (".agents", ".claude"):
+            self.assertTrue((root / h / "skills" / name / "SKILL.md").exists(), f"{h} copy of {name}")
+
+    def test_18a_a_world_skill_over_the_size_is_written(self):
+        """A skill's size never refuses a plan: a workshop online named with 88 characters (5.9.5
+        wrote it at 9,955; the world skill is now past SKILL_MAX) is written, exit 0, with one note."""
+        budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
+        plan = json.loads(read(PLANS / "workshop.json"))
+        name = "Kiln Street Toolmakers Collective and Friends of the Brickworks Monthly Open Build Night"
+        self.assertEqual(len(name), 88)
+        plan["world"]["name"] = plan["values"]["workshop"] = name
+        plan["world"]["slug"] = "kiln-street-toolmakers-collective-and-friends-of-the-brickworks"[:61]
+        code, out, world, root = self.write_plan(plan, "online", "over-workshop-online")
+        self.assert_over_written(code, out, "world skill",
+                                 world / "elements" / "object" / f"{plan['world']['slug']}-skill.json",
+                                 "ow-" + plan["world"]["slug"], root, budget)
+
+    def test_18b_a_work_skill_over_the_size_is_written(self):
+        """The same for a team pack's extra skill: a company online whose long organisation name and
+        long answer on where else its knowledge lives fill the work skill past SKILL_MAX."""
+        budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
+        plan = json.loads(read(PLANS / "company.json"))
+        plan["values"]["org"] = ("The Worshipful Company of Northern Cartographers, Surveyors, Instrument "
+                                 "Makers and Allied Draughtsmen of the Lower Tyne Valley and the Port of Blyth")
+        plan["values"]["elsewhere"] = (
+            "the members' handbook in the shared drive (Governance, then Handbook, then the current year), "
+            "the apprentices' logbooks kept by each workshop master, the survey archive on the plan chest "
+            "server with its own index, the minutes of the court of assistants in the clerk's binder, the "
+            "instrument register in the stores spreadsheet, and the chat channels of each of the five "
+            "workshops, where most day-to-day decisions are first talked through and later written up by "
+            "the clerk for the members' monthly letter")
+        code, out, world, root = self.write_plan(plan, "online", "over-company-online")
+        self.assert_over_written(code, out, "work skill",
+                                 world / "elements" / "object" / f"{plan['world']['slug']}-work-skill.json",
+                                 f"{plan['prefix']}-work", root, budget)
+
+    def test_18c_a_charter_over_its_budget_is_still_refused(self):
+        """The charter's budget stands: a workshop whose `about` fills the charter past CHARTER_MAX is
+        refused, naming the charter and its size, and nothing is written."""
+        budget = int(re.search(r"^CHARTER_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
+        plan = json.loads(read(PLANS / "workshop.json"))
+        plan["values"]["about"] = " ".join(["a monthly evening where people and their AI bring specs for "
+                                            "small tools, choose one together and build it in the open"] * 8)
+        code, out, world, root = self.write_plan(plan, "folder", "charter-over")
+        self.assertEqual(code, 1, out)
+        size = int(re.search(rf"^REFUSED charter: (\d+) characters, the budget is under {budget}$", out,
+                             re.M).group(1))
+        self.assertGreaterEqual(size, budget)
+        self.assertFalse(world.exists() and any(world.iterdir()), "a refused plan wrote files")
+        self.assertFalse((root / ".claude").exists(), "a refused plan wrote copies")
 
 
 if __name__ == "__main__":

@@ -3,11 +3,12 @@
     python write_world.py PLAN.json OUT_FOLDER [--bulk BULK.json]
 
 The model fills the plan from the interview; this script does the counting: it mints the ids,
-fills every placeholder, writes each file by the folder format's writer rules, checks the size
-budget, and writes the harness copies of the world skill. It refuses, and writes nothing, when
-OUT_FOLDER already holds files, a `{{` is left after filling (it names the file and the line), a
-link names no element, or the charter or the world skill is over its budget. It never deletes
-anything.
+fills every placeholder, writes each file by the folder format's writer rules, checks the sizes,
+and writes the harness copies of the world skill. It refuses, and writes nothing, when OUT_FOLDER
+already holds files, a `{{` is left after filling (it names the file and the line), a link names
+no element, or the charter is over its budget. A skill over its comfortable size (SKILL_MAX) is
+written all the same, with a note saying so: its length follows the plan's own names. It never
+deletes anything.
 
 The plan (JSON):
 
@@ -63,7 +64,7 @@ Character"), so its row is not written and nothing may link it.
 
 A pack that holds `design.md` and `work.md` beside `skill.md` (a team world: company,
 software-project) lands three skills, each written as `skill.md` is: an Object with supertype Skill
-whose description is the filled text, under the same budget and front-matter test, and its two
+whose description is the filled text, under the same size note and front-matter test, and its two
 harness copies. Their names take the plan's "prefix": `<prefix>-start` (the world skill),
 `<prefix>-design`, `<prefix>-work`. Such a plan without a prefix is refused: the pack never invents
 one. Any other pack keeps one skill, `ow-<slug>`.
@@ -384,11 +385,14 @@ def main(argv):
     if len(charter_text) >= CHARTER_MAX:
         problems.append(f"charter: {len(charter_text)} characters, the budget is under {CHARTER_MAX}")
 
+    over = []  # a skill at or over SKILL_MAX: written, and a note says so (never a refusal)
+
     def skill_of(template_name, label):
-        """A filled skill text, checked: under the budget, front matter name and description only."""
+        """A filled skill text, checked: front matter name and description only; its size noted."""
         text = fill_template(template_name)
         if len(text) >= SKILL_MAX:
-            problems.append(f"{label}: {len(text)} characters, the budget is under {SKILL_MAX}")
+            over.append(f"note: the {label} is {len(text)} characters, over its comfortable size (under "
+                        f"{SKILL_MAX}), and was written anyway; shorter names or answers in the plan make it shorter")
         fm_ = re.match(r"---\n(.*?)\n---\n", text, re.S)
         keys = [ln.split(":", 1)[0] for ln in fm_.group(1).split("\n") if ln and not ln.startswith(" ")] if fm_ else []
         if keys != ["name", "description"]:
@@ -541,6 +545,8 @@ def main(argv):
           f"world skill {len(skill_text)} of under {SKILL_MAX}; skill name {skill_name}")
     for kind, _, _ in extras:
         print(f"{kind} skill {len(extra_texts[kind][0])} of under {SKILL_MAX}; skill name {prefix}-{kind}")
+    for note in over:
+        print(note)
     if not ais:
         print("note: no AI is seated (question 4's default is one, the user's): its AI will find no Character")
     for k in sorted(from_seat):
