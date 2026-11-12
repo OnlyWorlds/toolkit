@@ -52,7 +52,7 @@ harness trial (2026-10-22):
 15. no route in a filled online skill carries a query value with a raw space;
 16. the writer refuses an AI seat whose role is above its human's;
 18. a skill's size never refuses a plan: a world skill (18a) and a team pack's work skill (18b)
-    filled past the writer's comfortable size are written, exit 0, with one note naming each; a
+    filled past the size the packs aim for are written, exit 0, with one note naming each; a
     charter over its budget is still refused (18c).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
@@ -108,9 +108,9 @@ ORDER = ("This order is in the skill itself because harnesses differ on whether 
          "or a skill is read first.")
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
 FIXTURE = Path(os.environ.get("OW_CHECKS_FIXTURE") or LINT.parent.parent / "profiles" / "checks.fixture.json")
-# The room a filled world skill keeps under the writer's comfortable size (its SKILL_MAX, read from
-# the writer), so a company's own names rarely push a skill past it (the writer writes one over, and
-# says so: test 18).
+# The room a filled world skill keeps under the size the packs aim for (the writer's SKILL_MAX, read
+# from the writer), so a company's own names rarely push a skill past it (the writer writes one past
+# it whole, and says so: test 18).
 ROOM = 500
 # The room a team pack's filled charter keeps under the writer's budget at every team size (test 14).
 CHARTER_ROOM = 300
@@ -291,7 +291,7 @@ class SetupWriter(unittest.TestCase):
         placement's own words (online: the ids from GET /me, each lens read through the draught with
         as_of, since a reading with none is fenced on the world's own clock; a folder: the Character's
         x_lens_uses and which links are anchors), the visit list reads 1 to 6, and the filled text
-        keeps ROOM characters under the writer's budget."""
+        keeps ROOM characters under the writer's budget, so the writer prints no size note."""
         budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
         wrong = "1. a\n2. The Charter, whole.\n3. b\n3. c\n5. d\n\nafter"
         self.assertEqual([s.split(". ")[0] for s in visit_steps(wrong)], ["1", "2", "3", "3", "5"],
@@ -310,6 +310,7 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn("`x_lens_uses`", steps[2])
                 self.assertIn("never `founder`, `custodian` or `titles`", steps[2])
             self.assertLess(len(text), budget - ROOM, f"{len(text)} characters filled, budget {budget}")
+            self.assertIsNone(re.search(r"^note: the (world|design|work) skill ", run.out, re.M), run.out)
         self.each(check)
 
     def test_3_who_is_here_names_the_seats(self):
@@ -862,13 +863,15 @@ class SetupWriter(unittest.TestCase):
         return r.returncode, r.stdout + r.stderr, world, root
 
     def assert_over_written(self, code, out, label, path, name, root, budget):
-        """A skill at or over SKILL_MAX: exit 0, its file and both copies written, one note naming it."""
+        """A skill at or over SKILL_MAX: exit 0, its file and both copies written, its size line saying
+        it is past, one note naming it that asks for nothing."""
         self.assertEqual(code, 0, out)
         size = len(json.loads(read(path))["description"])
         self.assertGreaterEqual(size, budget, f"the case must fill the {label} past {budget}")
-        note = (f"note: the {label} is {size} characters, over its comfortable size (under {budget}), "
-                f"and was written anyway; shorter names or answers in the plan make it shorter")
+        note = (f"note: the {label} is {size} characters, past the {budget} the packs aim for; it is "
+                f"written whole, and nothing needs changing")
         self.assertEqual([ln for ln in out.splitlines() if ln.startswith(f"note: the {label} ")], [note], out)
+        self.assertIn(f"{label} {size}, past {budget}; skill name {name}", out)
         for h in (".agents", ".claude"):
             self.assertTrue((root / h / "skills" / name / "SKILL.md").exists(), f"{h} copy of {name}")
 
@@ -888,7 +891,8 @@ class SetupWriter(unittest.TestCase):
 
     def test_18b_a_work_skill_over_the_size_is_written(self):
         """The same for a team pack's extra skill: a company online whose long organisation name and
-        long answer on where else its knowledge lives fill the work skill past SKILL_MAX."""
+        long answer on where else its knowledge lives fill the work skill past SKILL_MAX (and the world
+        skill with it: a note for each)."""
         budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
         plan = json.loads(read(PLANS / "company.json"))
         plan["values"]["org"] = ("The Worshipful Company of Northern Cartographers, Surveyors, Instrument "
@@ -904,6 +908,9 @@ class SetupWriter(unittest.TestCase):
         self.assert_over_written(code, out, "work skill",
                                  world / "elements" / "object" / f"{plan['world']['slug']}-work-skill.json",
                                  f"{plan['prefix']}-work", root, budget)
+        self.assert_over_written(code, out, "world skill",
+                                 world / "elements" / "object" / f"{plan['world']['slug']}-skill.json",
+                                 f"{plan['prefix']}-start", root, budget)
 
     def test_18c_a_charter_over_its_budget_is_still_refused(self):
         """The charter's budget stands: a workshop whose `about` fills the charter past CHARTER_MAX is

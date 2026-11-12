@@ -6,9 +6,9 @@ The model fills the plan from the interview; this script does the counting: it m
 fills every placeholder, writes each file by the folder format's writer rules, checks the sizes,
 and writes the harness copies of the world skill. It refuses, and writes nothing, when OUT_FOLDER
 already holds files, a `{{` is left after filling (it names the file and the line), a link names
-no element, or the charter is over its budget. A skill over its comfortable size (SKILL_MAX) is
-written all the same, with a note saying so: its length follows the plan's own names. It never
-deletes anything.
+no element, or the charter is over its budget. A skill past the size the packs aim for (SKILL_MAX)
+is written whole, with a note saying so and that nothing needs changing: its length follows the
+plan's own names. It never deletes anything.
 
 The plan (JSON):
 
@@ -391,8 +391,8 @@ def main(argv):
         """A filled skill text, checked: front matter name and description only; its size noted."""
         text = fill_template(template_name)
         if len(text) >= SKILL_MAX:
-            over.append(f"note: the {label} is {len(text)} characters, over its comfortable size (under "
-                        f"{SKILL_MAX}), and was written anyway; shorter names or answers in the plan make it shorter")
+            over.append(f"note: the {label} is {len(text)} characters, past the {SKILL_MAX} the packs aim "
+                        f"for; it is written whole, and nothing needs changing")
         fm_ = re.match(r"---\n(.*?)\n---\n", text, re.S)
         keys = [ln.split(":", 1)[0] for ln in fm_.group(1).split("\n") if ln and not ln.startswith(" ")] if fm_ else []
         if keys != ["name", "description"]:
@@ -541,10 +541,12 @@ def main(argv):
     n = sum(1 for r in files if r.startswith("elements/"))
     print(f"wrote {out} ({placement}): world.json and {n} elements "
           f"({', '.join(f'{t} {c}' for t, c in sorted(counts.items()))})")
+    def sized(n):  # a skill's size against SKILL_MAX, true on both sides of it (past it: the note)
+        return f"{n} of under {SKILL_MAX}" if n < SKILL_MAX else f"{n}, past {SKILL_MAX}"
     print(f"charter {len(charter_text)} of under {CHARTER_MAX} characters; "
-          f"world skill {len(skill_text)} of under {SKILL_MAX}; skill name {skill_name}")
+          f"world skill {sized(len(skill_text))}; skill name {skill_name}")
     for kind, _, _ in extras:
-        print(f"{kind} skill {len(extra_texts[kind][0])} of under {SKILL_MAX}; skill name {prefix}-{kind}")
+        print(f"{kind} skill {sized(len(extra_texts[kind][0]))}; skill name {prefix}-{kind}")
     for note in over:
         print(note)
     if not ais:
