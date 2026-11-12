@@ -103,6 +103,12 @@ CHARTER_MAX = 4000
 SKILL_MAX = 10000
 DESCRIPTION_MAX = 1024  # the Agent Skills specification's description length (agentskills.io)
 SLUG_MAX = 61  # a plan's own slug: the made slug's alphabet; `ow-<slug>` within a skill name's 64
+# The 22 element types, each its folder under elements/ (knowledge/schema-reference.md; a test pins it).
+TYPES = ("ability", "character", "collective", "construct", "creature", "event", "family", "institution",
+         "language", "law", "location", "map", "marker", "narrative", "object", "phenomenon", "pin",
+         "relation", "species", "title", "trait", "zone")
+# What a line break is (str.splitlines' set): refused where the writer puts a value on one line.
+LINE_BREAKS = "\n\r\x0b\x0c\x1c\x1d\x1e\x85" + chr(0x2028) + chr(0x2029)
 FORMAT_VERSION = "0.3.21"
 EPOCH = datetime.date(1970, 1, 1)
 PACKS = Path(__file__).resolve().parent.parent / "packs"
@@ -164,7 +170,48 @@ def slug(text, cap=40):
 
 def line_breaker(value):
     """The first line break or control character in a text (Unicode's Cc, and U+2028, U+2029), or None."""
-    return next((c for c in value if ord(c) < 0x20 or 0x7F <= ord(c) <= 0x9F or c in "\u2028\u2029"), None)
+    return next((c for c in value if ord(c) < 0x20 or 0x7F <= ord(c) <= 0x9F or c in LINE_BREAKS), None)
+
+
+def surrogate_in(node, at="plan"):
+    """Where a plan holds a lone surrogate (no UTF-8 file can store one), as a key path, or None."""
+    lone = lambda s: any(0xD800 <= ord(c) <= 0xDFFF for c in s)  # noqa: E731
+    if isinstance(node, str):
+        return at if lone(node) else None
+    items = node.items() if isinstance(node, dict) else enumerate(node) if isinstance(node, list) else ()
+    for k, v in items:
+        here = f"{at}[{k}]" if isinstance(k, int) else (f"{at}.{k}" if at != "plan" else str(k))
+        if isinstance(k, str) and lone(k):
+            return f"{at}, the key {k!a}"
+        where = surrogate_in(v, here)
+        if where is not None:
+            return where
+    return None
+
+
+def one_line_places(pack, placement):
+    """Each placeholder the pack's written texts put in a place that is one line (a front matter line
+    other than the description, which double_quoted() carries; a heading; a table row), with its first
+    such place: {name: "a heading (packs/<pack>/<file> line n)"}. Read from the templates, so a new
+    template needs no list."""
+    found = {}
+    for name in ("charter.md", "skill.md", "design.md", "work.md"):
+        if not (pack / name).exists():
+            continue
+        fence = 0
+        for src, ln in template(pack / name, placement, []):
+            fence += ln == "---"
+            if fence == 1 and ln != "---" and not ln.startswith("description: "):
+                kind = "a front matter line"
+            elif ln.startswith("#"):
+                kind = "a heading"
+            elif ln.lstrip().startswith("|"):
+                kind = "a table row"
+            else:
+                continue
+            for m in PH.finditer(ln):
+                found.setdefault(m.group(1), f"{kind} (packs/{pack.name}/{name} line {src})")
+    return found
 
 
 def double_quoted(text):
@@ -192,11 +239,13 @@ def double_quoted(text):
 
 
 def outside(path, root):
-    """True when `path`, resolved, does not lie under `root`, resolved."""
+    """True when `path` does not lie under `root`, both read as written: made absolute and their `..`
+    folded, case-folded where the system folds, links never followed (a project whose .claude is a link
+    is the user's to make). A path on another drive, or a drive-relative one such as D:x, is outside."""
+    p, r = (os.path.normcase(os.path.abspath(x)) for x in (path, root))
     try:
-        Path(path).resolve().relative_to(Path(root).resolve())
-        return False
-    except ValueError:
+        return os.path.commonpath([p, r]) != r
+    except ValueError:  # another drive
         return True
 
 
@@ -244,10 +293,11 @@ def checks_of(charter_plan, pack, problems):
     return rules
 
 
-def write(path, text):
+def write(path, data, append=False):
+    """Write (or append) bytes already encoded; the folders made as needed."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write(text)
+    with open(path, "ab" if append else "wb") as fh:
+        fh.write(data)
 
 
 def dump(obj):
@@ -271,6 +321,8 @@ def main(argv):
     args = [a for i, a in enumerate(argv) if not a.startswith("--") and not (bulk_arg and i == argv.index("--bulk") + 1)]
     if len(args) != 2:
         sys.exit(__doc__.split("\n\n")[1])
+    if hasattr(sys.stdout, "reconfigure"):  # a name the console cannot show prints escaped, never a crash
+        sys.stdout.reconfigure(errors="backslashreplace")
     plan = json.loads(Path(args[0]).read_text(encoding="utf-8"))
     out = Path(args[1])
     problems = []
@@ -280,35 +332,68 @@ def main(argv):
     if not (pack / "PACK.md").exists():
         sys.exit(f"no pack {plan['pack']!r} under {PACKS}")
 
-    # A plan value the writer puts on a line of a text (the charter, a skill, the AGENTS.md line, a
-    # path) holds no line break and no control character: refused first, since the checks below would
-    # trip on it. The free texts that land only in an element's JSON (world.description, skill.utility,
-    # a field's description) keep their line breaks.
-    w = plan["world"]
-    one_line = [("world.name", w.get("name")), ("world.slug", w.get("slug")), ("prefix", plan.get("prefix")),
-                ("copies", plan.get("copies")), ("today", plan.get("today"))]
-    one_line += [(f"values.{k}", v) for k, v in plan.get("values", {}).items()]
+    # Every plan value is checked before anything is made, so the writer writes it all or refuses
+    # before writing. A value the writer puts into a text is a string. A tab or another control
+    # character is refused in it everywhere; a line break only where the value lands in a place that is
+    # one line (read from the templates, and the writer's own uses: names, paths, the AGENTS.md line).
+    # A value whose every place is a paragraph or a list item keeps its line breaks, as do the free
+    # texts that land only in JSON (world.description, skill.utility, an element's fields).
+    online = plan.get("online")
+    placement = "online" if online else "folder"
+    lone = surrogate_in(plan)
+    if lone is not None:
+        problems.append(f"{lone}: holds a lone surrogate (a half of a character), which no UTF-8 file can "
+                        f"store; remove it")
+    w = plan.get("world") if isinstance(plan.get("world"), dict) else {}
+    one_line_at = one_line_places(pack, placement) if lone is None else {}
+    texts = [("world.name", w.get("name"), "the world skill's name and the AGENTS.md line", True),
+             ("world.slug", w.get("slug"), "a file name", False), ("prefix", plan.get("prefix"), "the skills' names", False),
+             ("copies", plan.get("copies"), "a folder path", False),
+             ("today", plan.get("today"), "a date", True)]
+    for k, v in plan.get("values", {}).items():
+        texts.append((f"values.{k}", v, one_line_at.get(k), True))
     humans = {(e.get("seat") or {}).get("ai_of") for e in plan["elements"]}
     for e in plan["elements"]:  # the seats and their humans reach the charter's "Who is here"
         seat = e.get("seat") or {}
         if seat or e["key"] in humans:
-            one_line.append((f"plan element {e['key']!r}, name", e.get("fields", {}).get("name")))
+            texts.append((f"plan element {e['key']!r}, name", e.get("fields", {}).get("name", e["key"]),
+                          "the Character's name", True))
         if seat.get("ai_of") is not None:
-            one_line.append((f"plan element {e['key']!r}, supertype", e.get("fields", {}).get("supertype")))
-    for label, v in one_line:
-        c = line_breaker(str(v)) if v is not None else None
-        if c:
-            v = str(v) if len(str(v)) <= 60 else str(v)[:60] + "..."
-            problems.append(f"{label} {v!r}: holds a line break or a control character (U+{ord(c):04X}), "
-                            f"and the writer puts this value on one line of a text")
+            texts.append((f"plan element {e['key']!r}, supertype", e.get("fields", {}).get("supertype", "Agent"),
+                          "the Character's supertype", True))
+    for label, v, place, needed in ([] if lone is not None else texts):
+        if v is None and not needed:
+            continue
+        if not isinstance(v, str):
+            problems.append(f"{label} {v!r}: the writer puts it into a text, so it is a string (in quotes)")
+            continue
+        shown_ = v if len(v) <= 60 else v[:60] + "..."
+        c = line_breaker(v)
+        if c == "\t":
+            problems.append(f"{label} {shown_!r}: holds a tab; write a space instead")
+        elif c is not None and c not in LINE_BREAKS:
+            problems.append(f"{label} {shown_!r}: holds a control character (U+{ord(c):04X}); remove it")
+        elif c is not None and place:
+            problems.append(f"{label} {shown_!r}: holds a line break, and it lands in {place}, which is one "
+                            f"line; write it on one line")
+        if "{{" in v:
+            problems.append(f"{label} {shown_!r}: holds `{{{{`, which the writer reads as the start of a "
+                            f"placeholder; write the value without it")
+    if lone is None and isinstance(plan.get("today"), str) and not problems:
+        try:
+            day_number(plan["today"])
+        except ValueError:
+            problems.append(f"today {plan['today']!r}: the setup day, an ISO date (YYYY-MM-DD)")
+    for e in plan["elements"]:  # an element's type is its folder: one of the 22
+        if e.get("type") not in TYPES:
+            problems.append(f"plan element {e.get('key')!r}, type {e.get('type')!r}: one of the 22 element "
+                            f"types, lowercase ({', '.join(TYPES)})")
     if problems:
         for p in problems:
             print("REFUSED", p)
         print(f"nothing written; {len(problems)} problem(s)")
         return 1
 
-    online = plan.get("online")
-    placement = "online" if online else "folder"
     server_id = (online or {}).get("world_id", "")
     if online and not re.fullmatch(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", server_id):
         problems.append(f"online.world_id {server_id!r}: the id onlyworlds.com gave the empty world, a UUID")
@@ -329,7 +414,9 @@ def main(argv):
         prefix = "prefix"
     skill_name = f"{prefix}-start" if extras else "ow-" + world_slug
     if not SKILL_NAME.match(skill_name) or len(skill_name) > 64:
-        problems.append(f"skill name {skill_name!r}: lowercase letters, digits and hyphens, 64 at most")
+        problems.append(f"skill name {skill_name!r}: lowercase letters, digits and hyphens, 64 at most"
+                        + ("; the world's name keeps no letter a slug keeps, so give `world.slug` in the plan "
+                           "(lowercase letters and digits, one hyphen between)" if not extras and not world_slug else ""))
     today = plan["today"]
     rows = plan["elements"]
     ids = {e["key"]: uuid7() for e in rows}
@@ -515,6 +602,9 @@ def main(argv):
     # A name the slug drops whole (no letters it keeps) names the skill files by the world skill's id,
     # as an element's file takes its id; in a one-skill pack the name `ow-` is refused above.
     file_slug = world_slug or skill_id
+    origin = {}  # a written file's path -> (the plan key, its value) that named it
+    origin[f"elements/object/{file_slug}-skill.json"] = ("world.slug", file_slug)
+    origin.update({f"elements/object/{file_slug}-{kind}-skill.json": ("world.slug", file_slug) for kind, _, _ in extras})
     files[f"elements/object/{file_slug}-skill.json"] = dump(skill)
     for kind, label, utility in extras:
         files[f"elements/object/{file_slug}-{kind}-skill.json"] = dump(
@@ -545,6 +635,7 @@ def main(argv):
             rel = f"elements/{t}/{ids[e['key']]}.json"
         taken.add(rel)
         files[rel] = dump(body)
+        origin[rel] = (f"plan element {e['key']!r}, type", t)
         counts[t] = counts.get(t, 0) + 1
 
     def copy_of(text, fm_, object_id):
@@ -591,12 +682,14 @@ def main(argv):
 
     # Nothing is written outside the folders the run is given, whatever value reaches a path: the world
     # folder's files under OUT_FOLDER; the copies, the AGENTS.md line and the root's .gitattributes under
-    # the copies' root the plan names. (The --bulk file is the caller's own path.)
-    targets = [(out / rel, out) for rel in files] + [(p, copy_root) for p, _ in copy_paths]
-    targets += [(p, copy_root) for p in line_files + ([root_attrs] if root_attrs is not None else [])]
-    for p, root in targets:
+    # the copies' root the plan names. The paths are read as written, never through a link: a project
+    # whose .claude is a link to another folder is the user's own. (The --bulk file is the caller's.)
+    targets = [(out / rel, out, origin.get(rel, ("OUT_FOLDER", str(out)))) for rel in files]
+    targets += [(p, copy_root, ("copies", copies)) for p in [p for p, _ in copy_paths] + line_files
+                + ([root_attrs] if root_attrs is not None else [])]
+    for p, root, (key, value) in targets:
         if outside(p, root):
-            problems.append(f"{Path(p).resolve()}: outside {Path(root).resolve()}, the folder it is written in; "
+            problems.append(f"{key} {value!r} would write {os.path.abspath(p)}, outside {os.path.abspath(root)}; "
                             f"the writer writes nothing outside the folders it is given")
 
     if not problems:  # the net: nothing this run would write still holds a `{{`
@@ -609,39 +702,48 @@ def main(argv):
                 if "{{" in ln:
                     problems.append(f"{rel}, line {n}: {ln[ln.index('{{'):][:40]!r} is not filled")
 
+    # Every file's bytes are made, and encoded, before the first one is written.
+    writes, line_done = [], []  # (path, bytes, append)
+    if not problems:
+        writes = [(out / rel, text, False) for rel, text in files.items()]
+        writes += [(p, t, False) for p, t in copy_paths]
+        if root_attrs is not None:
+            writes.append((root_attrs, GITATTRIBUTES, False))
+        for p in line_files:  # the user's own file: never overwritten, the line appended once
+            if not p.exists():
+                writes.append((p, line + "\n", False))
+                line_done.append(f"{p}: written")
+                continue
+            with open(p, encoding="utf-8", newline="") as fh:
+                old = fh.read()
+            if line in old:
+                line_done.append(f"{p}: holds the line already")
+                continue
+            nl = "\r\n" if "\r\n" in old else "\n"
+            writes.append((p, ("" if not old or old.endswith("\n") else nl) + line + nl, True))
+            line_done.append(f"{p}: the line appended")
+        if bulk:
+            items = [{"type": rel.split("/")[1], "element": json.loads(text)}
+                     for rel, text in files.items() if rel.startswith("elements/")]
+            writes.append((bulk, json.dumps({"items": items}, ensure_ascii=True, indent=1) + "\n", False))
+        encoded = []
+        for p, text, append in writes:
+            try:
+                encoded.append((p, text.encode("utf-8"), append))
+            except UnicodeEncodeError as err:
+                problems.append(f"{p}: {err.reason} at character {err.start}; nothing is written")
+        writes = encoded
+
     if problems:
         for p in problems:
             print("REFUSED", p)
         print(f"nothing written; {len(problems)} problem(s)")
         return 1
 
-    for rel, text in files.items():
-        write(out / rel, text)
-    for p, t in copy_paths:
-        write(p, t)
-    if root_attrs is not None:
-        write(root_attrs, GITATTRIBUTES)
-    line_done = []
-    for p in line_files:  # the user's own file: never overwritten, the line appended once
-        if not p.exists():
-            write(p, line + "\n")
-            line_done.append(f"{p}: written")
-            continue
-        with open(p, encoding="utf-8", newline="") as fh:
-            old = fh.read()
-        if line in old:
-            line_done.append(f"{p}: holds the line already")
-            continue
-        nl = "\r\n" if "\r\n" in old else "\n"
-        with open(p, "a", encoding="utf-8", newline="") as fh:
-            fh.write(("" if not old or old.endswith("\n") else nl) + line + nl)
-        line_done.append(f"{p}: the line appended")
-    if bulk:
-        items = [{"type": rel.split("/")[1], "element": json.loads(text)}
-                 for rel, text in files.items() if rel.startswith("elements/")]
-        if len(items) > 1000:
-            print(f"bulk: {len(items)} items, over 1000 a request: split it before sending")
-        write(bulk, json.dumps({"items": items}, ensure_ascii=True, indent=1) + "\n")
+    for p, data, append in writes:
+        write(p, data, append)
+    if bulk and len(items) > 1000:
+        print(f"bulk: {len(items)} items, over 1000 a request: split it before sending")
     n = sum(1 for r in files if r.startswith("elements/"))
     print(f"wrote {out} ({placement}): world.json and {n} elements "
           f"({', '.join(f'{t} {c}' for t, c in sorted(counts.items()))})")

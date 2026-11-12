@@ -59,14 +59,18 @@ harness trial (2026-10-22):
 19. a plan's own text never breaks a written skill or leaves the folder: in every pack and every skill
     template, names holding a colon and a space, a trailing colon, a space and a hash, a run of dashes,
     a double quote or a backslash give a front matter whose description, read by PyYAML (and by
-    skills-ref's parser where it is installed), is the filled text (19a); a line break or a control
-    character in any plan value written into a text is refused, the key named, nothing written, while
+    skills-ref's parser where it is installed), is the filled text (19a); a tab or a control
+    character in any plan value written into a text is refused, the key named, nothing written, a
+    line break only where its place is one line, while a value whose places are all paragraphs and
     the free texts that land only in JSON keep theirs (19b); a world slug or an element type that
     climbs out of the world folder is refused, nothing written anywhere, and the writer's own check
     refuses a copy path that climbs out of its root (19c); a description of 1,024 characters is
     written with no note, one of 1,025 with a note giving its length and the specification's 1,024
     (19d); a world named in a script the slug drops whole, with no slug, names a team pack's skill
-    files by the world skill's id, and a one-skill pack still refuses the name `ow-` (19e).
+    files by the world skill's id, and a one-skill pack still refuses the name `ow-` (19e); a
+    project whose .claude is a link is written through (19f); an element's type is one of the 22
+    (19g); a plan the writer refuses leaves the folder empty, also for a lone surrogate, a value
+    that is no string and a setup day that is no date (19h).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -1036,7 +1040,9 @@ class SetupWriter(unittest.TestCase):
         """Every pack, every skill template: names holding each shape a plain YAML scalar breaks on (or a
         quoted one must escape) give a front matter whose description is the filled text, in the
         Object and both copies, read by PyYAML and, where it is installed, by skills-ref's parser; and
-        no `---` inside the front matter, where skills-ref and Claude Code would end it."""
+        no `---` inside the front matter, where skills-ref and Claude Code would end it. The test
+        prints which parsers ran (the gate's venv has no skills-ref). The double-quote and
+        backslash shapes read whole on 5.9.6 too: they pin the escape, not a fix."""
         try:
             import yaml
         except ImportError:
@@ -1045,6 +1051,8 @@ class SetupWriter(unittest.TestCase):
             from skills_ref.parser import parse_frontmatter
         except ImportError:
             parse_frontmatter = None
+        print(f"\n  19a read by: PyYAML {yaml.__version__}"
+              + ("; skills-ref's parser" if parse_frontmatter else "; skills-ref's parser not installed here, not run"))
         ph = re.compile(r"\{\{([a-z_]+)\}\}")
         for pack in PACKS:
             base = json.loads(read(PLANS / f"{pack}.json"))
@@ -1084,14 +1092,17 @@ class SetupWriter(unittest.TestCase):
                             if parse_frontmatter:
                                 self.assertEqual(parse_frontmatter(text)[0]["description"], want, f"{kind} {where}")
 
-    def test_19b_a_line_break_in_a_name_is_refused(self):
-        """A line break or a control character in any plan value written into a text (the charter, a
-        skill, the AGENTS.md line) is refused, naming the key, and nothing is written; the free texts
-        that land only in an element's JSON (world.description, skill.utility, a field's description)
-        keep their line breaks."""
-        chars = ["\n", "\t", "\r", "\x00", "\x1f", "\x7f", "\x85", "\u2028"]
-        cases = []  # (pack, label, how to set it)
+    # The values keys a pack's written texts put in a place that is one line (a heading, a table row),
+    # read off the templates by hand, so the writer's own reading of them is pinned.
+    ONE_LINE_VALUES = {("ai-home", "ai"), ("company", "org_kinds"), ("company", "line_kinds"),
+                       ("governance", "body"), ("software-project", "project")}
 
+    def test_19b_a_line_break_only_where_the_place_is_one_line(self):
+        """A tab or another control character in any plan value written into a text is refused, named as
+        what it is; a line break is refused where the value lands in a place that is one line (a heading,
+        a table row, a name, a path, a date, the AGENTS.md line) and kept where every place is a paragraph
+        or a list item, as 5.9.6 wrote it (a multi-line `about` or `privacy_rule`); a `{{` in a value is
+        refused as the value's; a refused plan writes nothing; the free JSON texts keep their breaks."""
         def setter(path):
             def put(plan, value):
                 node = plan
@@ -1099,34 +1110,43 @@ class SetupWriter(unittest.TestCase):
                     node = node[k]
                 node[path[-1]] = (node[path[-1]] or "") + value if path[-1] in node else value
             return put
-        for pack in PACKS:
-            plan = json.loads(read(PLANS / f"{pack}.json"))
-            for key in plan["values"]:
-                cases.append((pack, f"values.{key}", setter(["values", key])))
-        cases += [("company", "world.name", setter(["world", "name"])),
-                  ("workshop", "world.name", setter(["world", "name"])),
-                  ("company", "world.slug", setter(["world", "slug"])),
-                  ("governance", "world.slug", setter(["world", "slug"])),
-                  ("company", "prefix", setter(["prefix"])),
-                  ("company", "today", setter(["today"]))]
 
-        def seated(plan, value, field, ai):
-            e = next(e for e in plan["elements"] if e.get("seat") and bool(e["seat"].get("ai_of")) == ai)
-            e["fields"][field] = e["fields"].get(field, "Agent") + value
-        cases += [("company", "plan element 'owner', name", lambda p, v: seated(p, v, "name", False)),
-                  ("software-project", "plan element 'ai-burr', supertype",
-                   lambda p, v: seated(p, v, "supertype", True))]
-        for i, (pack, label, put) in enumerate(cases):
-            ch = chars[i % len(chars)]
-            with self.subTest(pack=pack, key=label, char=f"U+{ord(ch):04X}"):
-                plan = json.loads(read(PLANS / f"{pack}.json"))
-                put(plan, ch + "Lab")
-                code, out, world, root = self.write_plan(plan, "folder", f"ctrl-{i}")
-                self.assertEqual(code, 1, out)
-                self.assertRegex(out, rf"REFUSED [^\n]*{re.escape(label)}[^\n]*: holds a line break or a control "
-                                      rf"character \(U\+{ord(ch):04X}\)")
-                self.assertFalse(world.exists() and any(world.iterdir()), "a refused plan wrote files")
-                self.assertFalse(root.exists() and any(p for p in root.iterdir() if p != world), "copies written")
+        def seated(field, ai):
+            def put(plan, value):
+                e = next(e for e in plan["elements"] if e.get("seat") and bool(e["seat"].get("ai_of")) == ai)
+                e["fields"][field] = e["fields"].get(field, "Agent") + value
+            return put
+        cases = []  # (pack, label, how to set it, one line)
+        for pack in PACKS:
+            for key in json.loads(read(PLANS / f"{pack}.json"))["values"]:
+                cases.append((pack, f"values.{key}", setter(["values", key]), (pack, key) in self.ONE_LINE_VALUES))
+        cases += [("company", "world.name", setter(["world", "name"]), True),
+                  ("workshop", "world.name", setter(["world", "name"]), True),
+                  ("company", "world.slug", setter(["world", "slug"]), True),
+                  ("governance", "world.slug", setter(["world", "slug"]), True),
+                  ("company", "prefix", setter(["prefix"]), True),
+                  ("company", "today", setter(["today"]), True),
+                  ("company", "plan element 'owner', name", seated("name", False), True),
+                  ("software-project", "plan element 'ai-burr', supertype", seated("supertype", True), True)]
+        others = ["\t", "\x00", "\x1f", "\x7f", "\x9b"]
+        breaks = ["\n", "\r", "\x85", chr(0x2028)]
+        wants = {"tab": "holds a tab; write a space instead",
+                 "control": "holds a control character \\(U\\+{:04X}\\); remove it",
+                 "break": "holds a line break, and it lands in [^\\n]*, which is one line; write it on one line"}
+        for i, (pack, label, put, one) in enumerate(cases):
+            for kind, ch in ((("tab" if others[i % 5] == "\t" else "control"), others[i % 5]),
+                             ("break", breaks[i % 4])):
+                with self.subTest(pack=pack, key=label, char=f"U+{ord(ch):04X}"):
+                    plan = json.loads(read(PLANS / f"{pack}.json"))
+                    put(plan, ch + "Lab")
+                    code, out, world, root = self.write_plan(plan, "folder", f"ctrl-{i}-{kind}")
+                    if kind == "break" and not one:
+                        self.assertEqual(code, 0, out)
+                        continue
+                    self.assertEqual(code, 1, out)
+                    self.assertRegex(out, rf"REFUSED {re.escape(label)} [^\n]*: " + wants[kind].format(ord(ch)))
+                    self.assertFalse(world.exists() and any(world.iterdir()), "a refused plan wrote files")
+                    self.assertFalse(root.exists() and any(p for p in root.iterdir() if p != world), "copies written")
         with self.subTest(pack="company", key="copies", char="U+000A"):
             root = OUT / "ctrl-copies"
             plan, world = variant(json.loads(read(PLANS / "company.json")), "folder", root)
@@ -1136,8 +1156,26 @@ class SetupWriter(unittest.TestCase):
             r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)],
                                capture_output=True, text=True, encoding="utf-8")
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
-            self.assertRegex(r.stdout, r"REFUSED copies [^\n]*: holds a line break or a control character \(U\+000A\)")
+            self.assertRegex(r.stdout, r"REFUSED copies [^\n]*: holds a line break, and it lands in a folder path")
             self.assertEqual(self.listing(root), [], "a refused plan wrote files")
+        with self.subTest(case="a `{{` in a value is the value's"):
+            plan = json.loads(read(PLANS / "governance.json"))
+            plan["values"]["body"] = "The {{Board}}"
+            code, out, world, root = self.write_plan(plan, "folder", "ctrl-brace")
+            self.assertEqual(code, 1, out)
+            self.assertIn("REFUSED values.body 'The {{Board}}': holds `{{`, which the writer reads as the start "
+                          "of a placeholder; write the value without it", out)
+            self.assertNotIn("packs/governance", out, "the pack's own line is not to blame")
+        for pack, key, text in (("workshop", "about", "a workshop where people and their AI\nbring specs,\n"
+                                 "choose one, and build it in the open"),
+                                ("ai-home", "privacy_rule", "What the owner says in confidence stays here.\n"
+                                 "Nobody else's private details enter.")):
+            with self.subTest(case=f"a multi-line {key} is written"):
+                plan = json.loads(read(PLANS / f"{pack}.json"))
+                plan["values"][key] = text
+                code, out, world, root = self.write_plan(plan, "folder", f"multiline-{key}")
+                self.assertEqual(code, 0, out)
+                self.assertIn(text, json.loads(read(world / "elements" / "law" / "charter.json"))["description"])
         with self.subTest(case="free texts keep their line breaks"):
             plan = json.loads(read(PLANS / "company.json"))
             plan["world"]["description"] = "One line.\nAnother line."
@@ -1152,13 +1190,15 @@ class SetupWriter(unittest.TestCase):
 
     def test_19c_nothing_is_written_outside_the_folders(self):
         """A plan's world.slug that climbs (`../../escaped`, the two team packs, where no skill name
-        gates it) or an element type that climbs out of the world folder is refused, the path or the
-        key named, and nothing is written anywhere under the case's own folder; the writer's own
-        containment check refuses a copy path that climbs out of its copies root."""
+        gates it) or an element type that climbs out of the world folder is refused, the key
+        named, and nothing is written anywhere under the case's own folder; the writer's own
+        containment check, read on the path as written, refuses a copy path that climbs out of
+        its copies root, and one on another drive."""
         cases = [("company", "slug-2", "../../escaped", r"world\.slug '\.\./\.\./escaped'"),
                  ("software-project", "slug-2", "../../escaped", r"world\.slug '\.\./\.\./escaped'"),
                  ("company", "slug-4", "../../../../escaped", r"world\.slug '\.\./\.\./\.\./\.\./escaped'"),
-                 ("governance", "type", "../../../escaped", r"escaped.*outside")]
+                 ("governance", "type", "../../../escaped",
+                  r"plan element 'x-climb', type '\.\./\.\./\.\./escaped': one of the 22")]
         for pack, tag, bad, message in cases:
             with self.subTest(pack=pack, case=tag):
                 plan = json.loads(read(PLANS / f"{pack}.json"))
@@ -1180,6 +1220,9 @@ class SetupWriter(unittest.TestCase):
         root = OUT / "climb-copies"
         self.assertTrue(ww.outside(root / ".claude" / "skills" / ".." / ".." / ".." / "x" / "SKILL.md", root))
         self.assertFalse(ww.outside(root / ".claude" / "skills" / "ow-x" / "SKILL.md", root))
+        if os.name == "nt":
+            other = "D:" if str(root.resolve())[:1].upper() != "D" else "E:"
+            self.assertTrue(ww.outside(other + "escape", root))
 
     def test_19d_a_description_past_the_specification(self):
         """The workshop world skill's description filled to exactly 1,024 characters is written with no
@@ -1241,8 +1284,82 @@ class SetupWriter(unittest.TestCase):
             del plan["world"]["slug"]
             code, out, world, root = self.write_plan(plan, "folder", "noslug-governance")
             self.assertEqual(code, 1, out)
-            self.assertIn("REFUSED skill name 'ow-': lowercase letters, digits and hyphens, 64 at most", out)
+            self.assertIn("REFUSED skill name 'ow-': lowercase letters, digits and hyphens, 64 at most; "
+                          "the world's name keeps no letter a slug keeps, so give `world.slug` in the plan", out)
             self.assertFalse(world.exists() and any(world.iterdir()), "a refused plan wrote files")
+    def writer_module(self, tag):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(f"write_world_{tag}", WRITER)
+        ww = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(ww)
+        return ww
+
+    def test_19f_a_linked_folder_is_written_through(self):
+        """A project whose .claude is a link to another folder (a junction on Windows, a symlink
+        elsewhere) is the user's own: the writer reads paths as written, never through a link, and
+        writes the copies through it, as 5.9.6 did: exit 0, each copy in the linked folder."""
+        base = OUT / "linked"
+        root, shared = base / "proj", base / "shared-claude"
+        root.mkdir(parents=True, exist_ok=True)
+        shared.mkdir(parents=True, exist_ok=True)
+        if os.name == "nt":
+            import _winapi
+            _winapi.CreateJunction(str(shared), str(root / ".claude"))
+        else:
+            os.symlink(shared, root / ".claude", target_is_directory=True)
+        self.assertTrue((root / ".claude").exists())
+        plan = json.loads(read(PLANS / "governance.json"))
+        code, out, world, _ = self.write_plan(plan, "folder", "linked/proj")
+        self.assertEqual(code, 0, out)
+        self.assertTrue((shared / "skills" / ("ow-" + plan["world"]["slug"]) / "SKILL.md").exists(), out)
+
+    def test_19g_an_element_type_is_one_of_the_22(self):
+        """The writer's TYPES are the 22 sections of knowledge/schema-reference.md, in order; a plan
+        element whose type is not one of them is refused, its key and type named, nothing written."""
+        page = read(REPO / "knowledge" / "schema-reference.md").replace("\r\n", "\n")
+        on_page = [ln[3:].lower() for ln in page.split("\n") if re.fullmatch(r"## [A-Z]+", ln)]
+        self.assertEqual(len(on_page), 22)
+        self.assertEqual(list(self.writer_module("19g").TYPES), on_page)
+        for i, bad in enumerate(["..", "", "../law", "a:b", "C:escape-type", "character ", "CHARACTER", "nul",
+                                 'a"b', "a\nb", "a*b", None, 5]):
+            with self.subTest(type=repr(bad)):
+                plan = json.loads(read(PLANS / "governance.json"))
+                plan["elements"].append({"key": "x-t", "type": bad, "fields": {"name": "Typed"}})
+                case = OUT / f"type-{i}"
+                code, out, world, root = self.write_plan(plan, "folder", f"type-{i}")
+                self.assertEqual(code, 1, out)
+                self.assertIn(f"REFUSED plan element 'x-t', type {bad!r}: one of the 22 element types", out)
+                self.assertEqual(self.listing(case), [], "a refused plan wrote files")
+
+    def test_19h_refused_before_anything_is_written(self):
+        """The writer writes it all or refuses before writing: a lone surrogate in a name, a value that
+        is null, a list or an object, a null world name with no slug, or a setup day that is no date is
+        refused, the key named, and the case's folder stays empty."""
+        def company(put):
+            plan = json.loads(read(PLANS / "company.json"))
+            put(plan)
+            return plan
+        cases = [
+            ("surrogate", lambda p: p["world"].__setitem__("name", "Fern" + chr(0xD800)),
+             "REFUSED world.name: holds a lone surrogate"),
+            ("null", lambda p: p["values"].__setitem__("org", None),
+             "REFUSED values.org None: the writer puts it into a text, so it is a string"),
+            ("list", lambda p: p["values"].__setitem__("org", ["a", "b"]),
+             "REFUSED values.org ['a', 'b']: the writer puts it into a text, so it is a string"),
+            ("object", lambda p: p["values"].__setitem__("org", {"a": 1}),
+             "REFUSED values.org {'a': 1}: the writer puts it into a text, so it is a string"),
+            ("null-name", lambda p: (p["world"].__setitem__("name", None), p["world"].pop("slug")),
+             "REFUSED world.name None: the writer puts it into a text, so it is a string"),
+            ("today", lambda p: p.__setitem__("today", "2026-13-45"),
+             "REFUSED today '2026-13-45': the setup day, an ISO date (YYYY-MM-DD)"),
+        ]
+        for tag, put, message in cases:
+            with self.subTest(case=tag):
+                code, out, world, root = self.write_plan(company(put), "folder", f"before-{tag}")
+                self.assertEqual(code, 1, out)
+                self.assertIn(message, out)
+                self.assertNotIn("Traceback", out)
+                self.assertEqual(self.listing(root), [], "a refused plan wrote files")
 
 
 if __name__ == "__main__":
