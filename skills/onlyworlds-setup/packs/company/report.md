@@ -24,7 +24,7 @@ Every time, however recent the chat. For each part you will report on:
 And your seat's reports of the last days: the Narrative files with supertype `Report` whose `narrator` is your Character, by the date in their `name`. One this chat does not remember sending is another chat's: never ask your human whose it is.
 <!-- end -->
 <!-- if online -->
-- the part itself, `GET /<type>/<id>`, compared with what this chat holds of it: its `updated_at` says when it last changed, `changed_by` who changed it (null: the owner);
+- the part itself, `GET /<type>/<id>`, compared with what this chat holds of it: its `updated_at` says when it last changed;
 - the work items that name it, in any state: page `GET /relation?supertype=Work%20item&fields=id,name,subtype,x_packet_elements` (one list serves every part), keeping those whose `x_packet_elements` holds the part's `id`;
 - where the work was with a partner, their line: `GET /relation?name__icontains=<the partner>&expand=actor,characters,institutions`.
 
@@ -60,7 +60,7 @@ The last line names the skills that ran in the stretch, each by its name after `
 
 A report's text never changes after it is handed in. A later one is always a new report and holds only what came after the earlier one.
 
-- Same chat: it continues the report this chat sent.
+- Same chat: it continues the last report this chat sent.
 <!-- if folder -->
 - Another chat: when one of your reports from step 2 is on the same parts (its name says so; when it does not settle it, read that report's file first), take it as continued and say so in the story for your human to correct; ask, beside the draft (step 8), only when you cannot tell.
 <!-- end -->
@@ -142,7 +142,7 @@ The report's name, and that the keeper's AI completes it. The chat goes on.
 
 ## Never
 
-- Change an element of the world other than your own finished work item (step 7), or set someone else's work item done: the keeper's AI does both, from the report.
+- Change an element of the world other than a finished work item made in this chat (step 7), or set someone else's work item done: the keeper's AI does both, from the report.
 - Send without your human's yes.
 - Close the chat, or ask whether the session is over.
 - Decide that an upload to production happened or may happen.
