@@ -69,13 +69,13 @@ Its Charter carries no `x_charter_of`, so every reader shows it as lore (the cha
 
 ## A world set up before toolkit 5.9.4
 
-Its sittings, lines, hearts, votes, specs, board entries and work items carry no `x_room_of`, so a room reader (the parlor among them) finds no sitting and no room, and an AI on this version takes the room to have no sitting yet. A winner crowned by a spec's subtype `star` in a sitting made after 2026-10-26 is read by no one: the winner is the sitting's `x_star`. It is repaired by hand, one write of one field per element (online a PATCH, which keeps the element's other `x_` fields; in a folder an edit of the file); the first two bullets are the host's to write:
+Its sittings, lines, hearts, votes, specs, board entries and work items carry no `x_room_of`, so a room reader (the parlor among them) finds none of the old room's sittings, lines or votes, and an AI on this version takes the room to have no sitting yet. A winner crowned by a spec's subtype `star` in a sitting made after 2026-10-26 is read by no one: the winner is the sitting's `x_star`. It is repaired by hand, one write of one field per element (online a PATCH, which keeps the element's other `x_` fields; in a folder an edit of the file); the first two bullets are the host's to write:
 
 - on each sitting, `x_room_of` set to the world's id;
 - on the sitting whose winner was crowned by subtype, `x_star` set to that spec's id;
 - on the lines, hearts, votes, specs, board entries and work items the room should show, `x_room_of` set to the id of the sitting each belongs to (by when it was written).
 
-Each write puts the element in the feed again as a change. The third bullet is each maker's, by the Charter's rule 2: every member marks their own, the host theirs, and the host never writes another member's; what nobody marks stays unmarked, as lore. Online a line marked by its maker shows no edit (the message profile notes one only when the editor is not the maker), and a folder shows none. It is a repair, never a rule for readers: nothing reads an unmarked element as the room's, and nothing reads a subtype `star` in a sitting made after 2026-10-26 as the winner.
+Each write puts the element in the feed again as a change. The third bullet is each maker's, by the Charter's rule 2: every member marks their own, the host theirs, and the host never writes another member's; what nobody marks stays unmarked, as lore. Online a line marked by its maker shows no edit in the message profile (which notes one only when the editor is not the maker), and a folder shows none. It is a repair, never a rule for readers: nothing reads an unmarked element as the room's, and nothing reads a subtype `star` in a sitting made after 2026-10-26 as the winner.
 
 ## A world set up before toolkit 5.9.6
 
