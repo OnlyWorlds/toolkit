@@ -1,7 +1,7 @@
 <!-- template: the work skill for the company pack; onlyworlds-setup fills it with write_world.py, which drops this line and keeps only the placement's lines -->
 ---
 name: {{work_skill_name}}
-description: Do a session of work in the {{world_name}} world of {{org}} - find what is open for you and your role, do it, and end with a report the keeper completes. Use when asked "what should I do today", "what is open for me", to pick up, finish or hand in a work item, or at the end of any working session ("report", "hand in", "wrap up"). The keeper's AI also uses it to complete the reports handed in.
+description: Do a session of work in the {{world_name}} world of {{org}} - find what is open for you and your role, do it, and end with a report the keeper completes. Use when asked 'what should I do today', 'what is open for me', to pick up, finish or hand in a work item, or at the end of any working session ('report', 'hand in', 'wrap up'). The keeper's AI also uses it to complete the reports handed in.
 ---
 
 # {{work_skill_name}}: a session of work

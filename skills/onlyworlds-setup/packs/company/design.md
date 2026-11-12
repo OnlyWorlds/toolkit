@@ -1,7 +1,7 @@
 <!-- template: the design skill for the company pack; onlyworlds-setup fills it with write_world.py, which drops this line and keeps only the placement's lines -->
 ---
 name: {{design_skill_name}}
-description: Think a {{org}} design through with a person, on what the {{world_name}} world already holds - a new idea, a change to a product, or a design someone already started taken further, checked or rethought. Use when someone says "design", "what if we", "should we add", "how should this work", "take this further", brings a design file, or asks what is decided about something. Not for doing work already decided ({{work_skill_name}}).
+description: Think a {{org}} design through with a person, on what the {{world_name}} world already holds - a new idea, a change to a product, or a design someone already started taken further, checked or rethought. Use when someone says 'design', 'what if we', 'should we add', 'how should this work', 'take this further', brings a design file, or asks what is decided about something. Not for doing work already decided ({{work_skill_name}}).
 ---
 
 # {{design_skill_name}}: thinking a design through
