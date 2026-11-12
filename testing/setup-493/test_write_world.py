@@ -1023,7 +1023,7 @@ class SetupWriter(unittest.TestCase):
 
     # 19: a plan's own text never breaks a written skill or leaves the folder.
     SHAPES = {"colon-space": "Fernhollow: Ferry", "trailing-colon": "Fernhollow Ferry:",
-              "space-hash": "Studio #9", "dashes": "Beta---Lab", "double-quote": 'The "Beta" Lab',
+              "space-hash": "Atelier #9", "dashes": "Beta---Lab", "double-quote": 'The "Beta" Lab',
               "backslash": "Beta\\Lab"}
 
     @staticmethod
