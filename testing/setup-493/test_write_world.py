@@ -70,7 +70,9 @@ harness trial (2026-10-22):
     files by the world skill's id, and a one-skill pack still refuses the name `ow-` (19e); a
     project whose .claude is a link is written through (19f); an element's type is one of the 22
     (19g); a plan the writer refuses leaves the folder empty, also for a lone surrogate, a value
-    that is no string and a setup day that is no date (19h).
+    that is no string, a setup day not written YYYY-MM-DD and a plan in a shape the writer does not
+    read (19h); every folder is made before the first file, and a copies root that cannot be made
+    leaves nothing behind (19i).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -1128,15 +1130,17 @@ class SetupWriter(unittest.TestCase):
                   ("company", "today", setter(["today"]), True),
                   ("company", "plan element 'owner', name", seated("name", False), True),
                   ("software-project", "plan element 'ai-burr', supertype", seated("supertype", True), True)]
-        others = ["\t", "\x00", "\x1f", "\x7f", "\x9b"]
-        breaks = ["\n", "\r", "\x85", chr(0x2028)]
+        others = ["\t", "\x00", "\x0b", "\x0c", "\x1b", "\x1c", "\x1f", "\x7f", "\x85", "\x9b",
+                  chr(0x2028), chr(0x2029)]
+        breaks = ["\n", "\r\n", "\r"]
         wants = {"tab": "holds a tab; write a space instead",
                  "control": "holds a control character \\(U\\+{:04X}\\); remove it",
-                 "break": "holds a line break, and it lands in [^\\n]*, which is one line; write it on one line"}
+                 "break": "holds a line break \\(\\\\n, \\\\r\\\\n or \\\\r\\), and it lands in [^\\n]*, "
+                          "which is one line; write it on one line"}
         for i, (pack, label, put, one) in enumerate(cases):
-            for kind, ch in ((("tab" if others[i % 5] == "\t" else "control"), others[i % 5]),
-                             ("break", breaks[i % 4])):
-                with self.subTest(pack=pack, key=label, char=f"U+{ord(ch):04X}"):
+            for kind, ch in ((("tab" if others[i % 12] == "\t" else "control"), others[i % 12]),
+                             ("break", breaks[i % 3])):
+                with self.subTest(pack=pack, key=label, char=repr(ch)):
                     plan = json.loads(read(PLANS / f"{pack}.json"))
                     put(plan, ch + "Lab")
                     code, out, world, root = self.write_plan(plan, "folder", f"ctrl-{i}-{kind}")
@@ -1144,7 +1148,7 @@ class SetupWriter(unittest.TestCase):
                         self.assertEqual(code, 0, out)
                         continue
                     self.assertEqual(code, 1, out)
-                    self.assertRegex(out, rf"REFUSED {re.escape(label)} [^\n]*: " + wants[kind].format(ord(ch)))
+                    self.assertRegex(out, rf"REFUSED {re.escape(label)} [^\n]*: " + wants[kind].format(ord(ch[0])))
                     self.assertFalse(world.exists() and any(world.iterdir()), "a refused plan wrote files")
                     self.assertFalse(root.exists() and any(p for p in root.iterdir() if p != world), "copies written")
         with self.subTest(pack="company", key="copies", char="U+000A"):
@@ -1156,8 +1160,25 @@ class SetupWriter(unittest.TestCase):
             r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)],
                                capture_output=True, text=True, encoding="utf-8")
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
-            self.assertRegex(r.stdout, r"REFUSED copies [^\n]*: holds a line break, and it lands in a folder path")
+            self.assertRegex(r.stdout, r"REFUSED copies [^\n]*: holds a line break \(\\n, \\r\\n or \\r\), and it "
+                                       r"lands in a folder path")
             self.assertEqual(self.listing(root), [], "a refused plan wrote files")
+        for ch in others:  # wherever it stands: at the start, after a line break, at the end
+            for where, text in (("start", ch + "GitHub Issues"), ("after a line break", "GitHub Issues\nsee " + ch + " done"),
+                                ("end", "GitHub Issues" + ch)):
+                with self.subTest(key="values.tracker", char=repr(ch), where=where):
+                    plan = json.loads(read(PLANS / "software-project.json"))
+                    plan["values"]["tracker"] = text
+                    code, out, world, root = self.write_plan(plan, "folder", f"ctrl-at-{ord(ch):04x}-{where[:5]}")
+                    self.assertEqual(code, 1, out)
+                    self.assertRegex(out, r"REFUSED values\.tracker [^\n]*: holds a (tab|control character)")
+                    self.assertFalse(root.exists() and any(root.iterdir()), "a refused plan wrote files")
+        with self.subTest(case="the reader's tracker"):
+            plan = json.loads(read(PLANS / "software-project.json"))
+            plan["values"]["tracker"] = "GitHub Issues\nsee \x00\x1b[2J\t done"
+            code, out, world, root = self.write_plan(plan, "folder", "ctrl-reader-tracker")
+            self.assertEqual(code, 1, out)
+            self.assertIn("holds a control character (U+0000); remove it", out)
         with self.subTest(case="a `{{` in a value is the value's"):
             plan = json.loads(read(PLANS / "governance.json"))
             plan["values"]["body"] = "The {{Board}}"
@@ -1295,23 +1316,30 @@ class SetupWriter(unittest.TestCase):
         return ww
 
     def test_19f_a_linked_folder_is_written_through(self):
-        """A project whose .claude is a link to another folder (a junction on Windows, a symlink
-        elsewhere) is the user's own: the writer reads paths as written, never through a link, and
-        writes the copies through it, as 5.9.6 did: exit 0, each copy in the linked folder."""
+        """A project whose .claude, .agents and world folder are links to other folders (junctions on
+        Windows, symlinks elsewhere) is the user's own: the writer reads paths as written, never through
+        a link, and writes through them, as 5.9.6 did: exit 0, each file in the linked folder."""
         base = OUT / "linked"
         root, shared = base / "proj", base / "shared-claude"
         root.mkdir(parents=True, exist_ok=True)
         shared.mkdir(parents=True, exist_ok=True)
-        if os.name == "nt":
-            import _winapi
-            _winapi.CreateJunction(str(shared), str(root / ".claude"))
-        else:
-            os.symlink(shared, root / ".claude", target_is_directory=True)
-        self.assertTrue((root / ".claude").exists())
+        shared_agents, shared_world = base / "shared-agents", base / "shared-world"
+        shared_agents.mkdir(parents=True, exist_ok=True)
+        shared_world.mkdir(parents=True, exist_ok=True)
+        for target, link in ((shared, root / ".claude"), (shared_agents, root / ".agents"), (shared_world, root / "world")):
+            if os.name == "nt":
+                import _winapi
+                _winapi.CreateJunction(str(target), str(link))
+            else:
+                os.symlink(target, link, target_is_directory=True)
+            self.assertTrue(link.exists())
         plan = json.loads(read(PLANS / "governance.json"))
         code, out, world, _ = self.write_plan(plan, "folder", "linked/proj")
         self.assertEqual(code, 0, out)
-        self.assertTrue((shared / "skills" / ("ow-" + plan["world"]["slug"]) / "SKILL.md").exists(), out)
+        name = "ow-" + plan["world"]["slug"]
+        self.assertTrue((shared / "skills" / name / "SKILL.md").exists(), out)
+        self.assertTrue((shared_agents / "skills" / name / "SKILL.md").exists(), out)
+        self.assertTrue((shared_world / "world.json").exists(), out)
 
     def test_19g_an_element_type_is_one_of_the_22(self):
         """The writer's TYPES are the 22 sections of knowledge/schema-reference.md, in order; a plan
@@ -1333,8 +1361,9 @@ class SetupWriter(unittest.TestCase):
 
     def test_19h_refused_before_anything_is_written(self):
         """The writer writes it all or refuses before writing: a lone surrogate in a name, a value that
-        is null, a list or an object, a null world name with no slug, or a setup day that is no date is
-        refused, the key named, and the case's folder stays empty."""
+        is null, a list or an object, a null world name with no slug, or a setup day not written
+        YYYY-MM-DD is refused, the key named; a plan in a shape the writer does not read (a number
+        where text or a pack goes, no elements) is refused, not a traceback; the case's folder stays empty."""
         def company(put):
             plan = json.loads(read(PLANS / "company.json"))
             put(plan)
@@ -1351,7 +1380,21 @@ class SetupWriter(unittest.TestCase):
             ("null-name", lambda p: (p["world"].__setitem__("name", None), p["world"].pop("slug")),
              "REFUSED world.name None: the writer puts it into a text, so it is a string"),
             ("today", lambda p: p.__setitem__("today", "2026-13-45"),
-             "REFUSED today '2026-13-45': the setup day, an ISO date (YYYY-MM-DD)"),
+             "REFUSED today '2026-13-45': the setup day, a date written YYYY-MM-DD"),
+            ("today-basic", lambda p: p.__setitem__("today", "20261112"),
+             "REFUSED today '20261112': the setup day, a date written YYYY-MM-DD"),
+            ("today-week", lambda p: p.__setitem__("today", "2026-W46-4"),
+             "REFUSED today '2026-W46-4': the setup day, a date written YYYY-MM-DD"),
+            ("description", lambda p: p["world"].__setitem__("description", 5),
+             "REFUSED the plan is not in a shape the writer reads"),
+            ("utility", lambda p: p.__setitem__("skill", {"utility": ["a"]}),
+             "REFUSED the plan is not in a shape the writer reads"),
+            ("world-id", lambda p: p.__setitem__("online", {"world_id": 5}),
+             "REFUSED the plan is not in a shape the writer reads"),
+            ("pack", lambda p: p.__setitem__("pack", 5),
+             "REFUSED the plan is not in a shape the writer reads"),
+            ("no-elements", lambda p: p.pop("elements"),
+             "REFUSED the plan is not in a shape the writer reads (the plan has no key 'elements'"),
         ]
         for tag, put, message in cases:
             with self.subTest(case=tag):
@@ -1360,6 +1403,36 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn(message, out)
                 self.assertNotIn("Traceback", out)
                 self.assertEqual(self.listing(root), [], "a refused plan wrote files")
+
+
+    def test_19i_every_folder_is_made_before_the_first_file(self):
+        """A copies root whose name the system refuses (Windows: a `|`), that names an existing file, or
+        whose .claude/skills is a file is refused, the key and the folder named; the folders the run
+        made are gone again and nothing is written: the listings of the output folder's parent and of
+        the copies' parent are the same before and after."""
+        base = OUT / "copies-shapes"
+        base.mkdir(parents=True, exist_ok=True)
+        (base / "a-file.txt").write_text("x", encoding="utf-8")
+        (base / "skills-file" / ".claude").mkdir(parents=True, exist_ok=True)
+        (base / "skills-file" / ".claude" / "skills").write_text("x", encoding="utf-8")
+        cases = [("a-file", base / "a-file.txt"), ("skills-is-file", base / "skills-file")]
+        if os.name == "nt":
+            cases.append(("refused-name", base / "pr|oj"))
+        for tag, copies in cases:
+            with self.subTest(case=tag):
+                case = OUT / f"copies-{tag}"
+                case.mkdir(parents=True, exist_ok=True)
+                plan = json.loads(read(PLANS / "governance.json"))
+                plan["copies"], plan["repo"], plan["agents_md"] = str(copies), False, True
+                plan_path = OUT / "plans" / f"copies-{tag}.json"
+                plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+                before = (self.listing(case), self.listing(base))
+                r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(case / "world")],
+                                   capture_output=True, text=True, encoding="utf-8")
+                self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+                self.assertRegex(r.stdout, r"REFUSED copies [^\n]*: the folder [^\n]* cannot be made")
+                self.assertNotIn("Traceback", r.stdout + r.stderr)
+                self.assertEqual((self.listing(case), self.listing(base)), before, "the run left something")
 
 
 if __name__ == "__main__":

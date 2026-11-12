@@ -107,8 +107,12 @@ SLUG_MAX = 61  # a plan's own slug: the made slug's alphabet; `ow-<slug>` within
 TYPES = ("ability", "character", "collective", "construct", "creature", "event", "family", "institution",
          "language", "law", "location", "map", "marker", "narrative", "object", "phenomenon", "pin",
          "relation", "species", "title", "trait", "zone")
-# What a line break is (str.splitlines' set): refused where the writer puts a value on one line.
-LINE_BREAKS = "\n\r\x0b\x0c\x1c\x1d\x1e\x85" + chr(0x2028) + chr(0x2029)
+# A line break is \n, \r\n or \r, nothing else: refused only where the writer puts a value on one line.
+# Every other character below U+0020 (the tab among them), U+007F, the C1 range and the two Unicode line
+# separators are control characters: refused in every value the writer puts into a text.
+LINE_BREAKS = ("\r\n", "\r", "\n")
+SEPARATORS = (chr(0x2028), chr(0x2029))
+DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 FORMAT_VERSION = "0.3.22"
 EPOCH = datetime.date(1970, 1, 1)
 PACKS = Path(__file__).resolve().parent.parent / "packs"
@@ -168,9 +172,17 @@ def slug(text, cap=40):
     return s[:cap].strip("-")
 
 
-def line_breaker(value):
-    """The first line break or control character in a text (Unicode's Cc, and U+2028, U+2029), or None."""
-    return next((c for c in value if ord(c) < 0x20 or 0x7F <= ord(c) <= 0x9F or c in LINE_BREAKS), None)
+def control_in(value):
+    """The first control character anywhere in a text once its line breaks (\\n, \\r\\n, \\r) are set
+    aside, or None; every character is read, not only the first odd one."""
+    rest = value
+    for brk in LINE_BREAKS:
+        rest = rest.replace(brk, "")
+    return next((c for c in rest if ord(c) < 0x20 or 0x7F <= ord(c) <= 0x9F or c in SEPARATORS), None)
+
+
+def has_line_break(value):
+    return any(brk in value for brk in LINE_BREAKS)
 
 
 def surrogate_in(node, at="plan"):
@@ -193,7 +205,10 @@ def one_line_places(pack, placement):
     """Each placeholder the pack's written texts put in a place that is one line (a front matter line
     other than the description, which double_quoted() carries; a heading; a table row), with its first
     such place: {name: "a heading (packs/<pack>/<file> line n)"}. Read from the templates, so a new
-    template needs no list."""
+    template needs no list. It reads a heading as a line starting with `#` and a table row as a line
+    starting with `|`: an indented heading, a setext heading (a line under `===` or `---`) and a table
+    row without a leading pipe are not seen. No template holds one; a template that adds one adds its
+    shape here first."""
     found = {}
     for name in ("charter.md", "skill.md", "design.md", "work.md"):
         if not (pack / name).exists():
@@ -316,6 +331,23 @@ def shown(path, root):
 
 
 def main(argv):
+    """The writer, with one catch before its first write: a plan in a shape it does not read (a list
+    where a name goes, a number where a link goes) is refused with the key when it is known and the
+    error's own words when it is not, and nothing is written."""
+    state = {"writing": False}
+    try:
+        return write_world(argv, state)
+    except (KeyError, TypeError, AttributeError, ValueError, IndexError, OSError) as err:
+        if state["writing"]:
+            raise
+        what = (f"the plan has no key {err.args[0]!r} where one is read" if isinstance(err, KeyError)
+                else f"{type(err).__name__}: {err}")
+        print(f"REFUSED the plan is not in a shape the writer reads ({what})")
+        print("nothing written; 1 problem(s)")
+        return 1
+
+
+def write_world(argv, state):
     bulk_arg = argv[argv.index("--bulk") + 1] if "--bulk" in argv and argv.index("--bulk") + 1 < len(argv) else None
     bulk = Path(bulk_arg) if bulk_arg else None
     args = [a for i, a in enumerate(argv) if not a.startswith("--") and not (bulk_arg and i == argv.index("--bulk") + 1)]
@@ -368,22 +400,24 @@ def main(argv):
             problems.append(f"{label} {v!r}: the writer puts it into a text, so it is a string (in quotes)")
             continue
         shown_ = v if len(v) <= 60 else v[:60] + "..."
-        c = line_breaker(v)
+        c = control_in(v)
         if c == "\t":
             problems.append(f"{label} {shown_!r}: holds a tab; write a space instead")
-        elif c is not None and c not in LINE_BREAKS:
+        elif c is not None:
             problems.append(f"{label} {shown_!r}: holds a control character (U+{ord(c):04X}); remove it")
-        elif c is not None and place:
-            problems.append(f"{label} {shown_!r}: holds a line break, and it lands in {place}, which is one "
-                            f"line; write it on one line")
+        if has_line_break(v) and place:
+            problems.append(f"{label} {shown_!r}: holds a line break (\\n, \\r\\n or \\r), and it lands in "
+                            f"{place}, which is one line; write it on one line")
         if "{{" in v:
             problems.append(f"{label} {shown_!r}: holds `{{{{`, which the writer reads as the start of a "
                             f"placeholder; write the value without it")
     if lone is None and isinstance(plan.get("today"), str) and not problems:
-        try:
+        try:  # the shape first (fromisoformat also takes 20261112 and 2026-W46-4), then the date
+            if not DATE.fullmatch(plan["today"]):
+                raise ValueError
             day_number(plan["today"])
         except ValueError:
-            problems.append(f"today {plan['today']!r}: the setup day, an ISO date (YYYY-MM-DD)")
+            problems.append(f"today {plan['today']!r}: the setup day, a date written YYYY-MM-DD")
     for e in plan["elements"]:  # an element's type is its folder: one of the 22
         if e.get("type") not in TYPES:
             problems.append(f"plan element {e.get('key')!r}, type {e.get('type')!r}: one of the 22 element "
@@ -714,8 +748,13 @@ def main(argv):
                 writes.append((p, line + "\n", False))
                 line_done.append(f"{p}: written")
                 continue
-            with open(p, encoding="utf-8", newline="") as fh:
-                old = fh.read()
+            try:
+                with open(p, encoding="utf-8", newline="") as fh:
+                    old = fh.read()
+            except UnicodeDecodeError:
+                problems.append(f"copies {copies!r}: {p} is not UTF-8 text, so the AGENTS.md line cannot be "
+                                f"appended to it; save it as UTF-8, or set agents_md to false")
+                continue
             if line in old:
                 line_done.append(f"{p}: holds the line already")
                 continue
@@ -734,12 +773,47 @@ def main(argv):
                 problems.append(f"{p}: {err.reason} at character {err.start}; nothing is written")
         writes = encoded
 
+    # Every folder the run writes into is made before the first file. When one cannot be made (a name
+    # the system refuses, a file where a folder goes), the folders this run made are removed (only
+    # those, each still empty, deepest first) and the run refuses, leaving nothing behind.
+    if not problems:
+        owner = {}  # each folder to make -> the plan key and value that put it there
+        for p, _, _ in writes:
+            key = (("--bulk", str(bulk)) if bulk is not None and p == bulk else
+                   ("OUT_FOLDER", str(out)) if not outside(p, out) else ("copies", copies))
+            owner.setdefault(Path(os.path.abspath(p.parent)), key)
+        made = []
+        for folder in sorted(owner, key=lambda f: len(f.parts)):
+            for step in [*reversed(folder.parents), folder]:
+                if step.is_dir():
+                    continue
+                why = "a file is there" if step.exists() else None
+                if why is None:
+                    try:
+                        step.mkdir()
+                        made.append(step)
+                        continue
+                    except OSError as err:
+                        why = err.strerror or str(err)
+                key, value = owner[folder]
+                problems.append(f"{key} {value!r}: the folder {step} cannot be made ({why}); nothing is written")
+                break
+            if problems:
+                break
+        if problems:
+            for step in reversed(made):
+                try:
+                    step.rmdir()  # empty, and made by this run
+                except OSError:
+                    pass
+
     if problems:
         for p in problems:
             print("REFUSED", p)
         print(f"nothing written; {len(problems)} problem(s)")
         return 1
 
+    state["writing"] = True
     for p, data, append in writes:
         write(p, data, append)
     if bulk and len(items) > 1000:
