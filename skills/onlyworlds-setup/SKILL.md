@@ -99,7 +99,7 @@ The profile's page has the rest (how each predicate counts, what a reader report
 
 | Check | Pass |
 |-------|------|
-| Charter size | under 4,000 characters filled (every pack; `write_world.py` refuses over) |
+| Charter size | under 4,000 characters filled (every pack; `write_world.py` refuses 4,000 or more) |
 | Skill size | each skill written whole at any size: the packs aim for under 10,000 characters filled, and the writer notes one of 10,000 or more (an aim, not a limit of anything: a filled text must never refuse on a company's own names), front matter `name` and `description` only, name `ow-<world-slug>`, or in a team pack `<prefix>-start`, `-design`, `-work` (lowercase, hyphens, 64 at most) |
 | Placeholders | none left: a `{{` after filling refuses the write, naming the file and line |
 | Placement | a folder world's skill and charter hold no API route; an online world's skill names the server world id, never the minted one |

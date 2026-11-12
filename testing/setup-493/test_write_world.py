@@ -54,7 +54,8 @@ harness trial (2026-10-22):
 18. a skill's size never refuses a plan: a world skill (18a) and a team pack's work skill (18b)
     filled to SKILL_MAX characters or more (the packs aim for under it) are written, exit 0, with one
     note naming each; at exactly SKILL_MAX - 1, SKILL_MAX and SKILL_MAX + 1 the size line and the note
-    are true (18d); a charter over its budget is still refused (18c).
+    are true (18d); a charter over its budget is still refused (18c), at exactly CHARTER_MAX too, and
+    one of CHARTER_MAX - 1 is written (18e).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -952,6 +953,40 @@ class SetupWriter(unittest.TestCase):
                 self.assertEqual(notes, [size_note("world skill", size, budget)] if size >= budget else [], out)
                 for part in (p for ln in out.splitlines() for p in ln.split(";") if "world skill" in p):
                     self.assertIsNone(re.search(r"\b(past|over|above|below|exceeds?)\b|of under", part), part)
+
+    def test_18e_the_charter_at_the_boundary(self):
+        """The real writer with the workshop's charter filled to exactly CHARTER_MAX - 1, CHARTER_MAX
+        and CHARTER_MAX + 1 (the `about` value padded, which the charter holds once): written at
+        CHARTER_MAX - 1, refused at CHARTER_MAX and above, as SKILL.md's Checks row says."""
+        budget = int(re.search(r"^CHARTER_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
+        base = json.loads(read(PLANS / "workshop.json"))
+        pad = "an evening of small tools built in the open by people and their AI " * 20
+
+        def run_with(n, tag):
+            plan = json.loads(json.dumps(base))
+            plan["values"]["about"] += " " + pad[:n] if n else ""
+            code, out, world, root = self.write_plan(plan, "folder", f"charter-edge-{tag}")
+            charter = world / "elements" / "law" / "charter.json"
+            if code == 0:
+                return code, len(json.loads(read(charter))["description"]), out, world
+            m = re.search(rf"^REFUSED charter: (\d+) characters, the budget is under {budget}$", out, re.M)
+            return code, int(m.group(1)) if m else None, out, world
+
+        _, s0, _, _ = run_with(0, "base")
+        _, s1, _, _ = run_with(10, "probe")
+        self.assertEqual(s1 - s0, 11, "the `about` value fills the charter once")
+        for target in (budget - 1, budget, budget + 1):
+            with self.subTest(size=target):
+                code, size, out, world = run_with(target - s0 - 1, str(target))
+                self.assertEqual(size, target, out)
+                if target < budget:
+                    self.assertEqual(code, 0, out)
+                    self.assertIn(f"charter {target} of under {budget} characters;", out)
+                else:
+                    self.assertEqual(code, 1, out)
+                    self.assertFalse(world.exists() and any(world.iterdir()), "a refused plan wrote files")
+        self.assertIn(f"`write_world.py` refuses {budget:,} or more",
+                      read(REPO / "skills" / "onlyworlds-setup" / "SKILL.md"))
 
     def test_18c_a_charter_over_its_budget_is_still_refused(self):
         """The charter's budget stands: a workshop whose `about` fills the charter past CHARTER_MAX is
