@@ -1,7 +1,7 @@
 <!-- template: the world skill for the software-project pack; onlyworlds-setup fills it with write_world.py, which drops this line and keeps only the placement's lines -->
 ---
 name: {{skill_name}}
-description: Start every session here. The context world of {{project}} on OnlyWorlds - its components and what each depends on, the decisions and why, who maintains what, its services and releases. Use when asked why {{project}} does something a certain way, what a component depends on, who maintains it, which decision replaced which, or to hand in a decision for the keeper's AI to record.
+description: Start every session here. The context world of {{project}} on OnlyWorlds - its components and what each depends on, the decisions and why, who maintains what, its services and releases. Use when asked why {{project}} does something a certain way, what a component depends on, who maintains it, or which decision replaced which.
 ---
 
 # The {{world_name}} world: the context of {{project}}

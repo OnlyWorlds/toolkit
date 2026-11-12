@@ -24,7 +24,7 @@ Every time, however recent the chat. For each part you will report on:
 And your seat's reports of the last days: the Narrative files with supertype `Report` whose `narrator` is your Character, by the date in their `name`. One this chat does not remember sending is another chat's: never ask your human whose it is.
 <!-- end -->
 <!-- if online -->
-- the part: with a cursor kept, `GET /changes?since=<cursor>` and keep the part's entries (`{{skill_name}}`, step 5); without one, `GET /<type>/<id>`;
+- the part: with your kept cursor, `GET /changes?since=<your kept cursor>` and keep the part's entries, leaving the cursor as it is (only `{{skill_name}}`, step 5, moves it); without one, `GET /<type>/<id>`;
 - the work items that name it, in any state: page `GET /relation?supertype=Work%20item&fields=id,name,subtype,x_packet_elements` (one list serves every part), keeping those whose `x_packet_elements` holds the part's `id`;
 - where the work was with a partner, their line: `GET /relation?name__icontains=<the partner>&expand=actor,characters,institutions`.
 
@@ -63,7 +63,7 @@ A report's text never changes after it is handed in. A later one is always a new
 - Same chat: the same thread. The first report's id is the one its write gave it (step 7).
 - Another chat: when one of your reports from step 2 is on the same parts, take it as continued and say so in the story for your human to correct; ask, beside the draft (step 8), only when you cannot tell.
 
-When it continues one, the fourth line of the story is `Continues: <that report's name>, ow://narrative/<its id>`, and `parent_narrative` holds the first report of the thread: the earlier report's own `parent_narrative` when that is a report, else the earlier report itself. A report of a talk that hangs on a board entry (a Narrative with supertype `Board`) puts that entry in `parent_narrative` and keeps its `Continues:` line in the story only.
+When it continues one, the fourth line of the story is `Continues: <that report's name>, ow://narrative/<its id>`, and `parent_narrative` holds the first report of the thread: the earlier report's own `parent_narrative` when that is a report, else the earlier report itself.
 
 ## 6. What the other skills owe
 
@@ -108,6 +108,7 @@ a new file `{{world_folder}}elements/narrative/<name-slug>--<last 8 of its id>.j
 <!-- if online -->
 - `x_room_of` is `{{server_world_id}}`: without it, it is lore. Your Character is `character` in `GET /me`.
 <!-- end -->
+- `parent_narrative`: a first report leaves the key out, never an empty string.
 - `x_report_answers`: the work items the stretch answered, each also in `relations`. None answered: leave the key out, never an empty list; `relations` the same when empty.
 - A work item only touched or answered by half, one made in the stretch (it carries `x_room_of` too), and any other Relation touched (a partner's line) go in `relations` alone.
 - A part that is not a Relation has no field: the story names it (step 4); the keeper's AI links it.
