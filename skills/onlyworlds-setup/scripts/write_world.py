@@ -17,7 +17,8 @@ characters is written too, with a note giving its length and the specification's
 nothing it did not make: when it stops on an error, or an interrupt, after its first act, it takes the
 run back, last act first (a file it made removed, a line it appended cut off, a file it wrote over
 given its bytes back, a folder it made removed while empty), and says each path it could not put back.
-An interrupt during that take-back stops it, and each path not yet taken back is said too.
+An interrupt during that take-back stops it: the path it was on is said as unknown, each path not yet
+reached as left.
 
 The plan (JSON):
 
@@ -470,15 +471,25 @@ def say_refusal(text):
 
 def refusal(journal, whole, head):
     """The one place that says what a refused run left, read from the journal's two lists alone: `whole`
-    (its own lines) when both are empty; else `head`, then each act answered as not put back and each
-    act the undo never answered for (an interrupt stopped it), and the count."""
+    (its own lines) when both are empty; else `head`, then the act in hand when an interrupt stopped the
+    undo (UNKNOWN: it may or may not have been taken back), each act answered as not put back and each
+    act the undo never reached (NOT PUT BACK), and the count."""
+    # The undo goes last act first, so the first act it never answered for is the one in hand when an
+    # interrupt stopped it: its step may have finished, or not. The acts before it were never reached.
+    in_hand, *unreached = journal.unanswered() or [None]
     left = [(a["path"], a["answer"]) for a in journal.not_put_back()]
-    left += [(a["path"], "the undo was interrupted before it answered for this act; left as the interrupt "
-                         "found it") for a in journal.unanswered()]
-    if not left:
+    left += [(a["path"], "the undo was interrupted before it reached this act; left as it is") for a in unreached]
+    if not left and in_hand is None:
         return whole
-    return (f"{head}{len(left)} path(s) below\n" + "".join(f"NOT PUT BACK {p}: {state}\n" for p, state in left)
-            + f"left behind: the {len(left)} path(s) above; 1 problem(s)\n")
+    lines = [f"NOT PUT BACK {p}: {state}\n" for p, state in left]
+    if in_hand is None:
+        return (f"{head}{len(left)} path(s) below\n" + "".join(lines)
+                + f"left behind: the {len(left)} path(s) above; 1 problem(s)\n")
+    lines.insert(0, f"UNKNOWN {in_hand['path']}: the undo was interrupted while on this act; it may or may not have "
+                    f"been taken back, so look at it\n")
+    return (f"{head}{len(left)} path(s) marked NOT PUT BACK below, and perhaps the 1 marked UNKNOWN\n"
+            + "".join(lines) + f"left behind: the {len(left)} path(s) marked NOT PUT BACK, and perhaps the 1 "
+            f"marked UNKNOWN; 1 problem(s)\n")
 
 
 def undone(journal, err):

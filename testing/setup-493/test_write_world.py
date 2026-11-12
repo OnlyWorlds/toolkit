@@ -87,7 +87,8 @@ harness trial (2026-10-22):
     interrupted in place of or just after each act's undo stops the undo, every path left named (20l);
     an interrupt just after the undo says only what the journal holds (20m); a run with no output at
     all writes as one with it, exit 0, and a refusal then goes to the error output (20n); the writer
-    names no signal (20o).
+    names no signal (20o); a path whose undo step finished just before an interrupt is said as
+    unknown, never as left, and the count line is true against the listing (20p).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -1769,11 +1770,11 @@ class TakenBack(unittest.TestCase):
         self.assertEqual(contents(proj, case), before, "the run left something")
 
     def assert_told(self, before, after, out):
-        """The listing is as before, or every path that differs is named in a NOT PUT BACK line and the
-        words never say that nothing is left."""
+        """The listing is as before, or every path that differs is named in a NOT PUT BACK line (or, the
+        act in hand at an interrupt, an UNKNOWN line) and the words never say that nothing is left."""
         changed = sorted({str(Path(folder) / rel) for (folder, rel) in set(before) | set(after)
                           if before.get((folder, rel), "absent") != after.get((folder, rel), "absent")})
-        named = set(re.findall(r"^NOT PUT BACK (.+?): ", out, re.M))
+        named = set(re.findall(r"^(?:NOT PUT BACK|UNKNOWN) (.+?): ", out, re.M))
         self.assertEqual([p for p in changed if p not in named], [], out)
         if changed:
             self.assertNotIn("nothing left behind", out)
@@ -1959,11 +1960,59 @@ class TakenBack(unittest.TestCase):
                             ww.Journal.undo_one = staticmethod(real_step)
                         self.assert_told(before, contents(proj, case), buf.getvalue())
                         self.assertNotIn("nothing left behind", buf.getvalue())
-                        # the undo stopped there: the act in hand is named as never answered for
-                        self.assertIn(f"NOT PUT BACK {hit[0]}: the undo was interrupted before it answered for "
-                                      f"this act", buf.getvalue())
+                        # the undo stopped there: the act in hand is said as unknown
+                        self.assertIn(f"UNKNOWN {hit[0]}: the undo was interrupted while on this act; it may or "
+                                      f"may not have been taken back, so look at it", buf.getvalue())
                         runs += 1
         print(f"\n20l: {', '.join(counts)}; each step two ways: {runs} runs")
+
+    def test_20p_an_interrupt_after_a_real_undo_step(self):
+        """An interrupt just after a real step of the undo succeeded (a folder or a file removed) and before
+        its answer is recorded: that path is said under UNKNOWN, never under NOT PUT BACK; each NOT PUT
+        BACK path differs from before, every path that differs is named, and the count line counts the
+        NOT PUT BACK lines and says the UNKNOWN one only as perhaps."""
+        ww = self.writer("20p")
+        first = ("bulk", lambda: PermissionError(13, "Permission denied (made to fail)"))
+        argv, proj, case = self.project("governance", "undo-real-count")
+        with UndoFault(ww, 0, "before", KeyboardInterrupt, first) as f:
+            removed = []
+            real_rmdir, real_remove = f.real[1], f.real[2]
+            Path.rmdir = lambda path: (real_rmdir(path), removed.append(path))[0]
+            os.remove = lambda path: (real_remove(path), removed.append(path))[0]
+            self.run_in(ww, argv)
+        steps = len(removed)
+        self.assertGreater(steps, 10)
+        for k in range(1, steps + 1):
+            with self.subTest(k=k):
+                argv, proj, case = self.project("governance", f"undo-real-{k}")
+                before = contents(proj, case)
+                buf, n, hit = io.StringIO(), [0], []
+
+                def after(real, path, k=k, n=n, hit=hit):
+                    real(path)
+                    if f.in_undo:
+                        n[0] += 1
+                        if n[0] == k:
+                            hit.append(str(path))
+                            raise KeyboardInterrupt
+                with UndoFault(ww, 0, "before", KeyboardInterrupt, first) as f:
+                    Path.rmdir = lambda path, r=f.real[1]: after(r, path)
+                    os.remove = lambda path, r=f.real[2]: after(r, path)
+                    with self.assertRaises(KeyboardInterrupt):
+                        self.run_in(ww, argv, buf)
+                out = buf.getvalue()
+                self.assert_told(before, contents(proj, case), out)
+                self.assertIn(f"UNKNOWN {hit[0]}: the undo was interrupted while on this act; it may or may not "
+                              f"have been taken back, so look at it", out)
+                self.assertNotIn(f"NOT PUT BACK {hit[0]}:", out)
+                after_ = contents(proj, case)
+                changed = {str(Path(folder) / rel) for (folder, rel) in set(before) | set(after_)
+                           if before.get((folder, rel), "absent") != after_.get((folder, rel), "absent")}
+                left = re.findall(r"^NOT PUT BACK (.+?): ", out, re.M)
+                self.assertEqual([p for p in left if p not in changed], [], "a path said left is as before")
+                self.assertIn(f"left behind: the {len(left)} path(s) marked NOT PUT BACK, and perhaps the 1 "
+                              f"marked UNKNOWN; 1 problem(s)", out)
+        print(f"\n20p: an interrupt after each of {steps} real undo steps")
 
     def test_20m_an_interrupt_just_after_the_undo(self):
         """An interrupt cannot land after a handler is given back: the writer takes no signal handler.
