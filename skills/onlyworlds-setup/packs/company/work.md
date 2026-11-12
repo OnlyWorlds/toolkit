@@ -146,11 +146,12 @@ A work item you make (an open from a report, the `Order of work`) takes part 2's
 **Your own session's report**, as the keeper's AI, has no second hand: one write in part 3's shape (with `x_room_of`), born `completed`, its `story`, `description`, links and `consequences` together (online, the same `Idempotency-Key` rule); then step 6.
 
 <!-- if folder -->
-At your tidy, run the world doctor, `python -m onlyworlds.doctor {{world_folder}}` (after `pip install onlyworlds`), and read its house-rule findings. On a fresh world it lists the three skills, and Start here until a Welcome links it (`constructs`), as unlinked: leave them.
+At your tidy, run the world doctor, `python -m onlyworlds.doctor {{world_folder}}` (after `pip install onlyworlds`), and read its house-rule findings.
 <!-- end -->
 <!-- if online -->
-At your tidy, run the world doctor, `python -m onlyworlds.doctor --api` (after `pip install onlyworlds`; it reads the key and PIN from the environment, not a `.env` file: load yours first), and read its house-rule findings. On a fresh world it lists the three skills, each AI's Character, and Start here until a Welcome links it (`constructs`), as unlinked: leave them.
+At your tidy, run the world doctor, `python -m onlyworlds.doctor --api` (after `pip install onlyworlds`; it reads the key and PIN from the environment, not a `.env` file: load yours first), and read its house-rule findings.
 <!-- end -->
+On a fresh world it lists what has no link in or out yet, the three skills among them: leave those, and never add a link to quiet a finding.
 A work item or report short of the mark: its maker sets `x_room_of`, or it stays lore.
 
 A wrong change is corrected, and the correction said in a later report.

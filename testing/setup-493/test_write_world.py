@@ -47,8 +47,8 @@ harness trial (2026-10-22):
     team pack's plan without a prefix is refused;
 14. a real team fits: each team pack written at 2, 5, 8, 12 and 20 seats (and 8 with six AIs, the
     last size the charter names every seat) keeps CHARTER_ROOM characters under the charter budget;
-    and the longest charter (14b), one owner with a 31-character name and seven AIs of theirs, in
-    the company, software-project and workshop packs, stays under each pack's measured ceiling;
+    and no pack's charter is longer than 5.9.5 (ac34e55) filled it, for the test's own plans (14c)
+    and for one owner with a 31-character name and seven AIs of theirs (14b);
 15. no route in a filled online skill carries a query value with a raw space;
 16. the writer refuses an AI seat whose role is above its human's.
 
@@ -717,13 +717,26 @@ class SetupWriter(unittest.TestCase):
                         print(f"\n  charter {pack} {n} seats{' (6 AIs)' if heavy else ''} {placement}: {size}")
                         self.assertLessEqual(size, budget - CHARTER_ROOM, f"{size} characters filled")
 
-    def test_14b_an_owner_with_seven_ais_fits(self):
-        """The longest charter a real plan writes: one owner with a 31-character name and seven AIs of
-        theirs, no other seat (each AI's entry repeats its human's name), in all three packs that ship
-        rules, folder and online. The company charter is no longer than 5.9.5 wrote it (3,926), so no
-        plan 5.9.5 wrote is refused for this version's sentences; the other two keep the length
-        measured when their rule sentences landed."""
-        ceiling = {"company": 3926, "software-project": 3894, "workshop": 3768}
+    # Each pack's charter as toolkit 5.9.5 (commit ac34e55) filled the test's own plans, folder and
+    # online. A charter's free text has no longest case, so the guard is the length a plan had
+    # before: no pack's charter grows, and no plan that 5.9.5 wrote is refused for a charter's words.
+    CHARTER_AT_595 = {"company": (3478, 3440), "ai-home": (3343, 3304), "governance": (3760, 3721),
+                      "workshop": (3248, 3233), "software-project": (3312, 3274)}
+
+    def test_14c_no_charter_longer_than_595(self):
+        """Every pack's filled charter, for the test's own plan, is no longer than 5.9.5 filled it."""
+        def check(run):
+            folder, online = self.CHARTER_AT_595[run.pack]
+            most = online if run.placement == "online" else folder
+            self.assertLessEqual(len(run.charter()), most, f"{run.pack} {run.placement}: longer than 5.9.5's {most}")
+        self.each(check)
+
+    def test_14b_an_owner_with_seven_ais(self):
+        """One case among many, the one each AI's entry makes long (it repeats its human's name): one
+        owner with a 31-character name and seven AIs of theirs, no other seat, in the three packs that
+        ship rules, folder and online; each charter no longer than 5.9.5 (ac34e55) filled the same
+        plan."""
+        ceiling = {"company": (3926, 3888), "software-project": (3755, 3717), "workshop": (3690, 3675)}
         owner_name = "Anastasia Wilhelmina Ravensbury"
         ais = ["Juniper", "Halden", "Marlow", "Sorrow-Lark", "Tamsin", "Quill", "Brennick"]
 
@@ -749,9 +762,10 @@ class SetupWriter(unittest.TestCase):
             return plan
 
         self.assertEqual(len(owner_name), 31)
-        for pack, most in ceiling.items():
+        for pack, (most_folder, most_online) in ceiling.items():
             base = json.loads(read(PLANS / f"{pack}.json"))
             for placement in ("folder", "online"):
+                most = most_online if placement == "online" else most_folder
                 with self.subTest(pack=pack, placement=placement):
                     root = OUT / f"owner7-{pack}-{placement}"
                     plan, world = variant(owner_with_seven(base), placement, root)

@@ -148,11 +148,6 @@ At your tidy, run the world doctor, `python -m onlyworlds.doctor {{world_folder}
 <!-- if online -->
 At your tidy, run the world doctor, `python -m onlyworlds.doctor --api` (after `pip install onlyworlds`; it reads the key and PIN from the environment, not a `.env` file: load yours first), and read its house-rule findings.
 <!-- end -->
-<!-- if folder -->
-On a fresh world it lists the three skills, and an outside service no component calls yet, as unlinked: leave them.
-<!-- end -->
-<!-- if online -->
-On a fresh world it lists the three skills, each AI's Character, and an outside service no component calls yet, as unlinked: leave them.
-<!-- end -->
+On a fresh world it lists what has no link in or out yet, the three skills among them: leave those, and never add a link to quiet a finding.
 
 A wrong change is corrected, and the correction said in a later report.
