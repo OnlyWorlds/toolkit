@@ -8,7 +8,7 @@ Works with any AI that reads markdown. Optimized for Claude Code.
 
 ## What It Does
 
-**Structure it**: import any text into world elements. Paste a paragraph, a chapter, upload files, point at folders. Out comes a structured world: a world folder you can open directly in [Atlas](https://atlas.onlyworlds.com). Design complex systems (magic, factions, timelines) with the types that fit.
+**Structure it**: import any text into world elements. Paste a paragraph, a chapter, upload files, point at folders. Out comes a structured world: a world folder. Open the world folder in [Atlas](https://atlas.onlyworlds.com) in a desktop Chromium browser (Chrome, Edge, Brave): Atlas reads and saves the folder itself. In Firefox or Safari, open the world as one `.owworld` file (a `.zip` of the folder opens too): Atlas keeps that world in the browser, and the folder on disk is not changed. Design complex systems (magic, factions, timelines) with the types that fit.
 
 **Grow it**: work with worlds wherever they live. Read a world and get a creative brief, find missing connections, catch where it contradicts itself. Draw it as a graph, a map with its pins and zones, or a timeline. Files on disk or the API, your choice.
 
@@ -16,9 +16,11 @@ Works with any AI that reads markdown. Optimized for Claude Code.
 
 **Move it**: pack a world folder into one `.owworld` file and back, bring in an export from World Anvil, LegendKeeper, Kanka, Campfire or Notion, or export to Markdown.
 
-**Build on it**: use world data as a backend for tools, games, and AI agents. REST API, TypeScript SDK, a live MCP server, no infrastructure to manage.
+**Build on it**: use world data as a backend for tools, games, and AI agents. REST API, TypeScript SDK, a live [MCP server](https://onlyworlds.github.io/docs/development/mcp), no infrastructure to manage.
 
 ## Install
+
+Some skills run Python on your machine. The folder check that import and setup run after writing a world, draw's graph and timeline, and carry's packing and converting use the `onlyworlds` package (`pip install onlyworlds`), which needs Python 3.12 or newer. Read's reports, draw's map and setup's writer use only Python's standard library.
 
 ### Claude Code
 
@@ -65,7 +67,7 @@ The skills follow the life of a world. Every skill follows the same shared rules
 |                                 | **model**   | How to represent a system in the 22 types, and every type's fields |
 | **Grow it**                     | **read**    | Read a whole world and get one of three reports: a creative brief, the missing connections, or where it contradicts itself |
 |                                 | **draw**    | A world as a graph, its maps with pins and zones, or its events on a timeline, in a file to open in a browser |
-| **Play in it and keep it true** | **context** | Design how your world gets loaded into AI sessions: fresh, scoped, sourced, never a giant chat that forgets; on an account world, one character's draught or a saved lens opens the session |
+| **Play in it and keep it true** | **context** | Design how your world gets loaded into AI sessions: fresh, scoped, sourced, never a giant chat that forgets; on an account world, one character's draught (the platform's read of what she knows as the world records it) or a lens (a saved way of reading the world) opens the session |
 |                                 | **update**  | Write a finished session (notes, recap, transcript) back into the world, through a change list you approve |
 | **Move it**                     | **carry**   | Move a world between files, tools and homes: one `.owworld` file, another app's export, Markdown, a folder to an account and back |
 | **Build on it**                 | **develop** | Build a tool, game, app or AI agent on world data: the API, the SDK, the MCP server |
@@ -105,13 +107,13 @@ With a free OnlyWorlds account ([onlyworlds.com](https://www.onlyworlds.com)), t
 
 ## For AI Builders
 
-OnlyWorlds is a typed, persistent, portable world-state layer for AI systems: the modeled-domain slot in a memory stack. Connect an agent through the [MCP server](https://www.onlyworlds.com/mcp), read a world folder as a clean typed corpus, or build on the API/SDK. The **develop** skill carries the connect lines and the patterns that work; positioning and the connect surfaces are on the docs' [AI page](https://onlyworlds.github.io/docs/development/ai.html).
+OnlyWorlds is a typed, persistent, portable world-state layer for AI systems: the modeled-domain slot in a memory stack. Connect an agent through the [MCP server](https://onlyworlds.github.io/docs/development/mcp), read a world folder as a clean typed corpus, or build on the API/SDK. The **develop** skill carries the connect lines and the patterns that work; positioning and the connect surfaces are on the docs' [AI page](https://onlyworlds.github.io/docs/development/ai.html).
 
 ## Resources
 
 - [Documentation](https://onlyworlds.github.io)
 - [API Reference](https://www.onlyworlds.com/api/docs)
-- [MCP Server](https://www.onlyworlds.com/mcp): connect an MCP client (Claude Code/Desktop) to your world
+- [MCP Server](https://onlyworlds.github.io/docs/development/mcp): connect an MCP client (Claude Code/Desktop) to your world; the server's own address is `https://www.onlyworlds.com/mcp`
 - [SDK](https://www.npmjs.com/package/@onlyworlds/sdk)
 - [Atlas](https://atlas.onlyworlds.com): the flagship worldbuilding app (local-first: the folder is the world)
 - [Obsidian plugin](https://github.com/OnlyWorlds/obsidian-plugin): your world as notes in your vault, local-only or synced
