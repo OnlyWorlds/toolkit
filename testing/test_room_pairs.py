@@ -243,7 +243,8 @@ def test_planted_aids_are_left_out_and_said_once():
 
 def test_both_readers_read_a_mark_by_presence():
     cases = [(None, False), ("", False), ("  \u00a0", False), ("\t\u3000", False),
-             ("x", True), (0, True), ({}, True), ("  x  ", True)]
+             ("x", True), (0, True), ({}, False), ([], False), ({"a": 1}, True), (["a"], True),
+             ("  x  ", True)]  # an empty list or object is absent since serial 126 (room.md)
     wrong = []
     for name, mod in (("graph.py", graph), ("count.py", counter)):
         for value, want in cases:

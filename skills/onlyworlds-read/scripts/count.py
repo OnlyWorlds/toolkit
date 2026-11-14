@@ -74,9 +74,17 @@ def room_word(v):
 
 
 def mark_present(value):
-    """The profiles' presence rule: null is absent, a string counts only when something is left
-    after trimming, any other value (a number, an object) counts; the value is never compared."""
-    return value is not None and (not isinstance(value, str) or value.strip(ROOM_WS) != "")
+    """The profiles' presence rule (room.md at serial 126): a mark counts when its value is not
+    null; a string counts only when something is left after trimming it; an empty list or an
+    empty object is absent; any other value (a number, a list or an object with something in it)
+    counts as present; the value is never compared."""
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip(ROOM_WS) != ""
+    if isinstance(value, (list, dict)):
+        return len(value) > 0
+    return True
 
 
 def pair_of(e):

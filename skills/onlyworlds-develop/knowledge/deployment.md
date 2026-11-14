@@ -28,7 +28,7 @@ Most OnlyWorlds tools follow this architecture:
 
 - **No backend needed.** Your tool is static HTML/JS/CSS.
 - **API handles data.** OnlyWorlds stores and serves world data.
-- **CORS configured.** The API accepts browser requests from common static hosts (including `*.pages.dev`) and from localhost. A custom domain is not pre-approved; see [CORS Notes](#cors-notes).
+- **CORS is not a concern.** Every `/api/` route answers a browser page on any origin, your own domain included; the key is the credential. See [CORS Notes](#cors-notes).
 
 ---
 
@@ -68,7 +68,7 @@ If the build fails on an old Node version, set `NODE_VERSION` to `22` in the sam
 2. Set CNAME record pointing to `your-project.pages.dev`
 3. Cloudflare handles SSL automatically
 
-A custom domain is **not** on the API's CORS allowlist, so browser calls from it are refused until it is added. Request that at https://www.onlyworlds.com/feedback, or keep the tool on its `*.pages.dev` address.
+The API answers a custom domain like any other origin: nothing to request, no list to be added to.
 
 ---
 
@@ -216,9 +216,9 @@ my-app/
 
 ## CORS Notes
 
-The API accepts browser requests from an allowlist of common static hosts over HTTPS (Cloudflare Pages, Vercel, Netlify and GitHub Pages among them) and from `localhost` on any port. The list that is served is on the docs' CORS page, https://onlyworlds.github.io/docs/development/api/cors.html: read it there before promising a host.
+Every `/api/` route answers a browser request from any origin: a static host, your own domain, `localhost` on any port, and a page opened from disk (origin `null`). The server echoes the request's origin back (never `*`) and sends no credentials, so the key in the request is what grants access, not where the page is served from. Only onlyworlds.com's own pages (the portal, outside `/api/`) keep an origin list. Details: https://onlyworlds.github.io/docs/development/api/cors.html.
 
-A **custom domain is not pre-approved**: browser calls from it are refused until it is added server-side. Request it at https://www.onlyworlds.com/feedback. Scripts and servers are not affected by CORS.
+Scripts and servers are not affected by CORS at all.
 
 ---
 
@@ -235,8 +235,7 @@ A **custom domain is not pre-approved**: browser calls from it are refused until
 - [ ] No credentials in committed code
 - [ ] No PIN or write key in any `VITE_` variable or build setting: the host's build variables hold at most an `ow_r_` key, and `grep -r "ow_w_" dist/` finds nothing (that grep cannot see a legacy 10-digit key or a PIN, so check the variables themselves)
 - [ ] Environment variables set in hosting platform (a read key at most)
-- [ ] Test API connection after deploy
-- [ ] Verify CORS works from deployed URL
+- [ ] Test API connection after deploy (open the deployed page and read the world with its key)
 
 ---
 
