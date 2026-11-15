@@ -141,9 +141,10 @@ def test_a_self_link_is_an_edge():
     assert (ADA, ADA, "friends") in triples(graph), "Ada's link to Ada is not an edge"
 
 
-def test_a_repeated_target_is_two_edges():
+def test_a_repeated_target_is_one_edge():
+    # serial 128: a multi-link names each element once; a list naming one twice is one edge, in its first place
     graph, _, _ = draw()
-    assert triples(graph).count((ADA, BRAM, "friends")) == 2, triples(graph)
+    assert triples(graph).count((ADA, BRAM, "friends")) == 1, triples(graph)
 
 
 def test_a_wrong_type_link_draws_nothing():

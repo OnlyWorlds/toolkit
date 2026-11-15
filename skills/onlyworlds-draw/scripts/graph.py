@@ -20,7 +20,7 @@ elements, hidden ones and proposed ones are left out unless --room, --hidden or 
 for them; the three reading aids (the charter, its guide, its domains) are always left out, and
 said once in the foot, since a world's front door is where they show, never a lore graph. Each
 schema link field gives one edge per target that is a node, at its place in the list: a link
-from an element to itself is an edge, and a target listed twice is two. The two extension links
+from an element to itself is an edge, and a target listed twice is one edge, at its first place (serial 128). The two extension links
 a profile declares, x_lens_leads_to and x_spine_depends_on, are edges too; no other x_ field is.
 A link to an id not in the world, or to an element of another type than its field's target,
 draws nothing. The left-out counts are the reader's own, printed with the script's two filters.
@@ -60,7 +60,7 @@ from pathlib import Path
 
 # The package release whose world_graph keeps a Zone as a node and draws the declared x_ links;
 # an older one has a world_graph with other rules, so the version is read, not only the import.
-PACKAGE_MIN = (0, 101, 0)
+PACKAGE_MIN = (0, 126, 0)
 PACKAGE_LINE = ('The graph reads the world through the onlyworlds package, which is missing or too '
                 'old: run pip install "onlyworlds>=0.101.0" (Python 3.12+) and draw again.')
 # The reader's left-out counts (its cut, for the owner), in the order the summary says them.
