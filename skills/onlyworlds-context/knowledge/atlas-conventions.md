@@ -33,6 +33,7 @@ A knowledge entry is a **Narrative with `subtype: "knowledge"`** (any case; `DES
 - **Held by**: `narrator` (one Character who knows it alone), `collectives` (groups whose members all know it), or both. **About**: the ordinary links (`characters`, `locations`, `objects`, `events`, …).
 - **Knowing is computed**: X knows K when `K.narrator` is X, or a Collective in `K.collectives` lists X in its `characters`. Nothing is stored on the knower.
 - **A rumour and the truth are two entries**, held by different groups.
+- **A secret stays out of the entries of whoever must not know it.** Never record what a character does not know by naming it in her own entry (not *"she still does not know of the skimming"*): her reader is handed her entries whole, so a negative carries the secret to her. The secret lives in the entries of those who hold it; her not knowing is the absence.
 
 **⚠ On a knowledge entry, `collectives` means holders, not subjects.** Linking a Collective as a topic tells that whole group the secret. Knowledge about a group goes in the prose or in `institutions`.
 
