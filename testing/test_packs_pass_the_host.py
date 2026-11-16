@@ -69,3 +69,23 @@ def test_no_pack_text_holds_a_refused_command():
                        "(use a prompt inside the code span, a fenced block with a language, or no "
                        "code marks):\n" + "\n".join(found))
     print(f"read {len(files)} pack files")
+
+
+def test_the_team_packs_say_what_the_blocked_page_is():
+    """An AI that meets the page inside a pack world may hold no skill but the pack's own: each team
+    pack's work skill and report skill says what the page is and what passes, in a part only an
+    online world gets (a folder has no host in front of it)."""
+    packs = sorted(p.parent for p in PACKS.glob("*/report.md"))
+    assert len(packs) >= 2, f"only {len(packs)} packs with a report skill found under {PACKS}"
+    read = 0
+    for pack in packs:
+        for name in ("work.md", "report.md"):
+            text = (pack / name).read_text(encoding="utf-8")
+            online = "".join(re.findall(r"<!-- if online -->(.*?)<!-- end -->", text, re.S))
+            rest = re.sub(r"<!-- if online -->.*?<!-- end -->", "", text, flags=re.S)
+            where = f"{pack.name}/{name}"
+            assert online.count("titled Blocked") == 1, f"{where}: its online parts name the page {online.count('titled Blocked')} times"
+            assert "wrote nothing" in online and "prompt" in online and "names its language" in online, where
+            assert "titled Blocked" not in rest, f"{where}: a folder world's skill names the page"
+            read += 1
+    print(f"read {read} team pack skills")

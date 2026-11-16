@@ -124,6 +124,7 @@ a new file `{{world_folder}}elements/narrative/<name-slug>--<last 8 of its id>.j
 - A work item made in this chat, which the report answers because its work is finished here: once the report is written, set its `subtype` to `done` in its file. One made in another chat, one that asks for a change only the keeper's AI makes, and any other work item, the keeper's AI sets.
 <!-- end -->
 <!-- if online -->
+- A POST answered by a web page titled Blocked (a `403`, not JSON) wrote nothing: the host refused a command in your text (python with a flag, curl with an address, a few others) that stands right after a code mark, a semicolon or a table bar. Put a `$ ` prompt before the command inside its code marks, or put it in a fenced block that names its language, then send again.
 - A design note goes on the report as a file, after the POST: `POST /narrative/<its id>/files` with `name` (what it is, dated, ending `.md`), `kind` `md`, `size` its bytes; POST the bytes to the answer's `upload_url` with `Authorization: Bearer <ticket>`.
 - A work item made in this chat, which the report answers because its work is finished here: once the report has landed, `PATCH /relation/<id>` with `{"subtype": "done"}` (refused: leave it; the report stands). One made in another chat, one that asks for a change only the keeper's AI makes, and any other work item, the keeper's AI sets.
 <!-- end -->
