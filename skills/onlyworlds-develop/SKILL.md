@@ -200,7 +200,7 @@ v2 and /bulk answer `{"error": {"type", "code", "message", "param", "doc_url"}}`
 | `400` / per-item `invalid_link`: a link names a UUID that does not exist | A real UUID, or the target in the same batch |
 | `409` `id_conflict`: POST of an id that exists | PUT to upsert |
 | `403` `not_author`: a contributor's or a guest's key changed, replaced, relinked or deleted an element someone else created | Change only what that key made, or ask a keeper |
-| `403` with an HTML page titled "Blocked" and no JSON: the host in front of the platform refused the request before the platform saw it. Seen (2026-11-16) when a text in the body has `python -m`, `python -c`, `perl -e`, or `curl` or `wget` with a URL, directly after a backtick, a semicolon or a pipe: an inline code span, a fenced block with no language word, a Markdown table cell. Seen on PATCH and /bulk, in `name` and in `description` | Nothing was written. Find that text and put the command in a fenced block whose first line names a language (` ```bash `), or behind a prompt (`$ python -m ...`), or without code marks; then send again |
+| `403` with an HTML page titled "Blocked" and no JSON: the host in front of the platform refused the request before the platform saw it | Nothing was written. Reword the command the text holds ([the Blocked page](#the-blocked-page)), then send again |
 | `412` `precondition_failed`: an `If-Match` change_seq the element has moved past; the reply's `current` is the element now | Nothing was written: re-read `current`, then re-send or ask the user |
 | `413` `payload_too_large`: a body over 2.5 MB | Split a large /bulk into several calls |
 | `409` `resync_required`: a guest's `/changes` cursor predates a change to what it can see | Pull again from `since=0` |
@@ -210,6 +210,16 @@ v2 and /bulk answer `{"error": {"type", "code", "message", "param", "doc_url"}}`
 | `503` `server_busy`: every request slot is busy | Retry after `Retry-After` |
 
 **These are honest errors: nothing is silently dropped.** An unknown field is rejected (not ignored), a dangling link rejected (not nulled), a write without the right PIN rejected (not partly applied). A `2xx` means what you sent landed; still verify. A `202` is not a write: it answers `{"proposal": …}` where the owner takes an agent seat's writes as proposals, and nothing changes until a keeper accepts.
+
+### The Blocked page
+
+One answer is not the envelope above: a `403` whose body is an HTML page titled "Blocked". The host in front of the platform sent it and the platform never saw the request, so nothing was written and no item of a /bulk landed.
+
+Seen on 2026-11-16 on POST, PATCH and /bulk, in `name` and in `description`, when a text in the body had one of these directly after a backtick, a semicolon or a pipe (spaces or a line break between them change nothing): `python -m`, `python -c`, `perl -e`, `curl` or `wget` with a URL. Each was tried after a backtick; `python -m` and `curl` also after a semicolon and after a pipe. In Markdown the refused places are an inline code span, a fenced block with no language word, and a table cell. The list is what was tried, not the host's whole rule (`python` with other flags was refused once too), and the rule is the host's to change.
+
+What passes: the command behind a prompt inside the code span (`$ python -m ...`); in a fenced block whose first line names a language; or in plain text with no backtick, semicolon or pipe just before it. Writing the backtick as a JSON escape does not pass.
+
+To find the text in a large /bulk without writing anything, POST each item's JSON to a route that does not exist: an answer in JSON (a `404`) means the platform read it, the page means that item holds the text.
 
 ## Agents
 
