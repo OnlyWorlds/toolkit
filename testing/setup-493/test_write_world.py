@@ -95,7 +95,8 @@ harness trial (2026-10-22):
     the bulk body, on the rows each seed says, and no description holds the old Source line (21a); a
     string value under a row's fields whose first line is the old line is refused, its key and field
     named, nothing written, and one that begins with Source for another reason, or holds the line
-    further down, is written (21b); no pack text tells an AI to write one, each charter that states
+    further down, is written (21b); the line is looked for on the filled plan, so a placeholder that
+    fills to it, or to its date, is refused as well (21d); no pack text tells an AI to write one, each charter that states
     the source rule says `x_source` is one line, its seed and start skill name `x_source`,
     the start skill says which write changes it (and ai-home that retiring a memory keeps it) and,
     where it says how far to trust it, that it names the newest source only; no pack text keeps the
@@ -1078,6 +1079,32 @@ class SetupWriter(unittest.TestCase):
         code, out, world, root = self.write_plan(plan, "folder", "source-line-other")
         self.assertEqual(code, 0, out)
 
+    def test_21d_the_old_source_line_is_read_on_the_filled_plan(self):
+        """The old line is looked for after the placeholders are filled: a field whose first line is a
+        placeholder that fills to the old line, or whose date is a placeholder of the plan's own, is
+        refused as the line written out is, its key and field named, nothing written. A placeholder
+        that fills to something else is written."""
+        cases = {"the whole line from a value": ({"old_source": "Source: Ada Varga · as of 2026-10-22"},
+                                                 "{{old_source}}\nMakes Tidetable."),
+                 "the date from a value": ({"setup_date": "2026-10-22"},
+                                           "Source: Ada Varga · as of {{setup_date}}\nMakes Tidetable.")}
+        for n, (case, (values, description)) in enumerate(cases.items()):
+            with self.subTest(case=case):
+                plan = json.loads(read(PLANS / "company.json"))
+                plan["values"].update(values)
+                org = next(e for e in plan["elements"] if e["key"] == "org")
+                org["fields"]["description"] = description
+                code, out, world, root = self.write_plan(plan, "folder", f"source-line-filled-{n}")
+                self.assertEqual(code, 1, out)
+                self.assertIn("REFUSED plan element 'org', description: its first line is the old Source line", out)
+                self.assertEqual(self.listing(root), [], "a refused plan wrote files")
+        plan = json.loads(read(PLANS / "company.json"))
+        plan["values"]["opening"] = "Source: our ingestion product, sold per seat."
+        org = next(e for e in plan["elements"] if e["key"] == "org")
+        org["fields"]["description"] = "{{opening}}\nMakes Tidetable."
+        code, out, world, root = self.write_plan(plan, "folder", "source-line-filled-other")
+        self.assertEqual(code, 0, out)
+
     def test_21c_no_pack_text_puts_the_source_in_a_description(self):
         """No pack text tells an AI to open a description with a Source line, outside the section that
         says what a world set up before 5.11.0 holds; every charter whose rule 3 says where a fact came
@@ -1182,7 +1209,8 @@ class SetupWriter(unittest.TestCase):
         plan_path.parent.mkdir(parents=True, exist_ok=True)
         plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
         r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)],
-                           capture_output=True, text=True, encoding="utf-8")
+                           capture_output=True, text=True, encoding="utf-8",
+                           env={**os.environ, "PYTHONIOENCODING": "utf-8"})
         return r.returncode, r.stdout + r.stderr, world, root
 
     def assert_over_written(self, code, out, label, path, name, root, budget):

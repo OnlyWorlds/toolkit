@@ -8,9 +8,9 @@ and writes the harness copies of the world skill. It refuses, and writes nothing
 already holds files, a `{{` is left after filling (it names the file and the line), a link names
 no element, the charter is over its budget, a plan value it puts on a line of a text holds a line
 break or a control character (it names the key), a string value under a plan row's fields has the toolkit's old
-Source line as its first line (`Source: ... · as of YYYY-MM-DD`, or `{{today}}` for the date, the form
-a plan saved before 5.11.0 holds, read before the placeholders are filled: refused so that such a plan
-is not written half old; the line goes, and where the pack's Charter and seed keep a source for the row, the
+Source line as its first line (`Source: ... · as of YYYY-MM-DD`, the form a plan saved before 5.11.0
+holds, read after the placeholders are filled, so `{{today}}` for the date, or a placeholder that fills
+to the line, is the line too: refused so that such a plan is not written half old; the line goes, and where the pack's Charter and seed keep a source for the row, the
 source goes in its `x_source`), or a path would land outside the folders it is given (it names the
 path). The packs aim for skills under SKILL_MAX characters; a skill of SKILL_MAX
 or more is written whole, with a note giving its size and the aim and saying that nothing needs
@@ -133,8 +133,9 @@ PACKS = Path(__file__).resolve().parent.parent / "packs"
 PH = re.compile(r"\{\{([a-z_]+(?::[A-Za-z0-9_-]+)?)\}\}")
 DAY = re.compile(r"^day:(\d{4}-\d{2}-\d{2})$")
 # The toolkit's old Source line, the first line of a description in a plan saved before 5.11.0:
-# `Source:` at its start and `· as of` a date on that line (`{{today}}` before filling). Only that form:
-# a description that begins "Source:" for another reason is written.
+# `Source:` at its start and `· as of` a date on that line. The writer reads it on the filled value;
+# `{{today}}` stays in the pattern for a reader of a plan as it is saved. Only that form: a description
+# that begins "Source:" for another reason is written.
 SOURCE_LINE = re.compile(r"Source:[^\n]*· as of (?:\d{4}-\d{2}-\d{2}|\{\{today\}\})")
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 PREFIX = re.compile(r"^[a-z][a-z0-9]{0,15}$")
@@ -638,18 +639,6 @@ def write_world(argv, state):
         if e.get("type") not in TYPES:
             problems.append(f"plan element {e.get('key')!r}, type {e.get('type')!r}: one of the 22 element "
                             f"types, lowercase ({', '.join(TYPES)})")
-        # A plan saved before 5.11.0 opens its texts with the old Source line: refused, so that such a
-        # plan is not written half old (where the pack keeps a source, it is the row's `x_source`). Every
-        # string value under the row's fields is read, not a list of names, which missed a field twice.
-        fields = e.get("fields") if isinstance(e.get("fields"), dict) else {}
-        for f, d in fields.items():
-            if not (isinstance(d, str) and SOURCE_LINE.match(d)):
-                continue
-            problems.append(f"plan element {e.get('key')!r}, {f}: its first line is the old Source line "
-                            f"(`Source: ... · as of YYYY-MM-DD`), as a plan saved before 5.11.0 holds it, refused "
-                            f"so that such a plan is not written half old; drop the line, and where the pack's "
-                            f"Charter and seed keep a source for this row, write it to `x_source`, a key beside "
-                            f"`description` under the row's `fields`, as `... · as of YYYY-MM-DD`")
     if problems:
         for p in problems:
             print("REFUSED", p, file=sys.stdout or sys.stderr)
@@ -759,14 +748,34 @@ def write_world(argv, state):
             values[f"{kind}_skill_id"] = extra_ids[kind]
             values[f"{kind}_skill_name"] = f"{prefix}-{kind}"
 
-    def fill(text, where, first_line=1):
-        """Every placeholder filled; a line that still holds `{{` after filling is a problem."""
+    def filled(text):
+        """The text with every placeholder the run knows filled, and any other left as it is."""
         def sub(m):
             name = m.group(1)
             if name.startswith("id:"):
                 return ids.get(name[3:], m.group(0))
             return str(values[name]) if name in values else m.group(0)
-        done = PH.sub(sub, text)
+        return PH.sub(sub, text)
+
+    # A plan saved before 5.11.0 opens its texts with the old Source line: refused, so that such a
+    # plan is not written half old (where the pack keeps a source, it is the row's `x_source`). Every
+    # string value under the row's fields is read, not a list of names, which missed a field twice;
+    # and read filled, so a placeholder that fills to the line, or to its date, is the line too. Every
+    # row is read, also one that is not written (online, an AI's row).
+    for e in rows:
+        fields = e.get("fields") if isinstance(e.get("fields"), dict) else {}
+        for f, d in fields.items():
+            if not (isinstance(d, str) and SOURCE_LINE.match(filled(d))):
+                continue
+            problems.append(f"plan element {e.get('key')!r}, {f}: its first line is the old Source line "
+                            f"(`Source: ... · as of YYYY-MM-DD`), as a plan saved before 5.11.0 holds it, refused "
+                            f"so that such a plan is not written half old; drop the line, and where the pack's "
+                            f"Charter and seed keep a source for this row, write it to `x_source`, a key beside "
+                            f"`description` under the row's `fields`, as `... · as of YYYY-MM-DD`")
+
+    def fill(text, where, first_line=1):
+        """Every placeholder filled; a line that still holds `{{` after filling is a problem."""
+        done = filled(text)
         for n, ln in enumerate(done.split("\n"), first_line):
             if "{{" in ln:
                 left = ln[ln.index("{{"):][:40]
