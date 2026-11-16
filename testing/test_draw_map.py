@@ -73,6 +73,62 @@ def test_older_line_mark_is_named():
     assert "Coast Road" not in lines[0] and "Marsh" not in lines[0], lines[0]
 
 
+def _plant(root, rows):
+    for n, (t, e) in enumerate(rows):
+        p = root / "elements" / t / f"e{n:02d}.json"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps({"type": t, **e}), encoding="utf-8")
+    (root / "world.json").write_text(json.dumps({"id": "w", "name": "Coast"}), encoding="utf-8")
+
+
+def _draw(root, out):
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
+    return subprocess.run([sys.executable, str(MAP), str(root), "--out", str(out), "--offline", "--no-image"],
+                          capture_output=True, text=True, encoding="utf-8", env=env)
+
+
+def test_an_id_field_that_is_no_string_names_nothing():
+    """A field that should hold an id and holds a list or an object names nothing, as a missing
+    one does: a Map's location and parent_map, a Pin's map and element_id, a Marker's map and zone,
+    a Location's parent_location; an element whose own id is a list is a file not read. The page
+    is written; nothing raises."""
+    loc, ch, zone = (f"019a9000-0000-7000-8000-0000000d000{n}" for n in (1, 2, 3))
+    rows = [("location", {"id": loc, "name": "Harbour"}),
+            ("character", {"id": ch, "name": "Ada"}),
+            ("character", {"id": [ch], "name": "Bram"}),
+            ("map", {"id": MAP_ID, "name": "Coast", "width": 100, "height": 80,
+                     "location": [loc], "parent_map": {"id": MAP_ID}}),
+            ("pin", {"id": "019a9000-0000-7000-8000-0000000d0011", "name": "p1", "map": [MAP_ID],
+                     "element_type": "character", "element_id": ch, "x": 1, "y": 2}),
+            ("pin", {"id": "019a9000-0000-7000-8000-0000000d0012", "name": "p2", "map": MAP_ID,
+                     "element_type": "character", "element_id": [ch], "x": 3, "y": 4}),
+            ("zone", {"id": zone, "name": "Marsh"}),
+            ("marker", {"id": "019a9000-0000-7000-8000-0000000d0021", "name": "m1", "map": [MAP_ID],
+                        "zone": zone, "x": 5, "y": 6, "order": 0}),
+            ("marker", {"id": "019a9000-0000-7000-8000-0000000d0022", "name": "m2", "map": MAP_ID,
+                        "zone": {"id": zone}, "x": 7, "y": 8, "order": 1})]
+    with tempfile.TemporaryDirectory() as d:
+        root, out = Path(d) / "world", Path(d) / "out"
+        _plant(root, rows)
+        r = _draw(root, out)
+        assert r.returncode == 0, r.stderr
+        page = (out / "map.html").read_text(encoding="utf-8")
+        data = json.loads(re.search(r'<script id="data" type="application/json">(.*?)</script>', page, re.S).group(1))
+        (m,) = data["maps"]
+        assert (m["loc"], m["parent"], m["w"], m["h"]) == ("", None, 100, 80), m
+        assert [p["label"] for p in m["pins"]] == ["p2"], m["pins"]
+        assert m["zones"] == [], m["zones"]
+        assert ("Not placed: 1 pins on no map in the folder, 1 markers on no map in the folder, "
+                "1 markers with no zone in the folder.") in r.stdout, r.stdout
+        assert "no id" in r.stdout, r.stdout
+        # With no Map, the parent_location outline reads a list as no parent.
+        root2 = Path(d) / "world2"
+        _plant(root2, [("location", {"id": loc, "name": "Harbour", "parent_location": [loc]})])
+        r = _draw(root2, Path(d) / "out2")
+        assert r.returncode == 0, r.stderr
+        assert "- Harbour" in r.stdout, r.stdout
+
+
 if __name__ == "__main__":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")

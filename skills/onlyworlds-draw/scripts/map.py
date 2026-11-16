@@ -49,6 +49,12 @@ def whole(v):
     return None
 
 
+def id_in(v):
+    """A link field's id as a key: a string, else None (a list, an object or a number names no
+    element, as a missing one does)."""
+    return v if isinstance(v, str) else None
+
+
 def shape_of(z):
     """The Zone's own `shape`, read as written: `line` is an open path, anything else a polygon."""
     return "line" if z.get("shape") == "line" else "polygon"
@@ -81,7 +87,7 @@ def outline(elements, kept_ids):
     locs = {i: e for i, e in elements.items() if e["_type"] == "location" and i in kept_ids}
     kids = {}
     for i, e in locs.items():
-        p = e.get("parent_location")
+        p = id_in(e.get("parent_location"))
         kids.setdefault(p if p in locs else None, []).append(i)
     lines = []
 
@@ -164,7 +170,7 @@ def main(argv):
     pins_by, markers_by = {m: [] for m in maps}, {m: {} for m in maps}
     for e in kept.values():
         if e["_type"] == "pin":
-            m = e.get("map")
+            m = id_in(e.get("map"))
             if m not in maps:
                 not_placed["pins on no map in the folder"] += 1
                 continue
@@ -174,7 +180,7 @@ def main(argv):
                 maps[m].setdefault("_unplaced", 0)
                 maps[m]["_unplaced"] += 1
                 continue
-            target = elements.get(e.get("element_id"))
+            target = elements.get(id_in(e.get("element_id")))
             if target is not None and target["id"] not in kept:
                 not_placed["pins placing a left-out element"] += 1
                 continue
@@ -182,7 +188,7 @@ def main(argv):
             pins_by[m].append({"x": x, "y": y, "label": label(target) if target else label(e),
                                "type": t, "family": fam_of.get(t, "")})
         elif e["_type"] == "marker":
-            m, z = e.get("map"), e.get("zone")
+            m, z = id_in(e.get("map")), id_in(e.get("zone"))
             if m not in maps:
                 not_placed["markers on no map in the folder"] += 1
             elif z not in kept or kept[z]["_type"] != "zone":
@@ -204,10 +210,11 @@ def main(argv):
             zones.append({"i": zone_i, "name": label(z), "shape": shape_of(z), "family": fam_of.get("zone", ""),
                           "pts": [[whole(e["x"]), whole(e["y"])] for e in ms]})
             zone_i += 1
-        loc = kept.get(m.get("location"))
+        loc = kept.get(id_in(m.get("location")))
+        parent = id_in(m.get("parent_map"))
         w, h, measured = frame(m, [(p["x"], p["y"]) for p in pins_by[mid]]
                                + [tuple(p) for z in zones for p in z["pts"]])
-        data_maps.append({"id": mid, "name": label(m), "parent": m.get("parent_map") if m.get("parent_map") in maps else None,
+        data_maps.append({"id": mid, "name": label(m), "parent": parent if parent in maps else None,
                           "image": m.get("image_url") if isinstance(m.get("image_url"), str) and m.get("image_url") else "",
                           "w": w, "h": h, "measured": measured,
                           "loc": label(loc) if loc else "", "desc": m.get("description") or "",

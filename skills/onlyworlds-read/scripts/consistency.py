@@ -106,7 +106,7 @@ def load_world(folder):
             except (ValueError, OSError) as e:
                 skipped.append(f"{f.relative_to(folder).as_posix()}: does not parse ({e})")
                 continue
-            if not isinstance(d, dict) or not d.get("id"):
+            if not isinstance(d, dict) or not d.get("id") or isinstance(d["id"], (list, dict)):
                 skipped.append(f"{f.relative_to(folder).as_posix()}: no id")
                 continue
             t = str(d.get("type") or f.parent.name).lower()
@@ -351,9 +351,16 @@ def check_names(els, rep, notes):
                                  f"({a['id']}, {a['_file']}); the same thing twice?")
 
 
+def pin_target(e):
+    """A Pin's element_id as a key, or None: a list or an object there names no element, as a
+    missing one does (as the draw skill's map.py reads it); any other value is looked up as before."""
+    v = e.get("element_id")
+    return None if isinstance(v, (list, dict)) else v
+
+
 def count_links(els, links):
     n = sum(len(ids_of(e.get(f))) for e in els.values() for f in links.get(e["_type"], {}))
-    return n + sum(1 for e in els.values() if e["_type"] == "pin" and e.get("element_id"))
+    return n + sum(1 for e in els.values() if e["_type"] == "pin" and pin_target(e))
 
 
 def check_links(els, links, rep, notes, mutual):
@@ -371,7 +378,7 @@ def check_links(els, links, rep, notes, mutual):
                     rep.add("links", "contradiction", e, f, i, t["_type"], t,
                             text=f"{label(e)}'s {f} points at {label(t)} ({i}), {an(t['_type'])}, "
                                  f"where the schema expects {an(target)}")
-        if e["_type"] == "pin" and e.get("element_id"):
+        if e["_type"] == "pin" and pin_target(e):
             i, want = e["element_id"], str(e.get("element_type") or "").lower()
             t = els.get(i)
             if t is None:

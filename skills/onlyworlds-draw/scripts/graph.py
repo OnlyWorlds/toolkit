@@ -127,7 +127,7 @@ def load_world(folder):
             except (ValueError, OSError) as e:
                 skipped.append(f"{f.relative_to(folder).as_posix()}: does not parse ({e})")
                 continue
-            if not isinstance(d, dict) or not d.get("id"):
+            if not isinstance(d, dict) or not d.get("id") or isinstance(d["id"], (list, dict)):
                 skipped.append(f"{f.relative_to(folder).as_posix()}: no id")
                 continue
             t = str(d.get("type") or f.parent.name).lower()
