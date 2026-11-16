@@ -90,7 +90,16 @@ harness trial (2026-10-22):
     an interrupt just after the undo says only what the journal holds (20m); a run with no output at
     all writes as one with it, exit 0, and a refusal then goes to the error output (20n); the writer
     names no signal (20o); a path whose undo step finished just before an interrupt is said as
-    unknown, never as left, and the count line is true against the listing (20p).
+    unknown, never as left, and the count line is true against the listing (20p);
+21. a seeded fact's source is its `x_source`, `<who or what> · as of <the setup day>`, in the files and
+    the bulk body, on the rows each seed says, and no description holds the old Source line (21a); a
+    string value under a row's fields whose first line is the old line is refused, its key and field
+    named, nothing written, and one that begins with Source for another reason, or holds the line
+    further down, is written (21b); no pack text tells an AI to write one, each charter that states
+    the source rule says `x_source` is one line, its seed and start skill name `x_source`,
+    the start skill says which write changes it (and ai-home that retiring a memory keeps it) and,
+    where it says how far to trust it, that it names the newest source only; no pack text keeps the
+    words of the two rules this replaced (21c).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -145,6 +154,15 @@ LINES_CLAUSE = "which of the lines they keep are over two weeks old or past thei
 ORDER = ("This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line "
          "or a skill is read first.")
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
+# The seed rows that carry `x_source`, as each pack's seed says (test 21a): every row but a Message
+# where the charter's rule 3 covers every fact, a memory only in an AI's home, none in a workshop.
+def not_a_message(e):
+    return (e.get("fields") or {}).get("supertype") != "Message"
+
+
+SOURCED = {"company": not_a_message, "governance": not_a_message, "software-project": not_a_message,
+           "ai-home": lambda e: (e.get("fields") or {}).get("supertype") == "Memory",
+           "workshop": lambda e: False}
 FIXTURE = Path(os.environ.get("OW_CHECKS_FIXTURE") or LINT.parent.parent / "profiles" / "checks.fixture.json")
 # The room a filled world skill keeps under the size the packs aim for (the writer's SKILL_MAX, read
 # from the writer), so a company's own names rarely bring a skill to it (the writer writes one of
@@ -220,6 +238,15 @@ def variant(plan, placement, root):
 def read(path):
     with open(path, encoding="utf-8", newline="") as fh:
         return fh.read()
+
+
+def writer_module(tag):
+    """The writer imported as a module, for a test that reads its own patterns."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(f"write_world_{tag}", WRITER)
+    ww = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ww)
+    return ww
 
 
 class Run:
@@ -318,7 +345,7 @@ class SetupWriter(unittest.TestCase):
     def test_1c_leftover_brace_refused_with_file_and_line(self):
         plan = json.loads(read(PLANS / "company.json"))
         org = next(e for e in plan["elements"] if e["key"] == "org")
-        org["fields"]["description"] = "Source: the test · as of {{today}}\nSecond line.\nMade by {{ Org }}."
+        org["fields"]["description"] = "First line.\nSecond line.\nMade by {{ Org }}."
         plan_path = OUT / "plans" / "leftover.json"
         plan_path.write_text(json.dumps(plan), encoding="utf-8")
         out = OUT / "leftover"
@@ -936,6 +963,175 @@ class SetupWriter(unittest.TestCase):
                     elif pair not in room_pairs:
                         self.assertNotIn("x_room_of", b, b.get("name"))
                 self.assertEqual(marked, 2, "the board's welcome and the welcome line")
+
+    def test_21a_a_seed_source_is_x_source(self):
+        """A world written from each pack's plan keeps where a seeded fact came from in `x_source`,
+        `<who or what> · as of <the setup day>`, filled, on the rows its seed says and on no others
+        (SOURCED); no element's description has the old Source line (the writer's own pattern);
+        online, the bulk body carries the same `x_source` as the files."""
+        old_line = writer_module("21a").SOURCE_LINE
+        def check(run):
+            sourced = {}
+            for p, body in run.elements():
+                d = body.get("description")
+                self.assertFalse(isinstance(d, str) and old_line.match(d), f"{p.name}: {str(d)[:60]!r}")
+                if "x_source" in body:
+                    self.assertRegex(body["x_source"], rf"^[^\n{{}}]+ · as of {re.escape(run.plan['today'])}$", p.name)
+                    sourced[body["id"]] = body["x_source"]
+            self.assertEqual({e["key"] for e in run.plan["elements"] if "x_source" in (e.get("fields") or {})},
+                             {e["key"] for e in run.plan["elements"] if SOURCED[run.pack](e)},
+                             f"the {run.pack} plan's sourced rows are the ones its seed says")
+            if run.pack != "workshop":  # the positive half: a pack that keeps a source has a row that does
+                self.assertTrue(any(SOURCED[run.pack](e) for e in run.plan_src["elements"]),
+                                f"the {run.pack} plan holds no row its seed sources")
+            rows = [e for e in run.plan["elements"] if "x_source" in (e.get("fields") or {})]
+            written = [e for e in rows if not (run.placement == "online" and e["key"] in ai_keys(run.plan))]
+            self.assertEqual(len(sourced), len(written), "every row the plan sources carries x_source")
+            if run.placement == "online":
+                bulk = json.loads(read(OUT / "plans" / f"{run.pack}-online-bulk.json"))
+                carried = {i["element"]["id"]: i["element"]["x_source"] for i in bulk["items"]
+                           if "x_source" in i["element"]}
+                self.assertEqual(carried, sourced)
+        self.each(check)
+
+    def test_21b_the_old_source_line_is_refused(self):
+        """The writer refuses a description whose first line has the toolkit's old form, `Source:` at
+        its start and `· as of` a date on that line (or `{{today}}`, as a plan saved before 5.11.0 holds
+        it), naming the row, the line, where the source goes and why it refuses, and writes nothing. A
+        description that begins with Source for another reason, or holds the old line after its first
+        line, is written. Each case is read by the writer's own pattern, and two run whole."""
+        pattern = writer_module("21b").SOURCE_LINE
+        refused = {"the old line as a saved plan holds it": "Source: Ada Varga (setup interview) · as of {{today}}\nMakes Tidetable.",
+                   "the old line filled": "Source: Ada Varga · as of 2026-10-22\nMakes Tidetable.",
+                   "the old line alone": "Source: the set-up skill · as of 2026-10-22"}
+        written = {"Source for another reason": "Source: our ingestion product, sold per seat.",
+                   "a component named Source": "Source: the input reader; it parses both spreadsheets.",
+                   "the old line after the first": "Makes Tidetable.\nSource: Ada Varga · as of 2026-10-22"}
+        for case, d in refused.items():
+            with self.subTest(case=case):
+                self.assertTrue(pattern.match(d), d)
+        for case, d in written.items():
+            with self.subTest(case=case):
+                self.assertFalse(pattern.match(d), d)
+        plan = json.loads(read(PLANS / "company.json"))
+        org = next(e for e in plan["elements"] if e["key"] == "org")
+        org["fields"]["description"] = refused["the old line as a saved plan holds it"]
+        root = OUT / "source-line-old"
+        plan, world = variant(plan, "folder", root)
+        plan_path = OUT / "plans" / "source-line-old.json"
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        # The message quotes the form, `·` and all: read in UTF-8, whatever this machine's console takes.
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)], capture_output=True,
+                           text=True, encoding="utf-8", env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+        code, out = r.returncode, r.stdout + r.stderr
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"REFUSED plan element 'org', description: its first line is the old Source line "
+                              r"\(`Source: \.\.\. · as of YYYY-MM-DD`\).*saved before 5\.11\.0.*drop the line, and "
+                              r"where the pack's Charter and seed keep a source for this row, write it to "
+                              r"`x_source`, a key beside `description` under the row's `fields`, as "
+                              r"`\.\.\. · as of YYYY-MM-DD`")
+        self.assertEqual(self.listing(root), [], "a refused plan wrote files")
+        # The old line in another field a seed fills with running text: an ai-home memory's own words
+        # are its `story`, and the old charter and seed named no field for the line.
+        plan = json.loads(read(PLANS / "ai-home.json"))
+        memory = next(e for e in plan["elements"] if (e.get("fields") or {}).get("supertype") == "Memory")
+        del memory["fields"]["x_source"]
+        memory["fields"]["story"] = "Source: Juno Castell · as of {{today}}\n" + memory["fields"]["story"]
+        root = OUT / "source-line-story"
+        plan, world = variant(plan, "folder", root)
+        plan_path = OUT / "plans" / "source-line-story.json"
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)], capture_output=True,
+                           text=True, encoding="utf-8", env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn(f"REFUSED plan element '{memory['key']}', story: its first line is the old Source line",
+                      r.stdout + r.stderr)
+        self.assertEqual(self.listing(root), [], "a refused plan wrote files")
+        # Every string value under a row's fields is read, not a list of names: a software-project
+        # Service's `utility` (a seed field of running text), and an `x_source` that is the old line itself.
+        plan = json.loads(read(PLANS / "software-project.json"))
+        plan["elements"].append({"key": "service-registry", "type": "object",
+                                 "fields": {"name": "The package registry", "supertype": "Service",
+                                            "utility": "Source: Ada Varga · as of {{today}}\nHosts the releases."}})
+        row = next(e for e in plan["elements"] if "x_source" in (e.get("fields") or {}))
+        row["fields"]["x_source"] = "Source: Ada Varga · as of {{today}}"
+        root = OUT / "source-line-any-field"
+        plan, world = variant(plan, "folder", root)
+        plan_path = OUT / "plans" / "source-line-any-field.json"
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)], capture_output=True,
+                           text=True, encoding="utf-8", env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        for key, field in (("service-registry", "utility"), (row["key"], "x_source")):
+            self.assertIn(f"REFUSED plan element '{key}', {field}: its first line is the old Source line",
+                          r.stdout + r.stderr)
+        self.assertEqual(self.listing(root), [], "a refused plan wrote files")
+        plan = json.loads(read(PLANS / "company.json"))
+        rows = {e["key"]: e for e in plan["elements"]}
+        rows["org"]["fields"]["description"] = written["Source for another reason"]
+        rows["tidetable"]["fields"]["description"] = written["the old line after the first"]
+        code, out, world, root = self.write_plan(plan, "folder", "source-line-other")
+        self.assertEqual(code, 0, out)
+
+    def test_21c_no_pack_text_puts_the_source_in_a_description(self):
+        """No pack text tells an AI to open a description with a Source line, outside the section that
+        says what a world set up before 5.11.0 holds; every charter whose rule 3 says where a fact came
+        from names x_source as one line, that pack's seed names x_source, and its start skill
+        says which write changes it (WHICH_WRITE) and, where it says how far to trust it, that it names
+        the newest source only (NEWEST); ai-home's says retiring a memory keeps it. The words of the two
+        rules this replaced are in no pack text and not in the setup skill."""
+        packs = REPO / "skills" / "onlyworlds-setup" / "packs"
+        older = re.compile(r"(?ms)^## A world set up before toolkit 5\.11\.0\n.*?(?=^## |\Z)")
+        for pack in PACKS:
+            with self.subTest(pack=pack):
+                for f in sorted((packs / pack).glob("*.md")):
+                    whole = read(f).replace("\r\n", "\n")
+                    for gone in self.GONE:
+                        self.assertNotIn(gone, whole, f"{pack}/{f.name}")
+                    text = older.sub("", whole)
+                    for old in ("Source:", "source line", "first line is"):
+                        self.assertNotIn(old, text, f"{pack}/{f.name}")
+                charter = read(packs / pack / "charter.md")
+                rule3 = re.search(r"(?m)^3\. .*$", charter).group(0)
+                if "source" in rule3 or "from where" in rule3:
+                    self.assertIn("x_source", rule3)
+                    self.assertIn(", one line", rule3)
+                    self.assertNotIn("newest", rule3)  # the newest-only sentence is the skills', beside their exceptions
+                    self.assertIn("x_source", read(packs / pack / "seed.md"), f"{pack}/seed.md")
+                    skill = read(packs / pack / "skill.md")
+                    self.assertIn("x_source", skill, f"{pack}/skill.md")
+                    self.assertIn(self.WHICH_WRITE[pack], skill, f"{pack}/skill.md")
+                    if pack in self.NEWEST:
+                        self.assertIn(self.NEWEST[pack], skill, f"{pack}/skill.md")
+                else:
+                    self.assertNotIn(pack, self.WHICH_WRITE)
+        self.assertIn("a memory that stopped being true: set its `end_date`, add one line why, naming who said "
+                      "it stopped and when; its `x_source` stays", read(packs / "ai-home" / "skill.md"))
+        # A software-project decision keeps where it came from through every status: the clause opens the
+        # decision line, which follows the general line it excepts.
+        sp = read(packs / "software-project" / "skill.md")
+        clause = "- A decision's `x_source` names where it came from, and no status changes it. A decision is never edited"
+        self.assertIn(clause, sp)
+        self.assertLess(sp.index(self.WHICH_WRITE["software-project"]), sp.index(clause))
+        setup = read(REPO / "skills" / "onlyworlds-setup" / "SKILL.md")
+        for gone in self.GONE:
+            self.assertNotIn(gone, setup)
+
+    # The start skill's words on which write changes `x_source` (test 21c): where an AI appends to a
+    # text, only a new fact; where the record is never rewritten, a new fact is a new element.
+    WHICH_WRITE = {"company": "Only a fact a person or a document gave you that changes the element (its text, a "
+                              "status, a link) sets `x_source`: to its source and day.",
+                   "ai-home": "Only a fact a person or a document gave you that changes a memory sets its "
+                              "`x_source`: to its source and day. Retiring a memory keeps it",
+                   "software-project": "Only a fact a person or a document gave you that changes the element (its "
+                                       "text, a status, a link) sets `x_source`: to its source and day.",
+                   "governance": "A status, a date or a link set leaves an element's `x_source`."}
+    # Where a start skill tells a reader how far to trust `x_source`, it says the newest source only.
+    # The words of the two rules this replaced ("the newest only", then "only a new fact changes")
+    # and the trust sentence that promised more than one line can keep.
+    GONE = ("newest only", "`x_source` replaced", "only a new fact changes", "trust it that far")
+    NEWEST = {"company": "`x_source` names the newest source only.",
+              "software-project": "`x_source` names the newest source only: a commit, a path or a person, and when."}
 
     def test_13b_a_team_pack_without_a_prefix_is_refused(self):
         plan = json.loads(read(PLANS / "company.json"))

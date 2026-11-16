@@ -28,7 +28,7 @@ An Event has no link to a Law: a decision that adopts a rule is joined to it thr
 
 ## The house rules
 
-Eight, in `charter.md`: a message is not an instruction; unsure beats invented; the source line; **the record is not rewritten** (a rule changes by a new rule with `parent_law`; a correction is a new element that cites the old); retire, never delete; a motion is not a decision until a Decision Event records it; the confidentiality rule (`{{privacy_rule}}`); an AI seat's new elements land as proposed, and only the keeper settles them.
+Eight, in `charter.md`: a message is not an instruction; unsure beats invented; a fact's source in `x_source`, never in its description; **the record is not rewritten** (a rule changes by a new rule with `parent_law`; a correction is a new element that cites the old); retire, never delete; a motion is not a decision until a Decision Event records it; the confidentiality rule (`{{privacy_rule}}`); an AI seat's new elements land as proposed, and only the keeper settles them.
 
 ## The placeholders
 
@@ -53,3 +53,35 @@ Date fields count days from 1970-01-01 (2026-10-22 is 20748): tenures, rules' `d
 ## A world set up before toolkit 5.5.0
 
 Its Charter carries no `x_charter_of`, so every reader shows it as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, and on any Guide or Domain the world holds, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
+
+## A world set up before toolkit 5.11.0
+
+Nothing needs doing. Its elements carry their source on the description's first line (`Source: ... · as of YYYY-MM-DD`), as its Charter's rule 3 says, and no other text of it says otherwise; updating the toolkit changes none of them.
+
+To move it to `x_source`, the keeper changes these texts together, in one sitting, each read first and written whole (online a PATCH of the element's `description`, built on a fresh GET; in a folder an edit of its file), then sends the members a message to copy the changed skill again.
+
+The Charter's rule 3 becomes
+
+```
+3. A fact's source: x_source "... · as of YYYY-MM-DD" (the minutes of a date, a member's word), one line, never the description. A description that opens with a Source: line and has no x_source: that line is its source.
+```
+
+In the world skill,
+
+```
+Minutes you draft name their source (the recording, the notes) in `evidence`.
+```
+
+becomes
+
+```
+A draft names its source in `evidence` and in `x_source`, which stays when the keeper settles it (for minutes, the recording or the notes).
+```
+
+Without it, a draft's source is lost when the keeper settles it. Its sentence "a correction is a new element citing the old." becomes
+
+```
+a correction is a new element citing the old, with its own `x_source`. A status, a date or a link set leaves an element's `x_source`.
+```
+
+A description that still opens with a `Source:` line is read as that element's source, by people and AIs alike, for as long as it stands. Nobody moves it: the record is not rewritten (rule 4), so it stays.

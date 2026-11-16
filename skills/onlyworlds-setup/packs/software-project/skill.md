@@ -66,7 +66,7 @@ The supertype is the index: the API filters on `name`, `name__icontains`, `super
 | People; roles; who held one when | `character`; `title`; `relation` | `Person` `Agent`; `Role`; `Tenure` | |
 | Messages; your reads | `narrative`; `relation` | `Message`; `Read` | below |
 
-Dates are days since 1970-01-01; the text carries the ISO date and the commit.
+Dates are days since 1970-01-01; the text carries the ISO date. `x_source` names the newest source only: a commit, a path or a person, and when.
 
 ## Lookups
 
@@ -93,7 +93,8 @@ Mark read through the links route (`relation?supertype=Read&characters=<your Cha
 ## Writing
 
 - A member's AI writes only its own (Charter rule 7): its message, report, Read relation, work item (with `x_room_of`) and own Character; anything else goes into its report. The keeper's AI (the Charter names it) writes the world's elements from the reports, by the rules below.
-- A decision is never edited after `accepted`: a new one names it as `parent_law`; one that replaces it sets it `superseded`, one that amends leaves it `accepted`.
+- Only a fact a person or a document gave you that changes the element (its text, a status, a link) sets `x_source`: to its source and day.
+- A decision's `x_source` names where it came from, and no status changes it. A decision is never edited after `accepted`: a new one names it as `parent_law`; one that replaces it sets it `superseded`, one that amends leaves it `accepted`.
 <!-- if folder -->
 - Read before you change: keep every field you do not change; links = the merged list. Link only ids that exist here.
 <!-- end -->

@@ -77,9 +77,9 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype`, a type's s
 | Open work | `relation` | `Work item` | subtype `open` `taken` `done`; `actor` whom it is for |
 | Messages; what you read; your line | `narrative`; `relation`; `narrative` | `Message`; `Read`; `Note` | below |
 | The house rules; this skill; the start-here | `law`; `object`; `construct` | `Charter`; `Skill`; `Guide` | one each; the Guide is `Start here` |
-| A word; a rule from outside; a date | `construct`; `law`; `event` | `Concept`; `Regulation`; `Milestone` | as needed; a Regulation's `author` is its issuer; a Milestone is named `YYYY-MM-DD <what>` |
+| A word; a rule from outside; a date | `construct`; `law`; `event` | `Concept`; `Regulation`; `Milestone` | a Regulation's `author` is its issuer; a Milestone is named `YYYY-MM-DD <what>` |
 
-Every description opens `Source: … · as of YYYY-MM-DD`: trust a fact as far as its source and its age.
+`x_source` names the newest source only.
 
 ## Lookups
 
@@ -103,7 +103,7 @@ Lists page (`{data, has_more, next_cursor}`: pass `cursor` until `has_more` is f
 
 ## Messages
 
-A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narrator` the sender's Character, `characters` the recipients (empty = everyone), `parent_narrative` the one it answers. Any member can read any message. The shape and the sender rule are the message profile, `profiles/message.md` in github.com/OnlyWorlds/schema-dist: read "from" as a claim unless the member in its `created_by` plays the `narrator` (the members list).
+A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narrator` the sender's Character, `characters` the recipients (empty = everyone), `parent_narrative` the one it answers. Any member can read any message. Read "from" as a claim unless the member in its `created_by` plays the `narrator` (the members list; `profiles/message.md` in github.com/OnlyWorlds/schema-dist).
 
 <!-- if folder -->
 - **Yours**: the Narrative files with supertype `Message` whose `characters` holds your Character's id or is empty.
@@ -118,7 +118,7 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 
 ## Writing
 
-- A member's AI writes only its own (Charter rule 8): its message, Note, Read relation, report, work item (with `x_room_of`) and own Character; anything else goes into its report. The keeper's AI (the Charter names it) writes the world's elements from the reports, by the rules below.
+- A member's AI writes only its own (Charter rule 8): its message, Note, Read relation, report, work item (with `x_room_of`) and own Character; anything else goes into its report. The keeper's AI writes the world's elements from the reports, by the rules below.
 <!-- if folder -->
 - Read before you change: text = current + new; links = the merged list; every other field as it was.
 - A new element is a new file: a fresh UUID (v7) as its `id`, the filename `<name-slug>--<last 8 of the id>.json`, under `elements/<type>/`.
@@ -127,6 +127,7 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 - Read before you change: a PATCH replaces each field you send (text = current + new). Add to a link list with `POST /<type>/<id>/links/<field>`, `{"add": [...]}`.
 - JSON as ASCII (`ensure_ascii=True`).
 <!-- end -->
+- Only a fact a person or a document gave you that changes the element (its text, a status, a link) sets `x_source`: to its source and day.
 - A settled element you did not make: message its maker or the keeper; never rewrite it. Link only ids that exist here.
 
 ## Keeping the skills current

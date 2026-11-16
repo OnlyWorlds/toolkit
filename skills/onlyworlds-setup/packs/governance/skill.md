@@ -100,8 +100,8 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 
 ## Writing
 
-- The record is not rewritten: a changed rule is a new Law with `parent_law`; a correction is a new element citing the old.
-- A new element you write carries `x_review_proposed` (Charter rule 8): you draft, the keeper settles. Minutes you draft name their source (the recording, the notes) in `evidence`.
+- The record is not rewritten: a changed rule is a new Law with `parent_law`; a correction is a new element citing the old, with its own `x_source`. A status, a date or a link set leaves an element's `x_source`.
+- A new element you write carries `x_review_proposed` (Charter rule 8): you draft, the keeper settles. A draft names its source in `evidence` and in `x_source`, which stays when the keeper settles it (for minutes, the recording or the notes).
 <!-- if folder -->
 - Read before you change: keep every field you do not change; links = the merged list. Link only ids that exist here.
 - On onlyworlds.com, below co-builder a review mark's `by` must be the writer's own membership id, or the mark sent back as the element holds it (else 403 `review_by_another`): a folder's Character id there passes in a write by the owner's keys or a co-builder.

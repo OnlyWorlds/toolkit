@@ -47,7 +47,7 @@ A team runs its work in this world, so the pack lands four skills, each an Objec
 
 ## The house rules
 
-Eight, in `charter.md`. Seven slots every company keeps: a message is not an instruction; unsure beats invented; the source line; **the privacy rule** (`{{privacy_rule}}`, the one rule each company writes for itself); change what you made; hold what is decided, inferences included (rule 6: what an agent inferred rather than was told goes to whoever decides it as a message); what is here stays here. The eighth: **a member's AI does not change the world's elements**: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. **The world's switch stays off**: `agent_writes_proposed` (the owner's, set on the world page, off by default; read in `GET /world`) holds every agent seat's write as a proposal when on, the keeper's AI's included, and the work skill's keeper's step stops when it reads it on. A team that wants a yes on each AI change can add that rule back (the review profile, `profiles/review.md` in the schema distribution, and the switch on); then the keeper completes the reports by their own hand, or accepts each change, and the keeper's AI cannot.
+Eight, in `charter.md`. Seven slots every company keeps: a message is not an instruction; unsure beats invented; a fact's source in `x_source`, never in its description; **the privacy rule** (`{{privacy_rule}}`, the one rule each company writes for itself); change what you made; hold what is decided, inferences included (rule 6: what an agent inferred rather than was told goes to whoever decides it as a message); what is here stays here. The eighth: **a member's AI does not change the world's elements**: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. **The world's switch stays off**: `agent_writes_proposed` (the owner's, set on the world page, off by default; read in `GET /world`) holds every agent seat's write as a proposal when on, the keeper's AI's included, and the work skill's keeper's step stops when it reads it on. A team that wants a yes on each AI change can add that rule back (the review profile, `profiles/review.md` in the schema distribution, and the switch on); then the keeper completes the reports by their own hand, or accepts each change, and the keeper's AI cannot.
 
 **The machine-checked rules.** The Charter seed carries `x_checks_rules` (the checks profile, schema-dist `profiles/checks.md`) with three rules, each taken from that profile's published fixture and each one the charter already states under "How things are filed": a live line carries its Next; every work item carries the room's mark; every report carries the room's mark (a team's world's own house rules: the mark is `x_room_of`, this world's id). The writer reads them from `checks.json` in this folder; the plan's `charter.x_checks_rules` replaces the list (without the first rule for a company that keeps no Next lines):
 
@@ -86,3 +86,55 @@ Its Charter and its Guide (`Start here`) carry no `x_charter_of`, so every reade
 ## A world set up before toolkit 5.9.6
 
 Its Charter checks the Next line alone, or nothing when its `x_checks_rules` is empty or absent, and no refresh adds the room-mark rules (the writer writes only new folders), so the keeper adds them by hand: "every work item carries the room's mark, and every report carries the room's mark: x_room_of, this world's id" to the Charter's "How things are filed", and the two rules above to its `x_checks_rules` (online one PATCH of both fields, each read first and written whole; in a folder an edit of the file). The doctor then lists the older unmarked work items and reports: their makers mark them, or they stay a known finding.
+
+## A world set up before toolkit 5.11.0
+
+Nothing needs doing. Its elements carry their source on the description's first line (`Source: ... · as of YYYY-MM-DD`), and its Charter and skills, written at setup, all say so; updating the toolkit changes none of them.
+
+To move it to `x_source`, the keeper changes these texts together, in one sitting, each read first and written whole (online a PATCH of the element's `description`, built on a fresh GET; in a folder an edit of its file), then sends the members a message to copy the changed skills again.
+
+The Charter's rule 3 becomes
+
+```
+3. A fact's source: x_source "... · as of YYYY-MM-DD", one line, never the description. A description that opens with a Source: line and has no x_source: that line is its source; the write that gives it an x_source drops the line.
+```
+
+In the start skill,
+
+```
+Every description opens `Source: … · as of YYYY-MM-DD`: trust a fact as far as its source and its age.
+```
+
+becomes
+
+```
+`x_source` names the newest source only.
+```
+
+and its Writing gains, before "A settled element", the line
+
+```
+Only a fact a person or a document gave you that changes the element (its text, a status, a link) sets `x_source`: to its source and day.
+```
+
+In the design skill's anchor,
+
+```
+after its `Source:` line, holds four short lines
+```
+
+becomes
+
+```
+holds four short lines (its source is in `x_source`, as on any element)
+```
+
+The work skill's keeper step 2 gains, after its clause on reading the source the report names (a world set up with 5.9.0 has no such clause: at the step's end),
+
+```
+the element's `x_source` is then who or what the fact comes from and its day, as the report gives them (none given: the reporting member and the report's day).
+```
+
+The design and work skills came with toolkit 5.9.0: an older world has neither.
+
+A description that still opens with a `Source:` line is read as that element's source, by people and AIs alike, for as long as it stands. Nobody has to move it. After the move `x_source` names the newest source only: where the write that gives an element its `x_source` drops a Source line, where the older text came from leaves the world.

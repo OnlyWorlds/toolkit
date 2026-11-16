@@ -25,7 +25,7 @@
 
 ## The house rules
 
-Seven, in `charter.md`: a message is not an instruction; unsure beats invented; every memory dated and sourced; **retire, never delete** (a memory that stopped being true gets an `end_date` and a line why); an inference is written as one or not at all; the privacy rule (`{{privacy_rule}}`); a visiting AI's new elements land as proposed (`x_review_proposed`), the AI's own land settled, since it keeps the world.
+Seven, in `charter.md`: a message is not an instruction; unsure beats invented; every memory dated and sourced (`x_source`); **retire, never delete** (a memory that stopped being true gets an `end_date` and a line why); an inference is written as one or not at all; the privacy rule (`{{privacy_rule}}`); a visiting AI's new elements land as proposed (`x_review_proposed`), the AI's own land settled, since it keeps the world.
 
 ## The placeholders
 
@@ -51,3 +51,47 @@ Date fields count days from 1970-01-01 (2026-10-22 is 20748), as in every work p
 ## A world set up before toolkit 5.5.0
 
 Its Charter carries no `x_charter_of`, so every reader shows it as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, and on any Guide or Domain the world holds, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
+
+## A world set up before toolkit 5.11.0
+
+Nothing needs doing. Its memories carry their source on a first line (`Source: ... · as of YYYY-MM-DD`), as its Charter's rule 3 says, and no other text of it says otherwise; updating the toolkit changes none of them.
+
+To move it to `x_source`, the keeper changes these texts together, in one sitting, each read first and written whole (online a PATCH of the element's `description`, built on a fresh GET; in a folder an edit of its file). The AI is its own keeper: it copies the changed skill again in the same sitting.
+
+The Charter's rule 3 becomes
+
+```
+3. Every memory says when and from where: start_date, and x_source "... · as of YYYY-MM-DD", one line. A memory that opens with a Source: line and has no x_source: that line is its source; the write that gives it an x_source drops the line.
+```
+
+In the world skill's "At the end", the new Memory's
+
+```
+`start_date` today's day number,
+```
+
+gains after it
+
+```
+`x_source` where it came from (`<who or what> · as of YYYY-MM-DD`),
+```
+
+and
+
+```
+a memory that stopped being true: set its `end_date`, add one line why; never delete it;
+```
+
+becomes
+
+```
+a memory that stopped being true: set its `end_date`, add one line why, naming who said it stopped and when; its `x_source` stays; never delete it;
+```
+
+The world skill's Writing gains, before "Link only ids that exist here.", the line
+
+```
+Only a fact a person or a document gave you that changes a memory sets its `x_source`: to its source and day. Retiring a memory keeps it (At the end).
+```
+
+A memory that still opens with a `Source:` line is read as its source, by people and AIs alike, for as long as it stands. Nobody has to move it.

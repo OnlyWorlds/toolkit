@@ -1,6 +1,6 @@
 # The governance pack: the seed
 
-What a fresh governance world starts with, as rows of the plan `write_world.py` reads. A row the answers do not fill is left out and named. The example column is a fictional body, the Lantern Row Allotment Board, which runs a town's allotment gardens.
+What a fresh governance world starts with, as rows of the plan `write_world.py` reads. A row the answers do not fill is left out and named. Every row but a Message (its `narrator` says who wrote it) carries `x_source`, `<who said it> · as of {{today}}` (charter rule 3); a description holds no Source line. The example column is a fictional body, the Lantern Row Allotment Board, which runs a town's allotment gardens.
 
 | Key | Type | supertype | subtype | name | Links | Fills it | Example |
 |-----|------|-----------|---------|------|-------|----------|---------|

@@ -50,7 +50,7 @@ Hand it in with a report, as `{{report_skill_name}}` says. The report's text hol
 
 ## A new design: its anchor
 
-A large new design gets an anchor: the element it will become (here a Product: `object`, supertype `Product`), never a separate design element that would age beside it. It carries `subtype` `in design`, and its description, after its `Source:` line, holds four short lines:
+A large new design gets an anchor: the element it will become (here a Product: `object`, supertype `Product`), never a separate design element that would age beside it. It carries `subtype` `in design`, and its description holds four short lines (its source is in `x_source`, as on any element):
 
 ```
 For: <what it is for>

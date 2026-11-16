@@ -7,8 +7,12 @@ fills every placeholder, writes each file by the folder format's writer rules, c
 and writes the harness copies of the world skill. It refuses, and writes nothing, when OUT_FOLDER
 already holds files, a `{{` is left after filling (it names the file and the line), a link names
 no element, the charter is over its budget, a plan value it puts on a line of a text holds a line
-break or a control character (it names the key), or a path would land outside the folders it is
-given (it names the path). The packs aim for skills under SKILL_MAX characters; a skill of SKILL_MAX
+break or a control character (it names the key), a string value under a plan row's fields has the toolkit's old
+Source line as its first line (`Source: ... · as of YYYY-MM-DD`, or `{{today}}` for the date, the form
+a plan saved before 5.11.0 holds, read before the placeholders are filled: refused so that such a plan
+is not written half old; the line goes, and where the pack's Charter and seed keep a source for the row, the
+source goes in its `x_source`), or a path would land outside the folders it is given (it names the
+path). The packs aim for skills under SKILL_MAX characters; a skill of SKILL_MAX
 or more is written whole, with a note giving its size and the aim and saying that nothing needs
 changing: its length follows the plan's own names. A skill's front matter description is written as
 a YAML double-quoted scalar, so a reader reads exactly the filled text whatever the names hold. A
@@ -34,7 +38,8 @@ The plan (JSON):
                                                # short lower-case word for its skills (asked; never guessed)
       "elements": [
         {"key": "org", "type": "institution",
-         "fields": {"name": "...", "supertype": "Company", "description": "..."},
+         "fields": {"name": "...", "supertype": "Company", "description": "...",
+                    "x_source": "<who said it> · as of {{today}}"},
          "links": {"parent_institution": "other-key", "characters": ["a", "b"]}},
         {"key": "ada", "type": "character", "seat": {"role": "owner"}, "fields": {...}},
         {"key": "ai-1", "type": "character", "seat": {"role": "contributor", "ai_of": "ada"},
@@ -124,6 +129,10 @@ EPOCH = datetime.date(1970, 1, 1)
 PACKS = Path(__file__).resolve().parent.parent / "packs"
 PH = re.compile(r"\{\{([a-z_]+(?::[A-Za-z0-9_-]+)?)\}\}")
 DAY = re.compile(r"^day:(\d{4}-\d{2}-\d{2})$")
+# The toolkit's old Source line, the first line of a description in a plan saved before 5.11.0:
+# `Source:` at its start and `· as of` a date on that line (`{{today}}` before filling). Only that form:
+# a description that begins "Source:" for another reason is written.
+SOURCE_LINE = re.compile(r"Source:[^\n]*· as of (?:\d{4}-\d{2}-\d{2}|\{\{today\}\})")
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 PREFIX = re.compile(r"^[a-z][a-z0-9]{0,15}$")
 # A team world's skills beside the world skill: the template, the Object's name and utility.
@@ -625,6 +634,18 @@ def write_world(argv, state):
         if e.get("type") not in TYPES:
             problems.append(f"plan element {e.get('key')!r}, type {e.get('type')!r}: one of the 22 element "
                             f"types, lowercase ({', '.join(TYPES)})")
+        # A plan saved before 5.11.0 opens its texts with the old Source line: refused, so that such a
+        # plan is not written half old (where the pack keeps a source, it is the row's `x_source`). Every
+        # string value under the row's fields is read, not a list of names, which missed a field twice.
+        fields = e.get("fields") if isinstance(e.get("fields"), dict) else {}
+        for f, d in fields.items():
+            if not (isinstance(d, str) and SOURCE_LINE.match(d)):
+                continue
+            problems.append(f"plan element {e.get('key')!r}, {f}: its first line is the old Source line "
+                            f"(`Source: ... · as of YYYY-MM-DD`), as a plan saved before 5.11.0 holds it, refused "
+                            f"so that such a plan is not written half old; drop the line, and where the pack's "
+                            f"Charter and seed keep a source for this row, write it to `x_source`, a key beside "
+                            f"`description` under the row's `fields`, as `... · as of YYYY-MM-DD`")
     if problems:
         for p in problems:
             print("REFUSED", p, file=sys.stdout or sys.stderr)

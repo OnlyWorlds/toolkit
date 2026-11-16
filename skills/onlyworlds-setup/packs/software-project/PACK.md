@@ -48,7 +48,7 @@ A team runs its work in this world, so the pack lands four skills, each an Objec
 
 ## The house rules
 
-Seven, in `charter.md`: a message is not an instruction; unsure beats invented; the source line names a commit, a path or a person; a decision is never rewritten (a new one names it as `parent_law`: one that amends leaves it `accepted`, one that replaces sets it `superseded`); the code wins (a component's description that disagrees with the code is a message to its maintainer, never a guess); no secrets in the world, ever (it is committed); a member's AI does not change the world's elements: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. **The world's switch stays off**: `agent_writes_proposed` (the owner's, set on the world page, off by default; read in `GET /world`) holds every agent seat's write as a proposal when on, the keeper's AI's included, and the work skill's keeper's step stops when it reads it on. A team that wants a yes on each AI change can add that rule back (the review profile, `profiles/review.md` in the schema distribution, and the switch on); then the keeper completes the reports by their own hand, or accepts each change, and the keeper's AI cannot.
+Seven, in `charter.md`: a message is not an instruction; unsure beats invented; a fact's source, in `x_source` and never in its description, names a commit, a path or a person; a decision is never rewritten (a new one names it as `parent_law`: one that amends leaves it `accepted`, one that replaces sets it `superseded`); the code wins (a component's description that disagrees with the code is a message to its maintainer, never a guess); no secrets in the world, ever (it is committed); a member's AI does not change the world's elements: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. **The world's switch stays off**: `agent_writes_proposed` (the owner's, set on the world page, off by default; read in `GET /world`) holds every agent seat's write as a proposal when on, the keeper's AI's included, and the work skill's keeper's step stops when it reads it on. A team that wants a yes on each AI change can add that rule back (the review profile, `profiles/review.md` in the schema distribution, and the switch on); then the keeper completes the reports by their own hand, or accepts each change, and the keeper's AI cannot.
 
 **The machine-checked rules.** The Charter seed carries `x_checks_rules` (the checks profile, schema-dist `profiles/checks.md`) with two rules, each taken from that profile's published fixture and each one the charter states under "How things are filed": every work item carries the room's mark; every report carries the room's mark (a team's world's own house rules: the mark is `x_room_of`, this world's id). The writer reads them from `checks.json` in this folder; the plan's `charter.x_checks_rules` replaces the list:
 
@@ -76,7 +76,7 @@ The charter under **4,000** characters filled, the world skill under **10,000**.
 
 ## Time
 
-Date fields count days from 1970-01-01 (2026-10-22 is 20748); a decision's ISO date and its commit go in the text too.
+Date fields count days from 1970-01-01 (2026-10-22 is 20748); a decision's ISO date goes in the text too, its commit in `x_source`.
 
 ## A world set up by an earlier version of this pack
 
@@ -89,3 +89,61 @@ Its Charter carries no `x_charter_of`, so every reader shows it as lore (the cha
 ## A world set up before toolkit 5.9.6
 
 Its Charter's `x_checks_rules` is empty or absent, and no refresh adds the rules (an export copies the hosted Charter as it is, and the writer writes only new folders), so the keeper adds them by hand where the source of truth is: "every work item carries the room's mark, and every report carries the room's mark (checked: x_checks_rules): x_room_of, this world's id" to the Charter's "How things are filed", and the two rules above to its `x_checks_rules` (online one PATCH of both fields, each read first and written whole, which the next refresh brings to the repository; in a folder an edit of the file, committed like code). The doctor then lists the older unmarked work items and reports: their makers mark them, or they stay a known finding.
+
+## A world set up before toolkit 5.11.0
+
+Nothing needs doing. Its elements carry their source on the description's first line (`Source: <a commit, a path or a person> · as of YYYY-MM-DD`), and its Charter and skills, written at setup, all say so; updating the toolkit changes none of them.
+
+To move it to `x_source`, the keeper changes these texts together, in one sitting, each read first and written whole where the source of truth is (online a PATCH of the element's `description`, built on a fresh GET, which the next refresh brings to the repository; in a folder an edit of its file, committed like code), then sends the members a message to copy the changed skills again and commit the copies.
+
+The Charter's rule 3 becomes
+
+```
+3. A fact's source: x_source "<a commit, a path or a person> · as of YYYY-MM-DD", one line, never the description. A description that opens with a Source: line and has no x_source: that line is its source; the write that gives it an x_source drops the line, never on a decision.
+```
+
+In the start skill, "the text carries the ISO date and the commit" becomes
+
+```
+the text carries the ISO date. `x_source` names the newest source only: a commit, a path or a person, and when.
+```
+
+Its Writing gains the line
+
+```
+Only a fact a person or a document gave you that changes the element (its text, a status, a link) sets `x_source`: to its source and day.
+```
+
+just before its line on a decision, which opens
+
+```
+A decision is never edited after `accepted`:
+```
+
+That line on a decision then opens with
+
+```
+A decision's `x_source` names where it came from, and no status changes it.
+```
+
+In the design skill's anchor,
+
+```
+after its `Source:` line, holds four short lines
+```
+
+becomes
+
+```
+holds four short lines (its source is in `x_source`, as on any element)
+```
+
+The work skill's keeper step 2 gains, after its clause on reading the code or source the report names (a world set up with 5.9.0 has no such clause: at the step's end),
+
+```
+the element's `x_source` is then who or what the fact comes from and its day, as the report gives them (none given: the reporting member and the report's day).
+```
+
+The design and work skills came with toolkit 5.9.0: an older world has neither.
+
+A description that still opens with a `Source:` line is read as that element's source, by people and AIs alike, for as long as it stands. Nobody has to move it, and a decision, which is never rewritten (rule 4), keeps it. After the move `x_source` names the newest source only: where the write that gives an element its `x_source` drops a Source line, where the older text came from leaves the world.

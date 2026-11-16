@@ -54,8 +54,8 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 ## At the end
 
 Propose, then write, what is worth keeping (show {{owner}} the list when they are there):
-- a new **Memory** per thing learned: `narrative`, supertype `Memory`, subtype `knowledge`, `narrator` you, `start_date` today's day number, `story` in your own words, `characters` / `constructs` it is about;
-- a memory that stopped being true: set its `end_date`, add one line why; never delete it;
+- a new **Memory** per thing learned: `narrative`, supertype `Memory`, subtype `knowledge`, `narrator` you, `start_date` today's day number, `x_source` where it came from (`<who or what> · as of YYYY-MM-DD`), `story` in your own words, `characters` / `constructs` it is about;
+- a memory that stopped being true: set its `end_date`, add one line why, naming who said it stopped and when; its `x_source` stays; never delete it;
 - each project's status (`subtype`), each work item's (`open` → `taken` → `done`);
 - your Working style, when how you work changed.
 
@@ -106,6 +106,7 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 - Read before you change: a PATCH replaces each field you send (text = current + new; links = the merged list).
 - JSON as ASCII (`ensure_ascii=True`).
 <!-- end -->
+- Only a fact a person or a document gave you that changes a memory sets its `x_source`: to its source and day. Retiring a memory keeps it (At the end).
 - Link only ids that exist here.
 - A visitor's new elements carry `x_review_proposed` (Charter rule 7); you accept by setting it to `null`.
 

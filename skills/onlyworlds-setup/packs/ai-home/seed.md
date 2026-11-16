@@ -1,6 +1,6 @@
 # The ai-home pack: the seed
 
-What a fresh AI home starts with, as rows of the plan `write_world.py` reads. A row the answers do not fill is left out and named. The example column is a fictional AI, Moth, who helps a fictional illustrator, Juno Castell, run her studio.
+What a fresh AI home starts with, as rows of the plan `write_world.py` reads. A row the answers do not fill is left out and named. Only a memory carries `x_source` (charter rule 3: a memory says when and from where); a description holds no Source line. The example column is a fictional AI, Moth, who helps a fictional illustrator, Juno Castell, run her studio.
 
 | Key | Type | supertype | subtype | name | Links | Fills it | Example |
 |-----|------|-----------|---------|------|-------|----------|---------|
@@ -18,4 +18,4 @@ The charter's own links, in the plan's `charter.links`: `adjudicators` = [`keepe
 
 **Seats** (questions 3 and 4): a Character row carries `"seat": {"role": ...}` (`owner`, `co_builder`, `contributor`, `guest`), and an AI's also `"ai_of"`, its human's key. The file gets it as `x_seat`; the charter's "Who is here" lists them. An AI's row is written in a folder world only: online, its seat makes its Character, and nothing may link the row.
 
-**Never seeded**: a memory of the AI's own (it writes its first at the end of its first session), a Read relation, a visitor's anything. A memory the user dictates at setup is seeded as theirs: `Source: <the user> · as of {{today}}`.
+**Never seeded**: a memory of the AI's own (it writes its first at the end of its first session), a Read relation, a visitor's anything. A memory the user dictates at setup is seeded as theirs: `x_source` `<the user> · as of {{today}}`.
