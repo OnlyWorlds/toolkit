@@ -103,10 +103,10 @@ It takes a fresh `Idempotency-Key` too.
 <!-- end -->
 
 <!-- if folder -->
-At your tidy, run the world doctor, `python -m onlyworlds.doctor {{world_folder}}` (after `pip install onlyworlds`), and read its house-rule findings.
+At your tidy, run the world doctor, `$ python -m onlyworlds.doctor {{world_folder}}` (after `pip install onlyworlds`), and read its house-rule findings.
 <!-- end -->
 <!-- if online -->
-At your tidy, run the world doctor, `python -m onlyworlds.doctor --api` (after `pip install onlyworlds`; it reads the key and PIN from the environment, not a `.env` file: load yours first), and read its house-rule findings.
+At your tidy, run the world doctor, `$ python -m onlyworlds.doctor --api` (after `pip install onlyworlds`; it reads the key and PIN from the environment, not a `.env` file: load yours first), and read its house-rule findings.
 <!-- end -->
 On a fresh world it lists what has no link in or out yet, the skills among them: leave those, and never add a link to quiet a finding.
 

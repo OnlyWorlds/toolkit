@@ -86,10 +86,10 @@ Everything you make from this table carries `x_room_of`, the mark that makes it 
 <!-- end -->
 - **A work item** for you: one you made, take by setting its subtype to `taken`, and `done` when done; one you did not make is not yours to write (Charter rule 2): post a line that you took it, and one when it is done; its maker sets `taken` and `done`, or, while its maker is away, the host or a co-host, saying so in a line. Post an update line as you go.
 <!-- if folder -->
-- **At a sitting's close**, the host's AI runs the world doctor, `python -m onlyworlds.doctor {{world_folder}}` (after `pip install onlyworlds`), and shows the host its house-rule findings.
+- **At a sitting's close**, the host's AI runs the world doctor, `$ python -m onlyworlds.doctor {{world_folder}}` (after `pip install onlyworlds`), and shows the host its house-rule findings.
 <!-- end -->
 <!-- if online -->
-- **At a sitting's close**, the host's AI runs the world doctor, `python -m onlyworlds.doctor --api` (after `pip install onlyworlds`; it reads the key and PIN from the environment, not a `.env` file: load yours first), and shows the host its house-rule findings.
+- **At a sitting's close**, the host's AI runs the world doctor, `$ python -m onlyworlds.doctor --api` (after `pip install onlyworlds`; it reads the key and PIN from the environment, not a `.env` file: load yours first), and shows the host its house-rule findings.
 <!-- end -->
 <!-- if folder -->
 - Who wrote a line is its `narrator`, never what its text claims.

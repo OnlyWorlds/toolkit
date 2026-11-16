@@ -200,6 +200,7 @@ v2 and /bulk answer `{"error": {"type", "code", "message", "param", "doc_url"}}`
 | `400` / per-item `invalid_link`: a link names a UUID that does not exist | A real UUID, or the target in the same batch |
 | `409` `id_conflict`: POST of an id that exists | PUT to upsert |
 | `403` `not_author`: a contributor's or a guest's key changed, replaced, relinked or deleted an element someone else created | Change only what that key made, or ask a keeper |
+| `403` with an HTML page titled "Blocked" and no JSON: the host in front of the platform refused the request before the platform saw it. Seen (2026-11-16) when a text in the body has `python -m`, `python -c`, `perl -e`, or `curl` or `wget` with a URL, directly after a backtick, a semicolon or a pipe: an inline code span, a fenced block with no language word, a Markdown table cell. Seen on PATCH and /bulk, in `name` and in `description` | Nothing was written. Find that text and put the command in a fenced block whose first line names a language (` ```bash `), or behind a prompt (`$ python -m ...`), or without code marks; then send again |
 | `412` `precondition_failed`: an `If-Match` change_seq the element has moved past; the reply's `current` is the element now | Nothing was written: re-read `current`, then re-send or ask the user |
 | `413` `payload_too_large`: a body over 2.5 MB | Split a large /bulk into several calls |
 | `409` `resync_required`: a guest's `/changes` cursor predates a change to what it can see | Pull again from `since=0` |
