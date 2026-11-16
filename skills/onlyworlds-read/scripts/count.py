@@ -45,6 +45,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from consistency import ids_of, is_hidden, is_known_of, label, load_schema, load_world, review_mark  # noqa: E402
+from simple_fold import simple_fold  # noqa: E402  (generated: testing/gen_casefold.py)
 
 # Placement, not lore: the same three types the draw skill's graph.py leaves out (a Zone is content).
 PLACEMENT = {"map", "pin", "marker"}  # map space; a zone is content
@@ -70,7 +71,9 @@ LIST_CAP = 150
 
 
 def room_word(v):
-    return v.strip(ROOM_WS).casefold() if isinstance(v, str) else ""
+    """A type or supertype as the room profile compares it: trimmed of White_Space, then simple case
+    folding (CaseFolding 15.1, rows C and S), never full folding."""
+    return simple_fold(v.strip(ROOM_WS)) if isinstance(v, str) else ""
 
 
 def mark_present(value):

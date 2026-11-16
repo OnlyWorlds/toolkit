@@ -170,6 +170,45 @@ def test_the_profile_fixture_reads_the_same():
     assert not wrong, wrong
 
 
+def test_the_fold_table_is_the_dists():
+    """Each skill's simple_fold.py is the text testing/gen_casefold.py makes from the schema
+    distribution's CaseFolding-15.1.0.txt, rows C and S, byte for byte (OW_CASEFOLDING points at
+    another copy of the file; 'skip' runs without one, on purpose)."""
+    if os.environ.get("OW_CASEFOLDING") == "skip":
+        print("casefold: skipped on purpose (OW_CASEFOLDING=skip)")
+        return
+    sys.path.insert(0, str(HERE))
+    import gen_casefold
+    src = gen_casefold.source_path(ROOT)
+    assert src.exists(), f"no {gen_casefold.SOURCE_NAME} at {src}: clone schema-dist there, or set OW_CASEFOLDING"
+    text = gen_casefold.text_of(src.read_bytes()).encode("utf-8")
+    differ = [rel for rel in gen_casefold.COPIES
+              if not (ROOT / rel).exists() or (ROOT / rel).read_bytes().replace(b"\r\n", b"\n") != text]
+    print(f"casefold: {len(gen_casefold.COPIES)} copies against {src}, {len(differ)} differ")
+    assert not differ, f"run python testing/gen_casefold.py: {differ}"
+
+
+def test_every_reader_folds_a_pair_as_the_page():
+    """The room page's fold is simple case folding, never full: a sharp s or the st ligature
+    (U+FB06) is no match, the Kelvin sign and the long s fold. The same for the reading aids'
+    pairs in all three readers (the charter page folds "as defined once in the room profile")."""
+    mark = {"x_room_of": WORLD, "x_charter_of": WORLD}
+    cases = [("narrative", "Meßage", False, False), ("conﬆruct", "Spec", False, False),
+             ("relation", "TaKe", True, False), ("narrative", "MEſſAGE", True, False),
+             ("conﬆruct", "Guide", False, False), ("CONSTRUCT", "GUIDE　", False, True),
+             ("law", "Chaʀter", False, False)]
+    wrong = []
+    for t, s, room, aid in cases:
+        e = {"type": t, "_type": t.lower(), "supertype": s, **mark}
+        for name, mod in (("graph.py", graph), ("count.py", counter)):
+            if (mod.is_room(e), mod.is_reading_aid(e)) != (room, aid):
+                wrong.append(f"{name} {ascii((t, s))}: {(mod.is_room(e), mod.is_reading_aid(e))}, the page says {(room, aid)}")
+        if write_world.is_reading_aid(t, s) is not aid:
+            wrong.append(f"write_world.py {ascii((t, s))}: {write_world.is_reading_aid(t, s)}, the page says {aid}")
+    print(f"fold: {len(cases)} pairs through the three readers, {len(wrong)} disagree")
+    assert not wrong, wrong
+
+
 THREE = {("law", "charter"), ("construct", "guide"), ("construct", "domain")}
 SCRIPTS = {"graph.py": ROOT / "skills" / "onlyworlds-draw" / "scripts" / "graph.py",
            "count.py": ROOT / "skills" / "onlyworlds-read" / "scripts" / "count.py"}

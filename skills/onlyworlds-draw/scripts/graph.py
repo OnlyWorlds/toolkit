@@ -58,6 +58,9 @@ import sys
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from simple_fold import simple_fold  # noqa: E402  (generated: testing/gen_casefold.py)
+
 # The package release whose world_graph keeps a Zone as a node and draws the declared x_ links;
 # an older one has a world_graph with other rules, so the version is read, not only the import.
 PACKAGE_MIN = (0, 126, 0)
@@ -160,7 +163,9 @@ def fold(v):
 
 
 def room_word(v):
-    return v.strip(ROOM_WS).casefold() if isinstance(v, str) else ""
+    """A type or supertype as the room profile compares it: trimmed of White_Space, then simple case
+    folding (CaseFolding 15.1, rows C and S), never full folding."""
+    return simple_fold(v.strip(ROOM_WS)) if isinstance(v, str) else ""
 
 
 def mark_present(value):

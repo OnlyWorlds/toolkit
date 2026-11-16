@@ -1223,6 +1223,7 @@ class SetupWriter(unittest.TestCase):
         tree = OUT / "over-team-tree"
         (tree / "scripts").mkdir(parents=True)
         shutil.copy2(WRITER, tree / "scripts" / WRITER.name)
+        shutil.copy2(WRITER.parent / "simple_fold.py", tree / "scripts" / "simple_fold.py")  # the writer's own module
         shutil.copytree(WRITER.parent.parent / "packs" / "company", tree / "packs" / "company")
         for kind in ("work", "report"):
             path = tree / "packs" / "company" / f"{kind}.md"

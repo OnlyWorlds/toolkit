@@ -110,6 +110,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from simple_fold import simple_fold  # noqa: E402  (generated: testing/gen_casefold.py)
+
 CHARTER_MAX = 4000
 SKILL_MAX = 10000
 DESCRIPTION_MAX = 1024  # the Agent Skills specification's description length (agentskills.io)
@@ -155,7 +158,8 @@ WHITE_SPACE = ("\t\n\x0b\x0c\r \x85\xa0         "
 def is_reading_aid(type_, supertype):
     if not isinstance(type_, str) or not isinstance(supertype, str):
         return False
-    return (type_.strip(WHITE_SPACE).casefold(), supertype.strip(WHITE_SPACE).casefold()) in READING_AIDS
+    # The room profile's fold, which the charter profile names for its pairs: simple case folding.
+    return (simple_fold(type_.strip(WHITE_SPACE)), simple_fold(supertype.strip(WHITE_SPACE))) in READING_AIDS
 
 # The one AGENTS.md sentence: the writer writes it beside the copies and fills it into the world
 # skill's courtesy line ({{agents_line}}), so the two cannot drift.
@@ -883,7 +887,7 @@ def write_world(argv, state):
             body["x_seat"] = seat_of[e["key"]]
         t = e["type"]
         if is_reading_aid(t, body.get("supertype")):
-            if t.strip(WHITE_SPACE).casefold() == "law":  # newest-wins would make it supersede the pack's
+            if simple_fold(t.strip(WHITE_SPACE)) == "law":  # newest-wins would make it supersede the pack's
                 problems.append(f"{where}: the pack writes the Charter; a plan row cannot be a second one")
                 continue
             body["x_charter_of"] = charter_of
