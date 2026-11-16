@@ -40,7 +40,7 @@ KNOWN_PASSING = [
     f"Run {BT}python3 -m onlyworlds.doctor{BT} to check.",
     f"The {BT}curl{BT} tool.",
 ]
-# Not seen refused, caught all the same: the pattern's margin.
+# Not among the texts tried on 2026-11-16, caught all the same: the pattern's margin.
 ALSO_CAUGHT = [
     f"Run {BT}python -u run.py{BT} to check.",
     f"Run {BT}curl --version{BT} first.",
