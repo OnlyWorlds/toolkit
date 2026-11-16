@@ -182,7 +182,9 @@ def pair_of(e):
 
 
 def is_room(e):
-    return pair_of(e) in ROOM_PAIRS and mark_present(e.get("x_room_of"))
+    """The room profile's reader rule: the pair AND the mark; a body that is not an object (null, a
+    list, a string, a number, true or false) is no element, so no room element."""
+    return isinstance(e, dict) and pair_of(e) in ROOM_PAIRS and mark_present(e.get("x_room_of"))
 
 
 def is_reading_aid(e):

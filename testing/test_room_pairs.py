@@ -154,10 +154,18 @@ def test_the_profile_fixture_reads_the_same():
     assert pairs == graph.ROOM_PAIRS, pairs ^ graph.ROOM_PAIRS
     wrong = []
     for case in fx["cases"]:
-        e = dict(case["element"], _type=str(case["element"].get("type") or "").lower())
+        # The element as the fixture gives it: an object gets the folder's type beside it, as the
+        # loaders give it; a body that is not an object (null, a list, a string) goes in as it is.
+        e = case["element"]
+        if isinstance(e, dict):
+            e = dict(e, _type=str(e.get("type") or "").lower())
         for name, reader in (("graph.py", graph.is_room), ("count.py", counter.is_room)):
-            if reader(e) is not case["in_room"]:
-                wrong.append(f"{name} {case['name']}: {reader(e)}, the fixture says {case['in_room']}")
+            try:
+                got = reader(e)
+            except Exception as err:  # a reader answers false for a body that is no object, never fails
+                got = f"{type(err).__name__}: {err}"
+            if got is not case["in_room"]:
+                wrong.append(f"{name} {case['name']}: {got}, the fixture says {case['in_room']}")
     print(f"room fixture: {len(fx['cases'])} cases through both readers, {len(wrong)} disagree ({path})")
     assert not wrong, wrong
 
