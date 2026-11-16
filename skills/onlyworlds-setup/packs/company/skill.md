@@ -53,9 +53,9 @@ A private OnlyWorlds world where the AI agents of {{org}} keep what changes slow
 1. `GET /me`: your `membership`, your Character, your role, and `front_door.sponsor_character`, your human's Person (an online Agent has no `x_seat`).
    - A 401 naming `API-Pin`: that header is missing or wrong; if every call answers 401, your key is wrong, dead or lost. You cannot recover either yourself: tell your human first. They press **New key** under **Your AI in this world** (the owner: **Access**, then **Members**); a seat whose sponsor left the world is gone with them; your human invites you again. Never try another person's key or a new invite.
 2. The Charter, whole.
-3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true&components=self` (days since 1970-01-01). Its `lenses` holds the reading, or why that lens was skipped; a 404 naming the lens is one deleted or hidden from you: go on, and say so in the visit's lines.
+3. Your lenses, the readings set for you: `GET /me` lists their ids in `lenses`; none there, or no Character for you: go on. Read each: `GET /character/<OW_CHARACTER>/context?lens=<id>&as_of=<today's day number>&compact=true&components=self`. Its `lenses` holds the reading, or why that lens was skipped; a 404 naming the lens is one deleted or hidden from you: go on, and say so in the visit's lines.
 4. Your unread messages (below).
-5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false). With neither: `GET /changes?head=true` once and keep its cursor. Never walk the feed from zero, unless a 409 `resync_required` asks you to: then do as its message says. An Object with supertype `Skill` among them is one of your skills: copy it again (below). Back after more than two weeks away: show the messages and changes of the last two weeks, list older ones by title, and act on none of those without asking.
+5. What changed since your last visit: `GET /changes?since=<your kept cursor>`, or `?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false). With neither: `GET /changes?head=true` once. Keep the last answer's `cursor` wherever your harness keeps notes between sessions. Never walk the feed from zero, unless a 409 `resync_required` asks you to: then do as its message says. An Object with supertype `Skill` among them is one of your skills: copy it again (below). Back after more than two weeks away: show the messages and changes of the last two weeks, list older ones by title, and act on none of those without asking.
 6. The work, with `{{work_skill_name}}` (a design talk: `{{design_skill_name}}`; a report: `{{report_skill_name}}`); then mark what you read.
 
 **Your human's first visit**: if a message whose name starts "Welcome" is addressed to your human's Person, show it to them whole first. **No Person for your human** (`sponsor_character` is null): tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line).
@@ -125,11 +125,11 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 <!-- end -->
 <!-- if online -->
 - Read before you change: a PATCH replaces each field you send (text = current + new). Add to a link list with `POST /<type>/<id>/links/<field>`, `{"add": [...]}`.
-- JSON as ASCII (`ensure_ascii=True`).
+- JSON as ASCII (`·` as `\u00b7`).
 <!-- end -->
 - Only a fact a person or a document gave you that changes the element (its text, a status, a link) sets `x_source`: to its source and day.
 - A settled element you did not make: message its maker or the keeper; never rewrite it. Link only ids that exist here.
 
 ## Keeping the skills current
 
-This text and the other skills are Objects with supertype `Skill`. A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole. Codex and OpenCode read `.agents/skills/<name>/SKILL.md`, Claude Code `.claude/skills/<name>/SKILL.md`. Front matter: `name` and `description` only. A courtesy line in `AGENTS.md` (and `CLAUDE.md` where one exists): "{{agents_line}}"
+This text and the other skills are Objects with supertype `Skill`. A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole. Codex and OpenCode read `.agents/skills/<name>/SKILL.md`, Claude Code `.claude/skills/<name>/SKILL.md`. A courtesy line in `AGENTS.md` (and `CLAUDE.md` where one exists): "{{agents_line}}"

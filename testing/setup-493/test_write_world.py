@@ -99,7 +99,10 @@ harness trial (2026-10-22):
     the source rule says `x_source` is one line, its seed and start skill name `x_source`,
     the start skill says which write changes it (and ai-home that retiring a memory keeps it) and,
     where it says how far to trust it, that it names the newest source only; no pack text keeps the
-    words of the two rules this replaced (21c).
+    words of the two rules this replaced (21c);
+22. online, every pack's start skill keeps the last answer's cursor of what changed, once; reads
+    every page of it (22b), ai-home's self read taking the first value that read sent, none on a
+    first visit; the company skill says how `·` is written as ASCII (22b).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -163,6 +166,8 @@ def not_a_message(e):
 SOURCED = {"company": not_a_message, "governance": not_a_message, "software-project": not_a_message,
            "ai-home": lambda e: (e.get("fields") or {}).get("supertype") == "Memory",
            "workshop": lambda e: False}
+# The start skill's step 5 after a read of what changed (test 22).
+KEEP_CURSOR = "Keep the last answer's `cursor` wherever your harness keeps notes between sessions."
 FIXTURE = Path(os.environ.get("OW_CHECKS_FIXTURE") or LINT.parent.parent / "profiles" / "checks.fixture.json")
 # The room a filled world skill keeps under the size the packs aim for (the writer's SKILL_MAX, read
 # from the writer), so a company's own names rarely bring a skill to it (the writer writes one of
@@ -1132,6 +1137,30 @@ class SetupWriter(unittest.TestCase):
     GONE = ("newest only", "`x_source` replaced", "only a new fact changes", "trust it that far")
     NEWEST = {"company": "`x_source` names the newest source only.",
               "software-project": "`x_source` names the newest source only: a commit, a path or a person, and when."}
+
+    def test_22_a_start_skill_keeps_its_cursor(self):
+        """Online, every pack's start skill keeps the last answer's cursor of what changed, once, so the
+        next visit reads on from it and not from the first visit's."""
+        for pack in PACKS:
+            run = RUNS[pack, "online"]
+            with self.subTest(pack=pack):
+                self.assertEqual(run.code, 0, run.out)
+                self.assertEqual(run.skill().count(KEEP_CURSOR), 1)
+
+    def test_22b_a_start_skill_reads_every_page_of_what_changed(self):
+        """Online, every pack's start skill's step 5 passes each cursor back until `has_more` is false;
+        ai-home's self read takes the first value step 5 sent, and none on a first visit; the company skill's
+        ASCII line says how `·`, which every `x_source` holds, is written."""
+        for pack in PACKS:
+            skill = RUNS[pack, "online"].skill()
+            with self.subTest(pack=pack):
+                step5 = re.search(r"(?m)^5\. What changed.*$", skill).group(0)
+                self.assertIn("until `has_more` is false", step5)
+        skill = RUNS["ai-home", "online"].skill()
+        step6 = re.search(r"(?m)^6\. .*$", skill).group(0)
+        self.assertIn("&since=<the first since or after step 5 sent>`", step6)
+        self.assertIn("on a first visit, leave `since` out", step6)
+        self.assertIn("JSON as ASCII (`·` as `\\u00b7`).", RUNS["company", "online"].skill())
 
     def test_13b_a_team_pack_without_a_prefix_is_refused(self):
         plan = json.loads(read(PLANS / "company.json"))

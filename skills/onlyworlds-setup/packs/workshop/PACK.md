@@ -80,3 +80,27 @@ Each write puts the element in the feed again as a change. The third bullet is e
 ## A world set up before toolkit 5.9.6
 
 Its Charter's `x_checks_rules` is empty or absent, and no refresh adds the rule (the writer writes only new folders), so the keeper adds it by hand. Under "How things are filed", the Charter's line on the room's mark becomes "- Every work item carries the room's mark (checked: x_checks_rules), and so does each of these: x_room_of, on a sitting the world's id, on the rest the id of the sitting it was made in (before any sitting, the world's)." (replace that line, or add it after the work-item line when the Charter has none), and the rule above goes in its `x_checks_rules` (online one PATCH of both fields, each read first and written whole; in a folder an edit of the file). The doctor then lists the older unmarked work items: their makers mark them, or they stay a known finding.
+
+## A world set up before toolkit 5.11.0
+
+The workshop keeps no source, so nothing of this release's source rule reaches it. Online, one sentence of its world skill is worth adding: with the old words an AI never keeps the cursor its last read of what changed ended at, so each visit reads again from its first visit's cursor or from the sitting's start. The sentence is
+
+```
+Keep the last answer's `cursor` wherever your harness keeps notes between sessions.
+```
+
+Where it goes depends on when the world was set up. From toolkit 5.9.3 on, step 5 pages what changed: it goes after
+
+```
+until `has_more` is false.
+```
+
+Before 5.9.3, the step that reads what changed (step 4 before 5.8.2, step 5 from it) reads
+
+```
+`GET /changes?since=<your kept cursor>`; with none, from the sitting's `x_feed_start` (a head number), never from zero
+```
+
+and pages nothing: the sentence goes at that step's end.
+
+The host writes it to the world skill's Object (a PATCH of its `description`, built on a fresh GET), then sends the members a message to copy the skill again.

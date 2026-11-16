@@ -56,7 +56,21 @@ Its Charter carries no `x_charter_of`, so every reader shows it as lore (the cha
 
 ## A world set up before toolkit 5.11.0
 
-Nothing needs doing. Its elements carry their source on the description's first line (`Source: ... · as of YYYY-MM-DD`), as its Charter's rule 3 says, and no other text of it says otherwise; updating the toolkit changes none of them.
+Online, one step of the world skill is worth changing whatever is decided about the source: with the old words an AI reads what changed from its first visit's cursor at every start, and one page of it. In step 5,
+
+```
+`?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor.
+```
+
+becomes
+
+```
+`?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false); with neither, `GET /changes?head=true` once. Keep the last answer's `cursor` wherever your harness keeps notes between sessions.
+```
+
+The keeper writes it to the world skill's Object (a PATCH of its `description`, built on a fresh GET), then sends the members a message to copy the skill again.
+
+For the source, nothing needs doing. Its elements carry their source on the description's first line (`Source: ... · as of YYYY-MM-DD`), as its Charter's rule 3 says, and no other text of it says otherwise; updating the toolkit changes none of them.
 
 To move it to `x_source`, the keeper changes these texts together, in one sitting, each read first and written whole (online a PATCH of the element's `description`, built on a fresh GET; in a folder an edit of its file), then sends the members a message to copy the changed skill again.
 

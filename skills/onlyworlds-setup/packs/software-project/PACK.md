@@ -92,7 +92,7 @@ Its Charter's `x_checks_rules` is empty or absent, and no refresh adds the rules
 
 ## A world set up before toolkit 5.11.0
 
-Nothing needs doing. Its elements carry their source on the description's first line (`Source: <a commit, a path or a person> · as of YYYY-MM-DD`), and its Charter and skills, written at setup, all say so; updating the toolkit changes none of them.
+For the source, nothing needs doing. Its elements carry their source on the description's first line (`Source: <a commit, a path or a person> · as of YYYY-MM-DD`), and its Charter and skills, written at setup, all say so; updating the toolkit changes none of them.
 
 To move it to `x_source`, the keeper changes these texts together, in one sitting, each read first and written whole where the source of truth is (online a PATCH of the element's `description`, built on a fresh GET, which the next refresh brings to the repository; in a folder an edit of its file, committed like code), then sends the members a message to copy the changed skills again and commit the copies.
 

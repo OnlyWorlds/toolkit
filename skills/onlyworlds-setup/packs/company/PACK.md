@@ -89,7 +89,21 @@ Its Charter checks the Next line alone, or nothing when its `x_checks_rules` is 
 
 ## A world set up before toolkit 5.11.0
 
-Nothing needs doing. Its elements carry their source on the description's first line (`Source: ... · as of YYYY-MM-DD`), and its Charter and skills, written at setup, all say so; updating the toolkit changes none of them.
+Online, one sentence of the start skill is worth changing whatever is decided about the source: with the old words an AI reads what changed from its first visit's cursor at every start. In step 5,
+
+```
+`GET /changes?head=true` once and keep its cursor.
+```
+
+becomes
+
+```
+`GET /changes?head=true` once. Keep the last answer's `cursor` wherever your harness keeps notes between sessions.
+```
+
+The keeper writes it to the start skill's Object (a PATCH of its `description`, built on a fresh GET), then sends the members a message to copy the skill again.
+
+For the source, nothing needs doing. Its elements carry their source on the description's first line (`Source: ... · as of YYYY-MM-DD`), and its Charter and skills, written at setup, all say so; updating the toolkit changes none of them.
 
 To move it to `x_source`, the keeper changes these texts together, in one sitting, each read first and written whole (online a PATCH of the element's `description`, built on a fresh GET; in a folder an edit of its file), then sends the members a message to copy the changed skills again.
 

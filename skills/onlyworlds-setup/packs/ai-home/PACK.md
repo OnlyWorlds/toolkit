@@ -54,7 +54,33 @@ Its Charter carries no `x_charter_of`, so every reader shows it as lore (the cha
 
 ## A world set up before toolkit 5.11.0
 
-Nothing needs doing. Its memories carry their source on a first line (`Source: ... · as of YYYY-MM-DD`), as its Charter's rule 3 says, and no other text of it says otherwise; updating the toolkit changes none of them.
+Online, two steps of the world skill are worth changing whatever is decided about the source: with the old words the AI reads what changed from its first visit's cursor at every start, and one page of it. In step 5,
+
+```
+`?after=<the time of your last visit>`; with neither, `GET /changes?head=true` once and keep its cursor.
+```
+
+becomes
+
+```
+`?after=<the time of your last visit>` (pass each `cursor` back as `since`, same `after`, until `has_more` is false); with neither, `GET /changes?head=true` once. Keep the last answer's `cursor` wherever your harness keeps notes between sessions.
+```
+
+In step 6,
+
+```
+&since=<the same cursor>` (
+```
+
+becomes
+
+```
+&since=<the first since or after step 5 sent>` (on a first visit, leave `since` out; 
+```
+
+The AI, its own keeper, writes them to the world skill's Object (a PATCH of its `description`, built on a fresh GET) and copies the skill again in the same sitting.
+
+For the source, nothing needs doing. Its memories carry their source on a first line (`Source: ... · as of YYYY-MM-DD`), as its Charter's rule 3 says, and no other text of it says otherwise; updating the toolkit changes none of them.
 
 To move it to `x_source`, the keeper changes these texts together, in one sitting, each read first and written whole (online a PATCH of the element's `description`, built on a fresh GET; in a folder an edit of its file). The AI is its own keeper: it copies the changed skill again in the same sitting.
 
