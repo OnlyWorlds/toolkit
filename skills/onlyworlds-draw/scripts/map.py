@@ -14,7 +14,8 @@ Nothing is placed by guess: a pin or marker without integer x and y, or on a map
 lacks, is counted as not placed. A map missing its width or height takes the missing one from
 its placed points (the largest x or y among its pins and its zones' markers), and the page says
 the size was measured; with no stated size and no placed point, it takes its image's own size
-when the image loads, and with neither its pins are not placed. Room, proposed and hidden
+when the image loads, and with neither its pins are not placed. A size of 0 is no canvas either:
+the summary counts such a map's points apart from the placed ones. Room, proposed and hidden
 elements (and pins that place one) are left out unless a flag asks for them; the three
 reading aids (graph.py's docstring) are left out always and said once in the foot.
 
@@ -222,14 +223,27 @@ def main(argv):
 
     out = out_folder(folder, a.out)
     head = head_line(folder, world)
-    n_pins = sum(len(m["pins"]) for m in data_maps)
-    n_zones = sum(len(m["zones"]) for m in data_maps)
+    # A Map whose frame is 0 in either slot (stated so, or measured from points that all sit on an
+    # axis) has no canvas: the page draws its points only when the map's image loads and gives a
+    # size. They are counted apart, so the totals say what the page draws.
+    sized = [m for m in data_maps if m["w"] and m["h"]]
+    unsized = [m for m in data_maps if not (m["w"] and m["h"]) and (m["pins"] or m["zones"])]
+    n_pins = sum(len(m["pins"]) for m in sized)
+    n_zones = sum(len(m["zones"]) for m in sized)
     foot = [f"{len(data_maps)} maps, {n_pins} pins and {n_zones} zones placed. Left out: {count_line(left)}.{aids_line(left)} "
             f"Not placed: {count_line(not_placed)}.",
             "Pins and markers are drawn where their x and y say, counted from the map's bottom-left corner. "
             + ("The map images are not loaded (--no-image)." if a.no_image
                else "The map images load from their image_url; the page makes no other outside request."),
             f"Colours: {colour_source}."]
+    for waits, group in ((True, [m for m in unsized if m["image"] and not a.no_image]),
+                         (False, [m for m in unsized if not (m["image"] and not a.no_image)])):
+        if group:
+            names = sorted((m["name"] for m in group), key=fold)
+            foot.append(f"{sum(len(m['pins']) for m in group)} pins and {sum(len(m['zones']) for m in group)} zones "
+                        f"sit on a map with no size ({', '.join(names[:5])}{' and more' if len(names) > 5 else ''}): "
+                        + ("the page places them when the map's image loads and gives its size."
+                           if waits else "the page does not place them, since there is no image to take a size from."))
     if older:
         names = sorted(older.values(), key=fold)
         foot.append(f"{len(older)} {'zone carries' if len(older) == 1 else 'zones carry'} a line mark in an older key (atlas_shape or a supertype "

@@ -129,6 +129,37 @@ def test_an_id_field_that_is_no_string_names_nothing():
         assert "- Harbour" in r.stdout, r.stdout
 
 
+def test_a_map_of_size_zero_counts_its_points_apart():
+    """The summary's totals say what the page draws. A Map whose width or height is 0 (stated so,
+    or measured from points that all sit on an axis) has no canvas: with no image to take a size
+    from (here: --no-image), the page does not place its points, and the summary must not count
+    them as placed. A Map with a real size beside it keeps its count."""
+    loc = "019a9000-0000-7000-8000-0000000e0001"
+    flat, bare, sized = (f"019a9000-0000-7000-8000-0000000e001{n}" for n in (1, 2, 3))
+    rows = [("location", {"id": loc, "name": "Harbour"}),
+            ("map", {"id": flat, "name": "Flat Chart", "width": 0, "height": 0}),
+            ("map", {"id": bare, "name": "Bare Chart"}),
+            ("map", {"id": sized, "name": "Real Chart", "width": 100, "height": 80}),
+            ("pin", {"id": "019a9000-0000-7000-8000-0000000e0021", "name": "p1", "map": flat,
+                     "element_type": "location", "element_id": loc, "x": 3, "y": 4}),
+            ("pin", {"id": "019a9000-0000-7000-8000-0000000e0022", "name": "p2", "map": bare,
+                     "element_type": "location", "element_id": loc, "x": 0, "y": 0}),
+            ("pin", {"id": "019a9000-0000-7000-8000-0000000e0023", "name": "p3", "map": sized,
+                     "element_type": "location", "element_id": loc, "x": 5, "y": 6})]
+    with tempfile.TemporaryDirectory() as d:
+        root, out = Path(d) / "world", Path(d) / "out"
+        _plant(root, rows)
+        r = _draw(root, out)
+        assert r.returncode == 0, r.stderr
+        page = (out / "map.html").read_text(encoding="utf-8")
+        data = json.loads(re.search(r'<script id="data" type="application/json">(.*?)</script>', page, re.S).group(1))
+        sizes = {m["name"]: (m["w"], m["h"]) for m in data["maps"]}
+        assert sizes == {"Flat Chart": (0, 0), "Bare Chart": (0, 0), "Real Chart": (100, 80)}, sizes
+        assert "3 maps, 1 pins and 0 zones placed." in r.stdout, r.stdout
+        assert ("2 pins and 0 zones sit on a map with no size (Bare Chart, Flat Chart): the page does not "
+                "place them, since there is no image to take a size from.") in r.stdout, r.stdout
+
+
 if __name__ == "__main__":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
