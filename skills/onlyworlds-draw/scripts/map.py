@@ -1,10 +1,10 @@
 """Draw a world folder's maps, with their pins and zones: map.html.
 
 Reads a world folder with graph.py's reader and writes one page into the output folder, never
-into the world. Every Map element is a canvas: its image_url, width x height pixels. A Pin sits
-at its integer x, y counted from the map's BOTTOM-LEFT corner (the page flips y) and names the
-element it places (element_type + element_id); its label is that element's name. A Zone is its
-Markers on that map, in `order` ascending (a marker without a whole-number order comes after
+into the world. A Map element is a canvas when it has a size: its image_url, width x height
+pixels. A Pin sits at its integer x, y counted from the map's BOTTOM-LEFT corner (the page flips
+y) and names the element it places (element_type + element_id); its label is that element's
+name. A Zone is its Markers on that map, in `order` ascending (a marker without a whole-number order comes after
 every ordered one; ties go by id), joined by the zone's `shape` as written: `line` is an open
 path, any other value or none a closed polygon. These are the map-space profile's rules (§2,
 §4: profiles/map-space.md in github.com/OnlyWorlds/schema-dist). Maps nest by parent_map; the
@@ -75,15 +75,16 @@ def older_line_mark(z):
 
 
 def frame(m, points):
-    """The Map's width and height, and whether either was measured: a missing slot is the largest
-    x (or y) among the points placed on that Map, its Pins and its zones' Markers."""
+    """The Map's width and height, and which were measured ("", "width", "height" or "size" for
+    both): a missing slot is the largest x (or y) among the points placed on that Map, its Pins
+    and its zones' Markers."""
     w, h = whole(m.get("width")), whole(m.get("height"))
-    measured = False
-    if points and w is None:
-        w, measured = max(p[0] for p in points), True
-    if points and h is None:
-        h, measured = max(p[1] for p in points), True
-    return w, h, measured
+    mw, mh = bool(points) and w is None, bool(points) and h is None
+    if mw:
+        w = max(p[0] for p in points)
+    if mh:
+        h = max(p[1] for p in points)
+    return w, h, "size" if mw and mh else "width" if mw else "height" if mh else ""
 
 
 def placement(w, h, image, no_image):
@@ -99,16 +100,26 @@ def placement(w, h, image, no_image):
     return "none"
 
 
-def size_words(m, w, h):
+def size_words(w, h, measured):
     """A Map with no canvas, in words: "no stated size" only when it states neither slot and has no
-    placed point to measure one from; otherwise "no size" and each slot as stated, measured or
-    missing."""
+    placed point to measure one from; otherwise "no size" and each slot as stated, measured (frame's
+    `measured`) or missing."""
     if w is None and h is None:
         return "no stated size"
     slots = []
-    for slot, v, stated in (("width", w, whole(m.get("width"))), ("height", h, whole(m.get("height")))):
-        slots.append(f"no {slot}" if v is None else f"{slot} {v}" + ("" if stated is not None else " measured"))
+    for slot, v in (("width", w), ("height", h)):
+        slots.append(f"no {slot}" if v is None else f"{slot} {v}" + (" measured" if measured in (slot, "size") else ""))
     return "no size: " + ", ".join(slots)
+
+
+# The page's note for a map with no canvas, by its `place` (placement(); `failed` is set by the page
+# when the image does not load or gives no size). They ride in the page's data: the page's script
+# writes no sentence about placement of its own.
+NOTES = {"image": "Its image is loading: its pins and zones are placed if it loads and gives a size.",
+         "unloaded": "The map images are not loaded (--no-image), so its image cannot give a size: "
+                     "its pins and zones are not placed.",
+         "none": "It has no image to take a size from: its pins and zones are not placed.",
+         "failed": "Its image did not load or gave no size: its pins and zones are not placed."}
 
 
 def n(k, word):
@@ -141,15 +152,11 @@ MAP_CSS = """
 
 MAP_JS = VIEW_JS + r"""
 const M=D.maps,byId=Object.fromEntries(M.map(m=>[m.id,m])),t0=performance.now();let cur=null;
-const NOTE={image:'Its image is loading: its pins and zones are placed if it loads and gives a size.',
- unloaded:'The map images are not loaded (--no-image), so its image cannot give a size: its pins and zones are not placed.',
- none:'It has no image to take a size from: its pins and zones are not placed.',
- failed:'Its image did not load or gave no size: its pins and zones are not placed.'};
 function draw(m){cur=m;svg.textContent='';
  if(m.place!=='canvas'){if(m.place==='image'&&!m.tried){m.tried=1;const im=new Image();
    im.onload=()=>{if(im.naturalWidth>0&&im.naturalHeight>0){m.w=im.naturalWidth;m.h=im.naturalHeight;m.sized=1;m.place='canvas'}else m.place='failed';if(cur===m)draw(m)};
    im.onerror=()=>{m.place='failed';if(cur===m)draw(m)};im.src=m.image}
-  panel(m,NOTE[m.place]);return}
+  panel(m,D.notes[m.place]);return}
  const w=m.w,hh=m.h,vp=el('g',{},svg);el('rect',{x:0,y:0,width:w,height:hh,fill:dark?'#20201e':'#efefea',stroke:dark?'#55554f':'#c4c4bd'},vp);
  if(m.image&&!D.noImage)el('image',{href:m.image,x:0,y:0,width:w,height:hh,preserveAspectRatio:'none'},vp);
  const u=Math.max(w,hh)/250;
@@ -161,7 +168,7 @@ function draw(m){cur=m;svg.textContent='';
   h('title',p.label+(p.type?' ('+p.type+')':'')+' at '+p.x+', '+p.y,g)}
  fitTo(-w*.03,-hh*.03,w*1.03,hh*1.03);panel(m,null)}
 function panel(m,note){side.textContent='';h('h2',m.name,side);const on=m.place==='canvas';
- h('div',(on?m.w+' × '+m.h+' px'+(m.sized?' (from its image)':m.measured?' (measured from its points)':''):m.size)+(m.loc?' · '+m.loc:''),side,'k');
+ h('div',(on?m.w+' × '+m.h+' px'+(m.sized?' (from its image)':m.measured?' ('+m.measured+' measured from its points)':''):m.size)+(m.loc?' · '+m.loc:''),side,'k');
  if(note)h('p',note,side);if(m.desc)h('p',m.desc,side);
  h('p',m.pins.length+' pins, '+m.zones.length+' zones '+(on?'placed'+(m.unplaced?'; '+m.unplaced+' not placed':''):'not placed'+(m.unplaced?', and '+m.unplaced+' more without integer x and y':'')),side,'k');
  if(m.zones.length){h('b','Zones',side);const ul=h('ul',null,side);for(const z of m.zones){const li=h('li',null,ul),s=h('span',null,li,'sw');s.style.background=col(z.family);li.append(z.name+' ('+z.shape+')')}}
@@ -259,7 +266,7 @@ def main(argv):
         place = placement(w, h, image, a.no_image)
         data_maps.append({"id": mid, "name": label(m), "parent": parent if parent in maps else None,
                           "image": image, "w": w, "h": h, "measured": measured, "place": place,
-                          "size": "" if place == "canvas" else size_words(m, w, h),
+                          "size": "" if place == "canvas" else size_words(w, h, measured),
                           "loc": label(loc) if loc else "", "desc": m.get("description") or "",
                           "pins": pins_by[mid], "zones": zones, "unplaced": m.get("_unplaced", 0)})
 
@@ -273,10 +280,12 @@ def main(argv):
              for p in ("image", "unloaded", "none")}
     n_pins = sum(len(m["pins"]) for m in canvas)
     n_zones = sum(len(m["zones"]) for m in canvas)
-    not_placed["pins on a map with no size"] = sum(len(m["pins"]) for p in ("unloaded", "none") for m in group[p])
-    not_placed["zones on a map with no size"] = sum(len(m["zones"]) for p in ("unloaded", "none") for m in group[p])
+    no_size = [n(k, kind) + " on a map with no size" for kind, k in
+               (("pin", sum(len(m["pins"]) for p in ("unloaded", "none") for m in group[p])),
+                ("zone", sum(len(m["zones"]) for p in ("unloaded", "none") for m in group[p]))) if k]
+    older_kinds = count_line(not_placed)
     foot = [f"{len(data_maps)} maps, {n_pins} pins and {n_zones} zones placed. Left out: {count_line(left)}.{aids_line(left)} "
-            f"Not placed: {count_line(not_placed)}.",
+            f"Not placed: {', '.join(([] if older_kinds == 'nothing' else [older_kinds]) + no_size) or 'nothing'}.",
             "Pins and markers are drawn where their x and y say, counted from the map's bottom-left corner. "
             + ("The map images are not loaded (--no-image)." if a.no_image
                else "The map images load from their image_url; the page makes no other outside request."),
@@ -307,7 +316,8 @@ def main(argv):
                     + (" ..." if len(names) > 5 else "") + ". Set shape to line on each to draw an open path.")
     if skipped:
         foot.append(f"{len(skipped)} files not read: " + "; ".join(skipped[:5]) + (" ..." if len(skipped) > 5 else ""))
-    data = {"maps": data_maps, "colors": colors, "families": list(FAMILY_ORDER), "noImage": a.no_image}
+    data = {"maps": data_maps, "colors": colors, "families": list(FAMILY_ORDER), "noImage": a.no_image,
+            "notes": NOTES}
     write_page(out / "map.html", f"{name}: maps", head, foot, data, MAP_CSS, MAP_JS)
 
     print(f"# Maps of {name}\n\n{head}\n")
@@ -315,7 +325,7 @@ def main(argv):
         print(f"- {line}")
     for m in data_maps:
         print(f"- {m['name']}: {len(m['pins'])} pins, {len(m['zones'])} zones"
-              + ((" (size measured from its points)" if m["measured"] else "") if m["place"] == "canvas"
+              + ((f" ({m['measured']} measured from its points)" if m["measured"] else "") if m["place"] == "canvas"
                  else f" ({m['size']})" + ("" if not (m["pins"] or m["zones"])
                                            else ", placed if its image loads and gives a size" if m["place"] == "image"
                                            else ", not placed")))

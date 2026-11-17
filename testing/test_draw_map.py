@@ -14,13 +14,18 @@ data:
   sized map; only the sized map's pin is placed, the other two are counted as not placed.
 - test_a_map_with_one_slot_of_size_zero_has_no_canvas: a stated width with a stated height of 0,
   a stated width with a measured height of 0, a negative width, and a zone on a 0 x 0 map: none
-  has a canvas, and their pins and zones are counted as not placed, never as placed.
-- test_a_map_with_no_size_and_an_image: a 0 x 0 map with an image_url waits on its image when
-  images load (in neither total, one line saying the page places it if the image loads) and is
-  not placed with --no-image (counted, the reason given as the images not being loaded).
+  has a canvas, and their pins and zones are counted as not placed, never as placed; a canvas
+  with a stated width and a measured height says only its height was measured.
+- test_a_map_with_no_size_and_an_image: a 0 x 0 map with an image_url, and a map with only an
+  image_url, wait on their image when images load (in neither total, one line saying the page
+  places the pin if the image loads) and are not placed with --no-image (counted, the reason
+  given as the images not being loaded).
+- test_the_page_script_reads_the_state: the page's script, pinned as text (no test runs it): it
+  shows the note it is handed, writes none of its own, and changes `place` only where it should.
 
-The page's data carries each map's `place` (canvas, image, unloaded, none), which its script reads
-for every sentence it writes about placement; the tests check it beside the summary.
+The page's data carries each map's `place` (canvas, image, unloaded, none) and the page's notes
+for a map with no canvas, so its script writes no sentence about placement of its own; the tests
+read both beside the summary.
 
 OW_DRAW_MAP points at another copy of map.py (an older one, to show this test is red on it).
 
@@ -190,15 +195,21 @@ def test_a_map_of_size_zero_counts_its_points_apart():
         assert ("- Bare Chart: 1 pins, 0 zones (no size: width 0 measured, height 0 measured), not placed"
                 in r.stdout), r.stdout
         assert "no stated size" not in r.stdout, r.stdout
+        # The page's note for these maps is handed to it in the data and gives the summary's reason.
+        assert data["notes"]["none"] == ("It has no image to take a size from: its pins and zones are not "
+                                         "placed."), data["notes"]
 
 
 def test_a_map_with_one_slot_of_size_zero_has_no_canvas():
     """A canvas needs both slots greater than 0: a width with a height of 0 (stated, or measured
     from points on the axis) is no canvas, nor is a negative width. Their pins, and a zone on a
-    0 x 0 map, are counted as not placed, by kind; nothing of them is in the placed totals."""
+    0 x 0 map, are counted as not placed, by kind; nothing of them is in the placed totals. A
+    canvas whose width is stated and height measured says that only its height was measured."""
     loc = "019a9000-0000-7000-8000-0000000e0001"
     half, strip, neg, flat, real, zone = (f"019a9000-0000-7000-8000-0000000e00{n}" for n in (31, 32, 33, 34, 35, 36))
+    tall = "019a9000-0000-7000-8000-0000000e0037"
     rows = [("location", {"id": loc, "name": "Harbour"}),
+            ("map", {"id": tall, "name": "Tall", "width": 100}), _pin(6, tall, 10, 10, loc),
             ("map", {"id": half, "name": "Half", "width": 100, "height": 0}),
             ("map", {"id": strip, "name": "Strip", "width": 100}),
             ("map", {"id": neg, "name": "Neg", "width": -50, "height": 80}),
@@ -215,11 +226,13 @@ def test_a_map_with_one_slot_of_size_zero_has_no_canvas():
         r = _draw(root, out)
         assert r.returncode == 0, r.stderr
         data = _page_data(out)
-    places = {m["name"]: (m["w"], m["h"], m["place"]) for m in data["maps"]}
-    assert places == {"Half": (100, 0, "none"), "Strip": (100, 0, "none"), "Neg": (-50, 80, "none"),
-                      "Flat": (0, 0, "none"), "Real": (100, 80, "canvas")}, places
-    assert "5 maps, 1 pins and 0 zones placed." in r.stdout, r.stdout
-    assert "Not placed: 4 pins on a map with no size, 1 zones on a map with no size." in r.stdout, r.stdout
+    places = {m["name"]: (m["w"], m["h"], m["place"], m["measured"]) for m in data["maps"]}
+    assert places == {"Half": (100, 0, "none", ""), "Strip": (100, 0, "none", "height"),
+                      "Neg": (-50, 80, "none", ""), "Flat": (0, 0, "none", ""),
+                      "Real": (100, 80, "canvas", ""), "Tall": (100, 10, "canvas", "height")}, places
+    assert "6 maps, 2 pins and 0 zones placed." in r.stdout, r.stdout
+    assert "Not placed: 4 pins on a map with no size, 1 zone on a map with no size." in r.stdout, r.stdout
+    assert "- Tall: 1 pins, 0 zones (height measured from its points)\n" in r.stdout, r.stdout
     assert ("- 4 pins and 1 zone sit on maps with no size (Flat, Half, Neg, Strip) and are not placed: "
             "the maps have no image to take a size from.") in r.stdout, r.stdout
     for line in ("- Half: 1 pins, 0 zones (no size: width 100, height 0), not placed",
@@ -234,12 +247,15 @@ def test_a_map_with_no_size_and_an_image():
     """A 0 x 0 map with an image_url: when the page loads images, it takes the size from the image
     if it loads, so the summary counts the pin in neither total and says so with "if"; with
     --no-image the pin is not placed, and the reason is that the images are not loaded, never that
-    the map has no image."""
+    the map has no image. A map with only an image_url (no size, no point) waits on its image the
+    same way. The page's notes for these maps are handed to it in the data and give the same reason
+    as the summary."""
     loc = "019a9000-0000-7000-8000-0000000e0001"
-    flat = "019a9000-0000-7000-8000-0000000e0041"
+    flat, only = "019a9000-0000-7000-8000-0000000e0041", "019a9000-0000-7000-8000-0000000e0042"
     rows = [("location", {"id": loc, "name": "Harbour"}),
             ("map", {"id": flat, "name": "Flat", "width": 0, "height": 0,
                      "image_url": "https://example.invalid/chart.png"}),
+            ("map", {"id": only, "name": "Only Image", "image_url": "https://example.invalid/only.png"}),
             _pin(1, flat, 3, 4, loc)]
     with tempfile.TemporaryDirectory() as d:
         root = Path(d) / "world"
@@ -247,21 +263,48 @@ def test_a_map_with_no_size_and_an_image():
         on = _draw(root, Path(d) / "on", images=True)
         off = _draw(root, Path(d) / "off")
         assert on.returncode == 0 and off.returncode == 0, (on.stderr, off.stderr)
-        place_on = [m["place"] for m in _page_data(Path(d) / "on")["maps"]]
-        place_off = [m["place"] for m in _page_data(Path(d) / "off")["maps"]]
-    assert place_on == ["image"] and place_off == ["unloaded"], (place_on, place_off)
-    assert "1 maps, 0 pins and 0 zones placed." in on.stdout and "Not placed: nothing." in on.stdout, on.stdout
+        data_on, data_off = _page_data(Path(d) / "on"), _page_data(Path(d) / "off")
+    place_on = {m["name"]: m["place"] for m in data_on["maps"]}
+    place_off = {m["name"]: m["place"] for m in data_off["maps"]}
+    assert place_on == {"Flat": "image", "Only Image": "image"}, place_on
+    assert place_off == {"Flat": "unloaded", "Only Image": "unloaded"}, place_off
+    for r in (on, off):
+        assert "- Only Image: 0 pins, 0 zones (no stated size)\n" in r.stdout, r.stdout
+    notes = data_on["notes"]
+    assert data_off["notes"] == notes and set(notes) == {"image", "unloaded", "none", "failed"}, notes
+    assert notes["image"] == ("Its image is loading: its pins and zones are placed if it loads and gives "
+                              "a size."), notes
+    assert notes["unloaded"] == ("The map images are not loaded (--no-image), so its image cannot give a "
+                                 "size: its pins and zones are not placed."), notes
+    assert notes["failed"] == "Its image did not load or gave no size: its pins and zones are not placed.", notes
+    assert "2 maps, 0 pins and 0 zones placed." in on.stdout and "Not placed: nothing." in on.stdout, on.stdout
     assert ("- 1 pin sits on a map with no size (Flat): the page places it if the map's image loads and "
             "gives a size.") in on.stdout, on.stdout
     assert ("- Flat: 1 pins, 0 zones (no size: width 0, height 0), placed if its image loads and gives a size"
             in on.stdout), on.stdout
-    assert "1 maps, 0 pins and 0 zones placed." in off.stdout, off.stdout
-    assert "Not placed: 1 pins on a map with no size." in off.stdout, off.stdout
+    assert "2 maps, 0 pins and 0 zones placed." in off.stdout, off.stdout
+    assert "Not placed: 1 pin on a map with no size." in off.stdout, off.stdout
     assert ("- 1 pin sits on a map with no size (Flat) and is not placed: the map images are not loaded "
             "(--no-image), so its image cannot give a size.") in off.stdout, off.stdout
     assert "- Flat: 1 pins, 0 zones (no size: width 0, height 0), not placed" in off.stdout, off.stdout
     for r in (on, off):
         assert "no image to take" not in r.stdout and " when " not in r.stdout, r.stdout
+
+
+def test_the_page_script_reads_the_state():
+    """No test here runs the page's script, so its text is pinned: it shows the note it is handed
+    for the map's place and holds no sentence about placement of its own; it sets `place` to canvas
+    once (an image that loads with a size) and to failed in two places (an image with no size, an
+    image that does not load); its panel says placed only on a canvas."""
+    src = MAP.read_text(encoding="utf-8")
+    js = src[src.index('MAP_JS = VIEW_JS + r"""'):]
+    js = js[:js.index('"""', len('MAP_JS = VIEW_JS + r"""'))]
+    assert js.count("panel(m,D.notes[m.place])") == 1, js
+    assert js.count("m.place='canvas'") == 1 and js.count("m.place='failed'") == 2, js
+    assert js.count("const on=m.place==='canvas'") == 1 and js.count("(on?'placed'") == 1, js
+    assert js.count(":'not placed'+(m.unplaced?") == 1, js
+    for words in ("image to take", "--no-image", "is loading", "did not load"):
+        assert words not in js, words
 
 
 if __name__ == "__main__":

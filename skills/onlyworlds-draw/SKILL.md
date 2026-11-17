@@ -51,7 +51,7 @@ Principles §2: the script reads the folder and computes every position, link an
 
 ### 4. Map
 
-`map.py` draws each Map element as a canvas: its `image_url`, `width` × `height` pixels. Maps nest by `parent_map`; the page lists them as a tree and opens on a top-level map.
+`map.py` draws each Map element as a canvas when it has a size: its `image_url`, `width` × `height` pixels. Maps nest by `parent_map`; the page lists them as a tree and opens on a top-level map.
 
 - **Pins**: integer `x`, `y` counted from the map's **bottom-left** corner (the page flips y), labelled with the element the Pin places (`element_type` + `element_id`), coloured by its type's group.
 - **Zones**: a Zone is its Markers on that map, in `order` ascending (a marker without a whole-number `order` comes after every ordered one, and ties go by id), joined by the Zone's `shape` as written: `line` is an open path, and `polygon`, an empty shape or any other value is a closed polygon. These are the map-space profile's rules (`profiles/map-space.md` in github.com/OnlyWorlds/schema-dist). A zone with no `shape` that carries a line mark in an older key (`atlas_shape`, or a supertype `line`) is drawn closed, and the script counts and names those zones in its summary.
