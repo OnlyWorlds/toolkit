@@ -15,20 +15,21 @@ data:
 - test_a_map_with_one_slot_of_size_zero_has_no_canvas: a stated width with a stated height of 0,
   a stated width with a measured height of 0, a negative width, and a zone on a 0 x 0 map: none
   has a canvas, and their pins and zones are counted as not placed, never as placed; a canvas
-  with a stated width and a measured height says only its height was measured, and one with a
-  stated height only its width.
+  with a stated width and a measured height says only its height was measured, one with a
+  stated height only its width, and one with neither stated its size.
 - test_a_map_with_no_size_and_an_image: a 0 x 0 map with an image_url, and a map with only an
   image_url, wait on their image when images load (in neither total, one line saying the page
   places the pin if the image loads) and are not placed with --no-image (counted, the reason
   given as the images not being loaded).
-- test_the_page_script_reads_the_state: the page's script, pinned as text (no test runs it): it
-  shows the note and the size words it is handed, writes no note of its own and of size words only
-  "(from its image)", and changes `place` only where it should.
+- test_the_page_script_reads_the_state: the page's script, pinned as text (no test runs it), a
+  tripwire for the plain slip: it shows the note and the size words it is handed, and the pins
+  catch a text of its own added or changed whole (a note, words about how a size was found other
+  than "(from its image)", a change of `place` where it should not), never words built from pieces.
 
 The page's data carries each map's `place` (canvas, image, unloaded, none), its size words
-(`size`) and the page's notes for a map with no canvas, so its script writes no note and no size
-words of its own but "(from its image)"; its count line is its own and reads `place`. The tests
-read the data beside the summary.
+(`size`) and the page's notes for a map with no canvas, so its script writes no note of its own
+and no words about how a size was found but "(from its image)"; its count line is its own and
+reads `place`. The tests read the data beside the summary.
 
 OW_DRAW_MAP points at another copy of map.py (an older one, to show this test is red on it).
 
@@ -208,13 +209,15 @@ def test_a_map_with_one_slot_of_size_zero_has_no_canvas():
     from points on the axis) is no canvas, nor is a negative width. Their pins, and a zone on a
     0 x 0 map, are counted as not placed, by kind ("on maps" when a kind sits on more than one);
     nothing of them is in the placed totals. A canvas with one slot stated and the other measured
-    says which one was measured, on its line and in the size words the page is handed."""
+    says which one was measured, and one with neither stated says its size was, on its line and in
+    the size words the page is handed."""
     loc = "019a9000-0000-7000-8000-0000000e0001"
     half, strip, neg, flat, real, zone = (f"019a9000-0000-7000-8000-0000000e00{n}" for n in (31, 32, 33, 34, 35, 36))
-    tall, wide = "019a9000-0000-7000-8000-0000000e0037", "019a9000-0000-7000-8000-0000000e0038"
+    tall, wide, nonums = (f"019a9000-0000-7000-8000-0000000e00{n}" for n in (37, 38, 39))
     rows = [("location", {"id": loc, "name": "Harbour"}),
             ("map", {"id": tall, "name": "Tall", "width": 100}), _pin(6, tall, 10, 10, loc),
             ("map", {"id": wide, "name": "Wide", "height": 80}), _pin(7, wide, 40, 10, loc),
+            ("map", {"id": nonums, "name": "NoNums"}), _pin(8, nonums, 10, 12, loc),
             ("map", {"id": half, "name": "Half", "width": 100, "height": 0}),
             ("map", {"id": strip, "name": "Strip", "width": 100}),
             ("map", {"id": neg, "name": "Neg", "width": -50, "height": 80}),
@@ -235,14 +238,15 @@ def test_a_map_with_one_slot_of_size_zero_has_no_canvas():
     assert places == {"Half": (100, 0, "none", ""), "Strip": (100, 0, "none", "height"),
                       "Neg": (-50, 80, "none", ""), "Flat": (0, 0, "none", ""),
                       "Real": (100, 80, "canvas", ""), "Tall": (100, 10, "canvas", "height"),
-                      "Wide": (40, 80, "canvas", "width")}, places
+                      "Wide": (40, 80, "canvas", "width"), "NoNums": (10, 12, "canvas", "size")}, places
     sizes = {m["name"]: m["size"] for m in data["maps"] if m["place"] == "canvas"}
     assert sizes == {"Real": "", "Tall": "height measured from its points",
-                     "Wide": "width measured from its points"}, sizes
-    assert "7 maps, 3 pins and 0 zones placed." in r.stdout, r.stdout
+                     "Wide": "width measured from its points", "NoNums": "size measured from its points"}, sizes
+    assert "8 maps, 4 pins and 0 zones placed." in r.stdout, r.stdout
     assert "Not placed: 4 pins on maps with no size, 1 zone on a map with no size." in r.stdout, r.stdout
     assert "- Tall: 1 pins, 0 zones (height measured from its points)\n" in r.stdout, r.stdout
     assert "- Wide: 1 pins, 0 zones (width measured from its points)\n" in r.stdout, r.stdout
+    assert "- NoNums: 1 pins, 0 zones (size measured from its points)\n" in r.stdout, r.stdout
     assert ("- 4 pins and 1 zone sit on maps with no size (Flat, Half, Neg, Strip) and are not placed: "
             "the maps have no image to take a size from.") in r.stdout, r.stdout
     for line in ("- Half: 1 pins, 0 zones (no size: width 100, height 0), not placed",
@@ -302,20 +306,26 @@ def test_a_map_with_no_size_and_an_image():
 
 
 def test_the_page_script_reads_the_state():
-    """No test here runs the page's script, so its text is pinned: it shows the note and the size
-    words it is handed (no note of its own, and of size words only "(from its image)", which only the
-    browser can know); its count line ("N pins, M zones placed") is its own and reads `place`; it sets
-    `place` to canvas once (an image that loads with a size) and to failed in two places (an image
-    with no size, an image that does not load); its panel says placed only on a canvas."""
+    """No test here runs the page's script, so its text is pinned, as a tripwire for the plain slip:
+    it shows the note and the size words it is handed (no note of its own, and no words about how a
+    size was found but "(from its image)", which only the browser can know); its count line ("N pins,
+    M zones placed") is its own and reads `place`; it sets `place` to canvas once (an image that
+    loads with a size) and to failed in two places (an image with no size, an image that does not
+    load); its panel says placed only on a canvas. A text pin catches a text added or changed whole,
+    never words built from pieces."""
     src = MAP.read_text(encoding="utf-8")
-    js = src[src.index('MAP_JS = VIEW_JS + r"""'):]
-    js = js[:js.index('"""', len('MAP_JS = VIEW_JS + r"""'))]
+    start = src.index('MAP_JS = VIEW_JS + r"""') + len('MAP_JS = VIEW_JS + r"""')
+    js = src[start:src.index('"""', start)]
     assert js.count("panel(m,D.notes[m.place])") == 1, js
     assert js.count("m.sized?' (from its image)':m.size?' ('+m.size+')':''") == 1, js
-    # Every quoted text in the script that names a size or how it was found is "(from its image)":
-    # size words of its own beside it fail here.
+    # A tripwire for the plain slip, no more: the script holds no double quote and no backtick, so
+    # every text in it is single-quoted and the check reads them all, and of those that name a size
+    # or how it was found only "(from its image)" may stand. It catches a text added whole; it cannot
+    # see words built from pieces or copied from a value the script already holds.
+    assert '"' not in js and "`" not in js, [ln for ln in js.splitlines() if '"' in ln or "`" in ln]
     texts = re.findall(r"'([^'\n]*)'", js)
-    assert [t for t in texts if re.search(r"measur|from its|stated|(?<!-)\bsize\b", t)] == [" (from its image)"], texts
+    found = [t for t in texts if re.search(r"measur|from its|stated|(?<!-)\bsize\b", t)]
+    assert found == [" (from its image)"], found
     assert js.count("m.place='canvas'") == 1 and js.count("m.place='failed'") == 2, js
     assert js.count("const on=m.place==='canvas'") == 1 and js.count("(on?'placed'") == 1, js
     assert js.count(":'not placed'+(m.unplaced?") == 1, js

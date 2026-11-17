@@ -103,9 +103,10 @@ def placement(w, h, image, no_image):
 def size_words(w, h, measured, place):
     """A Map's size in words, their one home: the summary's per-map line and the page's panel both
     show this. A canvas: which slots were measured from its points (frame's `measured`), or nothing
-    when both are stated; the page adds only "(from its image)", which only the browser can know. No
-    canvas: "no stated size" only when it states neither slot and has no placed point to measure one
-    from; otherwise "no size" and each slot as stated, measured or missing."""
+    when both are stated; the page adds no words about how a size was found but "(from its image)",
+    which only the browser can know. No canvas: "no stated size" only when it states neither slot
+    and has no placed point to measure one from; otherwise "no size" and each slot as stated,
+    measured or missing."""
     if place == "canvas":
         return f"{measured} measured from its points" if measured else ""
     if w is None and h is None:
@@ -118,8 +119,9 @@ def size_words(w, h, measured, place):
 
 # The page's note for a map with no canvas, by its `place` (placement(); `failed` is set by the page
 # when the image does not load or gives no size). They ride in the page's data, as each map's size
-# words do (size_words()): the page's script writes no note and no size words of its own but "(from
-# its image)". Its count line ("N pins, M zones placed") is built in the script and reads `place`.
+# words do (size_words()): the page's script writes no note of its own, and no words about how a
+# size was found but "(from its image)". Its count line ("N pins, M zones placed") is built in the
+# script and reads `place`.
 NOTES = {"image": "Its image is loading: its pins and zones are placed if it loads and gives a size.",
          "unloaded": "The map images are not loaded (--no-image), so its image cannot give a size: "
                      "its pins and zones are not placed.",
