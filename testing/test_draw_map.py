@@ -1,11 +1,26 @@
-"""The draw skill's map.py reads a Zone's shape as the map-space profile does, and says so when a
-zone carries a line mark only in an older key.
+"""The draw skill's map.py: what it places, what it says it places, and how it reads a Zone.
 
-A three-zone folder is planted in a temporary directory, all on one Map: one zone with
-`shape: line`, one with no shape and only `atlas_shape: line`, one plain. map.py is run on it
-(--offline --no-image) and the page's data must hold the first as a line and the other two as
-polygons (the profile reads `shape` as written), while the printed summary names the second, and
-only the second, as a zone with a line mark in an older key and no shape.
+Each test plants a small world folder in a temporary directory and runs map.py on it (--offline,
+and --no-image unless the test says otherwise), then reads the printed summary and the page's
+data:
+
+- test_shape_read_as_written: three zones on one Map (`shape: line`, only `atlas_shape: line`,
+  none); the first is a line and the other two polygons, as the map-space profile reads `shape`.
+- test_older_line_mark_is_named: the summary names the second zone, and only it, as carrying a
+  line mark in an older key and no shape.
+- test_an_id_field_that_is_no_string_names_nothing: an id field holding a list or an object names
+  nothing, as a missing one does; the page is written and nothing raises.
+- test_a_map_of_size_zero_counts_its_points_apart: a stated 0 x 0 and a measured 0 x 0 beside a
+  sized map; only the sized map's pin is placed, the other two are counted as not placed.
+- test_a_map_with_one_slot_of_size_zero_has_no_canvas: a stated width with a stated height of 0,
+  a stated width with a measured height of 0, a negative width, and a zone on a 0 x 0 map: none
+  has a canvas, and their pins and zones are counted as not placed, never as placed.
+- test_a_map_with_no_size_and_an_image: a 0 x 0 map with an image_url waits on its image when
+  images load (in neither total, one line saying the page places it if the image loads) and is
+  not placed with --no-image (counted, the reason given as the images not being loaded).
+
+The page's data carries each map's `place` (canvas, image, unloaded, none), which its script reads
+for every sentence it writes about placement; the tests check it beside the summary.
 
 OW_DRAW_MAP points at another copy of map.py (an older one, to show this test is red on it).
 
@@ -81,10 +96,21 @@ def _plant(root, rows):
     (root / "world.json").write_text(json.dumps({"id": "w", "name": "Coast"}), encoding="utf-8")
 
 
-def _draw(root, out):
+def _draw(root, out, images=False):
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
-    return subprocess.run([sys.executable, str(MAP), str(root), "--out", str(out), "--offline", "--no-image"],
+    return subprocess.run([sys.executable, str(MAP), str(root), "--out", str(out), "--offline",
+                           *([] if images else ["--no-image"])],
                           capture_output=True, text=True, encoding="utf-8", env=env)
+
+
+def _page_data(out):
+    page = (out / "map.html").read_text(encoding="utf-8")
+    return json.loads(re.search(r'<script id="data" type="application/json">(.*?)</script>', page, re.S).group(1))
+
+
+def _pin(n, m, x, y, loc):
+    return ("pin", {"id": f"019a9000-0000-7000-8000-0000000f1{n:03d}", "name": f"p{n}", "map": m,
+                    "element_type": "location", "element_id": loc, "x": x, "y": y})
 
 
 def test_an_id_field_that_is_no_string_names_nothing():
@@ -132,8 +158,8 @@ def test_an_id_field_that_is_no_string_names_nothing():
 def test_a_map_of_size_zero_counts_its_points_apart():
     """The summary's totals say what the page draws. A Map whose width or height is 0 (stated so,
     or measured from points that all sit on an axis) has no canvas: with no image to take a size
-    from (here: --no-image), the page does not place its points, and the summary must not count
-    them as placed. A Map with a real size beside it keeps its count."""
+    from, the page does not place its points, and the summary counts them as not placed, never as
+    placed. A Map with a real size beside it keeps its count."""
     loc = "019a9000-0000-7000-8000-0000000e0001"
     flat, bare, sized = (f"019a9000-0000-7000-8000-0000000e001{n}" for n in (1, 2, 3))
     rows = [("location", {"id": loc, "name": "Harbour"}),
@@ -153,11 +179,89 @@ def test_a_map_of_size_zero_counts_its_points_apart():
         assert r.returncode == 0, r.stderr
         page = (out / "map.html").read_text(encoding="utf-8")
         data = json.loads(re.search(r'<script id="data" type="application/json">(.*?)</script>', page, re.S).group(1))
-        sizes = {m["name"]: (m["w"], m["h"]) for m in data["maps"]}
-        assert sizes == {"Flat Chart": (0, 0), "Bare Chart": (0, 0), "Real Chart": (100, 80)}, sizes
+        sizes = {m["name"]: (m["w"], m["h"], m["place"]) for m in data["maps"]}
+        assert sizes == {"Flat Chart": (0, 0, "none"), "Bare Chart": (0, 0, "none"),
+                         "Real Chart": (100, 80, "canvas")}, sizes
         assert "3 maps, 1 pins and 0 zones placed." in r.stdout, r.stdout
-        assert ("2 pins and 0 zones sit on a map with no size (Bare Chart, Flat Chart): the page does not "
-                "place them, since there is no image to take a size from.") in r.stdout, r.stdout
+        assert "Not placed: 2 pins on a map with no size." in r.stdout, r.stdout
+        assert ("- 2 pins sit on maps with no size (Bare Chart, Flat Chart) and are not placed: the maps "
+                "have no image to take a size from.") in r.stdout, r.stdout
+        assert "- Flat Chart: 1 pins, 0 zones (no size: width 0, height 0), not placed" in r.stdout, r.stdout
+        assert ("- Bare Chart: 1 pins, 0 zones (no size: width 0 measured, height 0 measured), not placed"
+                in r.stdout), r.stdout
+        assert "no stated size" not in r.stdout, r.stdout
+
+
+def test_a_map_with_one_slot_of_size_zero_has_no_canvas():
+    """A canvas needs both slots greater than 0: a width with a height of 0 (stated, or measured
+    from points on the axis) is no canvas, nor is a negative width. Their pins, and a zone on a
+    0 x 0 map, are counted as not placed, by kind; nothing of them is in the placed totals."""
+    loc = "019a9000-0000-7000-8000-0000000e0001"
+    half, strip, neg, flat, real, zone = (f"019a9000-0000-7000-8000-0000000e00{n}" for n in (31, 32, 33, 34, 35, 36))
+    rows = [("location", {"id": loc, "name": "Harbour"}),
+            ("map", {"id": half, "name": "Half", "width": 100, "height": 0}),
+            ("map", {"id": strip, "name": "Strip", "width": 100}),
+            ("map", {"id": neg, "name": "Neg", "width": -50, "height": 80}),
+            ("map", {"id": flat, "name": "Flat", "width": 0, "height": 0}),
+            ("map", {"id": real, "name": "Real", "width": 100, "height": 80}),
+            _pin(1, half, 10, 10, loc), _pin(2, strip, 10, 0, loc), _pin(3, strip, 40, 0, loc),
+            _pin(4, neg, 10, 10, loc), _pin(5, real, 5, 6, loc),
+            ("zone", {"id": zone, "name": "Marsh"})]
+    rows += [("marker", {"id": f"019a9000-0000-7000-8000-0000000f2{k:03d}", "name": f"k{k}", "map": flat,
+                         "zone": zone, "x": x, "y": y, "order": k}) for k, (x, y) in enumerate(((1, 1), (5, 1), (5, 5)))]
+    with tempfile.TemporaryDirectory() as d:
+        root, out = Path(d) / "world", Path(d) / "out"
+        _plant(root, rows)
+        r = _draw(root, out)
+        assert r.returncode == 0, r.stderr
+        data = _page_data(out)
+    places = {m["name"]: (m["w"], m["h"], m["place"]) for m in data["maps"]}
+    assert places == {"Half": (100, 0, "none"), "Strip": (100, 0, "none"), "Neg": (-50, 80, "none"),
+                      "Flat": (0, 0, "none"), "Real": (100, 80, "canvas")}, places
+    assert "5 maps, 1 pins and 0 zones placed." in r.stdout, r.stdout
+    assert "Not placed: 4 pins on a map with no size, 1 zones on a map with no size." in r.stdout, r.stdout
+    assert ("- 4 pins and 1 zone sit on maps with no size (Flat, Half, Neg, Strip) and are not placed: "
+            "the maps have no image to take a size from.") in r.stdout, r.stdout
+    for line in ("- Half: 1 pins, 0 zones (no size: width 100, height 0), not placed",
+                 "- Strip: 2 pins, 0 zones (no size: width 100, height 0 measured), not placed",
+                 "- Neg: 1 pins, 0 zones (no size: width -50, height 80), not placed",
+                 "- Flat: 0 pins, 1 zones (no size: width 0, height 0), not placed",
+                 "- Real: 1 pins, 0 zones\n"):
+        assert line in r.stdout, (line, r.stdout)
+
+
+def test_a_map_with_no_size_and_an_image():
+    """A 0 x 0 map with an image_url: when the page loads images, it takes the size from the image
+    if it loads, so the summary counts the pin in neither total and says so with "if"; with
+    --no-image the pin is not placed, and the reason is that the images are not loaded, never that
+    the map has no image."""
+    loc = "019a9000-0000-7000-8000-0000000e0001"
+    flat = "019a9000-0000-7000-8000-0000000e0041"
+    rows = [("location", {"id": loc, "name": "Harbour"}),
+            ("map", {"id": flat, "name": "Flat", "width": 0, "height": 0,
+                     "image_url": "https://example.invalid/chart.png"}),
+            _pin(1, flat, 3, 4, loc)]
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d) / "world"
+        _plant(root, rows)
+        on = _draw(root, Path(d) / "on", images=True)
+        off = _draw(root, Path(d) / "off")
+        assert on.returncode == 0 and off.returncode == 0, (on.stderr, off.stderr)
+        place_on = [m["place"] for m in _page_data(Path(d) / "on")["maps"]]
+        place_off = [m["place"] for m in _page_data(Path(d) / "off")["maps"]]
+    assert place_on == ["image"] and place_off == ["unloaded"], (place_on, place_off)
+    assert "1 maps, 0 pins and 0 zones placed." in on.stdout and "Not placed: nothing." in on.stdout, on.stdout
+    assert ("- 1 pin sits on a map with no size (Flat): the page places it if the map's image loads and "
+            "gives a size.") in on.stdout, on.stdout
+    assert ("- Flat: 1 pins, 0 zones (no size: width 0, height 0), placed if its image loads and gives a size"
+            in on.stdout), on.stdout
+    assert "1 maps, 0 pins and 0 zones placed." in off.stdout, off.stdout
+    assert "Not placed: 1 pins on a map with no size." in off.stdout, off.stdout
+    assert ("- 1 pin sits on a map with no size (Flat) and is not placed: the map images are not loaded "
+            "(--no-image), so its image cannot give a size.") in off.stdout, off.stdout
+    assert "- Flat: 1 pins, 0 zones (no size: width 0, height 0), not placed" in off.stdout, off.stdout
+    for r in (on, off):
+        assert "no image to take" not in r.stdout and " when " not in r.stdout, r.stdout
 
 
 if __name__ == "__main__":
