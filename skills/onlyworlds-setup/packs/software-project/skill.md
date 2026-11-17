@@ -100,6 +100,7 @@ Mark read through the links route (`relation?supertype=Read&characters=<your Cha
 <!-- end -->
 <!-- if online -->
 - Read before you change: a PATCH replaces each field you send. JSON as ASCII; link only ids that exist here.
+- A write answered by a page titled Blocked: `{{work_skill_name}}` says why.
 <!-- end -->
 - No secrets in any element: the world is committed.
 
