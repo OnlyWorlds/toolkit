@@ -53,10 +53,11 @@ harness trial (2026-10-22):
     and for one owner with a 31-character name and seven AIs of theirs (14b);
 15. no route in a filled online skill carries a query value with a raw space;
 16. the writer refuses an AI seat whose role is above its human's;
-18. a skill's size never refuses a plan: a world skill (18a) and a team pack's work and report
-    skills (18b, from a padded copy of the pack) filled to SKILL_MAX characters or more (the packs aim
-    for under it) are written, exit 0, with one note naming each; at exactly SKILL_MAX - 1, SKILL_MAX and SKILL_MAX + 1 the size line and the note
-    are true (18d); a charter over its budget is still refused (18c), at exactly CHARTER_MAX too, and
+18. a skill's size never refuses a plan: a world skill (18a, under a name of 88 characters) and a
+    team pack's work and report skills (18b), each from a padded copy of its pack, filled to SKILL_MAX
+    characters or more (the packs aim for under it) are written, exit 0, with one note naming each; at
+    exactly SKILL_MAX - 1, SKILL_MAX and SKILL_MAX + 1, the world skill padded the same way, the size
+    line and the note are true (18d); a charter over its budget is still refused (18c), at exactly CHARTER_MAX too, and
     one of CHARTER_MAX - 1 is written (18e);
 19. a plan's own text never breaks a written skill or leaves the folder: in every pack and every skill
     template, names holding a colon and a space, a trailing colon, a space and a hash, a run of dashes,
@@ -174,6 +175,9 @@ FIXTURE = Path(os.environ.get("OW_CHECKS_FIXTURE") or LINT.parent.parent / "prof
 # from the writer), so a company's own names rarely bring a skill to it (the writer writes one of
 # SKILL_MAX or more whole, and says so: test 18).
 ROOM = 500
+# How far past SKILL_MAX test 18a brings the workshop's world skill, by a line its padded copy of the
+# pack ends in.
+OVER = 100
 # The room a team pack's filled charter keeps under the writer's budget at every team size (test 14).
 CHARTER_ROOM = 300
 # A team pack's skills beside the world skill, each a template `<kind>.md` (test 13).
@@ -1225,19 +1229,54 @@ class SetupWriter(unittest.TestCase):
         for h in (".agents", ".claude"):
             self.assertTrue((root / h / "skills" / name / "SKILL.md").exists(), f"{h} copy of {name}")
 
+    def workshop_from_padded_copy(self, plan, pad, tag):
+        """The writer run as itself, online, from a copy beside a copy of the workshop pack whose world
+        skill template ends in a line of `pad` characters (no line at 0): (exit code, output, world
+        folder, copies root, the filled world skill's size, None when the run failed). A test that
+        needs the skill at a size computes `pad` from a first run on the copy as it is, so the size
+        never rests on the pack's own text (18a, 18d)."""
+        import shutil
+        tree = OUT / f"{tag}-tree"
+        (tree / "scripts").mkdir(parents=True)
+        shutil.copy2(WRITER, tree / "scripts" / WRITER.name)
+        shutil.copy2(WRITER.parent / "simple_fold.py", tree / "scripts" / "simple_fold.py")  # the writer's own module
+        shutil.copytree(WRITER.parent.parent / "packs" / "workshop", tree / "packs" / "workshop")
+        if pad:
+            words = "A long house note that the size test adds to this template. "
+            with open(tree / "packs" / "workshop" / "skill.md", "a", encoding="utf-8", newline="") as fh:
+                fh.write("\n" + (words * (pad // len(words) + 1))[:pad] + "\n")
+        p, world = variant(plan, "online", OUT / tag)
+        plan_path = OUT / "plans" / f"{tag}.json"
+        plan_path.parent.mkdir(parents=True, exist_ok=True)
+        plan_path.write_text(json.dumps(p, indent=1), encoding="utf-8")
+        r = subprocess.run([sys.executable, str(tree / "scripts" / WRITER.name), str(plan_path), str(world)],
+                           capture_output=True, text=True, encoding="utf-8",
+                           env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+        skill = world / "elements" / "object" / f"{p['world']['slug']}-skill.json"
+        size = len(json.loads(read(skill))["description"]) if r.returncode == 0 else None
+        return r.returncode, r.stdout + r.stderr, world, OUT / tag, size
+
     def test_18a_a_world_skill_over_the_size_is_written(self):
-        """A skill's size never refuses a plan: a workshop online named with 88 characters (5.9.5
-        wrote it at 9,955; the world skill is now past SKILL_MAX) is written, exit 0, with one note."""
+        """A skill's size never refuses a plan: the workshop's online world skill, from a copy of the
+        pack whose world skill ends in a line that brings it OVER characters past SKILL_MAX (the line's
+        length computed from a first run on the copy as it is, so the case holds whatever the pack's
+        own text weighs), is written, exit 0, with one note. The world is named with 88 characters, and
+        that name is written whole, in world.json and in the skill."""
         budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
         plan = json.loads(read(PLANS / "workshop.json"))
         name = "Kiln Street Toolmakers Collective and Friends of the Brickworks Monthly Open Build Night"
         self.assertEqual(len(name), 88)
         plan["world"]["name"] = plan["values"]["workshop"] = name
         plan["world"]["slug"] = "kiln-street-toolmakers-collective-and-friends-of-the-brickworks"[:61]
-        code, out, world, root = self.write_plan(plan, "online", "over-workshop-online")
-        self.assert_over_written(code, out, "world skill",
-                                 world / "elements" / "object" / f"{plan['world']['slug']}-skill.json",
-                                 "ow-" + plan["world"]["slug"], root, budget)
+        code, out, _, _, s0 = self.workshop_from_padded_copy(plan, 0, "over-workshop-measure")
+        self.assertEqual(code, 0, out)
+        code, out, world, root, size = self.workshop_from_padded_copy(plan, max(0, budget + OVER - s0),
+                                                                      "over-workshop-online")
+        skill = world / "elements" / "object" / f"{plan['world']['slug']}-skill.json"
+        self.assert_over_written(code, out, "world skill", skill, "ow-" + plan["world"]["slug"], root, budget)
+        self.assertGreaterEqual(size, budget + OVER, f"a first run read {s0}")
+        self.assertEqual(json.loads(read(world / "world.json"))["name"], name)
+        self.assertIn(name, json.loads(read(skill))["description"])
 
     def test_18b_a_team_skill_over_the_size_is_written(self):
         """The same for a team pack's own skills. Since 5.10.0 the work skill no longer holds the
@@ -1270,28 +1309,30 @@ class SetupWriter(unittest.TestCase):
         self.assertNotIn("note: the world skill ", out)
 
     def test_18d_the_size_lines_at_the_boundary(self):
-        """The real writer with the workshop's online world skill filled to exactly SKILL_MAX - 1,
-        SKILL_MAX and SKILL_MAX + 1 (the `workshop` value padded): the size line gives the size and the
-        aim at each, the note prints at SKILL_MAX and above and not below, and no printed line about
-        the skill holds a comparing word that could be false at that size."""
+        """The writer with the workshop's online world skill filled to exactly SKILL_MAX - 1, SKILL_MAX
+        and SKILL_MAX + 1, from a padded copy of the pack (the pad computed from a first run, so neither
+        the pack's own size nor the charter's room, which a padded plan value would also fill, decides
+        the case): the size line gives the size and the aim at each, the note prints at SKILL_MAX and
+        above and not below, and no printed line about the skill holds a comparing word that could be
+        false at that size."""
         budget = int(re.search(r"^SKILL_MAX = (\d+)\s*$", read(WRITER), re.M).group(1))
         base = json.loads(read(PLANS / "workshop.json"))
-        pad = "and Friends of the Old Brickworks Open Build Night " * 30
         slug = base["world"]["slug"]
 
         def size_with(n, tag):
-            plan = json.loads(json.dumps(base))
-            plan["values"]["workshop"] += " " + pad[:n] if n else ""
-            code, out, world, root = self.write_plan(plan, "online", f"edge-{tag}")
+            code, out, _, _, size = self.workshop_from_padded_copy(base, n, f"edge-{tag}")
             self.assertEqual(code, 0, out)
-            return len(json.loads(read(world / "elements" / "object" / f"{slug}-skill.json"))["description"]), out
+            return size, out
 
         s0, _ = size_with(0, "base")
         s1, _ = size_with(10, "probe")
-        self.assertEqual(s1 - s0, 11, "the `workshop` value fills the world skill once")
+        breaks = s1 - s0 - 10  # what the added line brings beside its own characters: its line breaks
+        self.assertGreaterEqual(breaks, 0, (s0, s1))
         for target in (budget - 1, budget, budget + 1):
             with self.subTest(size=target):
-                size, out = size_with(target - s0 - 1, str(target))
+                n = target - s0 - breaks
+                self.assertGreater(n, 0, f"the world skill is {s0} as the pack writes it: 2b holds it under the aim")
+                size, out = size_with(n, str(target))
                 self.assertEqual(size, target)
                 self.assertIn(size_line("world skill", size, budget, "ow-" + slug), out)
                 notes = [ln for ln in out.splitlines() if ln.startswith("note: the world skill ")]
