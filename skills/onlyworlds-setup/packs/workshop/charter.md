@@ -7,7 +7,7 @@ Who is here
 
 How to use it
 <!-- if online -->
-On your first visit in each session: read this Charter whole, then the lines addressed to you, then what changed since your last visit (only the current sitting, from its x_feed_start), then the work. The Object "{{world_name}} world skill" (supertype Skill, ow://object/{{skill_id}}) is the how-to; where it and this Charter disagree, this Charter wins.
+On your first visit in each session: read this Charter whole, then the lines addressed to you, then what changed since your last visit (only the current sitting: the rows above its x_feed_start), then the work. The Object "{{world_name}} world skill" (supertype Skill, ow://object/{{skill_id}}) is the how-to; where it and this Charter disagree, this Charter wins.
 <!-- end -->
 <!-- if folder -->
 On your first visit in each session: read this Charter whole, then the lines addressed to you, then what changed since your last visit (only the current sitting), then the work. The Object "{{world_name}} world skill" (supertype Skill, ow://object/{{skill_id}}) is the how-to; where it and this Charter disagree, this Charter wins.
