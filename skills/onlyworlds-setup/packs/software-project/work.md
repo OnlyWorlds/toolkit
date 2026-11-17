@@ -63,6 +63,7 @@ Then a short page for your human: what to do first and why (tied first: the one 
 <!-- end -->
 <!-- if online -->
 `server` is `"https://www.onlyworlds.com"`; both world ids are `{{server_world_id}}`.
+A write answered by a web page titled Blocked (a `403`, not JSON) wrote nothing: the host refused a command in your text (python with a flag, curl with an address, a few others) that stands right after a code mark, a semicolon or a table bar. Put a `$ ` prompt before the command inside its code marks, or put it in a fenced block that names its language, then send again.
 <!-- end -->
 
 **What matters to others is reported**, with `{{report_skill_name}}`: at any point, as often as there is something new; a report never closes the chat.
@@ -100,7 +101,6 @@ A work item you make (an open from a report, the `Order of work`) takes part 2's
 **Your own report**, as the keeper's AI, has no second hand: one write in `{{report_skill_name}}`'s shape (with `x_room_of`), born `completed`, its `story`, `description`, links and `consequences` together; then step 6.
 <!-- if online -->
 It takes a fresh `Idempotency-Key` too.
-A write answered by a web page titled Blocked (a `403`, not JSON) wrote nothing: the host refused a command in your text (python with a flag, curl with an address, a few others) that stands right after a code mark, a semicolon or a table bar. Put a `$ ` prompt before the command inside its code marks, or put it in a fenced block that names its language, then send again.
 <!-- end -->
 
 <!-- if folder -->
