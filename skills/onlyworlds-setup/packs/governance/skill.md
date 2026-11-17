@@ -108,6 +108,7 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 <!-- end -->
 <!-- if online -->
 - Read before you change: a PATCH replaces each field you send. JSON as ASCII; link only ids that exist here.
+- A write answered by a web page titled Blocked (a `403`, not JSON) wrote nothing: the host refused a command in your text (python with a flag, curl with an address, a few others) that stands right after a code mark, a semicolon or a table bar. Put a `$ ` prompt before the command inside its code marks, or put it in a fenced block that names its language, then send again.
 <!-- end -->
 
 ## Keeping this skill current

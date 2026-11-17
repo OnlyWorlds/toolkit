@@ -105,6 +105,7 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 <!-- if online -->
 - Read before you change: a PATCH replaces each field you send (text = current + new; links = the merged list).
 - JSON as ASCII (`ensure_ascii=True`).
+- A write answered by a web page titled Blocked (a `403`, not JSON) wrote nothing: the host refused a command in your text (python with a flag, curl with an address, a few others) that stands right after a code mark, a semicolon or a table bar. Put a `$ ` prompt before the command inside its code marks, or put it in a fenced block that names its language, then send again.
 <!-- end -->
 - Only a fact a person or a document gave you that changes a memory sets its `x_source`: to its source and day. Retiring a memory keeps it (At the end).
 - Link only ids that exist here.
