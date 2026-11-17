@@ -89,3 +89,44 @@ def test_the_team_packs_say_what_the_blocked_page_is():
             assert "titled Blocked" not in rest, f"{where}: a folder world's skill names the page"
             read += 1
     print(f"read {read} team pack skills")
+
+
+# The sentence's load-bearing halves: what the page is, and what passes.
+BLOCKED_HALVES = ("web page titled Blocked", "`403`", "wrote nothing",
+                  "`$ ` prompt", "fenced block that names its language")
+
+
+def says_the_page(text):
+    """One line of `text` holds both halves of the sentence."""
+    return any(all(h in ln for h in BLOCKED_HALVES) for ln in text.split("\n"))
+
+
+def online_and_rest(text):
+    """A template's online parts, and the rest of it (its folder parts and the shared text)."""
+    online = "".join(re.findall(r"<!-- if online -->(.*?)<!-- end -->", text, re.S))
+    rest = re.sub(r"<!-- if online -->.*?<!-- end -->", "", text, flags=re.S)
+    return online, rest
+
+
+def test_every_pack_online_says_what_the_blocked_page_is():
+    """Every pack whose world skill has an online part says, in that part only, what the page is and
+    what passes: the whole sentence in one line, or, in a pack with a work skill whose online part
+    holds it, one line that names the page and points at the work skill. The packs are found, not
+    listed, so a new pack is read the day it lands."""
+    packs = sorted(p.parent for p in PACKS.glob("*/skill.md")
+                   if "<!-- if online -->" in p.read_text(encoding="utf-8"))
+    print(f"read {len(packs)} packs with an online world skill")
+    assert len(packs) >= 5, f"only {len(packs)} packs with an online world skill found under {PACKS}"
+    wrong = []
+    for pack in packs:
+        online, rest = online_and_rest((pack / "skill.md").read_text(encoding="utf-8"))
+        work = pack / "work.md"
+        work_says = work.exists() and says_the_page(online_and_rest(work.read_text(encoding="utf-8"))[0])
+        pointer = any("titled Blocked" in ln and "`{{work_skill_name}}`" in ln for ln in online.split("\n"))
+        if not (says_the_page(online) or (pointer and work_says)):
+            wrong.append(f"{pack.name}/skill.md: its online part does not say what a page titled Blocked "
+                         f"is and what passes" + ("" if not pointer else ", and its work skill's online part "
+                                                  "does not say it either"))
+        if "titled Blocked" in rest:
+            wrong.append(f"{pack.name}/skill.md: a folder world's skill names the page")
+    assert not wrong, "\n".join(wrong)
