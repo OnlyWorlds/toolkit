@@ -50,7 +50,7 @@ Hand it in with a report, as `{{report_skill_name}}` says. The report's text hol
 
 ## A new design: its anchor
 
-A large new design gets an anchor: the element it will become (here a Product: `object`, supertype `Product`), never a separate design element that would age beside it. It carries `subtype` `in design`, and its description holds four short lines (its source is in `x_source`, as on any element):
+A large new design gets an anchor: the element it will become (a Product, `object` with supertype `Product`, or any Object or Construct kind the Charter files as a part, whichever fits: the design state stands on each the same way), never a separate design element that would age beside it. It carries `subtype` `in design`, and its description holds four short lines (its source is in `x_source`, as on any element):
 
 ```
 For: <what it is for>
@@ -61,4 +61,4 @@ Fixed: <what is already fixed>
 
 A world may already use its own labels for these four lines: read them by what they say, and keep the labels a world already uses.
 
-Name the anchor and its lines in your report; the keeper places it. From then on everything hangs there: open questions are work items that name it, reports link it, its parts take it as `parent_object`. It is done when its parts are `locked`.
+Name the anchor and its lines in your report; the keeper places it. From then on everything hangs there: open questions are work items that name it, reports link it, its parts link to it (by `parent_object` when both are Objects). It is done when its parts are `locked`.
