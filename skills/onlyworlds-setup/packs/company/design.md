@@ -50,7 +50,7 @@ Hand it in with a report, as `{{report_skill_name}}` says. The report's text hol
 
 ## A new design: its anchor
 
-A large new design gets an anchor: the element it will become (a Product, `object` with supertype `Product`, or any Object or Construct kind the Charter files as a part, whichever fits: the design state stands on each the same way), never a separate design element that would age beside it. It carries `subtype` `in design`, and its description holds four short lines (its source is in `x_source`, as on any element):
+A large new design gets an anchor: the element it will become (a Product, `object` with supertype `Product`, or any other Object or Construct that fits: carrying the design state makes it a part), never a separate design element that would age beside it. It carries `subtype` `in design`, and its description holds four short lines (its source is in `x_source`, as on any element):
 
 ```
 For: <what it is for>
