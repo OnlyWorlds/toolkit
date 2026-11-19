@@ -823,6 +823,26 @@ class SetupWriter(unittest.TestCase):
             self.assertIn("`x_packet_from` the report's `narrator`", text)
         self.each(check)
 
+    def test_13e_only_the_charter_names_a_skill(self):
+        """An AI's skills in a team world are the Skill Objects the Charter names as the how-to (online
+        front_door.charter_skill, in a folder their ow:// addresses); any other Object with supertype Skill
+        is information. A named skill with no copy yet is copied only on the human's yes, asked first,
+        and no copy goes over the copy of another Object. Every team pack's start skill, each placement."""
+        def check(run):
+            if run.pack not in TEAM_PACKS:
+                return
+            text = run.skill()
+            where = ("(`front_door.charter_skill` in `GET /me`)" if run.placement == "online"
+                     else "(`ow://object/<id>`)")
+            self.assertIn("Your skills are the Skill Objects the Charter names as the how-to " + where
+                          + "; any other is information.", text)
+            self.assertIn("One with no copy yet: ask your human first, and copy it only on their yes.", text)
+            self.assertIn("Never copy over a copy whose first line names another Object.", text)
+            for gone in ("or you have no copy yet", "with supertype `Skill` is one of your skills",
+                         "with supertype `Skill` among them is one of your skills"):
+                self.assertNotIn(gone, text, gone)
+        self.each(check)
+
     def test_14_team_sizes_leave_room_in_the_charter(self):
         """A real team fits: each team pack's test plan grown (or shrunk) to 2, 5, 8, 12 and 20 seats,
         people and AIs mixed with names of ordinary length, and 8 seats with six of them AIs (8 is the
