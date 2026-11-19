@@ -86,7 +86,7 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype`, a type's s
 <!-- if folder -->
 - "Where are we with X?" The Institution files whose `name` holds X, then the Relation files whose `name` holds X; follow their `actor`, `characters` and `institutions` to the people and organisations.
 - "All paused lines": the Relation files with subtype `paused`. "Who is on the team?": the Character files with supertype `Person`.
-- "What am I working on?" The `Work item` Relations whose `actor` is your Character, and your Working style.
+- "What am I working on?" The `Work item` Relations with subtype `open` or `taken` whose `actor` is your Character, and your Working style.
 - "What is under X?" Parts link upward: the files whose `parent_object` is X's id.
 - "Who reads through lens L?" The Character files whose `x_lens_uses` holds L's id.
 <!-- end -->

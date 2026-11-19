@@ -27,7 +27,7 @@ A linked folder (one with an `api` block) is never committed. Online, the world 
 | A role | Title | `Role` | | Maintainer, Reviewer; `body` the project |
 | Who held a role, when | Relation | `Tenure` | | `actor`, `titles`, `start_date`, `end_date` |
 | Open work | Relation | `Work item` | `open`, `taken`, `done` | only what the tracker does not hold: a decision someone owes, an open on a part, a step in the world itself; tickets, and their order when the tracker keeps one, stay in the tracker; `x_room_of`, the world's id (the room profile, `profiles/room.md` in `github.com/OnlyWorlds/schema-dist`, the schema distribution: without it a work item is lore) |
-| The order of work | Relation | `Work item` | `open` | only when the team keeps its order nowhere else: one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
+| The order of work | Relation | `Work item` | `standing` | only when the team keeps its order nowhere else: one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
 | A report of a stretch of work | Narrative | `Report` | `handed in`, `completed` | the report profile (`profiles/report.md` in the schema distribution): a member's AI hands in its own text, the keeper's AI completes it. It carries `x_room_of`, the world's id: the mark makes it the world's working record, never lore. Not seeded |
 | A message; what an agent read | Narrative; Relation | `Message`; `Read` | | |
 | The house rules | Law | `Charter` | | `author` the project, `adjudicators` the Keeper Title |
@@ -147,3 +147,11 @@ the element's `x_source` is then who or what the fact comes from and its day, as
 The design and work skills came with toolkit 5.9.0: an older world has neither.
 
 A description that still opens with a `Source:` line is read as that element's source, by people and AIs alike, for as long as it stands. Nobody has to move it, and a decision, which is never rewritten (rule 4), keeps it. After the move `x_source` names the newest source only: where the write that gives an element its `x_source` drops a Source line, where the older text came from leaves the world.
+
+## A world set up before toolkit 5.11.6
+
+Its `Order of work`, if it keeps one, is written `open`, so it stays open work until the keeper sets its `subtype` to `standing` and writes the work skill's new sentence in place of the old one, each where the source of truth is (online a PATCH, built on a fresh GET, which the next refresh brings to the repository; in a folder an edit of the file, committed like code). Nothing breaks while it is not moved.
+
+```
+A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids; the `Order of work` takes it with subtype `standing`.
+```

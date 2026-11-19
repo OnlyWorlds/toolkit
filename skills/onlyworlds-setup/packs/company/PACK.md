@@ -20,7 +20,7 @@ The 22 types are fixed; a company gets no type of its own, so supertypes and sub
 | A product | Object | `Product` | `in design`, `locked` | a made thing, a lookup page. The subtype is the design's own state, never how far it is built: that is read where the work lives (the work skill). Carrying it makes a Product, or any other Object or Construct, a design part |
 | How a person works, in their own words | Construct | `Working style` | | `characters` = the person; the context read serves it as `style`. Written by that person or their own AI, never about them |
 | Open work | Relation | `Work item` | `open`, `taken`, `done` | `actor` whom it is for; the elements it is about in its link fields; `x_room_of`, the world's id (the room profile, `profiles/room.md` in `github.com/OnlyWorlds/schema-dist`, the schema distribution: without it a work item is lore) |
-| The order of work | Relation | `Work item` | `open` | one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
+| The order of work | Relation | `Work item` | `standing` | one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
 | A report of a stretch of work | Narrative | `Report` | `handed in`, `completed` | the report profile (`profiles/report.md` in the schema distribution): a member's AI hands in its own text, the keeper's AI completes it. It carries `x_room_of`, the world's id: the mark makes it the world's working record, never lore. Not seeded |
 | An announcement (the board) | Narrative | `Message` | | a message to everyone (`characters` empty) from the owner or a co-builder, its sender read by the message profile's rule; a message to everyone from anyone else is ordinary mail. The charter names who writes the board |
 | A member's own line | Narrative | `Note` | | the message profile's Note: `narrator` the member's Character, no recipients, about themselves, not their work, changed when moved to, never on a schedule. The newest own-hand Note is the line; it is never a message and never unread, and it lands settled (rule 8 lists it beside the messages) |
@@ -152,3 +152,11 @@ the element's `x_source` is then who or what the fact comes from and its day, as
 The design and work skills came with toolkit 5.9.0: an older world has neither.
 
 A description that still opens with a `Source:` line is read as that element's source, by people and AIs alike, for as long as it stands. Nobody has to move it. After the move `x_source` names the newest source only: where the write that gives an element its `x_source` drops a Source line, where the older text came from leaves the world.
+
+## A world set up before toolkit 5.11.6
+
+Its `Order of work`, if it keeps one, is written `open`, so it stays open work until the keeper sets its `subtype` to `standing` (online a PATCH of that one field; in a folder an edit of its file) and writes the work skill's new sentence to that skill's Object (a PATCH of its `description`, built on a fresh GET), in place of the old one. Nothing breaks while it is not moved.
+
+```
+A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids; the `Order of work` takes it with subtype `standing`.
+```
