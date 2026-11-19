@@ -19,7 +19,7 @@ The 22 types are fixed; a company gets no type of its own, so supertypes and sub
 | Who held a role, when | Relation | `Tenure` | | `actor` the holder, `titles` the role, `start_date`, `end_date`: an ending sets the end date and removes nothing |
 | A product | Object | `Product` | `in design`, `locked` | a made thing, a lookup page. The subtype is the design's own state, never how far it is built: that is read where the work lives (the work skill). Carrying it makes a Product, or any other Object or Construct, a design part |
 | How a person works, in their own words | Construct | `Working style` | | `characters` = the person; the context read serves it as `style`. Written by that person or their own AI, never about them |
-| Open work | Relation | `Work item` | `open`, `taken`, `done` | `actor` whom it is for; the elements it is about in its link fields; `x_room_of`, the world's id (the room profile, `profiles/room.md` in `github.com/OnlyWorlds/schema-dist`, the schema distribution: without it a work item is lore) |
+| A work item | Relation | `Work item` | `open`, `taken` (open work), `done` | `actor` whom it is for; the elements it is about in its link fields; `x_room_of`, the world's id (the room profile, `profiles/room.md` in `github.com/OnlyWorlds/schema-dist`, the schema distribution: without it a work item is lore) |
 | The order of work | Relation | `Work item` | `standing` | one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
 | A report of a stretch of work | Narrative | `Report` | `handed in`, `completed` | the report profile (`profiles/report.md` in the schema distribution): a member's AI hands in its own text, the keeper's AI completes it. It carries `x_room_of`, the world's id: the mark makes it the world's working record, never lore. Not seeded |
 | An announcement (the board) | Narrative | `Message` | | a message to everyone (`characters` empty) from the owner or a co-builder, its sender read by the message profile's rule; a message to everyone from anyone else is ordinary mail. The charter names who writes the board |
@@ -155,8 +155,32 @@ A description that still opens with a `Source:` line is read as that element's s
 
 ## A world set up before toolkit 5.11.6
 
-Its `Order of work`, if it keeps one, is written `open`, so it stays open work until the keeper sets its `subtype` to `standing` (online a PATCH of that one field; in a folder an edit of its file) and writes the work skill's new sentence to that skill's Object (a PATCH of its `description`, built on a fresh GET), in place of the old one. Nothing breaks while it is not moved.
+Its `Order of work`, if it keeps one, is written `open`. Until the keeper moves it, it keeps showing as open work: the context read hands it to its `actor` as work, and the design skill lists it as an open question on every part it names. To move it, the keeper first changes the skills below, each read first and written whole (online a PATCH of the skill Object's `description`, built on a fresh GET; in a folder an edit of its file), then sets the order's `subtype` to `standing` (one field), then sends the members a message to copy the changed skills again. The skills come first: the old report skill could set a `standing` order `done`.
+
+In the work skill's keeper step,
+
+```
+A work item you make (an open from a report, the `Order of work`) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids.
+```
+
+becomes
 
 ```
 A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids; the `Order of work` takes it with subtype `standing`.
+```
+
+and its part 2, after "your report says you took it.", gains "A `standing` one is never taken or set done."
+
+In the report skill's step 7 (both placements), "which the report answers because its work is finished here" becomes "still `open` or `taken`, finished here and answered by the report", and in its last line `v0.34.0-dist.120` becomes `v0.34.1-dist.136`.
+
+In a folder world's start skill,
+
+```
+- "What am I working on?" The `Work item` Relations whose `actor` is your Character, and your Working style.
+```
+
+becomes
+
+```
+- "What am I working on?" The `Work item` Relations with subtype `open` or `taken` whose `actor` is your Character, and your Working style.
 ```

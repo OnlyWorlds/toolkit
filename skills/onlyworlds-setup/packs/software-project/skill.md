@@ -29,7 +29,7 @@ What an agent new to {{project}} should know and cannot read off the code: the c
 
 ## How things are filed
 
-The supertype is the index: read `supertype` (and `subtype`) from the files.
+The supertype is the index: read `supertype` (and `subtype`) from the files. A state matches trimmed and without regard to case (`Open ` is `open`).
 <!-- end -->
 <!-- if online -->
 **The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`, or `{{world_folder}}elements/law/charter.json` in the repository's copy). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.

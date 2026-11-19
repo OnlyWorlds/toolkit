@@ -19,14 +19,14 @@ A linked folder (one with an `api` block) is never committed. Online, the world 
 | Thing | Type | supertype | subtype | Why this type |
 |-------|------|-----------|---------|---------------|
 | The project | Institution | `Project` | | the body that makes decisions: `author` of every decision |
-| A component | Construct | `Component` | `in design`, `locked`, `deprecated` | a part of the system someone would ask about. The subtype is the design's own state, never how far it is built (that is read in the repository); `in design` or `locked` makes it, or any other Object or Construct, a design part; `deprecated` is decided by a Decision that names it; `constructs` = what it depends on, `characters` = who maintains it, `objects` = the services it calls |
+| A component | Construct | `Component` | `in design`, `locked`, `deprecated` | a part of the system someone would ask about. `in design` and `locked` are the design's own state, never how far it is built (that is read in the repository), and make it, or any other Object or Construct, a design part; `deprecated` is the component's own status, no design state, decided by a Decision that names it; `constructs` = what it depends on, `characters` = who maintains it, `objects` = the services it calls |
 | A decision | Law | `Decision` | `proposed`, `accepted`, `rejected`, `superseded` | a rule the project adopted: `declaration` the decision, `purpose` the why, `date` the day, `parent_law` the older decision it amends (that one stays `accepted`) or replaces (that one becomes `superseded`); a `rejected` one stays, so the question is not asked twice; `adjudicators` the Maintainer role |
 | A service or dependency | Object | `Service` | | something outside the repository it relies on; `utility` says what for |
 | A release | Event | `Release` | | `start_date` the day, `constructs` the components it changed |
 | A person, an AI | Character | `Person`, `Agent` | | |
 | A role | Title | `Role` | | Maintainer, Reviewer; `body` the project |
 | Who held a role, when | Relation | `Tenure` | | `actor`, `titles`, `start_date`, `end_date` |
-| Open work | Relation | `Work item` | `open`, `taken`, `done` | only what the tracker does not hold: a decision someone owes, an open on a part, a step in the world itself; tickets, and their order when the tracker keeps one, stay in the tracker; `x_room_of`, the world's id (the room profile, `profiles/room.md` in `github.com/OnlyWorlds/schema-dist`, the schema distribution: without it a work item is lore) |
+| A work item | Relation | `Work item` | `open`, `taken` (open work), `done` | only what the tracker does not hold: a decision someone owes, an open on a part, a step in the world itself; tickets, and their order when the tracker keeps one, stay in the tracker; `x_room_of`, the world's id (the room profile, `profiles/room.md` in `github.com/OnlyWorlds/schema-dist`, the schema distribution: without it a work item is lore) |
 | The order of work | Relation | `Work item` | `standing` | only when the team keeps its order nowhere else: one standing work item named `Order of work`, the keeper's: its `x_packet_elements` (the packet profile) is the order, a reason each; it carries `x_room_of`. Not seeded |
 | A report of a stretch of work | Narrative | `Report` | `handed in`, `completed` | the report profile (`profiles/report.md` in the schema distribution): a member's AI hands in its own text, the keeper's AI completes it. It carries `x_room_of`, the world's id: the mark makes it the world's working record, never lore. Not seeded |
 | A message; what an agent read | Narrative; Relation | `Message`; `Read` | | |
@@ -40,7 +40,7 @@ A Law has no link to a Construct that reads "concerns": a decision names the com
 A team runs its work in this world, so the pack lands four skills, each an Object with supertype `Skill` written and copied the way the world skill is, under the world's own prefix (the plan's `prefix`, asked in question 2; the pack never invents one):
 
 - `<prefix>-start` (`skill.md`): arrive. Who you are, the Charter, your lenses, your messages, what changed, and whether your copies of the four skills are current.
-- `<prefix>-design` (`design.md`): think a design through with a person: read what the world holds and any design that already exists before speaking, offer a reading of what the person came for, think it through with them in their lane, and leave a design note handed in with a report when the talk decided or opened something. A large new design starts from its anchor: the element it will become, a Component or any other Object or Construct that fits, with subtype `in design` and four lines (what it is for, who it is for, what it starts from, what is fixed); a Decision's `proposed` is in design, `accepted` locked.
+- `<prefix>-design` (`design.md`): think a design through with a person: read what the world holds and any design that already exists before speaking, offer a reading of what the person came for, think it through with them in their lane, and leave a design note handed in with a report when the talk decided or opened something. A large new design starts from its anchor: the element it will become, a Component or any other Object or Construct that fits, with subtype `in design` and four lines (what it is for, who it is for, what it starts from, what is fixed).
 - `<prefix>-work` (`work.md`): find what is open for me and my role, and do it. State is read at its source and never copied into the world; one key joins a source to the world; the order of work is read in one place. It also holds the keeper's step: completing the reports handed in.
 - `<prefix>-report` (`report.md`): hand in what matters to others, at any point in a chat, as often as there is something new, never closing the chat. It decides whether there is anything to hand in, reads the parts fresh, says in one line what it will report, writes the story (its ground, what was done, what it made untrue, what is open and who decides), checks what the other skills that ran owe, and sends on the person's yes. The report answers one question: what did the work make untrue?
 
@@ -80,7 +80,7 @@ Date fields count days from 1970-01-01 (2026-10-22 is 20748); a decision's ISO d
 
 ## A world set up by an earlier version of this pack
 
-Its Components' `active` reads as `locked` and `planned` as `in design`, until the keeper's AI next touches the part.
+Its Components' `active` and `planned` are no design state: the keeper's AI sets `locked` for `active` and `in design` for `planned` when it next touches the part.
 
 ## A world set up before toolkit 5.5.0
 
@@ -150,8 +150,20 @@ A description that still opens with a `Source:` line is read as that element's s
 
 ## A world set up before toolkit 5.11.6
 
-Its `Order of work`, if it keeps one, is written `open`, so it stays open work until the keeper sets its `subtype` to `standing` and writes the work skill's new sentence in place of the old one, each where the source of truth is (online a PATCH, built on a fresh GET, which the next refresh brings to the repository; in a folder an edit of the file, committed like code). Nothing breaks while it is not moved.
+Its `Order of work`, if it keeps one, is written `open`. Until the keeper moves it, it keeps showing as open work: the context read hands it to its `actor` as work, and the design skill lists it as an open question on every part it names. To move it, the keeper first changes the skills below, each read first and written whole where the source of truth is (online a PATCH of the skill Object's `description`, built on a fresh GET, which the next refresh brings to the repository; in a folder an edit of its file, committed like code), then sets the order's `subtype` to `standing` (one field), then sends the members a message to copy the changed skills again and commit the copies. The skills come first: the old report skill could set a `standing` order `done`.
+
+In the work skill's keeper step,
+
+```
+A work item you make (an open from a report, the `Order of work`) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids.
+```
+
+becomes
 
 ```
 A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids; the `Order of work` takes it with subtype `standing`.
 ```
+
+and its part 2, after "your report says you took it.", gains "A `standing` one is never taken or set done."
+
+In the report skill's step 7 (both placements), "which the report answers because its work is finished here" becomes "still `open` or `taken`, finished here and answered by the report", and in its last line `v0.34.0-dist.120` becomes `v0.34.1-dist.136`.

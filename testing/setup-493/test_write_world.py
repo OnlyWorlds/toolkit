@@ -188,7 +188,7 @@ TEAM_PACKS = ("company", "software-project")
 SESSION_ENDS = re.compile(r"(?i)(every|each|any) (working )?session ends|end (every|each) session|"
                           r"end (it )?with a report|at the end of (any|every|each|a) (working )?session|"
                           r"report: every session")
-REPORT_PAGE = "https://raw.githubusercontent.com/OnlyWorlds/schema-dist/v0.34.0-dist.120/profiles/report.md"
+REPORT_PAGE = "https://raw.githubusercontent.com/OnlyWorlds/schema-dist/v0.34.1-dist.136/profiles/report.md"
 
 
 def visit_steps(text):

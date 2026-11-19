@@ -24,7 +24,7 @@ A design talk usually fails one of four ways: an answer from the ask alone, besi
 - A decision's history: follow `parent_law` up; `GET /law?parent_law=<its id>` lists what amends or replaces it.
 - Open questions are work items: page `GET /relation?supertype=Work%20item&subtype=open`, then `subtype=taken`, and keep those that name the part (in `x_packet_elements` or a link field).
 <!-- end -->
-- The design's state is in the subtypes: a Decision `proposed` is in design, `accepted` locked, `rejected` turned down (it stays, so the question is not asked twice), `superseded` history; a Component is `in design`, `locked` or `deprecated`. Only the keeper's AI moves a state, from a report that names who decided. An unset state is not stated: say so, and do not build on it as locked.
+- The design's state is the `subtype` `in design` or `locked` of a Component or another Object or Construct; a Component's `deprecated` is its own status. A Decision's subtype is its own status, no design state: `proposed`, `accepted`, `rejected` turned down (it stays, so the question is not asked twice), `superseded` history. Only the keeper's AI moves either, from a report that names who decided. An unset state is not stated: say so, and do not build on it as locked.
 - How far something is built is not in the world. Read that where it lives (the code and {{tracker}}) when it matters, or say you have not and put it in the note as a question.
 - If nothing you read says why this matters to {{project}}, say so; do not invent a reason.
 

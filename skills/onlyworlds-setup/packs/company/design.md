@@ -61,4 +61,4 @@ Fixed: <what is already fixed>
 
 A world may already use its own labels for these four lines: read them by what they say, and keep the labels a world already uses.
 
-Name the anchor and its lines in your report; the keeper places it. From then on everything hangs there: open questions are work items that name it, reports link it, its parts link to it (by `parent_object` when both are Objects). It is done when its parts are `locked`.
+Name the anchor and its lines in your report; the keeper places it. From then on everything hangs there: open questions are work items that name it, reports link it.

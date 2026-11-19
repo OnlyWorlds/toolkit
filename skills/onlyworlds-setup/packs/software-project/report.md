@@ -50,7 +50,7 @@ Then:
 - what is open now, and who decides it;
 - links: pull requests and issues by number, commits, paths.
 
-A fact that corrects the world says where it comes from ("commit 4e1a0c2: the reader no longer skips blank rows"). Name every part the work touched, by name and address (`ow://<type>/<id>`). No status words of your own: a part's state is its subtype (a Component `in design` or `locked`, a Decision `proposed` or `accepted`), and the keeper's AI moves it from a report that says who decided ("this component can be locked, decided by its maintainer").
+A fact that corrects the world says where it comes from ("commit 4e1a0c2: the reader no longer skips blank rows"). Name every part the work touched, by name and address (`ow://<type>/<id>`). No status words of your own: a design part is `in design` or `locked`, a Decision `proposed` or `accepted` (its own status, no design state), and the keeper's AI moves either from a report that says who decided ("this component can be locked, decided by its maintainer").
 
 The last line names the skills that ran in the stretch, each by its name after `{{prefix}}-`: `Skills: start, design` (none ran: `Skills: none`).
 
@@ -118,12 +118,12 @@ a new file `{{world_folder}}elements/narrative/<name-slug>--<last 8 of its id>.j
 - A part that is not a Relation has no field: the story names it (step 4); the keeper's AI links it.
 <!-- if folder -->
 - A design note goes whole into the `story`, after its four parts and before its `Skills:` line, and may be Markdown.
-- A work item made in this chat, which the report answers because its work is finished here: once the report is written, set its `subtype` to `done` in its file. One made in another chat, one that asks for a change only the keeper's AI makes, and any other work item, the keeper's AI sets.
+- A work item made in this chat, still `open` or `taken`, finished here and answered by the report: once the report is written, set its `subtype` to `done` in its file. One made in another chat, one that asks for a change only the keeper's AI makes, and any other work item, the keeper's AI sets.
 <!-- end -->
 <!-- if online -->
 - A POST answered by a web page titled Blocked (a `403`, not JSON) wrote nothing: the host refused a command in your text (python with a flag, curl with an address, a few others) that stands right after a code mark, a semicolon or a table bar. Put a `$ ` prompt before the command inside its code marks, or put it in a fenced block that names its language, then send again.
 - A design note goes on the report as a file, after the POST: `POST /narrative/<its id>/files` with `name` (what it is, dated, ending `.md`), `kind` `md`, `size` its bytes; POST the bytes to the answer's `upload_url` with `Authorization: Bearer <ticket>`.
-- A work item made in this chat, which the report answers because its work is finished here: once the report has landed, `PATCH /relation/<id>` with `{"subtype": "done"}` (refused: leave it; the report stands). One made in another chat, one that asks for a change only the keeper's AI makes, and any other work item, the keeper's AI sets.
+- A work item made in this chat, still `open` or `taken`, finished here and answered by the report: once the report has landed, `PATCH /relation/<id>` with `{"subtype": "done"}` (refused: leave it; the report stands). One made in another chat, one that asks for a change only the keeper's AI makes, and any other work item, the keeper's AI sets.
 <!-- end -->
 - A report is addressed to nobody. If someone should know now, also send them a two-line message.
 - If you are the keeper's AI, your own report has no second hand: `{{work_skill_name}}`'s keeper's step says how it is born `completed`.
@@ -145,4 +145,4 @@ The report's name, and that the keeper's AI completes it. The chat goes on.
 - Close the chat, or ask whether the session is over.
 - Decide that an upload to production happened or may happen.
 
-The page this follows: `https://raw.githubusercontent.com/OnlyWorlds/schema-dist/v0.34.0-dist.120/profiles/report.md`. Where this skill and that page differ, the page is right.
+The page this follows: `https://raw.githubusercontent.com/OnlyWorlds/schema-dist/v0.34.1-dist.136/profiles/report.md`. Where this skill and that page differ, the page is right.

@@ -33,7 +33,7 @@ A world folder where the AI agents of {{org}} keep what changes slowly and has n
 
 ## How things are filed
 
-Every file carries its `supertype` and `subtype`: the supertype is the index, so spell it exactly. To find things, read `elements/<type>/` and keep the files whose `supertype` (or `subtype`, or `name`) matches.
+Every file carries its `supertype` and `subtype`: the supertype is the index, so spell it exactly. To find things, read `elements/<type>/` and keep the files whose `supertype` (or `subtype`, or `name`) matches. A state matches trimmed and without regard to case (`Open ` is `open`).
 <!-- end -->
 <!-- if online -->
 A private OnlyWorlds world where the AI agents of {{org}} keep what changes slowly and has no other home, and their messages.
@@ -74,7 +74,7 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype`, a type's s
 | A teammate / a contact / an AI | `character` | `Person` / `Contact` / `Agent` | `institutions`: their organisation |
 | A product | `object` | `Product` | a lookup page; subtype `in design` or `locked` |
 | A role; who held it when | `title`; `relation` | `Role`; `Tenure` | `holders`; a tenure's `actor`, `titles`, `start_date`, `end_date` |
-| Open work | `relation` | `Work item` | subtype `open` `taken` `done`; `actor` whom it is for |
+| Work items | `relation` | `Work item` | subtype `open` `taken` (open work), `done`, `standing`; `actor` whom it is for |
 | Messages; what you read; your line | `narrative`; `relation`; `narrative` | `Message`; `Read`; `Note` | below |
 | The house rules; this skill; the start-here | `law`; `object`; `construct` | `Charter`; `Skill`; `Guide` | one each; the Guide is `Start here` |
 | A word; a rule from outside; a date | `construct`; `law`; `event` | `Concept`; `Regulation`; `Milestone` | a Regulation's `author` is its issuer; a Milestone is named `YYYY-MM-DD <what>` |
