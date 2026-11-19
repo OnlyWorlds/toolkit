@@ -97,7 +97,7 @@ Page `GET /narrative?supertype=Report&subtype=handed%20in&fields=id,name,created
 7. A work item the report says it took, still `open`: set it `taken`.
 8. Set `subtype` to `completed`, with or after `consequences`.
 
-A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids, and `x_packet_from` the report's `narrator`, who raised it; the `Order of work` takes it with subtype `standing`, and a `standing` one is never taken or set done.
+A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids, and no `x_packet_from`; the `Order of work` takes it with subtype `standing`, and a `standing` one is never taken or set done.
 
 **Your own report**, as the keeper's AI, has no second hand: one write in `{{report_skill_name}}`'s shape (with `x_room_of`), born `completed`, its `story`, `description`, links and `consequences` together; then step 6.
 <!-- if online -->

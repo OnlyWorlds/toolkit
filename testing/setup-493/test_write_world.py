@@ -820,7 +820,11 @@ class SetupWriter(unittest.TestCase):
             for words in ("who asked", "leave the key out"):
                 self.assertIn(words, lines[at[0]], words)
             self.assertNotIn('"x_packet_from": ""', text)
-            self.assertIn("`x_packet_from` the report's `narrator`", text)
+            if run.pack == "company":  # the start skill's rule for trusting a narrator decides
+                self.assertIn("`x_packet_from` the report's `narrator`, who raised it, when the member in its "
+                              "`created_by` plays the `narrator` (the members list), else leave the key out", text)
+            else:  # no such rule in this pack: the keeper leaves the key out
+                self.assertIn("and no `x_packet_from`;", text)
         self.each(check)
 
     def test_13e_only_the_charter_names_a_skill(self):
