@@ -209,6 +209,16 @@ CHARTER_NULL = {None: "null: tell your human)",
                                "co-builder marks or unhides it)"),
                 "ai-home": ("null: no Charter is marked for your seat to read, so tell your human: the owner or a "
                             "co-builder marks or unhides it)")}
+# Every place a world skill tells the AI where to read a Charter or a Law (test 2c): an API route on Laws,
+# the Charter's file, the sign-in answer's Charter. A further place, a search for the Charter included,
+# changes the count. By pack and placement.
+CHARTER_READ = re.compile(r"/law\b|charter\.json|front_door\.charter(?!_)")
+CHARTER_READS = {("ai-home", "folder"): 4, ("ai-home", "repo"): 4, ("ai-home", "online"): 4,
+                 ("company", "folder"): 4, ("company", "repo"): 4, ("company", "online"): 4,
+                 ("governance", "folder"): 4, ("governance", "repo"): 4, ("governance", "online"): 6,
+                 ("software-project", "folder"): 5, ("software-project", "repo"): 5,
+                 ("software-project", "online"): 10,
+                 ("workshop", "folder"): 4, ("workshop", "repo"): 4, ("workshop", "online"): 4}
 STEP5_COPY = {"folder": "A changed file of one of your skills (below): copy it again.",
               "online": "One of your skills (below) among them: copy it again."}
 COPY_WORD = re.compile(r"(?i)\bcop(y|ies|ied|ying)\b")
@@ -864,15 +874,23 @@ class SetupWriter(unittest.TestCase):
         """Online, every pack's world skill and its AGENTS.md line take the Charter from the AI's own
         sign-in read (front_door.charter in GET /me, which only a keeper's mark sets), never from a search
         for Laws with supertype Charter, which a contributor's own unmarked "Charter" also answers; with
-        none named (null) the AI tells its human. A folder reads the Charter's file and is not touched."""
+        none named (null) the AI tells its human. A folder reads the Charter's file and is not touched. The
+        null sentence is pinned whole (CHARTER_NULL), and every place the world skill says where to read a
+        Charter or a Law is counted (CHARTER_READS).
+        A text test pins the sentences that carry the rule and counts the ruled terms; it cannot prove that no other sentence contradicts them, which is what the outside read is for."""
         def check(run):
             text, line = run.skill(), read(run.copy_root / "AGENTS.md")
             for words in (text, line):
                 self.assertNotIn("supertype=Charter", words)
             if run.placement == "online":
                 self.assertEqual(text.count("`front_door.charter`, `GET /me`"), 1)
-                self.assertIn(CHARTER_NULL.get(run.pack, CHARTER_NULL[None]), text)
+                null = CHARTER_NULL.get(run.pack, CHARTER_NULL[None])
+                self.assertEqual(text.count("`front_door.charter`, `GET /me`" + ("; " + null if run.pack != "software-project"
+                                                                                 else "")), 1, "the Charter line, whole")
+                self.assertEqual(text.count(null), 1, "the null sentence, whole, once")
                 self.assertIn("or GET /me front_door.charter online", line)
+            found = len(CHARTER_READ.findall(text))
+            self.assertEqual(found, CHARTER_READS[run.pack, run.placement], f"{found} places that say where a Charter or a Law is read")
         self.each(check)
 
     def test_13e_only_the_charter_names_a_skill(self):
