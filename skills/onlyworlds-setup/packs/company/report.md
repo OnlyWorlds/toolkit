@@ -52,7 +52,7 @@ Then:
 - what is open now, and who decides it;
 - links: pull requests, tickets, files.
 
-A fact that corrects the world says where it comes from ("the supplier's email of 3 March: delivery moves to Friday"). Name every part the work touched, by name and address (`ow://<type>/<id>`). No status words of your own: a part is `in design` or `locked`, and the keeper's AI locks it from a report that says who decided ("this part can be locked, decided by the product lead").
+A fact that corrects the world says where it comes from ("the supplier's email of 3 March: delivery moves to Friday"). Name every part the work touched, by name and address (`ow://<type>/<id>`). No status words of your own: a design part is `in design` or `locked`, and the keeper's AI locks it from a report that says who decided ("this part can be locked, decided by the product lead").
 
 The last line names the skills that ran in the stretch, each by its name after `{{prefix}}-`: `Skills: start, design` (none ran: `Skills: none`).
 
