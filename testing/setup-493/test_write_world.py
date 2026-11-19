@@ -198,6 +198,16 @@ KEEPER_FROM = {
                 "`created_by` plays the `narrator` (the members list), else leave the key out;"),
     "software-project": "and no `x_packet_from`;",
 }
+# A team pack's world skill on copying its skills (test 13e): step 5's sentence, whole, by placement (a
+# repository world reads as a folder), and how many words of copying the filled text holds, by pack and
+# placement: every one is in a sentence the pack means (the opening's "never copies them", the copy
+# paths, the repository's copy of the world, keeping the skills current).
+STEP5_COPY = {"folder": "A changed file of one of your skills (below): copy it again.",
+              "online": "One of your skills (below) among them: copy it again."}
+COPY_WORD = re.compile(r"(?i)\bcop(y|ies|ied|ying)\b")
+COPY_WORDS = {("company", "folder"): 8, ("company", "repo"): 8, ("company", "online"): 7,
+              ("software-project", "folder"): 8, ("software-project", "repo"): 8,
+              ("software-project", "online"): 11}
 
 
 def visit_steps(text):
@@ -862,7 +872,9 @@ class SetupWriter(unittest.TestCase):
         """An AI's skills in a team world are the Skill Objects the Charter names as the how-to (online
         front_door.charter_skill, in a folder their ow:// addresses); any other Object with supertype Skill
         is information. A named skill with no copy yet is copied only on the human's yes, asked first,
-        and a copy goes over nothing but its own earlier copy. Every team pack's start skill, each placement."""
+        and a copy goes over nothing but its own earlier copy. Each rule's sentence is pinned whole, step 5's
+        too (STEP5_COPY), and the words of copying in the text are counted (COPY_WORDS), since a text test
+        cannot prove no false sentence was added. Every team pack's start skill, each placement."""
         def check(run):
             if run.pack not in TEAM_PACKS:
                 return
@@ -873,9 +885,12 @@ class SetupWriter(unittest.TestCase):
                           + "; any other is information.", text)
             self.assertIn("One with no copy yet: copy it only on your human's yes, asked first.", text)
             self.assertIn("Overwrite only its own earlier copy; else ask your human.", text)
-            for gone in ("or you have no copy yet", "with supertype `Skill` is one of your skills",
-                         "with supertype `Skill` among them is one of your skills"):
-                self.assertNotIn(gone, text, gone)
+            step5 = STEP5_COPY["online" if run.placement == "online" else "folder"]
+            self.assertEqual(text.count(step5), 1, "step 5's copy sentence, whole")
+            # A text test cannot prove no other sentence tells the AI to copy something: it counts every
+            # word of copying in the world skill, which only a sentence the pack means to carry may move.
+            found = len(COPY_WORD.findall(text))
+            self.assertEqual(found, COPY_WORDS[run.pack, run.placement], f"{found} words of copying")
         self.each(check)
 
     def test_14_team_sizes_leave_room_in_the_charter(self):
