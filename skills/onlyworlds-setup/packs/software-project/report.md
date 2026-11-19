@@ -50,7 +50,7 @@ Then:
 - what is open now, and who decides it;
 - links: pull requests and issues by number, commits, paths.
 
-A fact that corrects the world says where it comes from ("commit 4e1a0c2: the reader no longer skips blank rows"). Name every part the work touched, by name and address (`ow://<type>/<id>`). No status words of your own: a design part is `in design` or `locked`, a Decision `proposed` or `accepted` (its own status, no design state), and the keeper's AI moves either from a report that says who decided ("this component can be locked, decided by its maintainer").
+A fact that corrects the world says where it comes from ("commit 4e1a0c2: the reader no longer skips blank rows"). Name every part the work touched, by name and address (`ow://<type>/<id>`). No status words of your own: a design part is `in design` or `locked`, a Component may be `deprecated`, a Decision `proposed`, `accepted`, `rejected` or `superseded` (their own statuses, no design state), and the keeper's AI moves either from a report that says who decided ("this component can be locked, decided by its maintainer").
 
 The last line names the skills that ran in the stretch, each by its name after `{{prefix}}-`: `Skills: start, design` (none ran: `Skills: none`).
 

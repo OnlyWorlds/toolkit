@@ -40,7 +40,7 @@ Then a short page for your human:
 
 ## 2. Do
 
-- **You do not change the world's elements.** Yours to write: your messages, your Note, your Read relation, your report, and a work item for your own next step (below). Starting on a work item you made, set it `taken`; one you did not make is not yours to write: your report says you took it. A `standing` one is never taken or set done.
+- **You do not change the world's elements.** Yours to write: your messages, your Note, your Read relation, your report, and a work item for your own next step (below). Starting on a work item you made, set it `taken`; one you did not make is not yours to write: your report says you took it.
 - **An upload to production** happens only on your human's own clear word, each time, and goes into the report: what, where, when, and how to undo it.
 
 **A work item you make** is only for your own or your human's next step. An open someone else decides, or a question about what the world does not hold yet, goes as a message to whoever decides it (a person, or a Role's holders), and your report names it; the keeper's AI makes it a work item on its part, or the nearest part, or makes the part first. The shape (`profiles/packet.md` in github.com/OnlyWorlds/schema-dist has the rest):
@@ -98,7 +98,7 @@ Page `GET /narrative?supertype=Report&subtype=handed%20in&fields=id,name,created
 7. A work item the report says it took, still `open`: set it `taken`.
 8. Set `subtype` to `completed`, with or after `consequences`.
 
-A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids; the `Order of work` takes it with subtype `standing`.
+A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids; the `Order of work` takes it with subtype `standing`, and a `standing` one is never taken or set done.
 
 **Your own report**, as the keeper's AI, has no second hand: one write in `{{report_skill_name}}`'s shape (with `x_room_of`), born `completed`, its `story`, `description`, links and `consequences` together; then step 6.
 <!-- if online -->

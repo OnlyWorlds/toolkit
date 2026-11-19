@@ -80,7 +80,7 @@ Date fields count days from 1970-01-01 (2026-10-22 is 20748); a decision's ISO d
 
 ## A world set up by an earlier version of this pack
 
-Its Components' `active` and `planned` are no design state: the keeper's AI sets `locked` for `active` and `in design` for `planned` when it next touches the part.
+Its Components' `active` and `planned` are no design state.
 
 ## A world set up before toolkit 5.5.0
 
