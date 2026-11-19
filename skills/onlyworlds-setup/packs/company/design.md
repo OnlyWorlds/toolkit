@@ -24,7 +24,7 @@ A design talk usually fails one of four ways: an answer from the ask alone, besi
 - What is under a part: `GET /object?parent_object=<its id>`.
 - Open questions are work items: page `GET /relation?supertype=Work%20item&subtype=open`, then `subtype=taken`, and keep those that name the part (in `x_packet_elements` or a link field).
 <!-- end -->
-- A part's design state is its `subtype`: `in design` or `locked`. Only the keeper's AI moves a state, from a report that names who decided. An unset state is not stated: say so, and do not build on it as locked.
+- A part's design state is its `subtype`: `in design` or `locked`. Only the keeper's AI moves a state, from a report that names who decided. An unset state (no subtype) is not stated: say so, and do not build on it as locked.
 - How far something is built is not in the world. {{elsewhere}}: read it there when it matters, or say you have not and put it in the note as a question.
 - If nothing you read says why this matters to the company, say so; do not invent a reason.
 
