@@ -6,7 +6,7 @@ description: Hand in a report to the {{world_name}} world of {{org}} on a stretc
 
 # {{report_skill_name}}: handing in what was done
 
-Run `{{skill_name}}` first if you have not this session. What matters to others is reported: a report is for a stretch of work worth telling the team, made at any point in a chat, as often as there is something new. You write it; the keeper's AI changes the world from it and completes it (`{{work_skill_name}}`, its keeper's step). It is for the whole team, addressed to nobody: to ask someone for feedback, or when someone should know now, also send them a two-line message.
+Run `{{skill_name}}` first if you have not this session. What matters to others is reported: a report is for a stretch of work worth telling the team, made at any point in a chat, as often as there is something new. You write it; the keeper's AI changes the world from it and completes it (`{{work_skill_name}}`, its keeper's step). It is for the whole team, addressed to nobody.
 
 ## 1. Is there anything to hand in?
 
@@ -136,7 +136,7 @@ One message: the whole story, with a few lines in your human's own language if t
 
 ## 9. Say what you sent
 
-The report's name, and that the keeper's AI completes it.
+The report's name, and that the keeper's AI completes it. To ask someone's feedback, or tell them now: a two-line message once it has landed, with its address.
 
 **Wherever you stop** (step 1, 3 or 8), say that nothing was written.
 
