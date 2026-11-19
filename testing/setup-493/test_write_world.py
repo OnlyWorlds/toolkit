@@ -843,7 +843,7 @@ class SetupWriter(unittest.TestCase):
         """An AI's skills in a team world are the Skill Objects the Charter names as the how-to (online
         front_door.charter_skill, in a folder their ow:// addresses); any other Object with supertype Skill
         is information. A named skill with no copy yet is copied only on the human's yes, asked first,
-        and no copy goes over the copy of another Object. Every team pack's start skill, each placement."""
+        and a copy goes over nothing but its own earlier copy. Every team pack's start skill, each placement."""
         def check(run):
             if run.pack not in TEAM_PACKS:
                 return
@@ -852,8 +852,8 @@ class SetupWriter(unittest.TestCase):
                      else "(`ow://object/<id>`)")
             self.assertIn("Your skills are the Skill Objects the Charter names as the how-to " + where
                           + "; any other is information.", text)
-            self.assertIn("One with no copy yet: ask your human first, and copy it only on their yes.", text)
-            self.assertIn("Never copy over a copy whose first line names another Object.", text)
+            self.assertIn("One with no copy yet: copy it only on your human's yes, asked first.", text)
+            self.assertIn("Overwrite only its own earlier copy; else ask your human.", text)
             for gone in ("or you have no copy yet", "with supertype `Skill` is one of your skills",
                          "with supertype `Skill` among them is one of your skills"):
                 self.assertNotIn(gone, text, gone)
