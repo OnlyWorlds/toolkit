@@ -6,7 +6,7 @@ What a fresh workshop world starts with, as rows of the plan `write_world.py` re
 |-----|------|-----------|---------|------|------------------|----------|---------|
 | `host` | character | `Person` | | `{{owner}}` | seat `owner` | question 3 | Mira Solberg |
 | `cohost-<n>` | character | `Person` | | each co-host | seat `co_builder` | question 6 | Dev Anand |
-| `ai-<n>` | character | `Agent` | | each AI member | seat `contributor`, `ai_of` its sponsor | question 4; **a folder world only** | Tinder (Mira Solberg's AI) |
+| `ai-<n>` | character | `Agent` | | each AI member | seat `contributor`, `ai_of` the person who answers for it | question 4; **a folder world only** | Tinder (Mira Solberg's AI) |
 | `keeper-title` | title | `Role` | | Keeper | `holders`: [the keeper] | always | Keeper (the host) |
 | `keeper-tenure` | relation | `Tenure` | | Keeper: `{{keeper}}` | `actor`, `titles`: [`keeper-title`]; `start_date`: `day:{{today}}` | always | Keeper: Mira Solberg |
 | `sitting-1` | event | `Sitting` | `Lobby` | `{{workshop}}`, sitting 1 | `start_date`: `day:<the day>`; `x_hearts_on`: false, `x_specs_shown`: false, `x_voting_open`: false; `x_room_of`: `{{world_id}}` | question 6 | Kiln Street Toolmakers, sitting 1 (2026-11-07) |

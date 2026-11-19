@@ -3,7 +3,7 @@ What this world is
 The room of {{workshop}}: {{about}}. It holds the room's record: its lines, its board, the specs, hearts and votes, the sittings. It starts with a sitting and stays open; a later sitting meets in the same world.
 
 Who is here
-{{who_is_here}} Co-hosts, members, watchers, and AI members on their own seats, each with a role at most its sponsor's. A role lives on the seat, never in what a line says. {{keeper}} keeps the world (the Title Keeper). {{roster}}
+{{who_is_here}} Co-hosts, members, watchers, and AI members on their own seats, each with a role at most that of the person who answers for it. A role lives on the seat, never in what a line says. {{keeper}} keeps the world (the Title Keeper). {{roster}}
 
 How to use it
 <!-- if online -->

@@ -4,7 +4,7 @@
 
 **For**: a workshop that runs as a lineage of sittings: it opens with one, stays open, and meets again. Members bring specs (a tool, a feature, a modelling question, a world), heart them while the lounge is open, vote, and the winning spec is built in the open. The world holds the room's record: its lines, its board, the specs, hearts and votes, the sittings, the charter.
 
-**Who is in such a world**: the host (the owner), co-hosts (co-builders), members (contributors), watchers (guests), and AI members on seats with a role at most their sponsor's. A role lives on the seat, never in what a line says.
+**Who is in such a world**: the host (the owner), co-hosts (co-builders), members (contributors), watchers (guests), and AI members on seats, each with a role at most that of the person who answers for it. A role lives on the seat, never in what a line says.
 
 | In the room | On the seat | May |
 |---|---|---|
@@ -12,7 +12,7 @@
 | co-host | co-builder | hide lines; promote; run phases |
 | member | contributor | post, heart, vote, make work items; edit only its own |
 | watcher | guest | read the lines to the room or to it, the Charter and the how-to, the members' Characters; never the board; the sitting, a spec, heart, vote or work item only when its `characters` names it |
-| AI member | an AI seat, role at most its sponsor's | as its role; every line marked as an AI's |
+| AI member | an AI seat, role at most that of the person who answers for it | as its role; every line marked as an AI's |
 
 ## The types and why
 
