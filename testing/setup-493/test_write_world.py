@@ -800,6 +800,29 @@ class SetupWriter(unittest.TestCase):
         self.assertIsNone(SESSION_ENDS.search(read(REPO / "skills" / "onlyworlds-setup" / "SKILL.md")))
         self.assertIsNone(SESSION_ENDS.search(read(WRITER)))
 
+    def test_13d_a_work_item_names_who_asked(self):
+        """The packet profile's writer rule for its fifth key (serial 136: "Write the fifth,
+        `x_packet_from`, when the writer knows who asks, itself included when it asks ...; a writer
+        that does not know leaves the key out, never writes an empty string"): each team pack's filled
+        work skill, both placements, writes `x_packet_from` in part 2's shape, once, between `actor`
+        and `x_packet_elements`, as who asked, and leaves the key out when the asker is not known; the
+        keeper's AI writes the report's `narrator` on an open it makes from a report."""
+        def check(run):
+            if run.pack not in TEAM_PACKS:
+                return
+            text = run.extra_skills()["work"][0]["description"]
+            lines = text.split("\n")
+            at = [i for i, ln in enumerate(lines) if ln.startswith('  "x_packet_from": ')]
+            self.assertEqual(len(at), 1, "one x_packet_from line in the shape")
+            actor = next(i for i, ln in enumerate(lines) if ln.startswith('  "actor": '))
+            elements = next(i for i, ln in enumerate(lines) if ln.startswith('  "x_packet_elements": '))
+            self.assertTrue(actor < at[0] < elements, (actor, at[0], elements))
+            for words in ("who asked", "leave the key out"):
+                self.assertIn(words, lines[at[0]], words)
+            self.assertNotIn('"x_packet_from": ""', text)
+            self.assertIn("`x_packet_from` the report's `narrator`", text)
+        self.each(check)
+
     def test_14_team_sizes_leave_room_in_the_charter(self):
         """A real team fits: each team pack's test plan grown (or shrunk) to 2, 5, 8, 12 and 20 seats,
         people and AIs mixed with names of ordinary length, and 8 seats with six of them AIs (8 is the

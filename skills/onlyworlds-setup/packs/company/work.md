@@ -52,6 +52,7 @@ Then a short page for your human:
   "subtype": "open",
   "description": "<why, in a sentence or two>",
   "actor": "<whom it is for: your Character or your human's>",
+  "x_packet_from": "<who asked: your human's Character, or yours when you asked; unknown or none: leave the key out>",
   "x_packet_elements": [{"type": "<type>", "id": "<element id>", "reason": "<one sentence>"}],
   "x_packet_source": {"server": <see below>, "world": "<this world's id>"},
   "x_packet_producer": {"tool": "<your harness>", "version": "<its version if you know it; else leave version out, never the word unknown>"},
@@ -98,7 +99,7 @@ Page `GET /narrative?supertype=Report&subtype=handed%20in&fields=id,name,created
 7. A work item the report says it took, still `open`: set it `taken`.
 8. Set `subtype` to `completed`, with or after `consequences`.
 
-A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids; the `Order of work` takes it with subtype `standing`, and a `standing` one is never taken or set done.
+A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids, and `x_packet_from` the report's `narrator`, who raised it; the `Order of work` takes it with subtype `standing`, and a `standing` one is never taken or set done.
 
 **Your own report**, as the keeper's AI, has no second hand: one write in `{{report_skill_name}}`'s shape (with `x_room_of`), born `completed`, its `story`, `description`, links and `consequences` together; then step 6.
 <!-- if online -->
