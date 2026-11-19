@@ -222,6 +222,10 @@ CHARTER_READS = {("ai-home", "folder"): 4, ("ai-home", "repo"): 4, ("ai-home", "
 STEP5_COPY = {"folder": "A changed file of one of your skills (below): copy it again.",
               "online": "One of your skills (below) among them: copy it again."}
 COPY_WORD = re.compile(r"(?i)\bcop(y|ies|ied|ying)\b")
+# Two more ruled terms in the same world skills (test 13e), and the asker's in the work skills (test 13d),
+# each counted without regard to case: how many the filled text holds, the same in every placement.
+SKILL_TERMS = {r"(?i)\bskill objects?\b": 1, r"(?i)\byour skills\b": 2}
+ASKER_TERMS = {r"(?i)\baskers?\b": 0, r"(?i)\bwho asked\b": 1}
 COPY_WORDS = {("company", "folder"): 8, ("company", "repo"): 8, ("company", "online"): 7,
               ("software-project", "folder"): 8, ("software-project", "repo"): 8,
               ("software-project", "online"): 11}
@@ -846,7 +850,8 @@ class SetupWriter(unittest.TestCase):
         company pack's start skill has a rule for when a narrator is its maker, the software-project pack's
         has none, so its keeper leaves the key out); the key appears in the work skill exactly twice, once
         in each (a text test cannot prove no false sentence was added, so it counts the term instead); and
-        no other skill of the pack names the key."""
+        no other skill of the pack names the key. "asker" and "who asked" are counted too (ASKER_TERMS).
+        A text test pins the sentences that carry the rule and counts the ruled terms; it cannot prove that no other sentence contradicts them, which is what the outside read is for."""
         def check(run):
             if run.pack not in TEAM_PACKS:
                 return
@@ -865,6 +870,8 @@ class SetupWriter(unittest.TestCase):
             # Every mention of the key, however written, is one of the two pinned strings: any other sentence
             # about it (a bare "x_packet_from" in prose included) changes the count.
             self.assertEqual(text.count("x_packet_from"), 2, "x_packet_from only in the asker line and the keeper's clause")
+            for term, want in ASKER_TERMS.items():
+                self.assertEqual(len(re.findall(term, text)), want, term)
             for kind in ("design", "report"):
                 self.assertNotIn("x_packet_from", extra[kind][0]["description"], kind)
             self.assertNotIn("x_packet_from", run.skill(), "start")
@@ -899,7 +906,8 @@ class SetupWriter(unittest.TestCase):
         is information. A named skill with no copy yet is copied only on the human's yes, asked first,
         and a copy goes over nothing but its own earlier copy. Each rule's sentence is pinned whole, step 5's
         too (STEP5_COPY), and the words of copying in the text are counted (COPY_WORDS), since a text test
-        cannot prove no false sentence was added. Every team pack's start skill, each placement."""
+        cannot prove no false sentence was added; "Skill Object" and "your skills" are counted too
+        (SKILL_TERMS). A text test pins the sentences that carry the rule and counts the ruled terms; it cannot prove that no other sentence contradicts them, which is what the outside read is for. Every team pack's start skill, each placement."""
         def check(run):
             if run.pack not in TEAM_PACKS:
                 return
@@ -916,6 +924,8 @@ class SetupWriter(unittest.TestCase):
             # word of copying in the world skill, which only a sentence the pack means to carry may move.
             found = len(COPY_WORD.findall(text))
             self.assertEqual(found, COPY_WORDS[run.pack, run.placement], f"{found} words of copying")
+            for term, want in SKILL_TERMS.items():
+                self.assertEqual(len(re.findall(term, text)), want, term)
         self.each(check)
 
     def test_14_team_sizes_leave_room_in_the_charter(self):
