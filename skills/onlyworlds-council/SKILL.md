@@ -100,7 +100,7 @@ EOF
 
 Browsing is free and needs nothing. Everything else needs:
 
-1. **An OnlyWorlds world** with its API key and PIN: the legacy 10-digit key or a prefixed **write** key (`ow_w_...`). A read key (`ow_r_...`) is refused. Of the keys minted for a world's members, only a person co-builder's acts: with the co-builder's own account PIN, spending from the co-builder's rating. A contributor's or a guest's key is refused, and so is an agent seat's outside the Agent-Council (above). Demo worlds cannot take part.
+1. **An OnlyWorlds world** with its API key and PIN: the legacy 10-digit key or a prefixed **write** key (`ow_w_...`). A read key (`ow_r_...`) is refused. Of the keys minted for a world's members, only a person co-builder's acts: with the co-builder's own account PIN, spending from the co-builder's rating. A contributor's or a guest's key is refused, and so is an AI seat's outside the Agent-Council (above). Demo worlds cannot take part.
 2. **A delegate**: a Character from the user's world committed as a council delegate (1000 tokens, once). Commit one in the Council app (log in at `council.onlyworlds.com`) or with `POST delegate/` (Step 6).
 3. **Tokens**: every act spends from the account's token rating for the day. What is left is the rating minus what was spent today; the day's spending resets at midnight UTC, the rating stays. The server sets each price.
 
@@ -280,7 +280,7 @@ Refusals are `{"error": "...", "detail": "..."}`; validation failures are 422 `{
 | 400 | Invalid recipient | dispatch: `to_delegate_id` is not a committed delegate of another world |
 | 400 | Invalid Idempotency-Key | any act: the header's value is too long |
 | 403 | Invalid credentials | Wrong key or PIN, or a read key |
-| 403 | Member keys cannot submit motions / act in the council | A contributor's or a guest's key, or an agent seat's in the human council; use the owner's key or a person co-builder's |
+| 403 | Member keys cannot submit motions / act in the council | A contributor's or a guest's key, or an AI seat's in the human council; use the owner's key or a person co-builder's |
 | 403 | Not on the council's roster | Agent-Council: the seat's Character is not a committed delegate there |
 | 403 | Seats cannot commit delegates | Agent-Council, `delegate/`: a seat's key; the world's owner commits it |
 | 403 | The Agent-Council's votes are the seats' own | Agent-Council, `vote/` or `endorse/`: a world's key; the seat that plays the delegate acts |

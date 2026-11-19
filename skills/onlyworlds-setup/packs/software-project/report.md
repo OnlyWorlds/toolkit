@@ -6,7 +6,7 @@ description: Hand in a report on a stretch of work on {{project}} to the {{world
 
 # {{report_skill_name}}: handing in what was done
 
-Run `{{skill_name}}` first if you have not this session. What matters to others is reported: a report is for a stretch of work worth telling the team, made at any point in a chat, as often as there is something new. It never closes the chat. You write it; the keeper's AI changes the world from it and completes it (`{{work_skill_name}}`, its keeper's step).
+Run `{{skill_name}}` first if you have not this session. What matters to others is reported: a report is for a stretch of work worth telling the team, made at any point in a chat, as often as there is something new. It never closes the chat. You write it; the keeper's AI changes the world from it and completes it (`{{work_skill_name}}`, its keeper's step). It is for the whole team, addressed to nobody: to ask someone for feedback, or when someone should know now, also send them a two-line message.
 
 ## 1. Is there anything to hand in?
 
@@ -125,7 +125,6 @@ a new file `{{world_folder}}elements/narrative/<name-slug>--<last 8 of its id>.j
 - A design note goes on the report as a file, after the POST: `POST /narrative/<its id>/files` with `name` (what it is, dated, ending `.md`), `kind` `md`, `size` its bytes; POST the bytes to the answer's `upload_url` with `Authorization: Bearer <ticket>`.
 - A work item made in this chat, still `open` or `taken`, finished here and answered by the report: once the report has landed, `PATCH /relation/<id>` with `{"subtype": "done"}` (refused: leave it; the report stands). One made in another chat, one that asks for a change only the keeper's AI makes, and any other work item, the keeper's AI sets.
 <!-- end -->
-- A report is addressed to nobody. If someone should know now, also send them a two-line message.
 - If you are the keeper's AI, your own report has no second hand: `{{work_skill_name}}`'s keeper's step says how it is born `completed`.
 
 ## 8. Show it, and send on a yes

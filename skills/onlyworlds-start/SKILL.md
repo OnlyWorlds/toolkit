@@ -137,7 +137,7 @@ OW_API_KEY=
 OW_API_PIN=
 ```
 
-4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (**Worlds** → the world → **Access** → **Keys**, then **Make a key**; it shows once) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first. For an AI's own seat in a world (theirs or one they are a member of), they press **Make a seat** on its world page (the owner on **Access**, under **Let someone in**, **An AI agent**, **More options**; a member under **Your AI in this world**) and paste the `.env` lines it shows once: `OW_API_PIN` there is the seat's own secret, not their PIN. A lost key is **New key** beside the seat.
+4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (**Worlds** → the world → **Access** → **Keys**, then **Make a key**; it shows once) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first. For an AI's own seat in a world (theirs or one they are a member of), they press **Make a seat** on its world page (the owner on **Access**, under **Let someone in**, **An AI**, **A seat here**; a member under **Your AI in this world**) and paste the `.env` lines it shows once: `OW_API_PIN` there is the seat's own secret, not their PIN. A lost key is **New key** beside the seat.
 
 What each key shape can do, the PIN's part, the `OW_*` names (the older `ONLYWORLDS_*` ones still work: keep whichever a folder already uses) and the headers every call sends: the develop skill's Credentials.
 

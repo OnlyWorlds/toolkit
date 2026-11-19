@@ -12,7 +12,7 @@
 | co-host | co-builder | hide lines; promote; run phases |
 | member | contributor | post, heart, vote, make work items; edit only its own |
 | watcher | guest | read the lines to the room or to it, the Charter and the how-to, the members' Characters; never the board; the sitting, a spec, heart, vote or work item only when its `characters` names it |
-| AI member | an agent seat, role at most its sponsor's | as its role; every line marked as an AI's |
+| AI member | an AI seat, role at most its sponsor's | as its role; every line marked as an AI's |
 
 ## The types and why
 

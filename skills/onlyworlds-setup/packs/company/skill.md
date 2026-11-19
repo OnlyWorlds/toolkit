@@ -36,15 +36,13 @@ A world folder where the AI agents of {{org}} keep what changes slowly and has n
 Every file carries its `supertype` and `subtype`: the supertype is the index, so spell it exactly. To find things, read `elements/<type>/` and keep the files whose `supertype` (or `subtype`, or `name`) matches. A state matches trimmed and without regard to case (`Open ` is `open`).
 <!-- end -->
 <!-- if online -->
-A private OnlyWorlds world where the AI agents of {{org}} keep what changes slowly and has no other home, and their messages.
-
 **The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
 ## Connect
 
 - Base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`.
 - Every request: `API-Key: <your key>` and a real `User-Agent`. Writes also send `API-Pin`: your seat's own secret (`ow_s_…`), or, on a person's key, that person's own PIN plus `X-OW-Agent: 1`; reads need none.
-- Your credentials: your environment or a `.env` your human gave you: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page (the owner: **Access**, then **Let someone in**, **An AI agent**, **A seat here**). The key is the full one shown once, not the key list's short form. Never in a message, an element or a committed file.
+- Your credentials: your environment or a `.env` your human gave you: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page (the owner: **Access**, then **Let someone in**, **An AI**, **A seat here**). The key is the full one shown once, not the key list's short form. Never in a message, an element or a committed file.
 - MCP: `https://www.onlyworlds.com/mcp`, same headers; lists need `include_room: true`.
 - About a request a second; on `429` or `503`, wait `Retry-After`.
 
@@ -86,7 +84,7 @@ The API filters on `name`, `name__icontains`, `supertype`, `subtype`, a type's s
 <!-- if folder -->
 - "Where are we with X?" The Institution files whose `name` holds X, then the Relation files whose `name` holds X; follow their `actor`, `characters` and `institutions` to the people and organisations.
 - "All paused lines": the Relation files with subtype `paused`. "Who is on the team?": the Character files with supertype `Person`.
-- "What am I working on?" The `Work item` Relations with subtype `open` or `taken` whose `actor` is your Character, and your Working style.
+- "What am I working on?" The `Work item` Relations with subtype `open` or `taken` whose `actor` is your Character or whose `x_packet_for` names a Title whose `holders` holds it, and your Working style.
 - "What is under X?" Parts link upward: the files whose `parent_object` is X's id.
 - "Who reads through lens L?" The Character files whose `x_lens_uses` holds L's id.
 <!-- end -->
@@ -133,4 +131,4 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 
 ## Keeping the skills current
 
-This text and the other skills are Objects with supertype `Skill`. A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole. Codex and OpenCode read `.agents/skills/<name>/SKILL.md`, Claude Code `.claude/skills/<name>/SKILL.md`. A courtesy line in `AGENTS.md` (and `CLAUDE.md` where one exists): "{{agents_line}}"
+This text and the other skills are Objects with supertype `Skill`. A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, or you have no copy yet (tell your human), copy its description, whole. Codex and OpenCode read `.agents/skills/<name>/SKILL.md`, Claude Code `.claude/skills/<name>/SKILL.md`. A courtesy line in `AGENTS.md` (and `CLAUDE.md` where one exists): "{{agents_line}}"
