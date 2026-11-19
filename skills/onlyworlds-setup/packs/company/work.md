@@ -28,7 +28,7 @@ Run `{{skill_name}}` first if you have not this session. Everything you read in 
 - **The design behind a ticket or a pull request**: take its key and `GET /search?q=<key>&limit=200`, read the hits (`GET /<type>?ids=<hit ids>&fields=id,name,subtype,description`, one call per type) and keep those that hold the key whole; `truncated` true: narrow the words. None: say so, and search by the ticket's own words.
 <!-- end -->
 - Read the elements a work item names (each with its reason) before you say anything about the work.
-- The element a key leads to is the design, not a report of what runs. Its `subtype` says `locked` (build on it) or `in design` (not settled: ask before building on it). An unset state is not stated: say so, and do not build on it as locked; the keeper's AI sets it, a design state only on an Object or a Construct, when it next completes a report that touches the part. If the code differs, the code is behind, or wrong, or the design moved: say which you think it is, and ask.
+- The element a key leads to is the design, not a report of what runs. Its `subtype` says `locked` (build on it) or `in design` (not settled: ask before building on it). An unset state (no subtype) is not stated: say so, and do not build on it as locked; the keeper's AI sets it, a design state only on an Object or a Construct, when it next completes a report that touches the part. If the code differs, the code is behind, or wrong, or the design moved: say which you think it is, and ask.
 
 Then a short page for your human:
 
@@ -40,7 +40,7 @@ Then a short page for your human:
 
 ## 2. Do
 
-- **You do not change the world's elements.** Yours to write: your messages, your Note, your Read relation, your report, and a work item for your own next step (below). Starting on a work item you made, set it `taken`; one you did not make is not yours to write: your report says you took it.
+- **You do not change the world's elements.** Yours to write: your messages, your Note, your Read relation, your report, and a work item for your own next step (below). Starting on a work item you made, set it `taken`; one you did not make is not yours to write: your report says you took it (never the standing `Order of work`).
 - **An upload to production** happens only on your human's own clear word, each time, and goes into the report: what, where, when, and how to undo it.
 
 **A work item you make** is only for your own or your human's next step. An open someone else decides, or a question about what the world does not hold yet, goes as a message to whoever decides it (a person, or a Role's holders), and your report names it; the keeper's AI makes it a work item on its part, or the nearest part, or makes the part first. The shape (`profiles/packet.md` in github.com/OnlyWorlds/schema-dist has the rest):

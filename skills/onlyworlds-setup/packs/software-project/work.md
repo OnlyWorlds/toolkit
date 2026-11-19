@@ -38,7 +38,7 @@ Then a short page for your human: what to do first and why (tied first: the one 
 
 ## 2. Do
 
-- **You do not change the world's elements.** Yours to write: your messages, your Read relation, your report, and a work item for your own next step (below). Starting on a work item you made, set it `taken`; one you did not make is not yours to write: your report says you took it.
+- **You do not change the world's elements.** Yours to write: your messages, your Read relation, your report, and a work item for your own next step (below). Starting on a work item you made, set it `taken`; one you did not make is not yours to write: your report says you took it (never the standing `Order of work`).
 - **An upload to production** (a release, a deploy, a package) happens only on your human's own clear word, each time, and goes into the report: what, where, when, and how to undo it.
 
 **A work item you make** is only for your own or your human's next step. An open someone else decides, or a question about what the world does not hold yet, goes into your report with who decides it (a person or a Role, by name); the keeper's AI makes it a work item on its part, or the nearest part, or makes the part first. The shape (`profiles/packet.md` in github.com/OnlyWorlds/schema-dist has the rest):
