@@ -189,6 +189,15 @@ SESSION_ENDS = re.compile(r"(?i)(every|each|any) (working )?session ends|end (ev
                           r"end (it )?with a report|at the end of (any|every|each|a) (working )?session|"
                           r"report: every session")
 REPORT_PAGE = "https://raw.githubusercontent.com/OnlyWorlds/schema-dist/v0.34.1-dist.136/profiles/report.md"
+# The packet profile's fifth key as the team packs' work skills write it (test 13d): the shape's line,
+# and the keeper's clause on an open made from a report, each whole.
+ASKER_LINE = ('  "x_packet_from": "<who asked: the Character of whoever asked, a teammate included, yours '
+              'when you asked; not known: leave the key out, never empty, never a guess>",')
+KEEPER_FROM = {
+    "company": ("and `x_packet_from` the report's `narrator`, who raised it, when the member in its "
+                "`created_by` plays the `narrator` (the members list), else leave the key out;"),
+    "software-project": "and no `x_packet_from`;",
+}
 
 
 def visit_steps(text):
@@ -802,29 +811,32 @@ class SetupWriter(unittest.TestCase):
 
     def test_13d_a_work_item_names_who_asked(self):
         """The packet profile's writer rule for its fifth key (serial 136: "Write the fifth,
-        `x_packet_from`, when the writer knows who asks, itself included when it asks ...; a writer
-        that does not know leaves the key out, never writes an empty string"): each team pack's filled
-        work skill, both placements, writes `x_packet_from` in part 2's shape, once, between `actor`
-        and `x_packet_elements`, as who asked, and leaves the key out when the asker is not known; the
-        keeper's AI writes the report's `narrator` on an open it makes from a report."""
+        `x_packet_from`, when the writer knows who asks, itself included when it asks (the Character it
+        plays); a writer that does not know leaves the key out, never writes an empty string, and never
+        puts a guess in it"), pinned whole, since the words are the contract: each team pack's filled work
+        skill, every placement, carries exactly ASKER_LINE once, inside the JSON block of part 2's shape,
+        between `actor` and `x_packet_elements`; the keeper's clause is KEEPER_FROM[pack] whole (the
+        company pack's start skill has a rule for when a narrator is its maker, the software-project pack's
+        has none, so its keeper leaves the key out); and no other skill of the pack writes the key."""
         def check(run):
             if run.pack not in TEAM_PACKS:
                 return
-            text = run.extra_skills()["work"][0]["description"]
+            extra = run.extra_skills()
+            text = extra["work"][0]["description"]
             lines = text.split("\n")
-            at = [i for i, ln in enumerate(lines) if ln.startswith('  "x_packet_from": ')]
-            self.assertEqual(len(at), 1, "one x_packet_from line in the shape")
-            actor = next(i for i, ln in enumerate(lines) if ln.startswith('  "actor": '))
-            elements = next(i for i, ln in enumerate(lines) if ln.startswith('  "x_packet_elements": '))
-            self.assertTrue(actor < at[0] < elements, (actor, at[0], elements))
-            for words in ("who asked", "leave the key out"):
-                self.assertIn(words, lines[at[0]], words)
-            self.assertNotIn('"x_packet_from": ""', text)
-            if run.pack == "company":  # the start skill's rule for trusting a narrator decides
-                self.assertIn("`x_packet_from` the report's `narrator`, who raised it, when the member in its "
-                              "`created_by` plays the `narrator` (the members list), else leave the key out", text)
-            else:  # no such rule in this pack: the keeper leaves the key out
-                self.assertIn("and no `x_packet_from`;", text)
+            self.assertEqual(lines.count(ASKER_LINE), 1, "the asker line, whole, once")
+            self.assertEqual(sum('"x_packet_from"' in ln for ln in lines), 1, "no second line writes the key")
+            at = lines.index(ASKER_LINE)
+            opened = max(i for i in range(at) if lines[i] == "```json")
+            closed = next(i for i in range(at, len(lines)) if lines[i] == "```")
+            actor = next(i for i in range(opened, closed) if lines[i].startswith('  "actor": '))
+            elements = next(i for i in range(opened, closed) if lines[i].startswith('  "x_packet_elements": '))
+            self.assertTrue(opened < actor < at < elements < closed, (opened, actor, at, elements, closed))
+            self.assertEqual(text.count(KEEPER_FROM[run.pack]), 1, "the keeper's clause, whole")
+            self.assertEqual(text.count("`x_packet_from`"), 1, "the key is named in prose only by the keeper's clause")
+            for kind in ("design", "report"):
+                self.assertNotIn("x_packet_from", extra[kind][0]["description"], kind)
+            self.assertNotIn("x_packet_from", run.skill(), "start")
         self.each(check)
 
     def test_13e_only_the_charter_names_a_skill(self):
