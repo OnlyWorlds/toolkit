@@ -155,32 +155,4 @@ A description that still opens with a `Source:` line is read as that element's s
 
 ## A world set up before toolkit 5.11.6
 
-Its `Order of work`, if it keeps one, is written `open`. Until the keeper moves it, it keeps showing as open work: the context read hands it to its `actor` as work, and the design skill lists it as an open question on every part it names. To move it, the keeper first changes the skills below, each read first and written whole (online a PATCH of the skill Object's `description`, built on a fresh GET; in a folder an edit of its file), then sets the order's `subtype` to `standing` (one field), then sends the members a message to copy the changed skills again. The skills come first: the old report skill could set a `standing` order `done`.
-
-In the work skill's keeper step,
-
-```
-A work item you make (an open from a report, the `Order of work`) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids.
-```
-
-becomes
-
-```
-A work item you make (an open from a report) takes part 2's shape, with `actor` the person it is for, or `x_packet_for` its Roles' ids; the `Order of work` takes it with subtype `standing`.
-```
-
-and its part 2, after "your report says you took it.", gains "A `standing` one is never taken or set done."
-
-In the report skill's step 7 (both placements), "which the report answers because its work is finished here" becomes "still `open` or `taken`, finished here and answered by the report", and in its last line `v0.34.0-dist.120` becomes `v0.34.1-dist.136`.
-
-In a folder world's start skill,
-
-```
-- "What am I working on?" The `Work item` Relations whose `actor` is your Character, and your Working style.
-```
-
-becomes
-
-```
-- "What am I working on?" The `Work item` Relations with subtype `open` or `taken` whose `actor` is your Character, and your Working style.
-```
+This release changes the skills: the `Order of work` is written `standing`, and a work item is set `done` only while it is `open` or `taken`. A world set up before it keeps the skills it was given; this release does not change it. A keeper who wants the change compares the world's skills with this release's `skill.md`, `design.md`, `work.md` and `report.md` and takes what differs: no step of the pack does that for them. If the world keeps an `Order of work`, its subtype is set to `standing` only after its skills no longer set a standing work item done.
