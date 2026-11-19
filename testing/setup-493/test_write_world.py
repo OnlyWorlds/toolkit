@@ -202,6 +202,13 @@ KEEPER_FROM = {
 # repository world reads as a folder), and how many words of copying the filled text holds, by pack and
 # placement: every one is in a sentence the pack means (the opening's "never copies them", the copy
 # paths, the repository's copy of the world, keeping the skills current).
+# Where an online world skill sends the AI with no Charter named (test 2c): the short line, or, in the
+# packs with room for it, the cause and the remedy.
+CHARTER_NULL = {None: "null: tell your human)",
+                "governance": ("null: no Charter is marked for your seat to read, so tell your human: the owner or a "
+                               "co-builder marks or unhides it)"),
+                "ai-home": ("null: no Charter is marked for your seat to read, so tell your human: the owner or a "
+                            "co-builder marks or unhides it)")}
 STEP5_COPY = {"folder": "A changed file of one of your skills (below): copy it again.",
               "online": "One of your skills (below) among them: copy it again."}
 COPY_WORD = re.compile(r"(?i)\bcop(y|ies|ied|ying)\b")
@@ -864,7 +871,7 @@ class SetupWriter(unittest.TestCase):
                 self.assertNotIn("supertype=Charter", words)
             if run.placement == "online":
                 self.assertEqual(text.count("`front_door.charter`, `GET /me`"), 1)
-                self.assertIn("null: tell your human)", text)
+                self.assertIn(CHARTER_NULL.get(run.pack, CHARTER_NULL[None]), text)
                 self.assertIn("or GET /me front_door.charter online", line)
         self.each(check)
 

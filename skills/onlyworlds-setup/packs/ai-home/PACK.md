@@ -52,6 +52,8 @@ Date fields count days from 1970-01-01 (2026-10-22 is 20748), as in every work p
 
 Its Charter carries no `x_charter_of`, so every reader shows it as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, and on any Guide or Domain the world holds, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
 
+Online, start skills from the release after 5.11.6 on read the Charter only from `front_door.charter` in `GET /me`. That is null when no Charter carries the mark, or the marked one is hidden from that AI's seat; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter as above, or unhides it.
+
 ## A world set up before toolkit 5.11.0
 
 Online, two steps of the world skill are worth changing whatever is decided about the source: with the old words the AI reads what changed from its first visit's cursor at every start, and one page of it. In step 5,

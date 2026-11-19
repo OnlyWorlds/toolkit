@@ -83,6 +83,8 @@ Date fields count days from 1970-01-01 (the setup day 2026-10-22 is 20748); `wor
 
 Its Charter and its Guide (`Start here`) carry no `x_charter_of`, so every reader shows them as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, the Guide and each Domain, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
 
+Online, start skills from the release after 5.11.6 on read the Charter only from `front_door.charter` in `GET /me`. That is null when no Charter carries the mark, or the marked one is hidden from that AI's seat; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter as above, or unhides it.
+
 ## A world set up before toolkit 5.9.6
 
 Its Charter checks the Next line alone, or nothing when its `x_checks_rules` is empty or absent, and no refresh adds the room-mark rules (the writer writes only new folders), so the keeper adds them by hand: "every work item carries the room's mark, and every report carries the room's mark: x_room_of, this world's id" to the Charter's "How things are filed", and the two rules above to its `x_checks_rules` (online one PATCH of both fields, each read first and written whole; in a folder an edit of the file). The doctor then lists the older unmarked work items and reports: their makers mark them, or they stay a known finding.

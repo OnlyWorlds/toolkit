@@ -34,7 +34,7 @@ The record of {{body}}, kept so that "what did we decide, when, and why" has one
 Every file carries its `supertype` and `subtype`: the supertype is the index. To find things, read `elements/<type>/` and keep the files whose `supertype` (or `subtype`, or `name`) matches. Dates are days since 1970-01-01.
 <!-- end -->
 <!-- if online -->
-**The house rules live in the world**: the Law with supertype `Charter` (`front_door.charter`, `GET /me`; null: tell your human). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter` (`front_door.charter`, `GET /me`; null: no Charter is marked for your seat to read, so tell your human: the owner or a co-builder marks or unhides it). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
 ## Connect
 
