@@ -52,7 +52,7 @@ Then a short page for your human:
   "subtype": "open",
   "description": "<why, in a sentence or two>",
   "actor": "<whom it is for: your Character or your human's>",
-  "x_packet_from": "<who asked: your human's Character, or yours when you asked; unknown or none: leave the key out>",
+  "x_packet_from": "<who asked: the Character of whoever asked, a teammate included, yours when you asked; not known: leave the key out, never empty, never a guess>",
   "x_packet_elements": [{"type": "<type>", "id": "<element id>", "reason": "<one sentence>"}],
   "x_packet_source": {"server": <see below>, "world": "<this world's id>"},
   "x_packet_producer": {"tool": "<your harness>", "version": "<its version if you know it; else leave version out, never the word unknown>"},
