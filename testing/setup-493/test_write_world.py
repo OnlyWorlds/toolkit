@@ -817,7 +817,9 @@ class SetupWriter(unittest.TestCase):
         skill, every placement, carries exactly ASKER_LINE once, inside the JSON block of part 2's shape,
         between `actor` and `x_packet_elements`; the keeper's clause is KEEPER_FROM[pack] whole (the
         company pack's start skill has a rule for when a narrator is its maker, the software-project pack's
-        has none, so its keeper leaves the key out); and no other skill of the pack writes the key."""
+        has none, so its keeper leaves the key out); the key appears in the work skill exactly twice, once
+        in each (a text test cannot prove no false sentence was added, so it counts the term instead); and
+        no other skill of the pack names the key."""
         def check(run):
             if run.pack not in TEAM_PACKS:
                 return
@@ -833,7 +835,9 @@ class SetupWriter(unittest.TestCase):
             elements = next(i for i in range(opened, closed) if lines[i].startswith('  "x_packet_elements": '))
             self.assertTrue(opened < actor < at < elements < closed, (opened, actor, at, elements, closed))
             self.assertEqual(text.count(KEEPER_FROM[run.pack]), 1, "the keeper's clause, whole")
-            self.assertEqual(text.count("`x_packet_from`"), 1, "the key is named in prose only by the keeper's clause")
+            # Every mention of the key, however written, is one of the two pinned strings: any other sentence
+            # about it (a bare "x_packet_from" in prose included) changes the count.
+            self.assertEqual(text.count("x_packet_from"), 2, "x_packet_from only in the asker line and the keeper's clause")
             for kind in ("design", "report"):
                 self.assertNotIn("x_packet_from", extra[kind][0]["description"], kind)
             self.assertNotIn("x_packet_from", run.skill(), "start")
