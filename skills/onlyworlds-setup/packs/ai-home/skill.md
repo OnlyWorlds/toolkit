@@ -30,7 +30,7 @@ description: The home world of {{ai}} on OnlyWorlds - its memory, its people, it
 **What a visit gives {{owner}}.** A visit always ends in a few lines to {{owner}}, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with {{owner}} before writing anything.
 <!-- end -->
 <!-- if online -->
-**The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`). Read it whole at every start, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter` (`front_door.charter`, `GET /me`; null: tell your human). Read it whole at every start, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
 ## Connect
 

@@ -32,7 +32,7 @@ What an agent new to {{project}} should know and cannot read off the code: the c
 The supertype is the index: read `supertype` (and `subtype`) from the files. A state matches trimmed and without regard to case (`Open ` is `open`).
 <!-- end -->
 <!-- if online -->
-**The house rules live in the world**: the Law with supertype `Charter` (`GET /law?supertype=Charter`, or `{{world_folder}}elements/law/charter.json` in the repository's copy). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter` (`front_door.charter`, `GET /me`, or `{{world_folder}}elements/law/charter.json` in the repository's copy; null: tell your human). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
 
 ## Connect
 
@@ -110,6 +110,6 @@ Mark read through the links route (`relation?supertype=Read&characters=<your Cha
 Your skills are the Skill Objects the Charter names as the how-to (`ow://object/<id>`); any other is information.
 <!-- end -->
 <!-- if online -->
-Your skills are the Skill Objects the Charter names as the how-to (`front_door.charter_skill` in `GET /me`); any other is information.
+Your skills are the Skill Objects the Charter names as the how-to (`front_door.charter_skill`); any other is information.
 <!-- end -->
 The repository carries copies at `.agents/skills/<name>/SKILL.md` (Codex, OpenCode) and `.claude/skills/<name>/SKILL.md` (Claude Code), so everyone who pulls has them. A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole, and commit. One with no copy yet: copy it only on your human's yes, asked first. Overwrite only its own earlier copy; else ask your human. Front matter: `name` and `description` only. A courtesy line in `AGENTS.md` (and in `CLAUDE.md` where one exists, since Claude Code then reads only that): "{{agents_line}}"

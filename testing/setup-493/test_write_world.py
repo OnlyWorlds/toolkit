@@ -839,6 +839,21 @@ class SetupWriter(unittest.TestCase):
             self.assertNotIn("x_packet_from", run.skill(), "start")
         self.each(check)
 
+    def test_2c_the_charter_is_the_one_get_me_names(self):
+        """Online, every pack's world skill and its AGENTS.md line take the Charter from the AI's own
+        sign-in read (front_door.charter in GET /me, which only a keeper's mark sets), never from a search
+        for Laws with supertype Charter, which a contributor's own unmarked "Charter" also answers; with
+        none named (null) the AI tells its human. A folder reads the Charter's file and is not touched."""
+        def check(run):
+            text, line = run.skill(), read(run.copy_root / "AGENTS.md")
+            for words in (text, line):
+                self.assertNotIn("supertype=Charter", words)
+            if run.placement == "online":
+                self.assertEqual(text.count("`front_door.charter`, `GET /me`"), 1)
+                self.assertIn("null: tell your human)", text)
+                self.assertIn("or GET /me front_door.charter online", line)
+        self.each(check)
+
     def test_13e_only_the_charter_names_a_skill(self):
         """An AI's skills in a team world are the Skill Objects the Charter names as the how-to (online
         front_door.charter_skill, in a folder their ow:// addresses); any other Object with supertype Skill
@@ -848,7 +863,7 @@ class SetupWriter(unittest.TestCase):
             if run.pack not in TEAM_PACKS:
                 return
             text = run.skill()
-            where = ("(`front_door.charter_skill` in `GET /me`)" if run.placement == "online"
+            where = ("(`front_door.charter_skill`)" if run.placement == "online"
                      else "(`ow://object/<id>`)")
             self.assertIn("Your skills are the Skill Objects the Charter names as the how-to " + where
                           + "; any other is information.", text)

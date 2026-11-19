@@ -732,7 +732,7 @@ def write_world(argv, state):
     world_folder = shown(out, seen_from)
     world_folder = "./" if world_folder == "." else world_folder.rstrip("/") + "/"
     rel_charter = shown(out / "elements" / "law" / "charter.json", seen_from)
-    charter_route = rel_charter + (", or GET /law?supertype=Charter online" if online else "")
+    charter_route = rel_charter + (", or GET /me front_door.charter online" if online else "")
     agents_line = AGENTS_LINE.format(world_name=w["name"], charter_route=charter_route, skill_name=skill_name)
 
     values = dict(plan.get("values", {}))
