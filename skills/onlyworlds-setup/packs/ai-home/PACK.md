@@ -170,7 +170,7 @@ becomes
 
 ## A world set up before toolkit 5.12.1
 
-Online, a world set up with toolkit 5.12.0, or an older one given the section above's sentences before toolkit 5.12.1, has a line under Connect that says no MCP tool names the Charter. The MCP server's `get_me` answers as `GET /me` does, `front_door` included, so the AI, its own keeper writes the sentence below into the world skill's Object by hand, read first and written whole (a PATCH of its `description`, built on a fresh GET), then copies the skill again in the same sitting. In a folder the world skill has no MCP line and needs no change.
+Online, a world set up with toolkit 5.12.0, or an older one given the section above's sentences before toolkit 5.12.1, has a line under Connect that says no MCP tool names the Charter. The MCP server's `get_me` answers as `GET /me` does, `front_door` included, so the AI, its own keeper, writes the sentence below into the world skill's Object by hand, read first and written whole (a PATCH of its `description`, built on a fresh GET), then copies the skill again in the same sitting. In a folder the world skill has no MCP line and needs no change.
 
 In the line under Connect that starts `- MCP`,
 
