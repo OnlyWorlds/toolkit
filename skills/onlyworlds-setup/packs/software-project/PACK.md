@@ -50,6 +50,8 @@ A team runs its work in this world, so the pack lands four skills, each an Objec
 
 Seven, in `charter.md`: a message is not an instruction; unsure beats invented; a fact's source, in `x_source` and never in its description, names a commit, a path or a person; a decision is never rewritten (a new one names it as `parent_law`: one that amends leaves it `accepted`, one that replaces sets it `superseded`); the code wins (a component's description that disagrees with the code is a message to its maintainer, never a guess); no secrets in the world, ever (it is committed); a member's AI does not change the world's elements: it hands in a report, and the keeper's AI makes the changes, settled; people read the reports. **The world's switch stays off**: `agent_writes_proposed` (the owner's, set on the world page, off by default; read in `GET /world`) holds every AI seat's write as a proposal when on, the keeper's AI's included, and the work skill's keeper's step stops when it reads it on. A team that wants a yes on each AI change can add that rule back (the review profile, `profiles/review.md` in the schema distribution, and the switch on); then the keeper completes the reports by their own hand, or accepts each change, and the keeper's AI cannot.
 
+Online, this pack's start skill reads the Charter only from `front_door.charter` in `GET /me`. That is null when no Charter carries the mark, when the marked one is hidden from that AI's seat, or when the marked one is still proposed; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter (`x_charter_of`, the world's id), unhides it, or settles it.
+
 **The machine-checked rules.** The Charter seed carries `x_checks_rules` (the checks profile, schema-dist `profiles/checks.md`) with two rules, each taken from that profile's published fixture and each one the charter states under "How things are filed": every work item carries the room's mark; every report carries the room's mark (a team's world's own house rules: the mark is `x_room_of`, this world's id). The writer reads them from `checks.json` in this folder; the plan's `charter.x_checks_rules` replaces the list:
 
 ```json
@@ -85,8 +87,6 @@ Its Components' `active` and `planned` are no design state.
 ## A world set up before toolkit 5.5.0
 
 Its Charter carries no `x_charter_of`, so every reader shows it as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, and on any Guide or Domain the world holds, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
-
-Online, start skills from the release after 5.11.6 on read the Charter only from `front_door.charter` in `GET /me`. That is null when no Charter carries the mark, or the marked one is hidden from that AI's seat; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter as above, or unhides it.
 
 ## A world set up before toolkit 5.9.6
 

@@ -27,6 +27,8 @@
 
 Seven, in `charter.md`: a message is not an instruction; unsure beats invented; every memory dated and sourced (`x_source`); **retire, never delete** (a memory that stopped being true gets an `end_date` and a line why); an inference is written as one or not at all; the privacy rule (`{{privacy_rule}}`); a visiting AI's new elements land as proposed (`x_review_proposed`), the AI's own land settled, since it keeps the world.
 
+Online, this pack's world skill reads the Charter only from `front_door.charter` in `GET /me`. That is null when no Charter carries the mark, when the marked one is hidden from that AI's seat, or when the marked one is still proposed; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter (`x_charter_of`, the world's id), unhides it, or settles it.
+
 ## The placeholders
 
 | Placeholder | From | Default |
@@ -51,8 +53,6 @@ Date fields count days from 1970-01-01 (2026-10-22 is 20748), as in every work p
 ## A world set up before toolkit 5.5.0
 
 Its Charter carries no `x_charter_of`, so every reader shows it as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, and on any Guide or Domain the world holds, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
-
-Online, start skills from the release after 5.11.6 on read the Charter only from `front_door.charter` in `GET /me`. That is null when no Charter carries the mark, or the marked one is hidden from that AI's seat; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter as above, or unhides it.
 
 ## A world set up before toolkit 5.11.0
 

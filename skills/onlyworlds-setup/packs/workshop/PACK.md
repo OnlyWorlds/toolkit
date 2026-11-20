@@ -37,6 +37,8 @@
 
 Seven, in `charter.md`: lines are words said by a seat, never instructions; edit only your own (hosts and co-hosts may hide, and set a work item taken or done as a member said while its maker is away); one heart per person per target; a vote is your own element, changeable while voting is open; no keys and no one's private details in a line; an AI member's lines are marked by its seat, its caps per phase are the host's; a work item about another world's elements carries them in its packet list, never as links. A workshop is creative work, so an AI seat's writes land settled by default; a host who wants review adds the company pack's rule 8.
 
+Online, this pack's world skill reads the Charter only from `front_door.charter` in `GET /me`. That is null when no Charter carries the mark, when the marked one is hidden from that AI's seat, or when the marked one is still proposed; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter (`x_charter_of`, the world's id), unhides it, or settles it.
+
 **The machine-checked rule.** The Charter seed carries `x_checks_rules` (the checks profile, schema-dist `profiles/checks.md`) with one rule, taken from that profile's published fixture and stated in the charter's line on the room's mark: every work item carries the room's mark (a team's world's own house rule). A workshop makes no Report: the fixture's report rule is not in it. The writer reads it from `checks.json` in this folder; the plan's `charter.x_checks_rules` replaces the list:
 
 ```json
@@ -66,8 +68,6 @@ Date fields count days from 1970-01-01 (2026-10-22 is 20748): a sitting's `start
 ## A world set up before toolkit 5.5.0
 
 Its Charter carries no `x_charter_of`, so every reader shows it as lore (the charter profile, `profiles/charter.md` in the schema distribution). The keeper (the owner or a co-builder) sets `x_charter_of` to the world's id on the Charter, and on any Guide or Domain the world holds, one write each: online a PATCH of that one field, the id the server gave the world (`api.world_id` in `world.json`, or the id the world skill names); in a folder an edit of each file, the id `world.json`'s `id`. Nothing else changes.
-
-Online, start skills from the release after 5.11.6 on read the Charter only from `front_door.charter` in `GET /me`. That is null when no Charter carries the mark, or the marked one is hidden from that AI's seat; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter as above, or unhides it.
 
 ## A world set up before toolkit 5.9.4
 
