@@ -220,6 +220,9 @@ CHARTER_READS = {("ai-home", "folder"): 4, ("ai-home", "repo"): 4, ("ai-home", "
                  ("software-project", "folder"): 5, ("software-project", "repo"): 5,
                  ("software-project", "online"): 10,
                  ("workshop", "folder"): 4, ("workshop", "repo"): 4, ("workshop", "online"): 4}
+# A sentence that names the MCP search tool and a Charter (test 2c): the fallback search for the Charter, which
+# answers a contributor's newest "Charter" first. No world skill holds one. One sentence: no ". " between them.
+CHARTER_SEARCH = re.compile(r"\bsearch_elements\b(?:(?!\.\s).)*?\bCharter\b|\bCharter\b(?:(?!\.\s).)*?\bsearch_elements\b")
 STEP5_COPY = {"folder": "A changed file of one of your skills (below): copy it again.",
               "online": "One of your skills (below) among them: copy it again."}
 COPY_WORD = re.compile(r"(?i)\bcop(y|ies|ied|ying)\b")
@@ -884,7 +887,8 @@ class SetupWriter(unittest.TestCase):
         for Laws with supertype Charter, which a contributor's own unmarked "Charter" also answers; with
         none named (null) the AI tells its human. A folder reads the Charter's file and is not touched. The
         null sentence is pinned whole (CHARTER_NULL), and every place the world skill says where to read a
-        Charter or a Law is counted (CHARTER_READS).
+        Charter or a Law is counted (CHARTER_READS), as is every sentence that names `search_elements` and a
+        Charter (CHARTER_SEARCH: none).
         A text test pins the sentences that carry the rule and counts the ruled terms; it cannot prove that no other sentence contradicts them, which is what the outside read is for."""
         def check(run):
             text, line = run.skill(), read(run.copy_root / "AGENTS.md")
@@ -899,6 +903,8 @@ class SetupWriter(unittest.TestCase):
                 self.assertIn("or GET /me front_door.charter online", line)
             found = len(CHARTER_READ.findall(text))
             self.assertEqual(found, CHARTER_READS[run.pack, run.placement], f"{found} places that say where a Charter or a Law is read")
+            searches = CHARTER_SEARCH.findall(text)
+            self.assertEqual(len(searches), 0, f"a sentence that names search_elements and a Charter: {searches}")
         self.each(check)
 
     def test_13e_only_the_charter_names_a_skill(self):
