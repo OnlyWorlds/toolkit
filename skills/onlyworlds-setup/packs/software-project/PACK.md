@@ -190,6 +190,20 @@ No MCP tool names the Charter for you: read it as above, or ask your human; neve
 
 The courtesy line at the skill's end reads `or GET /me front_door.charter online` where it read `or GET /law?supertype=Charter online` (each member's `AGENTS.md` holds the same line: the message asks them to change it there too).
 
+In every placement, where the Charter has it (one set up before toolkit 5.9.0), its line on itself under "How things are filed" holds
+
+```
+The how-to: Object, supertype Skill.
+```
+
+which becomes
+
+```
+The how-to: the Skill Object named above.
+```
+
+(online a PATCH of the Charter's `description`, built on a fresh GET, which the next refresh brings to the repository; in a folder an edit of its file, committed like code): the old words fit any member's own Object with supertype `Skill`, and the Charter wins over the skill.
+
 The rest is for a world set up from toolkit 5.9.0 on. One set up before it has a single skill, whose copy names its Object by id, and neither of these sentences: its keeper writes only the lines above.
 
 In step 5, the sentence that makes any Object with supertype `Skill` one of your skills becomes, online,

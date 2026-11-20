@@ -144,7 +144,7 @@ becomes
 - This Charter: Law, supertype Charter. The how-to: the Skill Object named above.
 ```
 
-(online a PATCH of the Charter's `description`, built on a fresh GET; in a folder an edit of its file): the old words fit any member's own Object with supertype `Skill`, and the Charter wins over the skill.
+(online a PATCH of the Charter's `description`, built on a fresh GET; in a folder an edit of its file): the old words fit any member's own Object with supertype `Skill`, and the Charter wins over the skill. The Charter is the world's house rules, not one of the body's adopted rules: rule 4 does not hold it.
 
 ## A world set up before toolkit 5.12.1
 
