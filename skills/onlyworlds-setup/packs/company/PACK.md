@@ -161,7 +161,7 @@ This release changes the skills: the `Order of work` is written `standing`, and 
 
 ## A world set up before toolkit 5.12.0
 
-Online, its start skill reads the Charter by a search (`GET /law?supertype=Charter`), which also answers with a Law a member wrote and called Charter; in every placement it takes any Object with supertype `Skill` for one of its AI's skills. No step of the pack rewrites a world's skills, and this release's start skill is not written over an existing one (the writer writes only new folders, with new ids). So the keeper writes the sentences below into the start skill's Object by hand, each read first and written whole (online a PATCH of its `description`, built on a fresh GET; in a folder an edit of its file), then sends the members a message to copy the skill again. The Charter carries the mark first ("A world set up before toolkit 5.5.0"), or `front_door.charter` is null.
+Online, its start skill reads the Charter by a search (`GET /law?supertype=Charter`), which also answers with a Law a member wrote and called Charter; set up from toolkit 5.9.0 on, it also takes, in every placement, any Object with supertype `Skill` for one of its AI's skills. No step of the pack rewrites a world's skills, and this release's start skill is not written over an existing one (the writer writes only new folders, with new ids). So the keeper writes the sentences below into the start skill's Object by hand, each read first and written whole (online a PATCH of its `description`, built on a fresh GET; in a folder an edit of its file), then sends the members a message to copy the skill again. The Charter carries the mark first ("A world set up before toolkit 5.5.0"), or `front_door.charter` is null.
 
 Online, in the house rules' line,
 
@@ -182,6 +182,8 @@ No MCP tool names the Charter for you: read it as above, or ask your human; neve
 ```
 
 The courtesy line at the skill's end reads `or GET /me front_door.charter online` where it read `or GET /law?supertype=Charter online` (each member's `AGENTS.md` holds the same line: the message asks them to change it there too).
+
+The rest is for a world set up from toolkit 5.9.0 on. One set up before it has a single skill, whose copy names its Object by id, and neither of these sentences: its keeper writes only the lines above.
 
 In step 5, the sentence that makes any Object with supertype `Skill` one of your skills becomes, online,
 
