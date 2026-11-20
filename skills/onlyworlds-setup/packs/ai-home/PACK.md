@@ -149,7 +149,7 @@ The line under Connect that starts `- MCP` loses, where it has it,
 (it then ends at its full stop), and gains at its end
 
 ```
-No MCP tool names the Charter for you: read it as above, or ask your human; never from a list or a search.
+With MCP alone, take the Charter from `get_me`'s `front_door` as above; never a list or a search.
 ```
 
 The courtesy line at the skill's end reads `or GET /me front_door.charter online` where it read `or GET /law?supertype=Charter online` (the `AGENTS.md` beside each copy holds the same line: change it there too).
@@ -170,7 +170,7 @@ becomes
 
 ## A world set up before toolkit 5.12.1
 
-Online, a world set up with toolkit 5.12.0, or an older one whose world skill was given the sentences of the section above, has a line under Connect that says no MCP tool names the Charter. The MCP server's `get_me` answers as `GET /me` does, `front_door` included, so the AI, its own keeper writes the sentence below into the world skill's Object by hand, read first and written whole (a PATCH of its `description`, built on a fresh GET), then copies the skill again in the same sitting. In a folder the world skill has no MCP line and needs no change.
+Online, a world set up with toolkit 5.12.0, or an older one given the section above's sentences before toolkit 5.12.1, has a line under Connect that says no MCP tool names the Charter. The MCP server's `get_me` answers as `GET /me` does, `front_door` included, so the AI, its own keeper writes the sentence below into the world skill's Object by hand, read first and written whole (a PATCH of its `description`, built on a fresh GET), then copies the skill again in the same sitting. In a folder the world skill has no MCP line and needs no change.
 
 In the line under Connect that starts `- MCP`,
 
@@ -183,5 +183,3 @@ becomes
 ```
 With MCP alone, take the Charter from `get_me`'s `front_door` as above; never a list or a search.
 ```
-
-Where the section above is still to be written, this sentence goes in there in place of the old one.
