@@ -197,7 +197,7 @@ The how-to: the Skill Object named above.
 
 (online a PATCH of the Charter's `description`, built on a fresh GET; in a folder an edit of its file): the old words fit any member's own Object with supertype `Skill`, and the Charter wins over the skill.
 
-The rest is for a world set up from toolkit 5.9.0 on. One set up before it has a single skill, whose copy names its Object by id, and neither of these sentences: its keeper writes only the lines above.
+The rest is for a world set up from toolkit 5.9.0 on. One set up before it has a single skill, whose copy names its Object by id, and neither of these sentences: its keeper writes only the lines above. In the MCP sentence above it writes `take the Charter from` in place of `take the Charter and its skills from`: its Charter names that skill by name only, never by id, so `front_door.charter_skill` is empty for it.
 
 In step 5, the sentence that makes any Object with supertype `Skill` one of your skills becomes, online,
 
@@ -244,3 +244,5 @@ becomes
 ```
 With MCP alone, take the Charter and its skills from `get_me`'s `front_door` as above; never a list or a search.
 ```
+
+A world set up before toolkit 5.9.0 writes `take the Charter from` there in place of `take the Charter and its skills from`: its Charter names its one skill by name only, never by id, so `front_door.charter_skill` is empty for it.
