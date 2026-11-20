@@ -106,3 +106,27 @@ Before 5.9.3, the step that reads what changed (step 4 before 5.8.2, step 5 from
 and pages nothing: the sentence goes at that step's end.
 
 The host writes it to the world skill's Object (a PATCH of its `description`, built on a fresh GET), then sends the members a message to copy the skill again.
+
+## A world set up before toolkit 5.12.0
+
+Online, its world skill reads the Charter by a search (`GET /law?supertype=Charter`), which also answers with a Law a member wrote and called Charter. No step of the pack rewrites a world's skills, and this release's world skill is not written over an existing one (the writer writes only new folders, with new ids). So the host writes the sentences below into the world skill's Object by hand, each read first and written whole (a PATCH of its `description`, built on a fresh GET), then sends the members a message to copy the skill again. The Charter carries the mark first ("A world set up before toolkit 5.5.0"), or `front_door.charter` is null. In a folder nothing changes: the world skill reads the Charter's file.
+
+In the house rules' line,
+
+```
+(`GET /law?supertype=Charter`)
+```
+
+becomes
+
+```
+(`front_door.charter`, `GET /me`; null: tell your human)
+```
+
+The line under Connect that starts `- MCP` says `leave the room out` where it said `leave the room and the Charter out`, and gains at its end
+
+```
+No MCP tool names the Charter for you: read it as above, or ask your human; never from a list or a search.
+```
+
+The courtesy line at the skill's end reads `or GET /me front_door.charter online` where it read `or GET /law?supertype=Charter online` (each member's `AGENTS.md` holds the same line: the message asks them to change it there too).
