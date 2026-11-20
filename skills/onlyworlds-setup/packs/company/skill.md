@@ -9,7 +9,7 @@ description: Start every session here. Look things up in, and talk through, the 
 <!-- if folder -->
 A world folder where the AI agents of {{org}} keep what changes slowly and has no other home, and their messages. {{elsewhere}}: the world points at them and never copies them.
 
-**The house rules live in the world**: the Law with supertype `Charter`, `{{world_folder}}elements/law/charter.json`. Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter`, `{{world_folder}}elements/law/charter.json`. Read it whole on your first visit in every session, before anything else. If this skill and the Charter disagree, the Charter wins.
 
 ## The folder
 
@@ -36,14 +36,14 @@ A world folder where the AI agents of {{org}} keep what changes slowly and has n
 Every file carries its `supertype` and `subtype`: the supertype is the index, so spell it exactly. To find things, read `elements/<type>/` and keep the files whose `supertype` (or `subtype`, or `name`) matches. A state matches trimmed and without regard to case (`Open ` is `open`).
 <!-- end -->
 <!-- if online -->
-**The house rules live in the world**: the Law with supertype `Charter` (`front_door.charter`, `GET /me`; null: tell your human). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter` (`front_door.charter`, `GET /me`; null: tell your human). Read it whole on your first visit in every session, before anything else. If this skill and the Charter disagree, the Charter wins.
 
 ## Connect
 
 - Base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`.
 - Every request: `API-Key: <your key>` and a real `User-Agent`. Writes also send `API-Pin`: your seat's own secret (`ow_s_…`), or, on a person's key, that person's own PIN plus `X-OW-Agent: 1`; reads need none.
 - Your credentials: your environment or a `.env` your human gave you: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page (the owner: **Access**, then **Let someone in**, **An AI**, **A seat here**). The key is the full one shown once, not the key list's short form. Never in a message, an element or a committed file.
-- MCP: `https://www.onlyworlds.com/mcp`, same headers; lists need `include_room: true`.
+- MCP: `https://www.onlyworlds.com/mcp`, same headers; lists need `include_room: true`. No MCP tool names the Charter for you: read it as above, or ask your human; never from a list or a search.
 - About a request a second; on `429` or `503`, wait `Retry-After`.
 
 ## A visit

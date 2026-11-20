@@ -19,7 +19,7 @@ harness trial (2026-10-22):
 5. the AGENTS.md line and the world skill's courtesy line are one sentence;
 6. every pack writes the same .gitattributes, in every placement;
 7. every pack's world skill holds the daily sweep, word for word, and the
-   charter-order sentence with its reason, once each; only the company pack,
+   charter-order sentence, once each; only the company pack,
    whose lines keep a Next line, keeps the sweep's clause about stale lines;
 8. the company pack writes the Guide "Start here", a Welcome message to a person, and the
    charter's Next-line sentence;
@@ -156,8 +156,9 @@ DAILY_SWEEP = (
     "digest, then offers to go deeper: query the elements the new messages touch, read enough to see "
     "the whole picture, and talk it through with your human before writing anything.")
 LINES_CLAUSE = "which of the lines they keep are over two weeks old or past their `Next: ... by` date, "
-ORDER = ("This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line "
-         "or a skill is read first.")
+# The charter-order sentence (test 7): the Charter read whole before anything else, by pack.
+ORDER = {None: "Read it whole on your first visit in every session, before anything else.",
+         "ai-home": "Read it whole at every start, before anything else."}
 API_ROUTE = re.compile(r"onlyworlds\.com/(api|mcp)|\b(GET|POST|PATCH|PUT|DELETE) /")
 # The seed rows that carry `x_source`, as each pack's seed says (test 21a): every row but a Message
 # where the charter's rule 3 covers every fact, a memory only in an AI's home, none in a workshop.
@@ -510,7 +511,7 @@ class SetupWriter(unittest.TestCase):
     def test_7_daily_sweep_and_charter_order_every_pack(self):
         def check(run):
             text = run.skill()
-            self.assertEqual(text.count(ORDER), 1, "the charter-order sentence, once")
+            self.assertEqual(text.count(ORDER.get(run.pack, ORDER[None])), 1, "the charter-order sentence, once")
             sweep = DAILY_SWEEP
             if run.pack != "company":  # only the company pack keeps lines with a Next line: the clause is cut
                 self.assertIn(LINES_CLAUSE, sweep)

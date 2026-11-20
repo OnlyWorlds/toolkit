@@ -9,7 +9,7 @@ description: Start every session here. The context world of {{project}} on OnlyW
 What an agent new to {{project}} should know and cannot read off the code: the components, the decisions and why, who maintains what, the services, the releases. {{tracker}} keeps the work and the code keeps the code; the world points at both.
 
 <!-- if folder -->
-**The house rules live in the world**: the Law with supertype `Charter`, `{{world_folder}}elements/law/charter.json`. Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter`, `{{world_folder}}elements/law/charter.json`. Read it whole on your first visit in every session, before anything else. If this skill and the Charter disagree, the Charter wins.
 
 ## The folder
 
@@ -32,7 +32,7 @@ What an agent new to {{project}} should know and cannot read off the code: the c
 The supertype is the index: read `supertype` (and `subtype`) from the files. A state matches trimmed and without regard to case (`Open ` is `open`).
 <!-- end -->
 <!-- if online -->
-**The house rules live in the world**: the Law with supertype `Charter` (`front_door.charter`, `GET /me`, or `{{world_folder}}elements/law/charter.json` in the repository's copy; null: tell your human). Read it whole on your first visit in every session, before anything else. This order is in the skill itself because harnesses differ on whether an `AGENTS.md` line or a skill is read first. If this skill and the Charter disagree, the Charter wins.
+**The house rules live in the world**: the Law with supertype `Charter` (`front_door.charter`, `GET /me`, or `{{world_folder}}elements/law/charter.json` in the repository's copy; null: tell your human). Read it whole on your first visit in every session, before anything else. If this skill and the Charter disagree, the Charter wins.
 
 ## Connect
 
