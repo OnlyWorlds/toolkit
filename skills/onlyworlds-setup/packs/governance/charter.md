@@ -28,7 +28,7 @@ How things are filed
 - A meeting: Event, supertype Meeting. A decision: Event, supertype Decision (constructs the motion).
 - The minutes: Narrative, supertype Minutes; events the meeting and decisions, laws the rules adopted, constructs the motions.
 - Open work: Relation, supertype Work item, subtype open, taken or done.
-- This Charter: Law, supertype Charter. The how-to: Object, supertype Skill.
+- This Charter: Law, supertype Charter. The how-to: the Skill Object named above.
 - Date fields count days from 1970-01-01; write the ISO date in the text too.
 
 How to talk

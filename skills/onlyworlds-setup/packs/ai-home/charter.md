@@ -25,7 +25,7 @@ How things are filed
 - A tool: Object, supertype Tool. A moment that matters: Event, supertype Milestone.
 - Open work: Relation, supertype Work item, subtype open, taken or done; actor = whom it is for.
 - The keeper: Title Keeper (supertype Role); who kept it when: Relation, supertype Tenure.
-- This Charter: Law, supertype Charter. The how-to: Object, supertype Skill.
+- This Charter: Law, supertype Charter. The how-to: the Skill Object named above.
 - Date fields count days from 1970-01-01; write the ISO date in the text too.
 
 How to talk
