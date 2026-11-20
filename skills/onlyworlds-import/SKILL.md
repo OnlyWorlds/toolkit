@@ -22,7 +22,7 @@ Shared rules (identity, field kinds, propose-review-apply, checking your work) l
 | No account | Output a world folder (opens in Atlas; Step 7 says which browsers) |
 | The source marks something GM-only (a secret, a twist, a stat block) | `hidden: true` in that element's file (Step 3) |
 | An existing world (folder or API) | Reconcile before writing (Step 5) |
-| Campaigns or stories in a parsed world | Commit the parsed world as canon, branch per campaign (`knowledge/world-folder.md`, keeping history in git), then the update skill after each session |
+| Campaigns or stories in a parsed world | Commit the parsed world as canon (never a folder linked to an account), branch per campaign (`knowledge/world-folder.md`, keeping history in git), then the update skill after each session |
 | After each played session | The update skill |
 | An export from World Anvil, LegendKeeper, Kanka, Campfire or Notion | The carry skill (Step 1) |
 | Designing a system the text only implies | The model skill |
@@ -94,7 +94,7 @@ The structure check by script runs on the written folder (Step 7, read back); th
 
 ### Step 5: Reconcile with an existing world
 
-Skip for a new world: a world this parse is building stays new until the user has reviewed it or someone else has edited it; after that, every further document goes through this step. Otherwise, for a folder, index every `elements/*/*.json` by id and name; for an API world, use the local copy start's Connect an account keeps. Snapshot first (commit the folder in git, or export an account world to a folder: `knowledge/world-folder.md`).
+Skip for a new world: a world this parse is building stays new until the user has reviewed it or someone else has edited it; after that, every further document goes through this step. Otherwise, for a folder, index every `elements/*/*.json` by id and name; for an API world, use the local copy start's Connect an account keeps. Snapshot first (commit the folder in git unless it is linked to an account, or export an account world to a folder: `knowledge/world-folder.md`).
 
 Write the change list in the same row format the update skill uses, one line per change: **create** · **update** (in the field's own kind: replace a current-state field, append a dated line to a history field, never touch identity fields without a ruling) · **link** · **no change** (with a short reason) · **flag** (conflicts and identity questions, with both versions). A name match is a candidate until type plus one anchor (place, holder, role) agree. Then stop: the user rules on the list, and only approved rows are applied. In a folder, apply them per the world-folder writer rules (in a folder linked to an account, each edited file gets a fresh `local_updated_at`).
 

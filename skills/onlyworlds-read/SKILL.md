@@ -185,7 +185,7 @@ For each recommendation, show what to link (source and target), which field to u
 Apply only the approved items.
 
 **World folder**:
-1. **Snapshot first**: commit the folder in git, or copy it (`knowledge/world-folder.md`, "Keeping history").
+1. **Snapshot first**: commit the folder in git unless it is linked to an account (its `world.json` has an `api` block), or copy it (`knowledge/world-folder.md`, "Keeping history").
 2. **Edit per the world-folder writer rules**: change only the approved link fields; keep every other field, including `atlas_*`/`shadow_*`/`x_*` values and nulls, value for value; keep keys in their original order. In a folder linked to an account, set a fresh `local_updated_at` on every edited file, or Atlas never sends the edit. A new Relation is a new file: mint a UUID, name the file per the folder rules, and omit `local_updated_at`/`server_updated_at`.
 3. **Read back**: re-load each edited file and confirm every approved link landed and nothing else changed (principles §5).
 
@@ -210,7 +210,7 @@ curl -s -X POST "https://www.onlyworlds.com/api/v2/relation" \
 
 For non-ASCII names or descriptions, write the body to a file with ASCII-escaped JSON and send `-d @body.json` (Windows curl can corrupt raw UTF-8 silently). After each write, GET the element and confirm the change landed.
 
-Report results: N links added, N Relations created, N orphans resolved. For a folder in git, commit with the approved list as the message.
+Report results: N links added, N Relations created, N orphans resolved. For a folder in git and not linked to an account, commit with the approved list as the message.
 
 ### Link Field Reference
 
@@ -276,7 +276,7 @@ Offer two fixes when the right one depends on intent (the date was wrong, or the
 
 ### Apply What Was Approved
 
-- **World folder**: snapshot first (git, or a copy: world-folder.md, "Keeping history"); edit only the approved fields, per the world-folder writer rules (keep every other field and key order; in a folder linked to an account, a fresh `local_updated_at`).
+- **World folder**: snapshot first (git unless the folder is linked to an account, or a copy: world-folder.md, "Keeping history"); edit only the approved fields, per the world-folder writer rules (keep every other field and key order; in a folder linked to an account, a fresh `local_updated_at`).
 - **API**: read before write, PATCH only the approved fields; multi-link changes go through the links endpoint (the links report's Execute shows both calls).
 - Read each edited element back, then run the script again: an approved fix should take its finding with it, and nothing new should appear.
 

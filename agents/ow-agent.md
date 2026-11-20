@@ -32,7 +32,7 @@ Check the current directory (or the folder the user names):
 |---|---|---|
 | Import a corpus (a novel, a notes vault, a wiki, old session notes) | import → read (link) → read (survey) | Review the import before it is written; read's links report finds what the import left unconnected; its survey report reads the result back |
 | Ongoing import (a new batch every day or chapter) | import (reconcile against the world) → review → write → read (link) when orphans pile up | See "Ongoing import" below |
-| Run a campaign, roleplay, or story with AI | context (once: the recipe) → each session: build the packet, play, update | Commit the world folder after each update (world-folder.md, keeping history) |
+| Run a campaign, roleplay, or story with AI | context (once: the recipe) → each session: build the packet, play, update | Commit the world folder after each update, unless it is linked to an account (world-folder.md, keeping history) |
 | Move a world in from another tool | carry (`--plan`) → read (consistency) → import Step 5 | carry's plan shows what becomes what before anything is written; the consistency report reads the folder it wrote; import's Step 5 reconciles it into an existing world |
 | Grow or audit a world | read (survey) → read (link) | The survey's orphans and bridges are the links report's input |
 | See a world | draw (a graph, a map with its pins and zones, or a timeline) | Draw writes a file to open in a browser and never changes the world |
@@ -53,7 +53,7 @@ A reconciled import against an existing world, one batch at a time. Each step po
    - API: creates go in one `/api/v2/bulk` request with an `Idempotency-Key` (the develop skill, Bulk Upload). Existing elements change only through PATCH (read first, merge) or the links route; a `/bulk` item with an existing id replaces the whole element.
    - Link fields carry ids, never names: resolve each name to an existing id or to the id minted for its create row (import Step 7).
 6. **Verify.** Read back what landed and compare it with the approved rows (principles §5).
-7. **Finish.** Folder: commit, with the change list as the message (world-folder.md, keeping history). API: update `.ow/world-cache.json` and write a short batch summary to `.ow/last-parse.md`. Report counts, and what was not done.
+7. **Finish.** Folder: commit, with the change list as the message, unless it is linked to an account (world-folder.md, keeping history). API: update `.ow/world-cache.json` and write a short batch summary to `.ow/last-parse.md`. Report counts, and what was not done.
 
 ## Cache freshness (API worlds)
 

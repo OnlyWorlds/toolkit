@@ -72,7 +72,7 @@ The Quick Reference routes; three cases it cannot carry:
 
 - **An account world connects first.** For import or API work on an account world, Connect an account comes first if `.ow/` doesn't exist: without its local copy, import's Step 5 has nothing to reconcile against and the parse creates duplicates. A world folder never goes through credential setup, and a user with no world gets a world folder: never make an account feel required.
 - **Both a folder and an account link**: Step 3's source-of-truth question comes before any route.
-- **History or an alternate timeline**: "Let's put your world folder under git." → open `knowledge/world-folder.md`, "Keeping history", and walk them through it. In a folder linked to an account, turn on Stay offline in Atlas before switching away from the branch the account follows.
+- **History or an alternate timeline**: "Let's put your world folder under git." → open `knowledge/world-folder.md`, "Keeping history", and walk them through it; a folder linked to an account is never committed: version an unlinked copy (same section).
 
 ## Scope
 
