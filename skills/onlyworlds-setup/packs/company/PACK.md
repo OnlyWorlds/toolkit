@@ -214,3 +214,21 @@ and after "copy its description again, whole." it gains
 ```
 One with no copy yet: copy it only on your human's yes, asked first. Overwrite only its own earlier copy; else ask your human.
 ```
+
+## A world set up before toolkit 5.12.1
+
+Online, a world set up with toolkit 5.12.0, or an older one whose start skill was given the sentences of the section above, has a line under Connect that says no MCP tool names the Charter. The MCP server's `get_me` answers as `GET /me` does, `front_door` included, so the keeper writes the sentence below into the start skill's Object by hand, read first and written whole (a PATCH of its `description`, built on a fresh GET), then sends the members a message to copy the skill again. In a folder the start skill has no MCP line and needs no change.
+
+In the line under Connect that starts `- MCP`,
+
+```
+No MCP tool names the Charter for you: read it as above, or ask your human; never from a list or a search.
+```
+
+becomes
+
+```
+With MCP alone, take the Charter and its skills from `get_me`'s `front_door` as above; never a list or a search.
+```
+
+Where the section above is still to be written, this sentence goes in there in place of the old one.
