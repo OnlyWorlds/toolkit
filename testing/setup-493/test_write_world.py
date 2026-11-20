@@ -207,9 +207,9 @@ KEEPER_FROM = {
 # packs with room for it, the cause and the remedy.
 CHARTER_NULL = {None: "null: tell your human)",
                 "governance": ("null: no Charter is marked for your seat to read, so tell your human: the owner or a "
-                               "co-builder marks or unhides it)"),
+                               "co-builder marks, unhides or settles it)"),
                 "ai-home": ("null: no Charter is marked for your seat to read, so tell your human: the owner or a "
-                            "co-builder marks or unhides it)")}
+                            "co-builder marks, unhides or settles it)")}
 # Every place a world skill tells the AI where to read a Charter or a Law (test 2c): an API route on Laws,
 # the Charter's file, the sign-in answer's Charter. A further place, a search for the Charter included,
 # changes the count. By pack and placement.

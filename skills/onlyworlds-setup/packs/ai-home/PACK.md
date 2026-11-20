@@ -137,7 +137,7 @@ In the house rules' line,
 becomes
 
 ```
-(`front_door.charter`, `GET /me`; null: no Charter is marked for your seat to read, so tell your human: the owner or a co-builder marks or unhides it)
+(`front_door.charter`, `GET /me`; null: no Charter is marked for your seat to read, so tell your human: the owner or a co-builder marks, unhides or settles it)
 ```
 
 The line under Connect that starts `- MCP` loses, where it has it,
