@@ -104,7 +104,7 @@ A description that still opens with a `Source:` line is read as that element's s
 
 ## A world set up before toolkit 5.12.0
 
-Online, its world skill reads the Charter by a search (`GET /law?supertype=Charter`), which also answers with a Law a member wrote and called Charter. No step of the pack rewrites a world's skills, and this release's world skill is not written over an existing one (the writer writes only new folders, with new ids). So the owner or a co-builder writes the sentences below into the world skill's Object by hand, each read first and written whole (a PATCH of its `description`, built on a fresh GET), then sends the members a message to copy the skill again. The Charter carries the mark first ("A world set up before toolkit 5.5.0"), or `front_door.charter` is null. In a folder nothing changes: the world skill reads the Charter's file.
+Online, its world skill reads the Charter by a search (`GET /law?supertype=Charter`), which also answers with a Law a member wrote and called Charter. No step of the pack rewrites a world's skills, and this release's world skill is not written over an existing one (the writer writes only new folders, with new ids). So the owner or a co-builder writes the sentences below into the world skill's Object by hand, each read first and written whole (a PATCH of its `description`, built on a fresh GET), then sends the members a message to copy the skill again. The Charter carries the mark first ("A world set up before toolkit 5.5.0"), or `front_door.charter` is null. In a folder the world skill needs no change: it reads the Charter's file.
 
 In the house rules' line,
 
@@ -131,3 +131,17 @@ No MCP tool names the Charter for you: read it as above, or ask your human; neve
 ```
 
 The courtesy line at the skill's end reads `or GET /me front_door.charter online` where it read `or GET /law?supertype=Charter online` (each member's `AGENTS.md` holds the same line: the message asks them to change it there too).
+
+In every placement, the Charter's line on itself and the how-to, under "How things are filed",
+
+```
+- This Charter: Law, supertype Charter. The how-to: Object, supertype Skill.
+```
+
+becomes
+
+```
+- This Charter: Law, supertype Charter. The how-to: the Skill Object named above.
+```
+
+(online a PATCH of the Charter's `description`, built on a fresh GET; in a folder an edit of its file): the old words fit any member's own Object with supertype `Skill`, and the Charter wins over the skill.
