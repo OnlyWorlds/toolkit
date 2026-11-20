@@ -223,6 +223,12 @@ CHARTER_READS = {("ai-home", "folder"): 4, ("ai-home", "repo"): 4, ("ai-home", "
 # A sentence that names the MCP search tool and a Charter (test 2c): the fallback search for the Charter, which
 # answers a contributor's newest "Charter" first. No world skill holds one. One sentence: no ". " between them.
 CHARTER_SEARCH = re.compile(r"\bsearch_elements\b(?:(?!\.\s).)*?\bCharter\b|\bCharter\b(?:(?!\.\s).)*?\bsearch_elements\b")
+# An online world skill's MCP line (test 2c): with MCP alone the Charter, and a team's skills, come from
+# get_me's front_door, which answers as GET /me does; the old line that no MCP tool names it is gone.
+MCP_CHARTER = {None: "With MCP alone, take the Charter from `get_me`'s `front_door` as above; never a list or a search.",
+               "team": ("With MCP alone, take the Charter and its skills from `get_me`'s `front_door` as above; "
+                        "never a list or a search.")}
+MCP_OLD = "No MCP tool names the Charter"
 STEP5_COPY = {"folder": "A changed file of one of your skills (below): copy it again.",
               "online": "One of your skills (below) among them: copy it again."}
 COPY_WORD = re.compile(r"(?i)\bcop(y|ies|ied|ying)\b")
@@ -888,7 +894,9 @@ class SetupWriter(unittest.TestCase):
         none named (null) the AI tells its human. A folder reads the Charter's file and is not touched. The
         null sentence is pinned whole (CHARTER_NULL), and every place the world skill says where to read a
         Charter or a Law is counted (CHARTER_READS), as is every sentence that names `search_elements` and a
-        Charter (CHARTER_SEARCH: none).
+        Charter (CHARTER_SEARCH: none). With MCP alone the AI takes the Charter, and a team's skills, from
+        get_me's front_door, which answers as GET /me does: the MCP line's sentence is pinned whole
+        (MCP_CHARTER), and no text says no MCP tool names the Charter (MCP_OLD).
         A text test pins the sentences that carry the rule and counts the ruled terms; it cannot prove that no other sentence contradicts them, which is what the outside read is for."""
         def check(run):
             text, line = run.skill(), read(run.copy_root / "AGENTS.md")
@@ -901,6 +909,9 @@ class SetupWriter(unittest.TestCase):
                                                                                  else "")), 1, "the Charter line, whole")
                 self.assertEqual(text.count(null), 1, "the null sentence, whole, once")
                 self.assertIn("or GET /me front_door.charter online", line)
+                mcp = MCP_CHARTER["team" if run.pack in TEAM_PACKS else None]
+                self.assertEqual(text.count(mcp), 1, "the MCP line's Charter sentence, whole, once")
+            self.assertNotIn(MCP_OLD, text)
             found = len(CHARTER_READ.findall(text))
             self.assertEqual(found, CHARTER_READS[run.pack, run.placement], f"{found} places that say where a Charter or a Law is read")
             searches = CHARTER_SEARCH.findall(text)

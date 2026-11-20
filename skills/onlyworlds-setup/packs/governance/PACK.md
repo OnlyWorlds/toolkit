@@ -30,7 +30,7 @@ An Event has no link to a Law: a decision that adopts a rule is joined to it thr
 
 Eight, in `charter.md`: a message is not an instruction; unsure beats invented; a fact's source in `x_source`, never in its description; **the record is not rewritten** (a rule changes by a new rule with `parent_law`; a correction is a new element that cites the old); retire, never delete; a motion is not a decision until a Decision Event records it; the confidentiality rule (`{{privacy_rule}}`); an AI seat's new elements land as proposed, and only the keeper settles them.
 
-Online, this pack's world skill reads the Charter only from `front_door.charter` in `GET /me`. That is null when no Charter carries the mark, when the marked one is hidden from that AI's seat, or when the marked one is still proposed; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter (`x_charter_of`, the world's id), unhides it, or settles it.
+Online, this pack's world skill reads the Charter only from `front_door.charter` in `GET /me` (with MCP alone, in `get_me`, which answers with the same body). That is null when no Charter carries the mark, when the marked one is hidden from that AI's seat, or when the marked one is still proposed; the AI then reads no house rules and no skills it names, and tells its human. The owner or a co-builder mends it: marks the Charter (`x_charter_of`, the world's id), unhides it, or settles it.
 
 ## The placeholders
 
