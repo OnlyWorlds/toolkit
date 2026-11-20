@@ -62,6 +62,6 @@ A world folder is plain files, so git gives it history, comparison, and alternat
 - **Merging back is a review.** Treat a branch's diff like any change list: read it, rule on it, then merge.
 - **Tags mark moments**: an era, a finished arc, "session 30".
 - **Keep the repo to the world.** In a repo you created, one `.gitignore` line, `.*/`, keeps every tool's private folder out. Large media can live outside the repo.
-- **Credentials.** A linked folder holds its API key in `world.json`'s `api` block, and a linked folder is never committed: the folder check reports a `world.json` with an `api` block that git tracks. Version an unlinked copy, the portable one, and keep the key outside it; if a key is ever pushed, revoke it in the account.
+- **Credentials.** A folder linked to an account (its `world.json` has an `api` block, which can hold its API key) is never committed: the folder check reports a `world.json` with an `api` block that git tracks. Version an unlinked copy, the portable one, and keep the key outside it; if a key is ever pushed, revoke it in the account.
 - **The writer rules keep diffs small**: LF endings and keys in their original order mean a diff shows only what changed.
 - **An OnlyWorlds account holds the current state; git holds the history.**

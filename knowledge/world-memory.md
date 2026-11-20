@@ -26,7 +26,7 @@ Shared reference for the context and update skills: the session loop. The genera
 - **The handover** is cheap and happens every session. **The resolve** is the careful pass; it can trail a session or two behind, but the longer it trails, the staler the world the next sessions read.
 - **Code counts, the model writes and judges** (`principles.md` §2). Who is present, which threads are open, what is due, what a session mentioned: counting jobs. In practice this split is the largest single gain in both halves: most errors in model-only versions are counting the model redid and got wrong.
 - **Two clocks.** Where the story stands (OnlyWorlds: `time_current` in `world.json`, `time_range_current` on the v2 API) and how far the world data has caught up with it. When the story runs ahead of the data, the context says so, and the resolve closes the gap.
-- **History in git.** Commit the world folder after each resolve, with the change list as the message; `main` is canon and a branch is a timeline (a what-if, an alternate ending). A linked folder keeps its API key in `world.json`'s `api` block; `world-folder.md` (keeping history) says how to keep it out of a public repo.
+- **History in git.** Commit the world folder after each resolve, with the change list as the message; `main` is canon and a branch is a timeline (a what-if, an alternate ending). A folder linked to an account (its `world.json` has an `api` block) is never committed: version an unlinked copy (`world-folder.md`, keeping history).
 
 ## 2. The ladder: from a query to an agent
 
