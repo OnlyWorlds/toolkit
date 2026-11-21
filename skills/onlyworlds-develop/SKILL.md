@@ -151,8 +151,10 @@ An element has one address in three spellings: `https://www.onlyworlds.com/w/<wo
 
 - The key is `items` (not `operations`); each item wraps a `type` and the `element`. An element without an `id`, or with a new one, is created.
 - **An element whose `id` already exists replaces that element entirely, like PUT.** Every field you don't send is cleared, links and extension fields included. Never send a partial element for an existing id: update with PATCH or the links route.
-- The element holds writable fields only: `type` belongs on the item, and `created_at`, `updated_at`, `change_seq` are rejected (422). An `op` key is ignored, and there is no delete op.
+- The element holds writable fields only: `type` belongs on the item, and `created_at`, `updated_at`, `change_seq` are rejected (422). There is no delete op.
+- The body takes `items`, `atomic` and `create_only`, and an item takes `type` and `element`. Any other key (an `op`, say), any query parameter, or one of these names sent twice is a 422 that names it, and nothing is written.
 - Max 1000 items per request. `"atomic": true` at the top level makes the batch all-or-nothing.
+- `"create_only": true` at the top level makes an item with an `id` create and never replace: an item whose `id` is already held is refused (409 `id_conflict`) and nothing is written for it. Send it whenever a batch is meant to add.
 
 ```bash
 curl -s -X POST "$B/bulk" "${W[@]}" -H "Idempotency-Key: {a-uuid-for-this-batch}" -d @batch.json
@@ -187,7 +189,7 @@ The response is `{"errors": false, "items": [{"status": 201, "id": "{uuid-A}", .
 
 ## PIN (the world wall)
 
-The PIN is the **world's wall**, not a dialect's, Argon2-hashed on the server: every write needs it. Prefixed keys read without it (sending it does no harm); only a legacy 10-digit key reading a private world sends it on reads. Wrong PINs are counted on the key and across every key of the account whose PIN it is (a world's PIN is its owner's; a member's own key counts on the member; a seat's secret on the seat's key alone): after 3 failures each retry waits longer, and 10 with no right PIN between them lock writes with that PIN for 15 minutes on every one of those keys, a key made during the lock included (`429 rate_limited`, `Retry-After`).
+The PIN is the **world's wall**, not a dialect's, Argon2-hashed on the server: every write needs it. Prefixed keys read without it. A wrong PIN sent on a read beside a key that can write is a 401 and counts as a failure (an owner's key on any read, a member's on `GET /me`); beside a key that cannot write a PIN is never read. Only a legacy 10-digit key reading a private world sends it on reads. Wrong PINs are counted on the key and across every key of the account whose PIN it is (a world's PIN is its owner's; a member's own key counts on the member; a seat's secret on the seat's key alone): after 3 failures each retry waits longer, and 10 with no right PIN between them lock writes with that PIN for 15 minutes on every one of those keys, a key made during the lock included (`429 rate_limited`, `Retry-After`).
 
 ## Errors
 
@@ -195,7 +197,7 @@ v2 and /bulk answer `{"error": {"type", "code", "message", "param", "doc_url"}}`
 
 | You get | Fix |
 |---|---|
-| `401` `invalid_credentials`: bad or missing key, or a wrong PIN on a write (`key_revoked`: revoked) | Check `API-Key` and `API-Pin`; a revoked key needs a new one |
+| `401` `invalid_credentials`: bad or missing key, or a wrong PIN (`key_revoked`: revoked) | Check `API-Key` and `API-Pin`; a revoked key needs a new one |
 | `422` `Unknown field: friends_ids`: a typo, or v1's `_ids` suffix; `param` names it | The bare canonical field name |
 | `400` / per-item `invalid_link`: a link names a UUID that does not exist | A real UUID, or the target in the same batch |
 | `409` `id_conflict`: POST of an id that exists | PUT to upsert |
