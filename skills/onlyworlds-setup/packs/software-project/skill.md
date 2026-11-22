@@ -92,7 +92,7 @@ Mark read through the links route (`relation?supertype=Read&characters=<your Cha
 
 ## Writing
 
-- A member's AI writes only its own (Charter rule 7): its message, report, Read relation, work item (with `x_room_of`) and own Character; anything else goes into its report. The keeper's AI (the Charter names it) writes the world's elements from the reports, by the rules below.
+- A member's AI writes only its own (Charter rule 7): its message, report, Read relation, work item (with `x_room_of`) and own Character; anything else goes into its report. The keeper's AI (the Charter says who) writes the world's elements from the reports, by the rules below.
 - Only a fact a person or a document gave you that changes the element (its text, a status, a link) sets `x_source`: to its source and day.
 - A decision's `x_source` names where it came from, and no status changes it. A decision is never edited after `accepted`: a new one names it as `parent_law`; one that replaces it sets it `superseded`, one that amends leaves it `accepted`.
 <!-- if folder -->

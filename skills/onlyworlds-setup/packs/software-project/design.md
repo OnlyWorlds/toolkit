@@ -24,7 +24,7 @@ A design talk usually fails one of four ways: an answer from the ask alone, besi
 - A decision's history: follow `parent_law` up; `GET /law?parent_law=<its id>` lists what amends or replaces it.
 - Open questions are work items: page `GET /relation?supertype=Work%20item&subtype=open`, then `subtype=taken`, and keep those that name the part (in `x_packet_elements` or a link field).
 <!-- end -->
-- The design's state is the `subtype` `in design` or `locked` of a Component or another Object or Construct; a Component's `deprecated` is its own status: it has no design state and needs none. A Decision's subtype is its own status, no design state: `proposed`, `accepted`, `rejected` turned down (it stays, so the question is not asked twice), `superseded` history. Only the keeper's AI moves either, from a report that names who decided. An unset state (no subtype) is not stated: say so, and do not build on it as locked.
+- The design's state is the `subtype` `in design` or `locked` of a Component or another Object or Construct; a Component's `deprecated` is its own status: it has no design state and needs none. A Decision's subtype is its own status, no design state: `proposed`, `accepted`, `rejected` turned down (it stays, so the question is not asked twice), `superseded` history. Only the keeper's AI moves either (`{{work_skill_name}}`'s keeper's step says how to tell), from a report that names who decided. An unset state (no subtype) is not stated: say so, and do not build on it as locked.
 - How far something is built is not in the world. Read that where it lives (the code and {{tracker}}) when it matters, or say you have not and put it in the note as a question.
 - If nothing you read says why this matters to {{project}}, say so; do not invent a reason.
 
@@ -46,7 +46,7 @@ That sets the length. Three quick questions get three answers with their sources
 
 When the talk decided or opened anything, write a design note, a Markdown text someone who was not there can start from: what it stands on and how the question was framed; what was decided, each with its reason and the options set aside; what is open, each with who decides it. When you took an existing design further, write it as it now stands and mark what changed. A short talk gets a short note; one that only answered questions leaves none. Write it in the language the person works in.
 
-Hand it in with a report, as `{{report_skill_name}}` says. The report's text holds the short of it (what was decided, each a decision to record, with its why; what is open, each with who decides it; what in the world should change) so the keeper's AI can act on it alone; the note carries the reasons. You change the world yourself only if you are the keeper's AI (the Charter says who). A design someone else leads is taken further the same way.
+Hand it in with a report, as `{{report_skill_name}}` says. The report's text holds the short of it (what was decided, each a decision to record, with its why; what is open, each with who decides it; what in the world should change) so the keeper's AI can act on it alone; the note carries the reasons. You change the world yourself only if you are the keeper's AI (`{{work_skill_name}}`'s keeper's step says how to tell). A design someone else leads is taken further the same way.
 
 ## A new design: its anchor
 

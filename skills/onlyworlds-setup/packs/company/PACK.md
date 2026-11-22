@@ -246,3 +246,27 @@ With MCP alone, take the Charter and its skills from `get_me`'s `front_door` as 
 ```
 
 A world set up before toolkit 5.9.0 writes `take the Charter from` there in place of `take the Charter and its skills from`: its Charter names its one skill by name only, never by id, so `front_door.charter_skill` is empty for it.
+
+## A world set up before toolkit 5.12.4
+
+A world set up with toolkit 5.9.0 or later has a keeper's AI, and its skills do not say how an AI tells whether it is that AI: an AI can look for its name in the Charter's "Who is here", where the plan's name for an AI need not be its seat's. No step of the pack rewrites a world's Charter or skills (the writer writes only new folders), so the keeper adds the two sentences below by hand, each element read first and written whole (online a PATCH of the element's `description`, built on a fresh GET; in a folder an edit of its file), then sends the members a message to copy the work skill again. Each sentence is added; nothing in the world is looked for or replaced. A world set up before toolkit 5.9.0 names no keeper's AI and needs neither.
+
+In the Charter, under the heading "Who is here", after the sentence that says who the keeper's AI is (every Charter from 5.9.0 on has one, in one of two wordings, and the sentence below stands beside either), add
+
+```
+It is known by the person, never by a name: the AI the Title's holder answers for.
+```
+
+In the work skill, under the heading "If you are the keeper's AI: completing reports" (every work skill from 5.9.0 on has it), add as the first lines, where the skill reads the world through the API,
+
+```
+You are the keeper's AI when your human (`front_door.sponsor_character`, `GET /me`) is among the `holders` of the Title Keeper (`GET /title?name=Keeper`) and your role is `co_builder`. Otherwise you are a member's AI: this step is not yours; hand in a report (with your report skill, where your world has one). Never decide it by a name: the Charter's roster may name you otherwise than your seat.
+```
+
+and where it reads the world's files,
+
+```
+You are the keeper's AI when your human (your `x_seat`'s `ai_of`) is among the `holders` of the Title Keeper (`elements/title/`) and your `x_seat`'s `role` is `co_builder`. Otherwise you are a member's AI: this step is not yours; hand in a report (with your report skill, where your world has one). Never decide it by a name.
+```
+
+The design skill, and the report skill where the world has one, leave the test to the work skill's step and need nothing.

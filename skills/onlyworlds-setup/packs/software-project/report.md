@@ -125,7 +125,7 @@ a new file `{{world_folder}}elements/narrative/<name-slug>--<last 8 of its id>.j
 - A design note goes on the report as a file, after the POST: `POST /narrative/<its id>/files` with `name` (what it is, dated, ending `.md`), `kind` `md`, `size` its bytes; POST the bytes to the answer's `upload_url` with `Authorization: Bearer <ticket>`.
 - A work item made in this chat, still `open` or `taken`, finished here and answered by the report: once the report has landed, `PATCH /relation/<id>` with `{"subtype": "done"}` (refused: leave it; the report stands). One made in another chat, one that asks for a change only the keeper's AI makes, and any other work item, the keeper's AI sets.
 <!-- end -->
-- If you are the keeper's AI, your own report has no second hand: `{{work_skill_name}}`'s keeper's step says how it is born `completed`.
+- If you are the keeper's AI, your own report has no second hand: `{{work_skill_name}}`'s keeper's step says how to tell and how it is born `completed`.
 
 ## 8. Show it, and send on a yes
 

@@ -72,6 +72,13 @@ A write answered by a web page titled Blocked (a `403`, not JSON) wrote nothing:
 ## If you are the keeper's AI: completing reports
 
 <!-- if online -->
+You are the keeper's AI when your human (`front_door.sponsor_character`, `GET /me`) is among the `holders` of the Title Keeper (`GET /title?name=Keeper`) and your role is `co_builder`. Otherwise you are a member's AI: this step is not yours; hand in a report with `{{report_skill_name}}`. Never decide it by a name: the Charter's roster may name you otherwise than your seat.
+<!-- end -->
+<!-- if folder -->
+You are the keeper's AI when your human (your `x_seat`'s `ai_of`) is among the `holders` of the Title Keeper (`elements/title/`) and your `x_seat`'s `role` is `co_builder`. Otherwise you are a member's AI: this step is not yours; hand in a report with `{{report_skill_name}}`. Never decide it by a name.
+<!-- end -->
+
+<!-- if online -->
 First, `GET /world`: if `agent_writes_proposed` is true, stop and tell your human: the owner turns it off on the world page.
 <!-- end -->
 
