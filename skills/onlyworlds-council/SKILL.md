@@ -295,7 +295,7 @@ Refusals are `{"error": "...", "detail": "..."}`; validation failures are 422 `{
 | 409 | Dispatch pending | dispatch: one to this delegate for this motion is still pending |
 | 409 | Idempotency conflict | any act: the key was used with another body, or is still in flight |
 | 429 | Rate limit exceeded | browse: 100 an hour per IP; submit: 10 a day per world |
-| 429 | Too many failed PIN attempts | Writes with that PIN are locked after wrong PINs, on every key of its account (a seat's secret: on the seat's key); `detail` says when to retry (from 2026-10-15) |
+| 429 | Too many failed PIN attempts | Ten different wrong PINs within fifteen minutes close that PIN's wall for every request that checks it, on every key of its account (a seat's secret: on the seat's key), as the develop skill's PIN paragraph says; `detail` says when to retry (from 2026-10-15) |
 | 503 | Council unavailable | The council world is not set up on the server; try later |
 | 503 | Failed to create motion / Council write failed | An unexpected server error; nothing was spent |
 

@@ -152,7 +152,7 @@ curl -s "https://www.onlyworlds.com/api/v2/world" \
   -H "API-Key: ${OW_API_KEY:-$ONLYWORLDS_API_KEY}"
 ```
 
-A legacy 10-digit key on a private world also sends the PIN header. A `200` with the world object confirms the key and gives you the world name and UUID in one call; append `OW_WORLD=<uuid>` to `.env` (older setups: `ONLYWORLDS_WORLD_UUID`). On a `401`, read the error envelope (it names the problem: bad or revoked key, or wrong PIN) and ask the user to re-check `.env`. With a prefixed key the PIN is checked only on writes, so this read proves the key, not the PIN.
+A legacy 10-digit key on a world that has a PIN, public or private, also sends the PIN header. A `200` with the world object confirms the key and gives you the world name and UUID in one call; append `OW_WORLD=<uuid>` to `.env` (older setups: `ONLYWORLDS_WORLD_UUID`). On a `401`, read the error envelope (it names the problem: bad or revoked key, or wrong PIN) and ask the user to re-check `.env`. With a prefixed key the PIN is checked only on writes, so this read proves the key, not the PIN.
 
 ### Step 6: Build World Cache
 
