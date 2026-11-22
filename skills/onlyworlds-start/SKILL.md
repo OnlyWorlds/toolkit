@@ -89,7 +89,7 @@ Connect a project folder to one world on onlyworlds.com. Run this only when the 
 | Situation | Do |
 |---|---|
 | New setup | Steps 1-8 |
-| Already set up | Report the world, then check [Cache Freshness](#cache-freshness) |
+| Already set up | Step 2: the world's door first, then report the world and check [Cache Freshness](#cache-freshness) |
 | Key or PIN changed | The user edits `.env`; rerun Step 5 |
 | A second world | A second project folder: one world per folder |
 
@@ -110,7 +110,7 @@ Run `pwd` and tell the user: "Setting up OnlyWorlds in: {pwd}. This adds `.ow/` 
 
 ### Step 2: Check Existing Setup
 
-If `.ow/config.json` exists, the project is already connected: report the world name and run [Cache Freshness](#cache-freshness), unless the user asked for something else. Otherwise continue.
+If `.ow/config.json` exists, the project is already connected. Read the world's door first, whatever the user asked: load `.env` as Step 5 does and, when it holds a key, read `GET /api/v2/me`; when its `front_door.charter` is set, read that Charter whole (`GET /api/v2/law/<id>`), then each Object in `front_door.charter_skill` (`GET /api/v2/object/<id>`), before anything is answered from the cache: they are the world's house rules. With no key in `.env` (manual mode between sessions), say so: what you answer comes from the cache, without the world's door. A world with no door (`front_door.charter` null) costs that one read and goes on as before. Then report the world name and run [Cache Freshness](#cache-freshness), unless the user asked for something else. Otherwise continue.
 
 ### Step 3: Choose the Credential Mode
 
