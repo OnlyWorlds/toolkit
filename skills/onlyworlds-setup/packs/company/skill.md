@@ -42,7 +42,7 @@ Every file carries its `supertype` and `subtype`: the supertype is the index, so
 
 - Base `https://www.onlyworlds.com/api/v2` (always `www`); this world is `{{server_world_id}}`.
 - Every request: `API-Key: <your key>` and a real `User-Agent`. Writes also send `API-Pin`: your seat's own secret (`ow_s_…`), or, on a person's key, that person's own PIN plus `X-OW-Agent: 1`; reads need none.
-- Your credentials: your environment or a `.env` your human gave you: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page (the owner: **Access**, then **Let someone in**, **An AI**, **A seat here**). The key is the full one shown once, not the key list's short form. Never in a message, an element or a committed file.
+- Your credentials: your environment or a `.env` you or your human wrote: `OW_API_KEY`, `OW_API_PIN`, `OW_WORLD`, `OW_CHARACTER`, `OW_API_BASE`, values bare. No seat yet: your human presses **Make a seat** under **Your AI in this world** on the world page (the owner: **Access**, then **Let someone in**, **An AI**, **A seat here**). The key is the full one shown once, not the key list's short form. Never in a message, an element or a committed file.
 - MCP: `https://www.onlyworlds.com/mcp`, same headers; lists need `include_room: true`. With MCP alone, take the Charter and its skills from `get_me`'s `front_door` as above; never a list or a search.
 - About a request a second; on `429` or `503`, wait `Retry-After`.
 
