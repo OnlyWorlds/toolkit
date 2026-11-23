@@ -110,7 +110,7 @@ Run `pwd` and tell the user: "Setting up OnlyWorlds in: {pwd}. This adds `.ow/` 
 
 ### Step 2: Check Existing Setup
 
-If `.ow/config.json` exists, the project is already connected. Read the world's door first, whatever the user asked: load `.env` as Step 5 does and, when it holds a key, read `GET /api/v2/me`; when its `front_door.charter` is set, read that Charter whole (`GET /api/v2/law/<id>`), then each Object in `front_door.charter_skill` (`GET /api/v2/object/<id>`), before anything is answered from the cache: they are the world's house rules. With no key in `.env` (manual mode between sessions), say so: what you answer comes from the cache, without the world's door. A world with no door (`front_door.charter` null) costs that one read and goes on as before. Then report the world name and run [Cache Freshness](#cache-freshness), unless the user asked for something else, and offer the start line (Step 8) where no line in the start file holds the world's id (`world_uuid`). Otherwise continue.
+If `.ow/config.json` exists, the project is already connected. Read the world's door first, whatever the user asked: load `.env` as Step 5 does and, when it holds a key, read `GET /api/v2/me`; when its `front_door.charter` is set, read that Charter whole (`GET /api/v2/law/<id>`), then each Object in `front_door.charter_skill` (`GET /api/v2/object/<id>`), before anything is answered from the cache: they are the world's house rules. With no key in `.env` (manual mode between sessions), say so: what you answer comes from the cache, without the world's door. A world with no door (`front_door.charter` null) costs that one read and goes on as before. Then report the world name and run [Cache Freshness](#cache-freshness), unless the user asked for something else. Where `.ow/config.json` holds no `start_line` and no line in the start file holds the world's id (`world_uuid`), offer the start line as Step 8 does. Otherwise continue.
 
 ### Step 3: Choose the Credential Mode
 
@@ -200,22 +200,26 @@ v2 lists are paginated: the response is `{data, has_more, next_cursor}`. Follow 
 
 ### Step 8: Confirm
 
-So the next session here opens the world first, offer this line, with the world's UUID from Step 5 for `{world_id}`:
+So the next session here opens the world first, offer the start line. First the key's shape, read from `.env` alone; it prints one word, never the key:
+
+```
+(unset OW_API_KEY; if [ -f .env ]; then set -a; command . ./.env 2>/dev/null; set +a; fi; k=${OW_API_KEY:-}; k=${k%"$(printf '\r')"}; case "$k" in "") echo no-ow-name;; [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]) echo classic;; *) echo prefixed;; esac)
+```
+
+No offer on `classic`, a 10-digit key (on a world with a PIN it reads nothing without the PIN, and the line sends none), or on `no-ow-name`, a key `.env` holds only under an older `ONLYWORLDS_*` name. Say why, and that a key made on the world's page (**Access** → **Keys**), kept as `OW_API_KEY`, gets the line. Otherwise offer this line, with the world's UUID from Step 5 for `{world_id}`:
 
 ```
 This folder works in the OnlyWorlds world with id {world_id}. Each session starts with GET https://www.onlyworlds.com/api/v2/me, header API-Key from OW_API_KEY in .env, then reads the Charter its front_door names, when there is one; a 401 means the key is gone: ask your person. Where .env here holds no OW_API_KEY, this line is not for you.
 ```
 
-It goes in the start file, the file your tool reads at the start of each session in this folder (`AGENTS.md` for most tools, `CLAUDE.md` for Claude Code), made if there is none. Say the line and the file, and add it on the user's yes; a user who asked for it ("set up for next time", "remember this world") has said yes. In a git repository, say the file is tracked there and other people's AI tools read it. Add it once: where a line in that file already holds this world's id, leave it and add none. A line there with another world's id: say so, and offer to replace it. With the user away, write nothing.
-
-No offer for a 10-digit key (`[[ "$OW_API_KEY" =~ ^[0-9]{10}$ ]] && echo classic`), which reads nothing without the world's PIN and the line sends none, or for a key `.env` holds only under an `ONLYWORLDS_*` name. Say why, and that a key made on the world's page (**Access** → **Keys**), kept as `OW_API_KEY`, gets the line.
+It goes in the start file in this folder, the file your tool reads at the start of each session: `CLAUDE.md` for Claude Code where one stands here or above, else `AGENTS.md`; the file is made if there is none. Say the line and the file, and add it on the user's yes; a user who asked for it ("set up for next time", "remember this world") has said yes. With no yes, write nothing: the report gives the line and the file, so the user can say yes later. A no is kept: add `"start_line": "declined"` to `.ow/config.json`. In a git repository, say the file is tracked there and other people's AI tools read it. Add it once: where a line in that file already holds this world's id, leave it and add none. A line there with another world's id: say so, and offer to replace it.
 
 Report:
 ```
 Connected to: "World Name"
 - Cached X elements (Y Characters, Z Locations, ...)
 - Credential mode: {full / key-only / manual}
-- Start line: {added to the file / not added, and why}
+- Start line: {added to the file / not added: why, the line and its file}
 - Ready for import with reconciliation
 ```
 
