@@ -139,4 +139,4 @@ Your skills are the Skill Objects the Charter names as the how-to (`front_door.c
 <!-- end -->
 A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole. One with no copy yet: copy it only on your human's yes, asked first. Overwrite only its own earlier copy; else ask your human. Codex and OpenCode read `.agents/skills/<name>/SKILL.md`, Claude Code `.claude/skills/<name>/SKILL.md`.
 
-When your human asks to be set up here for next time, or you copy these skills here, add this line to the start file here (`CLAUDE.md` for Claude Code where one stands here or above, else `AGENTS.md`), unless a line there holds it or this world's id: "{{agents_line}}"
+When your human asks to be set up here for next time, add this line to a file in this folder, never above: in Claude Code with a `CLAUDE.md` here or above, this folder's own `CLAUDE.md` (made if missing), else `AGENTS.md`; not where a line there holds it or this world's id: "{{agents_line}}"

@@ -113,4 +113,4 @@ Everything you make from this table carries `x_room_of`, the mark that makes it 
 
 This text is the Object "{{world_name}} world skill" (supertype `Skill`). Your copy's first line after the front matter names the element's `updated_at` it came from; when the element is newer, copy its description again, whole. Ask your human where the copy lands: this project or your home for every session. Codex and OpenCode read `.agents/skills/{{skill_name}}/SKILL.md`, Claude Code `.claude/skills/{{skill_name}}/SKILL.md`.
 
-When your human asks to be set up here for next time, or you copy this skill here, add this line to the start file here (`CLAUDE.md` for Claude Code where one stands here or above, else `AGENTS.md`), unless a line there holds it or this world's id: "{{agents_line}}"
+When your human asks to be set up here for next time, add this line to a file in this folder, never above: in Claude Code with a `CLAUDE.md` here or above, this folder's own `CLAUDE.md` (made if missing), else `AGENTS.md`; not where a line there holds it or this world's id: "{{agents_line}}"

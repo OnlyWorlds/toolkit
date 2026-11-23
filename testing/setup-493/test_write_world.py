@@ -252,9 +252,9 @@ COPY_WORD = re.compile(r"(?i)\bcop(y|ies|ied|ying)\b")
 # each counted without regard to case: how many the filled text holds, the same in every placement.
 SKILL_TERMS = {r"(?i)\bskill objects?\b": 1, r"(?i)\byour skills\b": 2}
 ASKER_TERMS = {r"(?i)\baskers?\b": 0, r"(?i)\bwho asked\b": 1}
-COPY_WORDS = {("company", "folder"): 9, ("company", "repo"): 9, ("company", "online"): 8,
-              ("software-project", "folder"): 9, ("software-project", "repo"): 9,
-              ("software-project", "online"): 12}
+COPY_WORDS = {("company", "folder"): 8, ("company", "repo"): 8, ("company", "online"): 7,
+              ("software-project", "folder"): 8, ("software-project", "repo"): 8,
+              ("software-project", "online"): 11}
 
 
 def visit_steps(text):
@@ -2063,8 +2063,8 @@ class StartLine(unittest.TestCase):
     def test_23e_the_online_world_skill_offers_the_line(self):
         """Every pack's online world skill, as filled, holds the start line for the server's id once, at
         the end of the paragraph that says when it goes in the start file."""
-        when = re.compile(r"When .+ asks to be set up here for next time, or you copy (this skill|these skills) "
-                          r"here, add this line to the start file here \(")
+        when = re.compile(r"When .+ asks to be set up here for next time, add this line to a file in this "
+                          r"folder, never above: ")
         line = START_LINE.format(world_id=SERVER_ID)
         for pack in PACKS:
             with self.subTest(pack=pack):
