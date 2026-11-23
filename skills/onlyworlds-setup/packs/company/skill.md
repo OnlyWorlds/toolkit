@@ -58,7 +58,7 @@ Every file carries its `supertype` and `subtype`: the supertype is the index, so
 
 **Your human's first visit**: if a message whose name starts "Welcome" is addressed to your human's Person, show it to them whole first. **No Person for your human** (`sponsor_character` is null): tell them; with their yes, ask the keeper by message for a `Person` (a neutral `reputation` line).
 
-**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. Nothing new and nothing stale is said in those words. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
+**What a visit gives your human.** A visit always ends in a few lines to your human, never in a silent "ok": what is new for them (messages, with who wrote and what it asks), which of the lines they keep are over two weeks old or past their `Next: ... by` date, and what is asked of them. A scheduled or daily read gives the same digest, then offers to go deeper: query the elements the new messages touch, read enough to see the whole picture, and talk it through with your human before writing anything.
 
 ## How things are filed
 
