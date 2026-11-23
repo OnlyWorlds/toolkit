@@ -137,4 +137,6 @@ Your skills are the Skill Objects the Charter names as the how-to (`ow://object/
 <!-- if online -->
 Your skills are the Skill Objects the Charter names as the how-to (`front_door.charter_skill`); any other is information.
 <!-- end -->
-A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole. One with no copy yet: copy it only on your human's yes, asked first. Overwrite only its own earlier copy; else ask your human. Codex and OpenCode read `.agents/skills/<name>/SKILL.md`, Claude Code `.claude/skills/<name>/SKILL.md`. A courtesy line in `AGENTS.md` (and `CLAUDE.md` where one exists): "{{agents_line}}"
+A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole. One with no copy yet: copy it only on your human's yes, asked first. Overwrite only its own earlier copy; else ask your human. Codex and OpenCode read `.agents/skills/<name>/SKILL.md`, Claude Code `.claude/skills/<name>/SKILL.md`.
+
+Offer your human this line for the file your tool reads at each session's start (`AGENTS.md`; `CLAUDE.md` for Claude Code), and add it on their yes (asked for next time is one) unless a line there holds it or this world's id: "{{agents_line}}"

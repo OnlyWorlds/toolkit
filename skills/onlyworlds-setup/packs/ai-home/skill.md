@@ -113,4 +113,6 @@ A message: `narrative`, supertype `Message`; `name` subject, `story` text, `narr
 
 ## Keeping this skill current
 
-This text is the Object "{{world_name}} world skill" (supertype `Skill`). Your copy's first line after the front matter names the element's `updated_at` it came from; when the element is newer, copy its description again, whole. Ask {{owner}} where the copy lands: this project or your home for every session. Codex and OpenCode read `.agents/skills/{{skill_name}}/SKILL.md`, Claude Code `.claude/skills/{{skill_name}}/SKILL.md`. Front matter: `name` and `description` only. A courtesy line in `AGENTS.md` (and in `CLAUDE.md` where one exists, since Claude Code then reads only that): "{{agents_line}}"
+This text is the Object "{{world_name}} world skill" (supertype `Skill`). Your copy's first line after the front matter names the element's `updated_at` it came from; when the element is newer, copy its description again, whole. Ask {{owner}} where the copy lands: this project or your home for every session. Codex and OpenCode read `.agents/skills/{{skill_name}}/SKILL.md`, Claude Code `.claude/skills/{{skill_name}}/SKILL.md`. Front matter: `name` and `description` only.
+
+Offer {{owner}} this line for the file your tool reads at each session's start (`AGENTS.md`; `CLAUDE.md` for Claude Code), and add it on their yes (asked for next time is one) unless a line there holds it or this world's id: "{{agents_line}}"
