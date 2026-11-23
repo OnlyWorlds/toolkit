@@ -106,8 +106,9 @@ harness trial (2026-10-22):
     every page of it (22b), ai-home's self read taking the first value that read sent, none on a
     first visit; the company skill says how `·` is written as ASCII (22b);
 23. the AGENTS.md line: online, onlyworlds.com's start line for the server id, a folder world the older
-    line, word for word (23a); a file that already names the world's id, in any words, gets no second
-    line (23b); a CLAUDE.md, CLAUDE.local.md or .claude/CLAUDE.md above the copies root sends the line
+    line, word for word (23a); a file that already names the world's id, in any words or case, gets no
+    second line, and one holding another world's start line gets it with that id named (23b); a
+    CLAUDE.md that is the AGENTS.md (a link) gets it once (23f); a CLAUDE.md, CLAUDE.local.md or .claude/CLAUDE.md above the copies root sends the line
     into the root's CLAUDE.md too (23c); at the home folder the older line is printed and nothing
     written, and the home folder's own .claude/CLAUDE.md counts for no project under it (23d).
 
@@ -1973,10 +1974,10 @@ class StartLine(unittest.TestCase):
     where Claude Code reads a CLAUDE.md, a .claude/CLAUDE.md or a CLAUDE.local.md there or in a folder
     above it, the home folder's .claude/CLAUDE.md aside."""
 
-    def write(self, name, placement="online", above=(), env=None, root=None, held=None):
+    def write(self, name, placement="online", above=(), env=None, root=None, held=None, link=False):
         """One governance run with its copies at <case>/project (or `root`), after writing each of
-        `above` (paths relative to <case>) and `held` (the project's AGENTS.md): (code, output, copies
-        root, plan)."""
+        `above` (paths relative to <case>) and `held` (the project's AGENTS.md; with `link`, its
+        CLAUDE.md is a hard link to it): (code, output, copies root, plan)."""
         case = OUT / name
         root = root or case / "project"
         for rel in above:
@@ -1985,6 +1986,8 @@ class StartLine(unittest.TestCase):
         if held is not None:
             root.mkdir(parents=True, exist_ok=True)
             (root / "AGENTS.md").write_bytes(held)
+            if link:
+                os.link(root / "AGENTS.md", root / "CLAUDE.md")
         plan, world = variant(json.loads(read(PLANS / "governance.json")), placement, root)
         plan["agents_md"] = True
         plan_path = OUT / "plans" / f"{name}.json"
@@ -2015,12 +2018,25 @@ class StartLine(unittest.TestCase):
 
     def test_23b_a_line_with_the_id_is_enough(self):
         """A project's AGENTS.md that already names the world's id, in other words than the start line's,
-        gets no second line, and the summary says why; one that names another id gets the line."""
+        and in upper case too, gets no second line, and the summary says why; one that names another id
+        gets the line; one that holds the start line for another world gets it too, and the summary
+        names that world's id."""
         mine = b"# Our notes\r\n\r\nThe team world on the platform is " + SERVER_ID.encode() + b", see the site.\r\n"
-        code, out, root, _ = self.write("line-held", held=mine)
+        upper = mine.replace(SERVER_ID.encode(), SERVER_ID.upper().encode())
+        for tag, held in (("line-held", mine), ("line-held-upper", upper)):
+            with self.subTest(case=tag):
+                code, out, root, _ = self.write(tag, held=held)
+                self.assertEqual(code, 0, out)
+                self.assertEqual((root / "AGENTS.md").read_bytes(), held, "a file with the id got a second line")
+                self.assertIn(f"agents line: {root / 'AGENTS.md'}: holds a line with this world's id already", out)
+        another = "7f7f7f7f-0d0e-7f00-8a00-5e2be2000002"
+        theirs = b"# Our notes\n\n" + START_LINE.format(world_id=another).encode() + b"\n"
+        code, out, root, _ = self.write("line-another-world", held=theirs)
         self.assertEqual(code, 0, out)
-        self.assertEqual((root / "AGENTS.md").read_bytes(), mine, "a file with the id got a second line")
-        self.assertIn(f"agents line: {root / 'AGENTS.md'}: holds a line with this world's id already", out)
+        self.assertEqual((root / "AGENTS.md").read_bytes(),
+                         theirs + START_LINE.format(world_id=SERVER_ID).encode() + b"\n")
+        self.assertIn(f"agents line: {root / 'AGENTS.md'}: the line appended; it also holds a start line for "
+                      f"another world, {another}", out)
         other = mine.replace(SERVER_ID[:8].encode(), b"7f7f7f7f")
         code, out, root, _ = self.write("line-other", held=other)
         self.assertEqual(code, 0, out)
@@ -2042,6 +2058,16 @@ class StartLine(unittest.TestCase):
                 self.assertEqual(read(root / "CLAUDE.md"), want + "\n")
                 self.assertEqual(read(root / "AGENTS.md"), want + "\n")
                 self.assertEqual((root.parent / rel).read_bytes(), b"# The house\n")
+
+    def test_23f_a_claude_md_that_is_the_agents_md(self):
+        """A CLAUDE.md that is the same file as the AGENTS.md (a link) gets the line once, and the summary
+        says why the CLAUDE.md is not written to."""
+        held = b"# House rules\n"
+        code, out, root, _ = self.write("line-linked", above=["CLAUDE.md"], held=held, link=True)
+        self.assertEqual(code, 0, out)
+        self.assertEqual((root / "AGENTS.md").read_bytes(),
+                         held + START_LINE.format(world_id=SERVER_ID).encode() + b"\n")
+        self.assertIn(f"agents line: {root / 'CLAUDE.md'}: the same file as AGENTS.md, so the line goes in once", out)
 
     def test_23d_the_home_folder(self):
         """Copies at the home folder (HOME and USERPROFILE set to a folder of the test's own): online too,
@@ -2491,13 +2517,17 @@ class TakenBack(unittest.TestCase):
             self.assertEqual(contents(proj, case), before, "the run left something")
 
     def test_20j_a_file_changed_by_this_run_twice(self):
-        """CLAUDE.md is a hard link to AGENTS.md, so the run appends to one file twice; the bulk file
-        fails, and the undo's first cut (the second append's) is refused. The first append's state
-        says what is there, never who changed it."""
+        """One file appended to twice by the journal, through two names (CLAUDE.md a hard link to
+        AGENTS.md); the undo's first cut (the second append's) is refused. The first append's state says
+        what is there, never who changed it. (The writer itself appends once to two names of one file
+        since 5.13.0, test 23f, so the journal is driven directly.)"""
         ww = self.writer("20j")
         argv, proj, case = self.project("governance", "undo-hardlink")
         (proj / "CLAUDE.md").unlink()
         os.link(proj / "AGENTS.md", proj / "CLAUDE.md")
+        journal = ww.Journal()
+        journal.write(proj / "AGENTS.md", b"\nThe line.\n", True)
+        journal.write(proj / "CLAUDE.md", b"The line.\n", True)
         cuts = []
         real_open = open
 
@@ -2507,11 +2537,12 @@ class TakenBack(unittest.TestCase):
                 if len(cuts) == 1:
                     raise PermissionError(13, "Permission denied (made to fail)", str(file))
             return real_open(file, mode, *a, **kw)
-        with UndoFault(ww, 0, "before", KeyboardInterrupt, ("bulk", lambda: PermissionError(13, "Permission denied (made to fail)"))) as f:
-            inner = ww.open
-            ww.open = lambda file, mode="r", *a, **kw: (open_ if f.in_undo else inner)(file, mode, *a, **kw)
-            code, out = self.run_in(ww, argv)
-        self.assertEqual(code, 1, out)
+        ww.open = open_
+        try:
+            journal.undo()
+        finally:
+            del ww.open
+        out = ww.refusal(journal, "nothing left\n", "REFUSED the run; ")
         self.assertNotIn("other than the writer", out)
         self.assertRegex(out, r"NOT PUT BACK [^\n]*CLAUDE\.md: still ends with the \d+ byte\(s\) this run appended")
         self.assertIn(f"NOT PUT BACK {proj / 'AGENTS.md'}: no longer ends with only what this run appended to it; "

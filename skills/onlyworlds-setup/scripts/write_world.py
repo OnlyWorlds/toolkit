@@ -174,6 +174,8 @@ START_LINE = ("This folder works in the OnlyWorlds world with id {world_id}. Eac
               "https://www.onlyworlds.com/api/v2/me, header API-Key from OW_API_KEY in .env, then reads the "
               "Charter its front_door names, when there is one; a 401 means the key is gone: ask your person. "
               "Where .env here holds no OW_API_KEY, this line is not for you.")
+# A start line already in a file, and the world id it names (one of another world is said in the summary).
+START_ID = re.compile(re.escape(START_LINE.split("{world_id}")[0]) + r"([0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12})")
 # Claude Code reads AGENTS.md only where none of these stands in its folder or a folder above it; the
 # home folder's .claude/CLAUDE.md, the user's own for every project, does not count.
 CLAUDE_FILES = ("CLAUDE.md", "CLAUDE.local.md", ".claude/CLAUDE.md")
@@ -959,15 +961,19 @@ def write_world(argv, state):
                 if p.exists():
                     problems.append(f"{p} exists: a copy is the user's; not overwritten")
                 copy_paths.append((p, text_))
-    line, line_files, line_print = None, [], None
+    line, line_files, line_print, line_one = None, [], None, None
     if plan.get("agents_md") and copy_root is not None:
         line = agents_line
         if at_home:
             line_print = line  # no harness reads a home AGENTS.md as a project's: the user places the line
         else:
-            line_files.append(copy_root / "AGENTS.md")
+            agents_md, claude_md = copy_root / "AGENTS.md", copy_root / "CLAUDE.md"
+            line_files.append(agents_md)
             if claude_md_reaches(copy_root):  # then Claude Code never reads the AGENTS.md
-                line_files.append(copy_root / "CLAUDE.md")
+                if agents_md.exists() and claude_md.exists() and os.path.samefile(agents_md, claude_md):
+                    line_one = f"{claude_md}: the same file as {agents_md.name}, so the line goes in once"
+                else:
+                    line_files.append(claude_md)
     files[".gitattributes"] = GITATTRIBUTES  # every pack, every placement: one place
     # The copies' root is a repository of its own when it is not the world folder: its root files
     # (AGENTS.md, the skill copies) want the same line-ending rule, or git on an autocrlf machine
@@ -1028,7 +1034,11 @@ def write_world(argv, state):
                 continue
             nl = "\r\n" if "\r\n" in old else "\n"
             writes.append((p, ("" if not old or old.endswith("\n") else nl) + line + nl, True))
-            line_done.append(f"{p}: the line appended")
+            others = sorted({m.group(1).lower() for m in START_ID.finditer(old)}) if by_id else []
+            line_done.append(f"{p}: the line appended" + (f"; it also holds a start line for another world, "
+                                                          f"{', '.join(others)}" if others else ""))
+        if line_one:
+            line_done.append(line_one)
         if bulk:
             items = [{"type": rel.split("/")[1], "element": json.loads(text)}
                      for rel, text in files.items() if rel.startswith("elements/")]
