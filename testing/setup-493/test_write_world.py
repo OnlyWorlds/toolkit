@@ -104,7 +104,12 @@ harness trial (2026-10-22):
     words of the two rules this replaced (21c);
 22. online, every pack's start skill keeps the last answer's cursor of what changed, once; reads
     every page of it (22b), ai-home's self read taking the first value that read sent, none on a
-    first visit; the company skill says how `·` is written as ASCII (22b).
+    first visit; the company skill says how `·` is written as ASCII (22b);
+23. the AGENTS.md line: online, onlyworlds.com's start line for the server id, a folder world the older
+    line, word for word (23a); a file that already names the world's id, in any words, gets no second
+    line (23b); a CLAUDE.md, CLAUDE.local.md or .claude/CLAUDE.md above the copies root sends the line
+    into the root's CLAUDE.md too (23c); at the home folder the older line is printed and nothing
+    written, and the home folder's own .claude/CLAUDE.md counts for no project under it (23d).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -144,6 +149,13 @@ def default_lint():
 
 LINT = Path(os.environ.get("OW_LINT") or default_lint())
 SERVER_ID = "019a0b0c-0d0e-7f00-8a00-5e2be2000001"  # stands for the id onlyworlds.com gave the empty world
+# onlyworlds.com's start line, an online world's AGENTS.md line (test 23), written out here so that a
+# change to the writer's copy shows; its other copy, the start skill's, is held to the writer's by
+# testing/test_start_line.py.
+START_LINE = ("This folder works in the OnlyWorlds world with id {world_id}. Each session starts with GET "
+              "https://www.onlyworlds.com/api/v2/me, header API-Key from OW_API_KEY in .env, then reads the "
+              "Charter its front_door names, when there is one; a 401 means the key is gone: ask your person. "
+              "Where .env here holds no OW_API_KEY, this line is not for you.")
 GITATTRIBUTES = ("* text=auto eol=lf\n*.png binary\n*.jpg binary\n*.jpeg binary\n*.gif binary\n"
                  "*.webp binary\n*.pdf binary\n*.zip binary\n*.owworld binary\n")
 # The daily sweep: one text, copied word for word from a live work world's own skill, the same
@@ -174,8 +186,10 @@ KEEP_CURSOR = "Keep the last answer's `cursor` wherever your harness keeps notes
 FIXTURE = Path(os.environ.get("OW_CHECKS_FIXTURE") or LINT.parent.parent / "profiles" / "checks.fixture.json")
 # The room a filled world skill keeps under the size the packs aim for (the writer's SKILL_MAX, read
 # from the writer), so a company's own names rarely bring a skill to it (the writer writes one of
-# SKILL_MAX or more whole, and says so: test 18).
-ROOM = 500
+# SKILL_MAX or more whole, and says so: test 18). 500 until 5.13.0, when an online world skill took
+# onlyworlds.com's start line whole (about 330 characters) and the paragraph that offers it: the
+# company pack's online skill then filled to 9,840.
+ROOM = 100
 # How far past SKILL_MAX test 18a brings the workshop's world skill, by a line its padded copy of the
 # pack ends in.
 OVER = 100
@@ -214,12 +228,12 @@ CHARTER_NULL = {None: "null: tell your human)",
 # the Charter's file, the sign-in answer's Charter. A further place, a search for the Charter included,
 # changes the count. By pack and placement.
 CHARTER_READ = re.compile(r"/law\b|charter\.json|front_door\.charter(?!_)")
-CHARTER_READS = {("ai-home", "folder"): 4, ("ai-home", "repo"): 4, ("ai-home", "online"): 4,
-                 ("company", "folder"): 4, ("company", "repo"): 4, ("company", "online"): 4,
-                 ("governance", "folder"): 4, ("governance", "repo"): 4, ("governance", "online"): 6,
+CHARTER_READS = {("ai-home", "folder"): 4, ("ai-home", "repo"): 4, ("ai-home", "online"): 1,
+                 ("company", "folder"): 4, ("company", "repo"): 4, ("company", "online"): 1,
+                 ("governance", "folder"): 4, ("governance", "repo"): 4, ("governance", "online"): 3,
                  ("software-project", "folder"): 5, ("software-project", "repo"): 5,
-                 ("software-project", "online"): 10,
-                 ("workshop", "folder"): 4, ("workshop", "repo"): 4, ("workshop", "online"): 4}
+                 ("software-project", "online"): 7,
+                 ("workshop", "folder"): 4, ("workshop", "repo"): 4, ("workshop", "online"): 1}
 # A sentence that names the MCP search tool and a Charter (test 2c): the fallback search for the Charter, which
 # answers a contributor's newest "Charter" first. No world skill holds one. One sentence: no ". " between them.
 CHARTER_SEARCH = re.compile(r"\bsearch_elements\b(?:(?!\.\s).)*?\bCharter\b|\bCharter\b(?:(?!\.\s).)*?\bsearch_elements\b")
@@ -908,7 +922,7 @@ class SetupWriter(unittest.TestCase):
                 self.assertEqual(text.count("`front_door.charter`, `GET /me`" + ("; " + null if run.pack != "software-project"
                                                                                  else "")), 1, "the Charter line, whole")
                 self.assertEqual(text.count(null), 1, "the null sentence, whole, once")
-                self.assertIn("or GET /me front_door.charter online", line)
+                self.assertEqual(line, START_LINE.format(world_id=SERVER_ID) + "\n", "online, the start line")
                 mcp = MCP_CHARTER["team" if run.pack in TEAM_PACKS else None]
                 self.assertEqual(text.count(mcp), 1, "the MCP line's Charter sentence, whole, once")
             self.assertNotIn(MCP_OLD, text)
@@ -1950,6 +1964,115 @@ class SetupWriter(unittest.TestCase):
                 self.assertRegex(r.stdout, r"REFUSED copies [^\n]*: the folder [^\n]* cannot be made")
                 self.assertNotIn("Traceback", r.stdout + r.stderr)
                 self.assertEqual((self.listing(case), self.listing(base)), before, "the run left something")
+
+
+class StartLine(unittest.TestCase):
+    """Test 23: the AGENTS.md line. Online it is onlyworlds.com's start line for the server world's id,
+    added once by that id; a folder world keeps the older line, and so does any world whose copies go
+    to the home folder (printed, nothing written). The line also goes into the copies root's CLAUDE.md
+    where Claude Code reads a CLAUDE.md, a .claude/CLAUDE.md or a CLAUDE.local.md there or in a folder
+    above it, the home folder's .claude/CLAUDE.md aside."""
+
+    def write(self, name, placement="online", above=(), env=None, root=None, held=None):
+        """One governance run with its copies at <case>/project (or `root`), after writing each of
+        `above` (paths relative to <case>) and `held` (the project's AGENTS.md): (code, output, copies
+        root, plan)."""
+        case = OUT / name
+        root = root or case / "project"
+        for rel in above:
+            (case / rel).parent.mkdir(parents=True, exist_ok=True)
+            (case / rel).write_bytes(b"# The house\n")
+        if held is not None:
+            root.mkdir(parents=True, exist_ok=True)
+            (root / "AGENTS.md").write_bytes(held)
+        plan, world = variant(json.loads(read(PLANS / "governance.json")), placement, root)
+        plan["agents_md"] = True
+        plan_path = OUT / "plans" / f"{name}.json"
+        plan_path.parent.mkdir(parents=True, exist_ok=True)
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        r = subprocess.run([sys.executable, str(WRITER), str(plan_path), str(world)], capture_output=True,
+                           text=True, encoding="utf-8", env={**os.environ, "PYTHONIOENCODING": "utf-8", **(env or {})})
+        return r.returncode, r.stdout + r.stderr, root, plan
+
+    def older_line(self, plan, charter_path, online=False):
+        return (f"This folder works in the {plan['world']['name']} world (OnlyWorlds): read its charter first "
+                f"({charter_path}{', or GET /me front_door.charter online' if online else ''}), then load the "
+                f"ow-{plan['world']['slug']} skill.")
+
+    def test_23a_the_line_by_placement(self):
+        """Every pack: online, AGENTS.md holds the start line for the server id and nothing else; a folder
+        world, and a world that is its own repository, the older line, word for word."""
+        for (pack, placement), run in RUNS.items():
+            with self.subTest(pack=pack, placement=placement):
+                self.assertEqual(run.code, 0, run.out)
+                line = read(run.copy_root / "AGENTS.md")
+                if placement == "online":
+                    self.assertEqual(line, START_LINE.format(world_id=SERVER_ID) + "\n")
+                    continue
+                charter = "elements/law/charter.json" if placement == "repo" else "world/elements/law/charter.json"
+                self.assertEqual(line, f"This folder works in the {run.plan['world']['name']} world (OnlyWorlds): "
+                                       f"read its charter first ({charter}), then load the {run.skill_name} skill.\n")
+
+    def test_23b_a_line_with_the_id_is_enough(self):
+        """A project's AGENTS.md that already names the world's id, in other words than the start line's,
+        gets no second line, and the summary says why; one that names another id gets the line."""
+        mine = b"# Our notes\r\n\r\nThe team world on the platform is " + SERVER_ID.encode() + b", see the site.\r\n"
+        code, out, root, _ = self.write("line-held", held=mine)
+        self.assertEqual(code, 0, out)
+        self.assertEqual((root / "AGENTS.md").read_bytes(), mine, "a file with the id got a second line")
+        self.assertIn(f"agents line: {root / 'AGENTS.md'}: holds a line with this world's id already", out)
+        other = mine.replace(SERVER_ID[:8].encode(), b"7f7f7f7f")
+        code, out, root, _ = self.write("line-other", held=other)
+        self.assertEqual(code, 0, out)
+        self.assertEqual((root / "AGENTS.md").read_bytes(),
+                         other + START_LINE.format(world_id=SERVER_ID).encode() + b"\r\n")
+
+    def test_23c_a_claude_md_above_the_copies_root(self):
+        """A CLAUDE.md, a CLAUDE.local.md or a .claude/CLAUDE.md in the folder above the copies root: the
+        line goes into the root's own CLAUDE.md (made) as well as its AGENTS.md; the file above is left as
+        it was. A folder world's line goes the same way."""
+        cases = [("claude", "CLAUDE.md", "online"), ("local", "CLAUDE.local.md", "online"),
+                 ("dot", ".claude/CLAUDE.md", "online"), ("folder", "CLAUDE.md", "folder")]
+        for tag, rel, placement in cases:
+            with self.subTest(case=tag):
+                code, out, root, plan = self.write(f"line-above-{tag}", placement, above=[rel])
+                self.assertEqual(code, 0, out)
+                want = (START_LINE.format(world_id=SERVER_ID) if placement == "online"
+                        else self.older_line(plan, "world/elements/law/charter.json"))
+                self.assertEqual(read(root / "CLAUDE.md"), want + "\n")
+                self.assertEqual(read(root / "AGENTS.md"), want + "\n")
+                self.assertEqual((root.parent / rel).read_bytes(), b"# The house\n")
+
+    def test_23d_the_home_folder(self):
+        """Copies at the home folder (HOME and USERPROFILE set to a folder of the test's own): online too,
+        the older line is printed for the user to place, and nothing is written there. The home folder's
+        own .claude/CLAUDE.md does not count as a CLAUDE.md above a project under it, while another
+        folder's does, and so does a CLAUDE.md in the home folder itself: read through the writer's own
+        test, which sees only the files under the test's folder (a folder above it may hold any)."""
+        home = OUT / "line-home" / "home"
+        (home / ".claude").mkdir(parents=True, exist_ok=True)
+        (home / ".claude" / "CLAUDE.md").write_bytes(b"# Mine, for every project\n")
+        env = {"HOME": str(home), "USERPROFILE": str(home)}
+        code, out, root, plan = self.write("line-home", env=env, root=home)
+        self.assertEqual(code, 0, out)
+        self.assertFalse((home / "AGENTS.md").exists())
+        self.assertFalse((home / "CLAUDE.md").exists())
+        self.assertIn("agents line, for the user to place (the copies went to a home folder): "
+                      + self.older_line(plan, "world/elements/law/charter.json", online=True), out)
+        from unittest import mock
+        ww = writer_module("23d")
+        case = (OUT / "line-home-unit").resolve()
+        mine, other = case / "home", case / "other"
+        for folder in (mine, other):
+            (folder / ".claude").mkdir(parents=True, exist_ok=True)
+            (folder / ".claude" / "CLAUDE.md").write_bytes(b"# The house\n")
+        is_file = Path.is_file
+        with mock.patch.object(Path, "is_file", lambda p: not ww.outside(p, case) and is_file(p)), \
+                mock.patch.object(Path, "home", lambda: mine):
+            self.assertFalse(ww.claude_md_reaches(mine / "project"), "the home folder's .claude/CLAUDE.md counted")
+            self.assertTrue(ww.claude_md_reaches(other / "project"), "another folder's .claude/CLAUDE.md")
+            (mine / "CLAUDE.md").write_bytes(b"# The house\n")
+            self.assertTrue(ww.claude_md_reaches(mine / "project"), "a CLAUDE.md in the home folder")
 
 
 def contents(*folders):

@@ -48,8 +48,9 @@ The plan (JSON):
       "online": {"world_id": "<the id onlyworlds.com gave the empty world>"},   # or absent: a folder
       "copies": "C:/work/acme",                # the root the agent runs in (a project, or the home folder),
                                                # "world" when the world folder IS that root, or "none"
-      "agents_md": true,                       # the one-line AGENTS.md beside the copies (appended to an
-                                               # existing one, and to a CLAUDE.md there; printed for a home)
+      "agents_md": true,                       # the one-line AGENTS.md beside the copies (added once to an
+                                               # existing one, and to the root's CLAUDE.md where Claude Code
+                                               # reads a CLAUDE.md there or above; printed for a home)
       "repo": false                            # true: a .gitignore for a shared repository
     }
 
@@ -163,9 +164,19 @@ def is_reading_aid(type_, supertype):
     return (simple_fold(type_.strip(WHITE_SPACE)), simple_fold(supertype.strip(WHITE_SPACE))) in READING_AIDS
 
 # The one AGENTS.md sentence: the writer writes it beside the copies and fills it into the world
-# skill's courtesy line ({{agents_line}}), so the two cannot drift.
+# skill's courtesy line ({{agents_line}}), so the two cannot drift. A folder world's, and any world's
+# whose copies go to the home folder:
 AGENTS_LINE = ("This folder works in the {world_name} world (OnlyWorlds): read its charter first "
                "({charter_route}), then load the {skill_name} skill.")
+# An online world's: onlyworlds.com's start line (the one its seat and join answers give an AI), word
+# for word; a file that already holds the world's id gets no second line. The start skill quotes it.
+START_LINE = ("This folder works in the OnlyWorlds world with id {world_id}. Each session starts with GET "
+              "https://www.onlyworlds.com/api/v2/me, header API-Key from OW_API_KEY in .env, then reads the "
+              "Charter its front_door names, when there is one; a 401 means the key is gone: ask your person. "
+              "Where .env here holds no OW_API_KEY, this line is not for you.")
+# Claude Code reads AGENTS.md only where none of these stands in its folder or a folder above it; the
+# home folder's .claude/CLAUDE.md, the user's own for every project, does not count.
+CLAUDE_FILES = ("CLAUDE.md", "CLAUDE.local.md", ".claude/CLAUDE.md")
 # The roster line of every pack's charter ({{roster}}), by placement.
 ROSTER = {"folder": "The roster: the Characters marked x_seat (elements/character/).",
           "online": "The roster: GET /members."}
@@ -284,6 +295,20 @@ def outside(path, root):
         return os.path.commonpath([p, r]) != r
     except ValueError:  # another drive
         return True
+
+
+def claude_md_reaches(root):
+    """True when Claude Code at `root` reads a CLAUDE.md, and so not AGENTS.md: one of CLAUDE_FILES in
+    `root` or a folder above it, the home folder's .claude/CLAUDE.md left out."""
+    home = Path.home().resolve()
+    here = Path(os.path.abspath(root))
+    for folder in (here, *here.parents):
+        for name in CLAUDE_FILES:
+            if name.startswith(".claude/") and folder.resolve() == home:
+                continue
+            if (folder / name).is_file():
+                return True
+    return False
 
 
 def template(path, placement, problems):
@@ -733,7 +758,10 @@ def write_world(argv, state):
     world_folder = "./" if world_folder == "." else world_folder.rstrip("/") + "/"
     rel_charter = shown(out / "elements" / "law" / "charter.json", seen_from)
     charter_route = rel_charter + (", or GET /me front_door.charter online" if online else "")
-    agents_line = AGENTS_LINE.format(world_name=w["name"], charter_route=charter_route, skill_name=skill_name)
+    at_home = copy_root is not None and copy_root.resolve() == Path.home().resolve()
+    by_id = bool(online) and not at_home  # the start line is about one folder and its .env, never a home
+    agents_line = (START_LINE.format(world_id=server_id) if by_id else
+                   AGENTS_LINE.format(world_name=w["name"], charter_route=charter_route, skill_name=skill_name))
 
     values = dict(plan.get("values", {}))
     values.update(world_name=w["name"], world_slug=world_slug, charter_id=charter_id, skill_id=skill_id,
@@ -934,11 +962,11 @@ def write_world(argv, state):
     line, line_files, line_print = None, [], None
     if plan.get("agents_md") and copy_root is not None:
         line = agents_line
-        if copy_root.resolve() == Path.home().resolve():
+        if at_home:
             line_print = line  # no harness reads a home AGENTS.md as a project's: the user places the line
         else:
             line_files.append(copy_root / "AGENTS.md")
-            if (copy_root / "CLAUDE.md").exists():  # Claude Code reads AGENTS.md only when no CLAUDE.md exists
+            if claude_md_reaches(copy_root):  # then Claude Code never reads the AGENTS.md
                 line_files.append(copy_root / "CLAUDE.md")
     files[".gitattributes"] = GITATTRIBUTES  # every pack, every placement: one place
     # The copies' root is a repository of its own when it is not the world folder: its root files
@@ -991,6 +1019,9 @@ def write_world(argv, state):
             except UnicodeDecodeError:
                 problems.append(f"copies {copies!r}: {p} is not UTF-8 text, so the AGENTS.md line cannot be "
                                 f"appended to it; save it as UTF-8, or set agents_md to false")
+                continue
+            if by_id and server_id.lower() in old.lower():
+                line_done.append(f"{p}: holds a line with this world's id already")
                 continue
             if line in old:
                 line_done.append(f"{p}: holds the line already")
