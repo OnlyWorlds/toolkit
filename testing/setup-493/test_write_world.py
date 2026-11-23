@@ -110,7 +110,8 @@ harness trial (2026-10-22):
     second line, and one holding another world's start line gets it with that id named (23b); a
     CLAUDE.md that is the AGENTS.md (a link) gets it once (23f); a CLAUDE.md, CLAUDE.local.md or .claude/CLAUDE.md above the copies root sends the line
     into the root's CLAUDE.md too (23c); at the home folder the older line is printed and nothing
-    written, and the home folder's own .claude/CLAUDE.md counts for no project under it (23d).
+    written, and the home folder's own .claude/CLAUDE.md counts for no project under it (23d); every
+    pack's online world skill holds the start line in the paragraph that says when it goes in (23e).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -251,9 +252,9 @@ COPY_WORD = re.compile(r"(?i)\bcop(y|ies|ied|ying)\b")
 # each counted without regard to case: how many the filled text holds, the same in every placement.
 SKILL_TERMS = {r"(?i)\bskill objects?\b": 1, r"(?i)\byour skills\b": 2}
 ASKER_TERMS = {r"(?i)\baskers?\b": 0, r"(?i)\bwho asked\b": 1}
-COPY_WORDS = {("company", "folder"): 8, ("company", "repo"): 8, ("company", "online"): 7,
-              ("software-project", "folder"): 8, ("software-project", "repo"): 8,
-              ("software-project", "online"): 11}
+COPY_WORDS = {("company", "folder"): 9, ("company", "repo"): 9, ("company", "online"): 8,
+              ("software-project", "folder"): 9, ("software-project", "repo"): 9,
+              ("software-project", "online"): 12}
 
 
 def visit_steps(text):
@@ -2058,6 +2059,22 @@ class StartLine(unittest.TestCase):
                 self.assertEqual(read(root / "CLAUDE.md"), want + "\n")
                 self.assertEqual(read(root / "AGENTS.md"), want + "\n")
                 self.assertEqual((root.parent / rel).read_bytes(), b"# The house\n")
+
+    def test_23e_the_online_world_skill_offers_the_line(self):
+        """Every pack's online world skill, as filled, holds the start line for the server's id once, at
+        the end of the paragraph that says when it goes in the start file."""
+        when = re.compile(r"When .+ asks to be set up here for next time, or you copy (this skill|these skills) "
+                          r"here, add this line to the start file here \(")
+        line = START_LINE.format(world_id=SERVER_ID)
+        for pack in PACKS:
+            with self.subTest(pack=pack):
+                run = RUNS[pack, "online"]
+                self.assertEqual(run.code, 0, run.out)
+                text = run.skill()
+                self.assertEqual(text.count(line), 1, "the start line, once")
+                para = next(ln for ln in text.split("\n") if line in ln)
+                self.assertRegex(para, when)
+                self.assertTrue(para.endswith(f'"{line}"'), para)
 
     def test_23f_a_claude_md_that_is_the_agents_md(self):
         """A CLAUDE.md that is the same file as the AGENTS.md (a link) gets the line once, and the summary

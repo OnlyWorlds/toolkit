@@ -114,4 +114,4 @@ Your skills are the Skill Objects the Charter names as the how-to (`front_door.c
 <!-- end -->
 The repository carries copies at `.agents/skills/<name>/SKILL.md` (Codex, OpenCode) and `.claude/skills/<name>/SKILL.md` (Claude Code), so everyone who pulls has them. A copy's first line after the front matter names its Object and when it was copied; when the Object is newer, copy its description again, whole, and commit. One with no copy yet: copy it only on your human's yes, asked first. Overwrite only its own earlier copy; else ask your human. Front matter: `name` and `description` only.
 
-Offer your human this line for the file your tool reads at each session's start (`AGENTS.md`; `CLAUDE.md` for Claude Code), and add it on their yes (asked for next time is one) unless a line there holds it or this world's id: "{{agents_line}}"
+When your human asks to be set up here for next time, or you copy these skills here, add this line to the start file here (`CLAUDE.md` for Claude Code where one stands here or above, else `AGENTS.md`), unless a line there holds it or this world's id: "{{agents_line}}"
