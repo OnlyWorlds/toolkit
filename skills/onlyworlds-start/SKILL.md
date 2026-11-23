@@ -84,7 +84,7 @@ Curious, not salesy. Structure serves creation; it never cools it.
 
 ## Connect an account
 
-Connect a project folder to one world on onlyworlds.com. Run this only when the user names an account world; a world folder on disk needs none of it (`knowledge/world-folder.md`). Shared rules for credentials and checking your work: principles §5 and §6.
+Connect a project folder to one world on onlyworlds.com. Run this only when the user names an account world; a world folder on disk needs none of it (`knowledge/world-folder.md`). Shared rules for credentials and checking your work: principles §5 and §6. Handed an address on onlyworlds.com with `/join` and a code after `#`: fetch `https://www.onlyworlds.com/join` as text and do what that page says.
 
 | Situation | Do |
 |---|---|
