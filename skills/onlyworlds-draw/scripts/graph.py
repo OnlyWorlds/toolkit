@@ -107,7 +107,7 @@ ROOM_WS = ("\t\n\x0b\x0c\r \x85\xa0         "
 
 
 # ---------------------------------------------------------------- reading
-# read_json and load_world are copied from the read skill's scripts/consistency.py (its folder
+# read_json, folder_files and load_world are copied from the read skill's scripts/consistency.py (its folder
 # reader), so the three skills that read folders read them the same way.
 
 def read_json(path):
@@ -115,34 +115,77 @@ def read_json(path):
         return json.loads(fh.read())
 
 
+def folder_files(folder, skipped):
+    """The files a reader takes (knowledge/world-folder.md, "Reading a folder"): a file directly
+    in a folder under elements/ (or in map, pin, zone or marker under a legacy spatial/), whose
+    name ends in .json in exactly that case and does not begin with a dot. The fixed names are
+    found in a listing and compared as written, never by asking the disk for a path (Windows
+    opens Elements/ for elements/). The order is the path below the world folder as written,
+    compared by code point, never the system's comparison of paths (which ignores case on
+    Windows), so the file kept of a repeated id is the same on every system. A name passed over
+    for its letters' case gets a line in skipped; a dot-file or a dot-folder is a tool's own and
+    is passed over in silence, as is any other file."""
+    def listing(d):
+        try:
+            return sorted(d.iterdir(), key=lambda p: p.name)
+        except OSError:
+            return []
+    found = []
+    for base in listing(folder):
+        if not base.is_dir() or base.name.startswith("."):
+            continue
+        if base.name not in ("elements", "spatial"):
+            if base.name.lower() in ("elements", "spatial"):
+                skipped.append(f"{base.name}/: not read (the folder must be named "
+                               f"{base.name.lower()}/, in lower case)")
+            continue
+        for sub in listing(base):
+            if not sub.is_dir() or sub.name.startswith("."):
+                continue
+            if base.name == "spatial" and sub.name.lower() not in ("map", "pin", "zone", "marker"):
+                continue
+            rel = f"{base.name}/{sub.name}/"
+            if sub.name != sub.name.lower():
+                skipped.append(f"{rel}: not read (a type folder's name is in lower case)")
+                continue
+            for f in listing(sub):
+                if f.name.startswith(".") or not f.is_file():
+                    continue
+                if f.name.endswith(".json"):
+                    found.append(f)
+                elif f.name.lower().endswith(".json"):
+                    skipped.append(f"{rel}{f.name}: not read (the name must end in .json, "
+                                   "in lower case)")
+    return sorted(found, key=lambda p: p.relative_to(folder).as_posix())
+
+
 def load_world(folder):
     world = {}
     if (folder / "world.json").exists():
         world = read_json(folder / "world.json")
     elements, skipped = {}, []
-    for base in ("elements", "spatial"):
-        for f in sorted((folder / base).glob("*/*.json")):
-            try:
-                d = read_json(f)
-            except (ValueError, OSError) as e:
-                skipped.append(f"{f.relative_to(folder).as_posix()}: does not parse ({e})")
-                continue
-            if not isinstance(d, dict) or not d.get("id") or isinstance(d["id"], (list, dict)):
-                skipped.append(f"{f.relative_to(folder).as_posix()}: no id")
-                continue
-            t = str(d.get("type") or f.parent.name).lower()
-            rel = f.relative_to(folder).as_posix()
-            if rel.startswith("elements/"):
-                rel = rel[len("elements/"):]
-            if d["id"] in elements:
-                skipped.append(f"{rel}: id {d['id']} also in {elements[d['id']]['_file']}")
-                continue
-            d["_type"], d["_file"] = t, rel
-            # Atlas's older pin and marker spellings (world-folder.md, writer rules)
-            for old, new in (("map_id", "map"), ("zone_id", "zone")):
-                if old in d and new not in d:
-                    d[new] = d[old]
-            elements[d["id"]] = d
+    for f in folder_files(folder, skipped):
+        try:
+            d = read_json(f)
+        except (ValueError, OSError) as e:
+            skipped.append(f"{f.relative_to(folder).as_posix()}: does not parse ({e})")
+            continue
+        if not isinstance(d, dict) or not d.get("id") or isinstance(d["id"], (list, dict)):
+            skipped.append(f"{f.relative_to(folder).as_posix()}: no id")
+            continue
+        t = str(d.get("type") or f.parent.name).lower()
+        rel = f.relative_to(folder).as_posix()
+        if rel.startswith("elements/"):
+            rel = rel[len("elements/"):]
+        if d["id"] in elements:
+            skipped.append(f"{rel}: id {d['id']} also in {elements[d['id']]['_file']}")
+            continue
+        d["_type"], d["_file"] = t, rel
+        # Atlas's older pin and marker spellings (world-folder.md, writer rules)
+        for old, new in (("map_id", "map"), ("zone_id", "zone")):
+            if old in d and new not in d:
+                d[new] = d[old]
+        elements[d["id"]] = d
     return world, elements, skipped
 
 
