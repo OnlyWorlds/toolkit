@@ -575,13 +575,14 @@ def test_a_proposed_mark_is_read_as_the_package_reads_it():
 
 
 def test_an_id_that_is_not_text_is_a_file_not_read():
-    rows = {**THAW, "event/numbered.json": {"id": 987654321, "type": "event", "name": "Numbered Feast",
-                                            "start_date": 5, "description": "Numword here."}}
-    code, text, page = draw_rows(rows, {"hidden": [987654321]})
-    assert code == 0, text
-    assert not traces(page, "987654321", "Numbered Feast", "Numword"), page[-1500:]
-    assert "outside the 22" not in text and "1 file not read." in page, text
-    assert "event/numbered.json: its id is not text" in text, text
+    for nid in (987654321, 5.5, True):  # a whole number, a decimal, true
+        rows = {**THAW, "event/numbered.json": {"id": nid, "type": "event", "name": "Numbered Feast",
+                                                "start_date": 5, "description": "Numword here."}}
+        code, text, page = draw_rows(rows, {"hidden": [nid]})
+        assert code == 0, text
+        assert not traces(page, "Numbered Feast", "Numword"), (nid, page[-1500:])
+        assert "outside the 22" not in text and "1 file not read." in page, (nid, text)
+        assert "event/numbered.json: its id is not text" in text, (nid, text)
 
 
 # Every left-out kind, each by every road the timeline reads an element by: its dates, an era, a
@@ -623,8 +624,12 @@ def plant_every_kind():
             for side in ("a", "z"):
                 rows[f"{ta}/{side}-plain-{k}.json"] = {"id": one, "type": ta, "name": f"Plain{side}{k}Q", "start_date": 4}
                 secrets |= {f"Plain{side}{k}Q", f"{side}-plain-{k}"}
-    rows["event/m-numid.json"] = {"id": 987654321, "type": "event", "name": "Leaknumid", "start_date": 3}
-    secrets |= {"987654321", "Leaknumid", "m-numid"}
+    # An id that is not text, in three kinds: a whole number, a decimal, true; the World lists each.
+    for stem, nid in (("m-numid", 987654321), ("m-floatid", 5.5), ("m-trueid", True)):
+        rows[f"event/{stem}.json"] = {"id": nid, "type": "event", "name": f"Leak{stem[2:]}Q", "start_date": 3}
+        secrets |= {f"Leak{stem[2:]}Q", stem}
+        listed.append(nid)
+    secrets.add("987654321")
     return rows, cals, listed, secrets
 
 

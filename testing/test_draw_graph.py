@@ -26,10 +26,12 @@ given by its absolute path (the page names no folder), and an element of a type 
 
 graph.py's left-out rules (hidden, proposed, room, reading aid) stay its own copies, since map.py
 imports them and runs on the standard library alone: one table holds each equal to the package's
-own function over thirteen values. A proposed mark of false, 0 or 0.0 is left out and one of only
-spaces is not, alone and beside a plain copy in either order; an id that is not text is a file
-not read; and one world plants every left-out kind, each by every road the graph reads (a link's
-target, a copy of its id before and after it, the World's hidden list), and searches both files.
+own function over thirteen values, and room and reading aid over six spellings of a type and a
+supertype (White_Space, case, a long s). A proposed mark of false, 0 or 0.0 is left out and one
+of only spaces is not, alone and beside a plain copy in either order; an id that is not text (a
+whole number, a decimal, true) is a file not read; and one world plants every left-out kind, each
+by every road the graph reads (a link's target, a copy of its id before and after it, the World's
+hidden list), and searches both files.
 
 OW_DRAW_GRAPH points at another copy of graph.py (an older one, to show this test is red on it).
 
@@ -453,8 +455,18 @@ def test_the_left_out_rules_are_the_packages():
                                    ("reading aid", g.is_reading_aid(a), is_charter_element(a))):
             if mine != theirs:
                 differ.append((rule, "absent" if v is ABSENT else v, mine, theirs))
+    # How a type and a supertype are spelled: White_Space around them (a no-break space is one), case,
+    # and a long s, which simple case folding reads as s. Each side folds; the two must agree.
+    for t, s, key in ((" NARRATIVE\u00a0", "MESSAGE ", "x_room_of"), ("conſtruct", "Spec", "x_room_of"),
+                      ("CONſTRUCT", "Guide", "x_charter_of"), ("Law", "Charter\u3000", "x_charter_of"),
+                      ("event", "ſitting", "x_room_of"), ("\ufeffcharacter", "Member", "x_room_of")):
+        b = {"id": "x", "type": t, "_type": t.lower(), "supertype": s, key: WORLD}
+        for rule, mine, theirs in (("room", g.is_room(b), is_room_element(b)),
+                                   ("reading aid", g.is_reading_aid(b), is_charter_element(b))):
+            if mine != theirs:
+                differ.append((rule, t, s, mine, theirs))
     assert not differ, differ
-    print(f"{len(VALUES)} values x 4 rules: the script's answers are the package's")
+    print(f"{len(VALUES)} values x 4 rules and 6 spellings x 2 rules: the script's answers are the package's")
 
 
 def test_a_proposed_mark_is_read_as_the_package_reads_it():
@@ -475,13 +487,14 @@ def test_a_proposed_mark_is_read_as_the_package_reads_it():
 
 
 def test_an_id_that_is_not_text_is_a_file_not_read():
-    rows = {"character/numbered.json": {"id": 987654321, "type": "character", "name": "Numbered Nook",
-                                        "description": "Numword here."}, **ada_to()}
-    code, text, page, data = draw_rows(rows, {"hidden": [987654321]})
-    assert code == 0, text
-    assert not held([page, data], "987654321", "Numbered Nook", "Numword"), page[-1500:]
-    assert "outside the 22" not in text and "1 file not read." in page, text
-    assert "character/numbered.json: its id is not text" in text, text
+    for nid in (987654321, 5.5, True):  # a whole number, a decimal, true
+        rows = {"character/numbered.json": {"id": nid, "type": "character", "name": "Numbered Nook",
+                                            "description": "Numword here."}, **ada_to()}
+        code, text, page, data = draw_rows(rows, {"hidden": [nid]})
+        assert code == 0, text
+        assert not held([page, data], "Numbered Nook", "Numword"), (nid, page[-1500:])
+        assert "outside the 22" not in text and "1 file not read." in page, (nid, text)
+        assert "character/numbered.json: its id is not text" in text, (nid, text)
 
 
 # Every left-out kind, each by every road the graph reads an element by: a link's target, a copy of
@@ -509,8 +522,12 @@ def plant_every_kind():
             for side in ("a", "z"):
                 rows[f"{t}/{side}-plain-{k}.json"] = {"id": eid, "type": t, "name": f"Plain{side}{k}Q"}
                 secrets |= {f"Plain{side}{k}Q", f"{side}-plain-{k}"}
-    rows["character/m-numid.json"] = {"id": 987654321, "type": "character", "name": "Leaknumid"}
-    secrets |= {"987654321", "Leaknumid", "m-numid"}
+    # An id that is not text, in three kinds: a whole number, a decimal, true; the World lists each.
+    for stem, nid in (("m-numid", 987654321), ("m-floatid", 5.5), ("m-trueid", True)):
+        rows[f"character/{stem}.json"] = {"id": nid, "type": "character", "name": f"Leak{stem[2:]}Q"}
+        secrets |= {f"Leak{stem[2:]}Q", stem}
+        listed.append(nid)
+    secrets.add("987654321")
     rows.update(ada_to(*sorted(s for s in secrets if s.startswith("00000000-"))))
     return rows, {"hidden": listed}, secrets
 

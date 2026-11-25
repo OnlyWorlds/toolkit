@@ -553,13 +553,14 @@ def test_a_proposed_mark_is_read_as_the_package_reads_it():
 
 
 def test_an_id_that_is_not_text_is_a_file_not_read():
-    rows = {**CHART, "map/numbered.json": {"id": 987654321, "type": "map", "name": "Numbered Nook", "width": 10,
-                                           "height": 10, "description": "Numword here."}}
-    code, text, page = _draw_rows(rows)
-    assert code == 0, text
-    assert not _held(page, "987654321", "Numbered Nook", "Numword"), page[-1500:]
-    assert "outside the 22" not in text and "1 file not read." in page, text
-    assert "map/numbered.json: its id is not text" in text, text
+    for nid in (987654321, 5.5, True):  # a whole number, a decimal, true
+        rows = {**CHART, "map/numbered.json": {"id": nid, "type": "map", "name": "Numbered Nook", "width": 10,
+                                               "height": 10, "description": "Numword here."}}
+        code, text, page = _draw_rows(rows, {"hidden": [nid]})
+        assert code == 0, text
+        assert not _held(page, "Numbered Nook", "Numword"), (nid, page[-1500:])
+        assert "outside the 22" not in text and "1 file not read." in page, (nid, text)
+        assert "map/numbered.json: its id is not text" in text, (nid, text)
 
 
 def test_the_foot_says_nothing_false_of_a_left_out_map_or_zone():
@@ -639,8 +640,12 @@ def _plant_every_kind():
                                               "x": o + 1, "y": 2 * o + 1, "order": o}
             rows[f"marker/j-{k}-{o}.json"] = {"id": nid(), "type": "marker", "name": "mk", "map": mp,
                                               "zone": "019a9000-0000-7000-8000-0000000f0001", "x": o + 1, "y": o, "order": o}
-    rows["map/m-numid.json"] = {"id": 987654321, "type": "map", "name": "Leaknumid", "width": 10, "height": 10}
-    secrets |= {"987654321", "Leaknumid", "m-numid"}
+    # An id that is not text, in three kinds: a whole number, a decimal, true; the World lists each.
+    for stem, nid in (("m-numid", 987654321), ("m-floatid", 5.5), ("m-trueid", True)):
+        rows[f"map/{stem}.json"] = {"id": nid, "type": "map", "name": f"Leak{stem[2:]}Q", "width": 10, "height": 10}
+        secrets |= {f"Leak{stem[2:]}Q", stem}
+        listed.append(nid)
+    secrets.add("987654321")
     return rows, {"hidden": listed}, secrets
 
 
