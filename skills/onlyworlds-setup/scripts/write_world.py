@@ -210,7 +210,7 @@ def slug(text, cap=40):
     lowercased by Unicode's default mapping; each run outside a-z and 0-9 one hyphen, trimmed at
     both ends; cut at `cap` code points and trimmed again at the new end. '' when nothing is left
     (the caller then names the file by the full id). A plain ASCII name gives what it always gave."""
-    s = re.sub(r"[̀-ͯ]", "", unicodedata.normalize("NFKD", text)).lower()
+    s = re.sub(r"[\u0300-\u036f]", "", unicodedata.normalize("NFKD", text)).lower()
     s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
     return s[:cap].rstrip("-")
 
