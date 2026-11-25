@@ -30,18 +30,18 @@ hyperion/                        the world folder it writes
         └── consul--90d3f6c2.json
 ```
 
-The import reads your notes and does not change them. It first asks what it cannot see for itself: what the sources are, where the world should live, what it is for, which source wins a conflict, and when the world's "now" is. A bigger import keeps its working files (a source inventory, a registry and `world-rules.md`) in the world folder's root, next to `world.json`. Open the world folder in [Atlas](https://atlas.onlyworlds.com) in a desktop Chromium browser (Chrome, Edge, Brave): Atlas reads and saves the folder itself. In Firefox or Safari, open the world as one `.owworld` file (a `.zip` of the folder opens too): Atlas keeps that world in the browser, and the folder on disk is not changed.
+The import reads your notes and does not change them. It first asks what it cannot see for itself: what the sources are, where the world should live, what it is for, which source wins a conflict, and when the world's "now" is. Open the world folder in [Atlas](https://atlas.onlyworlds.com) in a desktop Chromium browser (Chrome, Edge, Brave): Atlas reads and saves the folder itself. In Firefox or Safari, open the world as one `.owworld` file (a `.zip` of the folder opens too): Atlas keeps that world in the browser, and the folder on disk is not changed.
 
 What the import holds to, in its own rules:
 
-- **Invents no fields.** Only fields listed under that type; custom data goes in `x_<name>` fields.
-- **A stub is cheap, a skip is forever.** An element for anything the source canonically introduces, even with only a name and a line.
-- **Cite and log.** Every element's registry row carries a source pointer (chapter, section, page). Every report lists what was not extracted and why.
-- **What you decided.** It parses what the author decided ("going with", "this is canon now"); brainstorming ("maybe", "what if", "???") is reported separately. When sources contradict and the author never settled it, both versions are kept for your ruling.
-- **GM-only stays hidden.** What the source marks GM-only (a secret, a twist, a stat block the players never see) goes `hidden: true` in the element's file; a published page does not show it.
-- **Propose, then write.** Nothing is written into an existing world until you have ruled on the change list. A new world folder is itself the proposal: written, reported, and reviewed by you before anything builds on it.
+- **No made-up fields.** Each entry uses only the fields its type has; anything else is kept under a name of its own.
+- **Nothing your notes introduce is skipped.** Anything they introduce gets an entry, even with only a name and a line.
+- **Every entry says where it came from.** Each is listed with a pointer into your notes (chapter, section, page), and the report lists what was not taken in and why.
+- **What you decided counts.** It takes in what you decided ("going with", "this is canon now"); brainstorming ("maybe", "what if", "???") is reported separately. When your notes contradict each other and you never settled it, both versions are kept for you to choose.
+- **GM-only stays hidden.** What your notes mark GM-only (a secret, a twist, a stat block the players never see) is kept hidden; a published page does not show it.
+- **You approve changes first.** Nothing is written into an existing world until you have approved the list of changes. A new world folder is itself the proposal: written, reported, and reviewed by you before anything builds on it.
 
-The report closes it: what each source contributed, what was not extracted, the judgment calls, the conflicts. After each played session, the update skill writes its change list to a file beside your notes, and nothing in the world changes until you have ruled on the rows; then only the approved rows are written.
+The report closes it: what each source contributed, what was not extracted, the judgment calls, the conflicts. After each played session, the update skill writes its change list to a file beside your notes, and nothing in the world changes until you have approved the list of changes; then only what you approved is written.
 
 ## What It Does
 
@@ -57,15 +57,18 @@ The report closes it: what each source contributed, what was not extracted, the 
 
 ## Install
 
-Some skills run Python on your machine. The folder check that import, setup and update run after writing to a world folder, draw's graph and timeline, and carry's packing and converting use the `onlyworlds` package (`pip install onlyworlds`), which needs Python 3.12 or newer. Read's reports, draw's map and setup's writer use only Python's standard library.
+Importing your notes needs no Python: only the check the import runs on the finished world folder uses it, and without Python the import writes the folder and says the check was not run. That check (setup and update run it too), draw's graph and timeline, and carry's packing and converting use the `onlyworlds` package (`pip install onlyworlds`), which needs Python 3.12 or newer. Read's reports, draw's map and setup's writer need Python and nothing beyond its standard library.
 
 ### Claude Code
 
-```bash
+These commands need Claude Code; for any other AI, see Other AIs below. Type the two lines inside Claude Code, not in a terminal, then restart Claude Code:
+
+```
 /plugin marketplace add OnlyWorlds/toolkit
 /plugin install toolkit@onlyworlds
-# Restart Claude Code to load
 ```
+
+Then, as a first request: "import my notes from hyperion-notes", with the name of the folder that holds yours.
 
 Or direct (no restart needed):
 ```bash
@@ -133,9 +136,9 @@ Each skill's full name is `onlyworlds-<skill>` (in Claude Code, `/onlyworlds:onl
 
 ## Your Files, Your World
 
-Most of the toolkit runs on nothing but your files:
+Most of the toolkit works on files on your disk, with no account:
 
-- **Import and model** work fully standalone: import writes a world folder, your notes become a world Atlas opens, no account involved.
+- **Import and model** start from your notes: import writes a world folder, and your notes become a world Atlas opens.
 - **Read and draw** work on a world folder straight off disk: an Atlas world, converter output, or anything in the [world folder shape](knowledge/world-folder.md).
 - **Carry** packs, unpacks and converts folders on disk; only the move to or from an account needs one.
 - **Context and update** work with whatever holds your world: a folder, your own notes, or an OnlyWorlds world (where a session can open with one character's draught, what she knows as the world records it, or with a lens, a saved way of reading the world).
