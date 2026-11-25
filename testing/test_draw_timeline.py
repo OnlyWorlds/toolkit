@@ -52,7 +52,19 @@ else of calendars. The terminal is the person's own.
   bytes hold none of their file names, not the hidden one's id or words, and say "7 files not
   read."; the terminal names all seven;
 - test_a_folder_that_reads_whole_draws_the_same_page: no line about files not read when every
-  file reads, and one file that does not read adds that one line to the page and nothing else.
+  file reads, and one file that does not read adds that one line to the page and nothing else;
+- test_the_worlds_hidden_list_leaves_out_what_it_names, test_an_id_two_files_hold_is_drawn_from_
+  neither_when_one_is_left_out and test_a_type_outside_the_22_is_left_out_and_counted: a dated
+  Event the World's hidden list names, an Event id two files hold (one hidden, in both orders), and
+  a dated element of a type outside the 22: none reaches the page's bytes, each is counted;
+- test_a_proposed_mark_is_read_as_the_package_reads_it: an Event marked proposed by false, 0 or
+  0.0 is left out, by "   " not, alone and beside a plain copy in either order; the World's
+  calendar carrying such a mark labels no page;
+- test_an_id_that_is_not_text_is_a_file_not_read: an Event whose id is a number is not drawn, not
+  counted outside the 22, and the terminal says its id is not text;
+- test_no_left_out_kind_reaches_a_written_file_by_any_road: every left-out kind, each by every
+  road the timeline reads (its dates, an era, the calendar the World names, a copy of its id
+  before and after it, the World's hidden list), one run per calendar: none in the page.
 
 Every test but the package one fails in plain words, never skips, when the interpreter running
 it has an onlyworlds package without speaking_calendar.
@@ -435,6 +447,172 @@ def test_a_folder_that_reads_whole_draws_the_same_page():
     assert b"not read" not in clean, clean
     a, b = stamp.sub(b"T", clean), stamp.sub(b"T", one)
     assert b == a.replace(b'<div id="ms">', b"<div>1 file not read. " + UNREAD_WORDS + b'</div><div id="ms">'), b
+
+
+# What a page leaves out besides the files not read: an element the World's hidden list names, an
+# id two files hold when either copy is left out, and an element of a type outside the 22.
+LISTED = "019a3b10-0000-7000-8000-0000000de001"
+COPIED = "019a3b10-0000-7000-8000-0000000de002"
+GADGET = "019a3b10-0000-7000-8000-0000000de003"
+TYPES_22 = ("ability", "character", "collective", "construct", "creature", "event", "family",
+            "institution", "language", "law", "location", "map", "marker", "narrative", "object",
+            "phenomenon", "pin", "relation", "species", "title", "trait", "zone")
+THAW = {"event/the-thaw.json": {"id": EVENT, "type": "event", "name": "The thaw", "start_date": 12}}
+
+
+def draw_rows(rows, world_keys=None, *args):
+    """(exit, stdout and stderr, the page's text) for a folder of `rows` ({path under elements/:
+    body}), world.json carrying `world_keys`."""
+    need_package()
+    with tempfile.TemporaryDirectory() as d:
+        root, out = Path(d) / "world", Path(d) / "out"
+        for rel, body in rows.items():
+            p = root / "elements" / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps(body), encoding="utf-8")
+        (root / "world.json").write_text(json.dumps(world(**(world_keys or {}))), encoding="utf-8")
+        env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
+        r = subprocess.run([sys.executable, str(TIMELINE), str(root), "--out", str(out), "--offline", *args],
+                           check=False, capture_output=True, text=True, encoding="utf-8", env=env)
+        page = (out / "timeline.html").read_text(encoding="utf-8") if (out / "timeline.html").exists() else ""
+    return r.returncode, r.stdout + r.stderr, page
+
+
+def test_the_worlds_hidden_list_leaves_out_what_it_names():
+    rows = {**THAW, "event/listed.json": {"id": LISTED, "type": "event", "name": "Listed quietly", "start_date": 5,
+                                          "description": "Murmurword only here."}}
+    code, text, page = draw_rows(rows, {"hidden": [LISTED]})
+    assert code == 0, text
+    assert not traces(page, LISTED, "Listed quietly", "Murmurword"), traces(page, LISTED, "Listed quietly", "Murmurword")
+    assert "Left out: 1 hidden." in text, text
+    code, text, page = draw_rows(rows, {"hidden": [LISTED]}, "--hidden")
+    assert code == 0 and traces(page, "Listed quietly", "Murmurword") == ["Listed quietly", "Murmurword"], text
+
+
+def test_an_id_two_files_hold_is_drawn_from_neither_when_one_is_left_out():
+    for plain in ("aa-plain-copy", "zz-plain-copy"):
+        rows = {**THAW,
+                f"event/{plain}.json": {"id": COPIED, "type": "event", "name": "Plain copy", "start_date": 4,
+                                        "description": "Plainword here."},
+                "event/hidden-copy.json": {"id": COPIED, "type": "event", "name": "Hushed copy", "start_date": 6,
+                                           "hidden": True, "description": "Hushword here."}}
+        code, text, page = draw_rows(rows)
+        assert code == 0, text
+        found = traces(page, COPIED, "Plain copy", "Hushed copy", "Plainword", "Hushword")
+        assert not found, (plain, found)
+        assert "Left out: 1 hidden." in text and "1 file not read." in page, (plain, text)
+        a, b = sorted([f"event/{plain}.json", "event/hidden-copy.json"])
+        # The terminal names both files, blames neither, and says which copy the run took.
+        assert f"{a} and {b} both hold the id {COPIED}; this run took event/hidden-copy.json" in text, (plain, text)
+        # With --hidden no copy is left out: the first by path is drawn, as before.
+        code, text, page = draw_rows(rows, None, "--hidden")
+        first = "Plain copy" if plain.startswith("aa") else "Hushed copy"
+        assert traces(page, "Plain copy", "Hushed copy") == [first], (plain, text)
+    rows = {**THAW, "event/aa-first.json": {"id": COPIED, "type": "event", "name": "First copy", "start_date": 4},
+            "event/zz-second.json": {"id": COPIED, "type": "event", "name": "Second copy", "start_date": 4}}
+    code, text, page = draw_rows(rows)
+    assert traces(page, "First copy", "Second copy") == ["First copy"], text
+    assert (f"event/aa-first.json and event/zz-second.json both hold the id {COPIED}; "
+            "this run took event/aa-first.json") in text, text
+
+
+def test_a_type_outside_the_22_is_left_out_and_counted():
+    rows = {**THAW, "widget/odd-gadget-file.json": {"id": GADGET, "type": "widget", "name": "Odd gadget",
+                                                    "start_date": 4, "description": "Gadgetword here."}}
+    code, text, page = draw_rows(rows)
+    assert code == 0, text
+    assert not traces(page, GADGET, "Odd gadget", "Gadgetword", "odd-gadget-file", "widget"), page[-2000:]
+    # The terminal counts it and names it not: it is read, so it is no file not read.
+    assert "Left out: 1 outside the 22 types." in text and "odd-gadget-file" not in text, text
+
+
+def test_a_proposed_mark_is_read_as_the_package_reads_it():
+    """false, 0 and 0.0 are a doubt, counted with the proposed; a text of only spaces is no mark. The
+    World's calendar carrying such a mark labels no page."""
+    for v, out in ((False, True), (0, True), (0.0, True), ("   ", False)):
+        rows = {**THAW, "event/marked.json": {"id": LISTED, "type": "event", "name": "Marked Fenwick",
+                                              "start_date": 5, "x_review_proposed": v, "description": "Fenword here."}}
+        code, text, page = draw_rows(rows)
+        assert code == 0, text
+        assert bool(traces(page, "Marked Fenwick", "Fenword")) is not out, (v, text)
+        assert ("Left out: 1 proposed." in text) is out, (v, text)
+        # A plain copy of a proposed element, in both orders: neither copy is drawn.
+        for plain in ("aa-plain", "zz-plain"):
+            rows[f"event/{plain}.json"] = {"id": LISTED, "type": "event", "name": "Plain Aster", "start_date": 6}
+            code, text, page = draw_rows(rows)
+            assert bool(traces(page, "Plain Aster", "Marked Fenwick")) is not out, (v, plain, text)
+            del rows[f"event/{plain}.json"]
+        velvet = {**secret(), "hidden": False, "x_review_proposed": v}
+        code, spoken, text, page = draw(world(x_calendar=SECRET), [velvet])
+        assert code == 0, text
+        assert bool(no_secret(page)) is not out, (v, spoken, no_secret(page))
+
+
+def test_an_id_that_is_not_text_is_a_file_not_read():
+    rows = {**THAW, "event/numbered.json": {"id": 987654321, "type": "event", "name": "Numbered Feast",
+                                            "start_date": 5, "description": "Numword here."}}
+    code, text, page = draw_rows(rows, {"hidden": [987654321]})
+    assert code == 0, text
+    assert not traces(page, "987654321", "Numbered Feast", "Numword"), page[-1500:]
+    assert "outside the 22" not in text and "1 file not read." in page, text
+    assert "event/numbered.json: its id is not text" in text, text
+
+
+# Every left-out kind, each by every road the timeline reads an element by: its dates, an era, a
+# calendar the World names, a copy of its id in two other files (one sorting before it, one after),
+# the World's hidden list.
+LEAKS = {"hidtrue": {"hidden": True}, "hidyes": {"hidden": "yes"}, "hidone": {"hidden": 1},
+         "hidobj": {"hidden": {"a": 1}}, "listed": {}, "propmark": {"x_review_proposed": {"by": "someone"}},
+         "propfalse": {"x_review_proposed": False}, "propzero": {"x_review_proposed": 0},
+         "propzerof": {"x_review_proposed": 0.0}}
+FORCED = {"room": (("event", "Sitting"), ("construct", "Spec"), {"x_room_of": world()["id"]}),
+          "aid": (("law", "Charter"), ("construct", "Guide"), {"x_charter_of": world()["id"]}),
+          "outside": (("widget", None), ("widget", None), {})}
+
+
+def plant_every_kind():
+    """(rows, the calendars' ids, the World's hidden list, every id, name and word a page may not hold)."""
+    rows, secrets, cals, listed, n = dict(THAW), set(), [], [], [0]
+
+    def nid():
+        n[0] += 1
+        return f"019a3b10-0000-7000-8000-0000001{n[0]:05d}"
+
+    kinds = [(k, ("event", None), ("construct", None), mark) for k, mark in LEAKS.items()]
+    kinds += [(k, a, c, mark) for k, (a, c, mark) in FORCED.items()]
+    for k, (ta, sa), (tc, sc), mark in kinds:
+        one, cal = nid(), nid()
+        cal_words = [f"Mon{k}A", f"Mon{k}B", f"Era{k}Q"]
+        rows[f"{ta}/m-{k}.json"] = {"id": one, "type": ta, "name": f"Leak{k}Q", "start_date": 3,
+                                    "description": f"Desc{k}Q", **({"supertype": sa} if sa else {}), **mark}
+        rows[f"{tc}/c-{k}.json"] = {"id": cal, "type": tc, "name": f"Cal{k}Q", "start_date": 1, "end_date": 2,
+                                    "description": f"Desc{k}CalQ", **({"supertype": sc} if sc else {}), **mark,
+                                    "atlas_calendar": {"version": 1, "grain": "day",
+                                                       "bundles": {"months": {"names": cal_words[:2], "lengths": [10, 10]}},
+                                                       "eras": [{"name": cal_words[2], "start": 0}]}}
+        secrets |= {one, cal, f"Leak{k}Q", f"Desc{k}Q", f"Cal{k}Q", f"Desc{k}CalQ", f"m-{k}", f"c-{k}", *cal_words}
+        cals.append(cal)
+        listed += [one, cal] if k == "listed" else []
+        if k != "outside":  # a copy that is only outside the 22 keeps no id out (amendment 1)
+            for side in ("a", "z"):
+                rows[f"{ta}/{side}-plain-{k}.json"] = {"id": one, "type": ta, "name": f"Plain{side}{k}Q", "start_date": 4}
+                secrets |= {f"Plain{side}{k}Q", f"{side}-plain-{k}"}
+    rows["event/m-numid.json"] = {"id": 987654321, "type": "event", "name": "Leaknumid", "start_date": 3}
+    secrets |= {"987654321", "Leaknumid", "m-numid"}
+    return rows, cals, listed, secrets
+
+
+def test_no_left_out_kind_reaches_a_written_file_by_any_road():
+    rows, cals, listed, secrets = plant_every_kind()
+    found = {}
+    for cal in [None, *cals]:  # the World naming no calendar, then each left-out calendar in turn
+        code, text, page = draw_rows(rows, {"hidden": listed, **({"x_calendar": cal} if cal else {})})
+        assert code == 0, text
+        hits = traces(page, *secrets)
+        if hits:
+            found[cal] = hits
+    assert not found, found
+    print(f"{len(cals) + 1} runs, {len(secrets)} ids, names and words: none in timeline.html")
 
 
 if __name__ == "__main__":

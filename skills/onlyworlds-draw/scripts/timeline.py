@@ -39,8 +39,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from graph import (BASE_JS, FAMILY_ORDER, aids_line, count_line, fold, head_line, label,  # noqa: E402
-                   left_out_reason, open_folder, out_folder, presentation, unread_page_line,
-                   unread_terminal_lines, write_page)
+                   left_out_reason, listed_hidden, open_folder, out_folder, presentation, stand_ins,
+                   unread_page_line, unread_terminal_lines, write_page)
 
 try:
     from onlyworlds.calendar import WORLD_CALENDAR_KEY, format_step, read_calendar_value, speaking_calendar  # noqa: E402
@@ -202,17 +202,19 @@ def main(argv):
 
     folder, world, elements, skipped = open_folder(a.folder)
     name = world.get("name") or folder.name
-    left = {"reading aid": 0, "room": 0, "proposed": 0, "hidden": 0, "outside --type": 0}
+    listed = listed_hidden(world)
+    elements = stand_ins(elements, skipped, a.room, a.proposed, a.hidden, listed)
+    left = {"reading aid": 0, "room": 0, "proposed": 0, "hidden": 0, "outside the 22 types": 0, "outside --type": 0}
     kept = {}
     for i, e in elements.items():
-        why = left_out_reason(e, a.room, a.proposed, a.hidden)
+        why = left_out_reason(e, a.room, a.proposed, a.hidden, listed)
         if why:
             left[why] += 1
         elif a.type and e["_type"] not in {t.lower() for t in a.type}:
             left["outside --type"] += 1
         else:
             kept[i] = e
-    left_out = {i: why for i, e in elements.items() if (why := left_out_reason(e, a.room, a.proposed, a.hidden))}
+    left_out = {i: why for i, e in elements.items() if (why := left_out_reason(e, a.room, a.proposed, a.hidden, listed))}
     cal_el, cal, cal_name, notes = pick_calendar(world, elements, left_out, a.calendar)
 
     def say(v):
@@ -245,7 +247,7 @@ def main(argv):
             rmin, rmax = rmin - 1, rmax + 1
     else:
         rmin, rmax, range_from = 0, 1, "no dates"
-    fam_of, colors, colour_source = presentation(a.offline, a.presentation)
+    fam_of, colors, colour_source, colour_said = presentation(a.offline, a.presentation)
     order = {f: i for i, f in enumerate(FAMILY_ORDER)}
     by_type, eras, k = {}, [], 0
     for e, fa, va, fb, vb, era in sorted(rows, key=lambda r: (r[2], fold(label(r[0])))):
@@ -276,16 +278,17 @@ def main(argv):
               f"(from {range_from}). Not placed: {count_line(not_placed)}. Left out: {count_line(left)}.{aids_line(left)}")
     plain = "Dates are the world's plain integers (no calendar reads)."
     spoken_on = "Dates read through {}; the axis counts plain steps."
-    colours = f"Colours: {colour_source}."
+    # The page names a --presentation file by its name alone, the terminal by its path as typed.
+    colours = "Colours: {}."
     # The page says which calendar its dates are read through, or that they are plain numbers,
     # and nothing more about calendars: the notes are the terminal's alone.
-    foot = ([counts, spoken_on.format(cal_name) if cal_el else plain, colours]
+    foot = ([counts, spoken_on.format(cal_name) if cal_el else plain, colours.format(colour_source)]
             + ([unread_page_line(skipped)] if skipped else []))
     write_page(out / "timeline.html", f"{name}: timeline", head, foot, {"tl": tl, "colors": colors}, TL_CSS, TL_JS)
 
     print(f"# Timeline of {name}\n\n{head}\n")
     term = [counts, spoken_on.format(f"the calendar {label(cal_el)}") if cal_el else plain]
-    for line in term + [colours] + notes:
+    for line in term + [colours.format(colour_said)] + notes:
         print(f"- {line}")
     if skipped:
         print("\n".join(unread_terminal_lines(skipped)))

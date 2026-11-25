@@ -40,8 +40,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from graph import (FAMILY_ORDER, VIEW_JS, aids_line, count_line, fold, head_line, label,  # noqa: E402
-                   left_out_reason, open_folder, out_folder, presentation, unread_page_line,
-                   unread_terminal_lines, write_page)
+                   left_out_reason, listed_hidden, open_folder, out_folder, presentation, stand_ins,
+                   unread_page_line, unread_terminal_lines, write_page)
 
 
 def whole(v):
@@ -203,10 +203,12 @@ def main(argv):
 
     folder, world, elements, skipped = open_folder(a.folder)
     name = world.get("name") or folder.name
-    left = {"reading aid": 0, "room": 0, "proposed": 0, "hidden": 0}
+    listed = listed_hidden(world)
+    elements = stand_ins(elements, skipped, a.room, a.proposed, a.hidden, listed)
+    left = {"reading aid": 0, "room": 0, "proposed": 0, "hidden": 0, "outside the 22 types": 0}
     kept = {}
     for i, e in elements.items():
-        why = left_out_reason(e, a.room, a.proposed, a.hidden)
+        why = left_out_reason(e, a.room, a.proposed, a.hidden, listed)
         if why:
             left[why] += 1
         else:
@@ -219,7 +221,7 @@ def main(argv):
         print("\n".join(outline(elements, set(kept))) or "(no Location elements either)")
         return 0
 
-    fam_of, colors, colour_source = presentation(a.offline, a.presentation)
+    fam_of, colors, colour_source, colour_said = presentation(a.offline, a.presentation)
     not_placed = {"pins without integer x and y": 0, "pins on no map in the folder": 0,
                   "pins placing a left-out element": 0, "markers without integer x and y": 0,
                   "markers on no map in the folder": 0, "markers with no zone in the folder": 0}
@@ -298,7 +300,7 @@ def main(argv):
             "Pins and markers are drawn where their x and y say, counted from the map's bottom-left corner. "
             + ("The map images are not loaded (--no-image)." if a.no_image
                else "The map images load from their image_url; the page makes no other outside request."),
-            f"Colours: {colour_source}."]
+            "Colours: {}."]
     for p, ms in group.items():
         if not ms:
             continue
@@ -325,9 +327,13 @@ def main(argv):
                     + (" ..." if len(names) > 5 else "") + ". Set shape to line on each to draw an open path.")
     data = {"maps": data_maps, "colors": colors, "families": list(FAMILY_ORDER), "noImage": a.no_image,
             "notes": NOTES}
+    # The colour line, third in the foot, names a --presentation file on the page by its name alone
+    # and in the terminal by its path as typed (graph.presentation).
+    page_foot = foot[:2] + [foot[2].format(colour_source)] + foot[3:]
     write_page(out / "map.html", f"{name}: maps", head,
-               foot + ([unread_page_line(skipped)] if skipped else []), data, MAP_CSS, MAP_JS)
+               page_foot + ([unread_page_line(skipped)] if skipped else []), data, MAP_CSS, MAP_JS)
 
+    foot[2] = foot[2].format(colour_said)
     print(f"# Maps of {name}\n\n{head}\n")
     for line in foot:
         print(f"- {line}")

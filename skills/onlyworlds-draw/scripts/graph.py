@@ -85,6 +85,10 @@ OFFLINE_FAMILY = {
     "ability": "amber", "event": "amber", "narrative": "amber", "phenomenon": "amber",
     "relation": "amber",
 }
+# The 22 types, as the package's reader knows them (testing/test_draw_graph.py holds them equal to
+# its ELEMENT_TYPES): an element of any other type is no node of the graph, and map.py and
+# timeline.py leave it out by the same words (outside_the_22).
+TYPES = frozenset(OFFLINE_FAMILY)
 GREYS = {"blue": ("#3d3d3d", "#e0e0e0"), "green": ("#5f5f5f", "#bdbdbd"),
          "pink": ("#818181", "#9a9a9a"), "amber": ("#a3a3a3", "#777777")}
 NO_FAMILY = ("#9e9e9e", "#8a8a8a")
@@ -159,7 +163,11 @@ def folder_files(folder, skipped):
     return sorted(found, key=lambda p: p.relative_to(folder).as_posix())
 
 
-def load_world(folder):
+def load_world(folder, twins=None):
+    """The read skill's loader, and one addition of the draw skill's: given a dict `twins`, the
+    body of each file whose id an earlier file holds is kept there under that id, and its line in
+    skipped is left to stand_ins, which knows which copy the run takes. Without `twins` it is the
+    read skill's loader exactly (testing/test_loader_files.py runs both)."""
     world = {}
     if (folder / "world.json").exists():
         world = read_json(folder / "world.json")
@@ -178,7 +186,11 @@ def load_world(folder):
         if rel.startswith("elements/"):
             rel = rel[len("elements/"):]
         if d["id"] in elements:
-            skipped.append(f"{rel}: id {d['id']} also in {elements[d['id']]['_file']}")
+            if twins is None:
+                skipped.append(f"{rel}: id {d['id']} also in {elements[d['id']]['_file']}")
+            else:
+                d["_type"], d["_file"] = t, rel
+                twins.setdefault(d["id"], []).append(d)
             continue
         d["_type"], d["_file"] = t, rel
         # Atlas's older pin and marker spellings (world-folder.md, writer rules)
@@ -190,14 +202,23 @@ def load_world(folder):
 
 
 def open_folder(path):
-    """(folder, world, elements, skipped), or exit 2 when there is no world to read."""
+    """(folder, world, elements, skipped), or exit 2 when there is no world to read. An element
+    whose id later files hold too carries their bodies in `_twins` (stand_ins reads them, and
+    writes their lines in skipped). An element whose id is not text (a number) is no element the
+    package's reader takes, whatever its type: each of its files is a file not read, said so."""
     folder = Path(path).resolve()
     if not folder.is_dir():
         sys.exit(f"Not a folder: {path}")
-    world, elements, skipped = load_world(folder)
+    twins = {}
+    world, elements, skipped = load_world(folder, twins)
     if not world and not elements:
         print(f"No world.json and no elements/ in {folder}", file=sys.stderr)
         sys.exit(2)
+    for i, copies in twins.items():
+        elements[i]["_twins"] = copies
+    for i in [i for i in elements if not isinstance(i, str)]:
+        e = elements.pop(i)
+        skipped += [f"{c['_file']}: its id is not text" for c in [e, *e.get("_twins", [])]]
     return folder, world, elements, skipped
 
 
@@ -240,18 +261,65 @@ def is_reading_aid(e):
     return pair_of(e) in CHARTER_PAIRS and mark_present(e.get("x_charter_of"))
 
 
-def left_out_reason(e, room=False, proposed=False, hidden=False):
-    """Why an element is not drawn (reading aid, room, proposed, hidden), or None. A reading aid
-    has no flag: the front door shows it, a lore view never does."""
+def listed_hidden(world):
+    """The ids the World's `hidden` list names (a list of ids in world.json), as the package's
+    reader takes it: a list, and of it only the ids written as text."""
+    v = world.get("hidden")
+    return frozenset(i for i in v if isinstance(i, str)) if isinstance(v, list) else frozenset()
+
+
+def is_hidden(e, listed=frozenset()):
+    """The hidden mark as the package reads it (onlyworlds.is_hidden and its reader): the
+    element's own `hidden` holding any value but absent, null and false, or the World's hidden
+    list naming its id."""
+    v = e.get("hidden")
+    return (v is not None and v is not False) or (isinstance(e.get("id"), str) and e["id"] in listed)
+
+
+def outside_the_22(e):
+    """An element whose type, trimmed and folded as the package's reader folds it, is none of the
+    22: the graph has no node for it, and the map and the timeline leave it out the same way."""
+    return room_word(e["_type"]) not in TYPES
+
+
+def own_reason(e, room=False, proposed=False, hidden=False, listed=frozenset()):
+    """Why an element of the 22 is not drawn (reading aid, room, proposed, hidden), or None. A
+    reading aid has no flag: the front door shows it, a lore view never does."""
     if is_reading_aid(e):
         return "reading aid"
     if not room and is_room(e):
         return "room"
-    if not proposed and e.get("x_review_proposed") not in (None, False, "", [], {}):
+    if not proposed and mark_present(e.get("x_review_proposed")):
         return "proposed"
-    if not hidden and e.get("hidden") is True:
+    if not hidden and is_hidden(e, listed):
         return "hidden"
     return None
+
+
+def left_out_reason(e, room=False, proposed=False, hidden=False, listed=frozenset()):
+    """Why an element is not drawn: outside the 22 types, else own_reason; None when it is."""
+    if outside_the_22(e):
+        return "outside the 22 types"
+    return own_reason(e, room, proposed, hidden, listed)
+
+
+def stand_ins(elements, skipped, room=False, proposed=False, hidden=False, listed=frozenset()):
+    """Each id's body for this run. When several files hold one id and any copy is an element the
+    run leaves out (hidden by either road, room, proposed, a reading aid), the first such copy by
+    path stands for the id, so no copy is drawn and the id counts once under its reason; else
+    the first file by path, as the loader kept it. Each other file is a file not read, and its
+    line in skipped names it and the copy taken, in path order, blaming neither: a person mending
+    the folder decides which one is right."""
+    out = {}
+    for i, e in elements.items():
+        copies = [e] + e.get("_twins", [])
+        pick = next((c for c in copies if own_reason(c, room, proposed, hidden, listed)), e)
+        out[i] = {k: v for k, v in pick.items() if k != "_twins"}
+        for c in copies:
+            if c is not pick:
+                a, b = sorted([c["_file"], pick["_file"]])
+                skipped.append(f"{a} and {b} both hold the id {i}; this run took {pick['_file']}")
+    return out
 
 
 def label(e):
@@ -268,8 +336,9 @@ def first_sentence(s, n=160):
 # ---------------------------------------------------------------- colours
 
 def presentation(offline=False, path=None):
-    """({type: family}, {family: [light, dark]}, a line saying where they came from)."""
-    raw, source = None, None
+    """({type: family}, {family: [light, dark]}, the page's line saying where they came from, the
+    terminal's)."""
+    raw, source, said = None, None, None
     if path:
         try:
             raw, source = read_json(Path(path)), f"presentation.json from {path}"
@@ -304,9 +373,9 @@ def presentation(offline=False, path=None):
         fam_of, colors = read_fam, read_col
     except (TypeError, KeyError, AttributeError, ValueError):
         if raw is not None:
-            source = "neutral greys (presentation.json has an unexpected shape)"
+            source = said = "neutral greys (presentation.json has an unexpected shape)"
     colors["_none"] = list(NO_FAMILY)
-    return fam_of, colors, source
+    return fam_of, colors, source, said or source
 
 
 # ---------------------------------------------------------------- output
@@ -589,12 +658,16 @@ def main(argv):
 
     package_reader()  # the package first: a missing one is said before anything is read
     folder, world, elements, skipped = open_folder(a.folder)
-    fam_of, colors, colour_source = presentation(a.offline, a.presentation)
+    # The reader judges each id by the copy that stands for it (stand_ins): a copy the run leaves
+    # out keeps the id out, whichever file sorts first.
+    elements = stand_ins(elements, skipped, a.room, a.proposed, a.hidden, listed_hidden(world))
+    fam_of, colors, colour_source, colour_said = presentation(a.offline, a.presentation)
     read = read_graph(world, elements, a.room, a.proposed, a.hidden)
     cut = read["cut"]
     left = {word: cut.get(key, 0) for key, word in CUT_WORDS}
-    # What the reader does not read as an element at all (a type outside the 22, an id that is
-    # not text): counted so the drawn and the left out add up to the folder.
+    # What the reader does not read as an element at all (a type outside the 22; an id that is not
+    # text never gets here, open_folder made it a file not read): counted so the drawn and the left
+    # out add up to the folder.
     left["outside the 22 types"] = len(elements) - len(read["nodes"]) - sum(cut.values())
     left["outside --type"] = left["outside the focus"] = 0
     types = {t.lower() for t in a.type}
@@ -617,13 +690,15 @@ def main(argv):
     with open(out / "graph.json", "w", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(graph, ensure_ascii=False, indent=2) + "\n")
     head = head_line(folder, world)
-    foot = [f"{len(graph['nodes'])} elements and {len(graph['edges'])} links drawn, of "
-            f"{len(elements)} in the folder. Left out: {count_line(left)}.{aids_line(left)}",
-            f"Colours: {colour_source}. Colour carries the type's group, never a label; the type is in each node's "
-            "title and the legend."]
+    counts = (f"{len(graph['nodes'])} elements and {len(graph['edges'])} links drawn, of "
+              f"{len(elements)} in the folder. Left out: {count_line(left)}.{aids_line(left)}")
+    colours = ("Colours: {}. Colour carries the type's group, never a label; the type is in each node's "
+               "title and the legend.")
+    foot = [counts, colours.format(colour_said)]
     data = {"graph": graph, "colors": colors, "families": list(FAMILY_ORDER)}
     write_page(out / "graph.html", f"{name}: graph", head,
-               foot + ([unread_page_line(skipped)] if skipped else []), data, "", GRAPH_JS)
+               [counts, colours.format(colour_source)] + ([unread_page_line(skipped)] if skipped else []),
+               data, "", GRAPH_JS)
 
     print(f"# Graph of {name}\n")
     print(head + "\n")

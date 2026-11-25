@@ -19,6 +19,18 @@ and carry neither the hidden id nor its name, the page counts the seven files no
 terminal names each. A folder whose every file reads has no such line, and one file that does
 not read adds that one line to the page and nothing else.
 
+Small worlds then hold an element the World's hidden list names (the picture stays the reader's),
+an id two files hold with one copy hidden (in both orders: neither is drawn), and an element of a
+type outside the 22
+(counted, never named); the 22 types graph.py lists are the package's.
+
+graph.py's left-out rules (hidden, proposed, room, reading aid) stay its own copies, since map.py
+imports them and runs on the standard library alone: one table holds each equal to the package's
+own function over thirteen values. A proposed mark of false, 0 or 0.0 is left out and one of only
+spaces is not, alone and beside a plain copy in either order; an id that is not text is a file
+not read; and one world plants every left-out kind, each by every road the graph reads (a link's
+target, a copy of its id before and after it, the World's hidden list), and searches both files.
+
 OW_DRAW_GRAPH points at another copy of graph.py (an older one, to show this test is red on it).
 
 Runs under pytest, or alone:
@@ -26,6 +38,7 @@ Runs under pytest, or alone:
 
 Python 3.12+ and the onlyworlds package (>=0.101.0).
 """
+import importlib.util
 import json
 import os
 import re
@@ -276,6 +289,211 @@ def test_a_folder_that_reads_whole_draws_the_same_page():
 
 # The page's fixed sentence after the count, the same in the three scripts.
 UNREAD_WORDS = b"The list, with why each did not read, is in the terminal of whoever drew this page."
+
+
+# What a page leaves out besides the files not read: an element the World's hidden list names, an
+# id two files hold when either copy is left out, and an element of a type outside the 22.
+LISTED, COPIED, GADGET, ADA2 = i(61), i(62), i(63), i(64)
+TYPES_22 = ("ability", "character", "collective", "construct", "creature", "event", "family",
+            "institution", "language", "law", "location", "map", "marker", "narrative", "object",
+            "phenomenon", "pin", "relation", "species", "title", "trait", "zone")
+
+
+def draw_rows(rows, world_keys=None, *args):
+    """(exit, stdout and stderr, the page's text, graph.json's text) for a folder of `rows`
+    ({path under elements/: body}), world.json carrying `world_keys`."""
+    with tempfile.TemporaryDirectory() as tmp:
+        world, out = Path(tmp) / "world", Path(tmp) / "draw"
+        for rel, body in rows.items():
+            p = world / "elements" / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps(body), encoding="utf-8")
+        (world / "world.json").write_text(json.dumps({"id": WORLD, "name": "Amended", **(world_keys or {})}),
+                                          encoding="utf-8")
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1")
+        r = subprocess.run([sys.executable, str(GRAPH), str(world), "--offline", "--out", str(out), *args],
+                           capture_output=True, text=True, encoding="utf-8", env=env)
+        page = (out / "graph.html").read_text(encoding="utf-8") if (out / "graph.html").exists() else ""
+        data = (out / "graph.json").read_text(encoding="utf-8") if (out / "graph.json").exists() else ""
+    return r.returncode, r.stdout + r.stderr, page, data
+
+
+def held(texts, *words):
+    """The words any of the texts holds, in any letter case."""
+    return sorted({w for t in texts for w in words if w.casefold() in t.casefold()})
+
+
+def ada_to(*ids):
+    return {"character/ada.json": {"id": ADA2, "type": "character", "name": "Ada", "friends": list(ids)}}
+
+
+def test_the_worlds_hidden_list_leaves_out_what_it_names():
+    rows = {"event/listed.json": {"id": LISTED, "type": "event", "name": "Listed quietly",
+                                  "description": "Murmurword only here."}, **ada_to(LISTED)}
+    code, text, page, data = draw_rows(rows, {"hidden": [LISTED]})
+    assert code == 0, text
+    assert not held([page, data], LISTED, "Listed quietly", "Murmurword"), held([page, data], LISTED, "Listed quietly")
+    assert "Left out: 1 hidden." in text, text
+    # The graph already honours the list through the package's reader: its picture is the reader's.
+    body = {"elements": [dict(b, type=rel.split("/")[0]) for rel, b in rows.items()], "hidden": [LISTED]}
+    assert [n["id"] for n in json.loads(data)["nodes"]] == [n["id"] for n in world_graph(body, {"rung": "owner"})["nodes"]]
+    code, text, page, data = draw_rows(rows, {"hidden": [LISTED]}, "--hidden")
+    assert code == 0 and held([page], "Listed quietly", "Murmurword") == ["Listed quietly", "Murmurword"], text
+    assert LISTED in data, data
+
+
+def test_an_id_two_files_hold_is_drawn_from_neither_when_one_is_left_out():
+    for plain in ("aa-plain-copy", "zz-plain-copy"):
+        rows = {f"character/{plain}.json": {"id": COPIED, "type": "character", "name": "Plain copy",
+                                            "description": "Plainword here."},
+                "character/hidden-copy.json": {"id": COPIED, "type": "character", "name": "Hushed copy",
+                                               "hidden": True, "description": "Hushword here."},
+                **ada_to(COPIED)}
+        code, text, page, data = draw_rows(rows)
+        assert code == 0, text
+        found = held([page, data], COPIED, "Plain copy", "Hushed copy", "Plainword", "Hushword")
+        assert not found, (plain, found)
+        assert "Left out: 1 hidden." in text and "1 file not read." in page, (plain, text)
+        a, b = sorted([f"character/{plain}.json", "character/hidden-copy.json"])
+        # The terminal names both files, blames neither, and says which copy the run took.
+        assert f"{a} and {b} both hold the id {COPIED}; this run took character/hidden-copy.json" in text, (plain, text)
+        # With --hidden no copy is left out: the first by path is drawn, as before.
+        code, text, page, data = draw_rows(rows, None, "--hidden")
+        first = "Plain copy" if plain.startswith("aa") else "Hushed copy"
+        assert held([data], "Plain copy", "Hushed copy") == [first], (plain, data)
+        assert f"{a} and {b} both hold the id {COPIED}; this run took {a}" in text, (plain, text)
+    rows = {"character/aa-first.json": {"id": COPIED, "type": "character", "name": "First copy"},
+            "character/zz-second.json": {"id": COPIED, "type": "character", "name": "Second copy"}}
+    code, text, page, data = draw_rows(rows)
+    assert held([page, data], "First copy", "Second copy") == ["First copy"], data
+    assert (f"character/aa-first.json and character/zz-second.json both hold the id {COPIED}; "
+            "this run took character/aa-first.json") in text, text
+
+
+def test_a_type_outside_the_22_is_left_out_and_counted():
+    rows = {"widget/odd-gadget-file.json": {"id": GADGET, "type": "widget", "name": "Odd gadget",
+                                            "start_date": 4, "description": "Gadgetword here."},
+            **ada_to(GADGET)}
+    code, text, page, data = draw_rows(rows)
+    assert code == 0, text
+    assert not held([page, data], GADGET, "Odd gadget", "Gadgetword", "odd-gadget-file", "widget"), page
+    # The terminal counts it and names it not: it is read, so it is no file not read.
+    assert "Left out: 1 outside the 22 types." in text and "odd-gadget-file" not in text, text
+
+
+def test_the_scripts_22_types_are_the_packages():
+    import onlyworlds
+    assert sorted(TYPES_22) == sorted(onlyworlds.ELEMENT_TYPES), onlyworlds.ELEMENT_TYPES
+    src = GRAPH.read_text(encoding="utf-8")
+    start = src.index("OFFLINE_FAMILY = {")
+    listed = re.findall(r'"([a-z]+)": "(?:blue|green|pink|amber)"', src[start:src.index("}", start)])
+    assert sorted(listed) == sorted(TYPES_22), listed
+
+
+# The scripts' own copies of the package's left-out rules. graph.py's rules are imported by map.py,
+# which runs on the standard library alone, so they stay copies; this table holds each equal to the
+# package's own function.
+ABSENT = object()
+VALUES = [ABSENT, None, False, True, 0, 0.0, 1, "", "   ", "yes", [], {}, [0]]
+
+
+def graph_module():
+    spec = importlib.util.spec_from_file_location("graph_under_test", GRAPH)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_the_left_out_rules_are_the_packages():
+    from onlyworlds import hands_on_as_proposed, is_charter_element, is_hidden, is_room_element
+    g = graph_module()
+    differ = []
+    for v in VALUES:
+        def body(key, **keys):
+            b = {"id": "x", "_type": keys["type"], **keys}
+            if v is not ABSENT:
+                b[key] = v
+            return b
+        h = body("hidden", type="character")
+        p = body("x_review_proposed", type="character")
+        r = body("x_room_of", type="character", supertype="Member")
+        a = body("x_charter_of", type="law", supertype="Charter")
+        for rule, mine, theirs in (("hidden", g.is_hidden(h), is_hidden(h)),
+                                   ("proposed", g.own_reason(p) == "proposed", hands_on_as_proposed(p)),
+                                   ("room", g.is_room(r), is_room_element(r)),
+                                   ("reading aid", g.is_reading_aid(a), is_charter_element(a))):
+            if mine != theirs:
+                differ.append((rule, "absent" if v is ABSENT else v, mine, theirs))
+    assert not differ, differ
+    print(f"{len(VALUES)} values x 4 rules: the script's answers are the package's")
+
+
+def test_a_proposed_mark_is_read_as_the_package_reads_it():
+    """false, 0 and 0.0 are a doubt, counted with the proposed; a text of only spaces is no mark."""
+    for v, out in ((False, True), (0, True), (0.0, True), ("   ", False)):
+        rows = {"character/marked.json": {"id": LISTED, "type": "character", "name": "Marked Fenwick",
+                                          "x_review_proposed": v, "description": "Fenword here."}, **ada_to(LISTED)}
+        code, text, page, data = draw_rows(rows)
+        assert code == 0, text
+        assert bool(held([page, data], LISTED, "Marked Fenwick", "Fenword")) is not out, (v, text)
+        assert ("Left out: 1 proposed." in text) is out, (v, text)
+        # A plain copy of a proposed element, in both orders: neither copy is drawn.
+        for plain in ("aa-plain", "zz-plain"):
+            rows[f"character/{plain}.json"] = {"id": LISTED, "type": "character", "name": "Plain Aster"}
+            code, text, page, data = draw_rows(rows)
+            assert bool(held([page, data], LISTED, "Plain Aster", "Marked Fenwick")) is not out, (v, plain, text)
+            del rows[f"character/{plain}.json"]
+
+
+def test_an_id_that_is_not_text_is_a_file_not_read():
+    rows = {"character/numbered.json": {"id": 987654321, "type": "character", "name": "Numbered Nook",
+                                        "description": "Numword here."}, **ada_to()}
+    code, text, page, data = draw_rows(rows, {"hidden": [987654321]})
+    assert code == 0, text
+    assert not held([page, data], "987654321", "Numbered Nook", "Numword"), page[-1500:]
+    assert "outside the 22" not in text and "1 file not read." in page, text
+    assert "character/numbered.json: its id is not text" in text, text
+
+
+# Every left-out kind, each by every road the graph reads an element by: a link's target, a copy of
+# its id in two other files (one sorting before it, one after), the World's hidden list.
+LEAKS = {"hidtrue": {"hidden": True}, "hidyes": {"hidden": "yes"}, "hidone": {"hidden": 1},
+         "hidobj": {"hidden": {"a": 1}}, "listed": {}, "propmark": {"x_review_proposed": {"by": "someone"}},
+         "propfalse": {"x_review_proposed": False}, "propzero": {"x_review_proposed": 0},
+         "propzerof": {"x_review_proposed": 0.0}}
+FORCED = {"room": ("character", {"supertype": "Member", "x_room_of": WORLD}),
+          "aid": ("law", {"supertype": "Charter", "x_charter_of": WORLD}),
+          "outside": ("widget", {})}
+
+
+def plant_every_kind():
+    """(rows, world keys, every id, name, word and file stem a page may not hold)."""
+    rows, secrets, listed = {}, set(), []
+    kinds = [(k, "character", mark) for k, mark in LEAKS.items()] + [(k, t, m) for k, (t, m) in FORCED.items()]
+    for n, (k, t, mark) in enumerate(kinds, start=70):
+        eid = i(n)
+        rows[f"{t}/m-{k}.json"] = {"id": eid, "type": t, "name": f"Leak{k}Q", "description": f"Desc{k}Q", **mark}
+        secrets |= {eid, f"Leak{k}Q", f"Desc{k}Q", f"m-{k}"}
+        if k == "listed":
+            listed.append(eid)
+        if k != "outside":  # a copy that is only outside the 22 keeps no id out (amendment 1)
+            for side in ("a", "z"):
+                rows[f"{t}/{side}-plain-{k}.json"] = {"id": eid, "type": t, "name": f"Plain{side}{k}Q"}
+                secrets |= {f"Plain{side}{k}Q", f"{side}-plain-{k}"}
+    rows["character/m-numid.json"] = {"id": 987654321, "type": "character", "name": "Leaknumid"}
+    secrets |= {"987654321", "Leaknumid", "m-numid"}
+    rows.update(ada_to(*sorted(s for s in secrets if s.startswith("00000000-"))))
+    return rows, {"hidden": listed}, secrets
+
+
+def test_no_left_out_kind_reaches_a_written_file_by_any_road():
+    rows, world_keys, secrets = plant_every_kind()
+    code, text, page, data = draw_rows(rows, world_keys)
+    assert code == 0, text
+    found = held([page, data], *secrets)
+    assert not found, found
+    assert [n["name"] for n in json.loads(data)["nodes"]] == ["Ada"], data
+    print(f"{len(secrets)} ids, names, words and file stems: none in graph.html or graph.json")
 
 
 if __name__ == "__main__":

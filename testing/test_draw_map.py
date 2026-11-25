@@ -31,6 +31,16 @@ data:
   "7 files not read."; the terminal names all seven.
 - test_a_folder_that_reads_whole_draws_the_same_page: no line about files not read when every
   file reads, and one file that does not read adds that one line to the page and nothing else.
+- test_the_worlds_hidden_list_leaves_out_what_it_names, test_an_id_two_files_hold_is_drawn_from_
+  neither_when_one_is_left_out and test_a_type_outside_the_22_is_left_out_and_counted: a Map
+  the World's hidden list names, a Map id two files hold (one hidden, in both orders), and a pin on an element of a type outside the 22: none reaches the page's bytes, each is counted.
+- test_a_proposed_mark_is_read_as_the_package_reads_it: a pinned Location marked proposed by
+  false, 0 or 0.0 is left out, by "   " not, alone and beside a plain copy in either order.
+- test_an_id_that_is_not_text_is_a_file_not_read: a Map whose id is a number is not drawn, not
+  counted outside the 22, and the terminal says its id is not text.
+- test_no_left_out_kind_reaches_a_written_file_by_any_road: every left-out kind, each by every
+  road the map reads (a pin's place and map, a drawn map's location and parent, a marker's zone
+  and map, a copy of its id before and after it, the World's hidden list): none in the page.
 
 The page's data carries each map's `place` (canvas, image, unloaded, none), its size words
 (`size`) and the page's notes for a map with no canvas, so its script writes no note of its own
@@ -408,6 +418,196 @@ def test_a_folder_that_reads_whole_draws_the_same_page():
     assert b"not read" not in clean, clean
     a, b = stamp.sub(b"T", clean), stamp.sub(b"T", one)
     assert b == a.replace(b'<div id="ms">', b"<div>1 file not read. " + UNREAD_WORDS + b'</div><div id="ms">'), b
+
+
+# What a page leaves out besides the files not read: an element the World's hidden list names, an
+# id two files hold when either copy is left out, and an element of a type outside the 22.
+LISTED = "019a9000-0000-7000-8000-00000000e001"
+COPIED = "019a9000-0000-7000-8000-00000000e002"
+GADGET = "019a9000-0000-7000-8000-00000000e003"
+TYPES_22 = ("ability", "character", "collective", "construct", "creature", "event", "family",
+            "institution", "language", "law", "location", "map", "marker", "narrative", "object",
+            "phenomenon", "pin", "relation", "species", "title", "trait", "zone")
+CHART = {"map/chart.json": {"id": MAP_ID, "type": "map", "name": "Chart", "width": 100, "height": 100}}
+
+
+def _draw_rows(rows, world_keys=None, *args):
+    """(exit, stdout and stderr, the page's text) for a folder of `rows` ({path under elements/:
+    body}), world.json carrying `world_keys`."""
+    with tempfile.TemporaryDirectory() as d:
+        root, out = Path(d) / "world", Path(d) / "out"
+        for rel, body in rows.items():
+            p = root / "elements" / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps(body), encoding="utf-8")
+        (root / "world.json").write_text(json.dumps({"id": "w", "name": "Coast", **(world_keys or {})}),
+                                         encoding="utf-8")
+        env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
+        r = subprocess.run([sys.executable, str(MAP), str(root), "--out", str(out), "--offline", "--no-image", *args],
+                           capture_output=True, text=True, encoding="utf-8", env=env)
+        page = (out / "map.html").read_text(encoding="utf-8") if (out / "map.html").exists() else ""
+    return r.returncode, r.stdout + r.stderr, page
+
+
+def _held(text, *words):
+    return sorted({w for w in words if w.casefold() in text.casefold()})
+
+
+def test_the_worlds_hidden_list_leaves_out_what_it_names():
+    rows = {**CHART, "map/listed.json": {"id": LISTED, "type": "map", "name": "Listed quietly", "width": 10,
+                                         "height": 10, "description": "Murmurword only here."}}
+    code, text, page = _draw_rows(rows, {"hidden": [LISTED]})
+    assert code == 0, text
+    assert not _held(page, LISTED, "Listed quietly", "Murmurword"), _held(page, LISTED, "Listed quietly", "Murmurword")
+    assert "Left out: 1 hidden." in text, text
+    code, text, page = _draw_rows(rows, {"hidden": [LISTED]}, "--hidden")
+    assert code == 0 and _held(page, LISTED, "Listed quietly", "Murmurword") == sorted(
+        [LISTED, "Listed quietly", "Murmurword"]), text
+
+
+def test_an_id_two_files_hold_is_drawn_from_neither_when_one_is_left_out():
+    for plain in ("aa-plain-copy", "zz-plain-copy"):
+        rows = {**CHART,
+                f"map/{plain}.json": {"id": COPIED, "type": "map", "name": "Plain copy", "width": 10, "height": 10,
+                                      "description": "Plainword here."},
+                "map/hidden-copy.json": {"id": COPIED, "type": "map", "name": "Hushed copy", "width": 10,
+                                         "height": 10, "hidden": True, "description": "Hushword here."}}
+        code, text, page = _draw_rows(rows)
+        assert code == 0, text
+        found = _held(page, COPIED, "Plain copy", "Hushed copy", "Plainword", "Hushword")
+        assert not found, (plain, found)
+        assert "Left out: 1 hidden." in text and "1 file not read." in page, (plain, text)
+        a, b = sorted([f"map/{plain}.json", "map/hidden-copy.json"])
+        # The terminal names both files, blames neither, and says which copy the run took.
+        assert f"{a} and {b} both hold the id {COPIED}; this run took map/hidden-copy.json" in text, (plain, text)
+        # With --hidden no copy is left out: the first by path is drawn, as before.
+        code, text, page = _draw_rows(rows, None, "--hidden")
+        first = "Plain copy" if plain.startswith("aa") else "Hushed copy"
+        assert _held(page, "Plain copy", "Hushed copy") == [first], (plain, text)
+    rows = {**CHART, "map/aa-first.json": {"id": COPIED, "type": "map", "name": "First copy", "width": 10, "height": 10},
+            "map/zz-second.json": {"id": COPIED, "type": "map", "name": "Second copy", "width": 10, "height": 10}}
+    code, text, page = _draw_rows(rows)
+    assert _held(page, "First copy", "Second copy") == ["First copy"], text
+    assert (f"map/aa-first.json and map/zz-second.json both hold the id {COPIED}; "
+            "this run took map/aa-first.json") in text, text
+
+
+def test_a_type_outside_the_22_is_left_out_and_counted():
+    rows = {**CHART, "widget/odd-gadget-file.json": {"id": GADGET, "type": "widget", "name": "Odd gadget",
+                                                     "description": "Gadgetword here."},
+            "pin/on-gadget.json": {"id": "019a9000-0000-7000-8000-00000000e004", "type": "pin", "name": "pg",
+                                   "map": MAP_ID, "element_type": "widget", "element_id": GADGET, "x": 3, "y": 3}}
+    code, text, page = _draw_rows(rows)
+    assert code == 0, text
+    assert not _held(page, GADGET, "Odd gadget", "Gadgetword", "odd-gadget-file", "widget"), page[-2000:]
+    # The terminal counts it and names it not: it is read, so it is no file not read.
+    assert "Left out: 1 outside the 22 types." in text and "odd-gadget-file" not in text, text
+
+
+def test_a_proposed_mark_is_read_as_the_package_reads_it():
+    """false, 0 and 0.0 are a doubt, counted with the proposed; a text of only spaces is no mark."""
+    for v, out in ((False, True), (0, True), (0.0, True), ("   ", False)):
+        rows = {**CHART, "location/marked.json": {"id": LISTED, "type": "location", "name": "Marked Fenwick",
+                                                  "x_review_proposed": v},
+                "pin/on-marked.json": {"id": "019a9000-0000-7000-8000-00000000e005", "type": "pin", "name": "pm",
+                                       "map": MAP_ID, "element_type": "location", "element_id": LISTED, "x": 3, "y": 3}}
+        code, text, page = _draw_rows(rows)
+        assert code == 0, text
+        assert bool(_held(page, "Marked Fenwick")) is not out, (v, text)
+        assert ("Left out: 1 proposed." in text) is out, (v, text)
+        # A plain copy of a proposed element, in both orders: neither copy is drawn.
+        for plain in ("aa-plain", "zz-plain"):
+            rows[f"location/{plain}.json"] = {"id": LISTED, "type": "location", "name": "Plain Aster"}
+            code, text, page = _draw_rows(rows)
+            assert bool(_held(page, "Plain Aster", "Marked Fenwick")) is not out, (v, plain, text)
+            del rows[f"location/{plain}.json"]
+
+
+def test_an_id_that_is_not_text_is_a_file_not_read():
+    rows = {**CHART, "map/numbered.json": {"id": 987654321, "type": "map", "name": "Numbered Nook", "width": 10,
+                                           "height": 10, "description": "Numword here."}}
+    code, text, page = _draw_rows(rows)
+    assert code == 0, text
+    assert not _held(page, "987654321", "Numbered Nook", "Numword"), page[-1500:]
+    assert "outside the 22" not in text and "1 file not read." in page, text
+    assert "map/numbered.json: its id is not text" in text, text
+
+
+# Every left-out kind, each by every road the map reads an element by: a pin's place (the element it
+# places) and its map, a drawn map's location and parent map, a marker's zone and map, a copy of its
+# id in two other files (one sorting before it, one after), the World's hidden list.
+W_ID = "019a9000-0000-7000-8000-0000000000w0"
+LEAKS = {"hidtrue": {"hidden": True}, "hidyes": {"hidden": "yes"}, "hidone": {"hidden": 1},
+         "hidobj": {"hidden": {"a": 1}}, "listed": {}, "propmark": {"x_review_proposed": {"by": "someone"}},
+         "propfalse": {"x_review_proposed": False}, "propzero": {"x_review_proposed": 0},
+         "propzerof": {"x_review_proposed": 0.0}}
+FORCED = {"room": ("character", {"supertype": "Member", "x_room_of": W_ID}),
+          "aid": ("law", {"supertype": "Charter", "x_charter_of": W_ID}),
+          "outside": ("widget", {})}
+
+
+def _plant_every_kind():
+    """(rows, world keys, every id, name, word and file stem a page may not hold)."""
+    rows, secrets, listed, n = dict(CHART), set(), [], [0]
+    rows["zone/open-zone.json"] = {"id": "019a9000-0000-7000-8000-0000000f0001", "type": "zone", "name": "Openzone"}
+
+    def nid():
+        n[0] += 1
+        return f"019a9000-0000-7000-8000-0000001{n[0]:05d}"
+
+    def secret(rel, body, plain=True):
+        rows[rel] = body
+        secrets.update([body["id"], body["name"], body.get("description", body["name"]), rel.split("/")[1][:-5]])
+        if plain:
+            t = rel.split("/")[0]
+            for side in ("a", "z"):
+                rows[f"{t}/{side}-plain-{rel.split('/')[1]}"] = {"id": body["id"], "type": t, "name": f"Plain{side}{body['name']}",
+                                                                 "width": 10, "height": 10}
+                secrets.update([f"Plain{side}{body['name']}", f"{side}-plain-{rel.split('/')[1][:-5]}"])
+
+    roles = []
+    for k, mark in LEAKS.items():
+        loc, mp, zn = nid(), nid(), nid()
+        secret(f"location/m-{k}-loc.json", {"id": loc, "type": "location", "name": f"Leak{k}LocQ", **mark})
+        secret(f"map/m-{k}-map.json", {"id": mp, "type": "map", "name": f"Leak{k}MapQ", "width": 10, "height": 10,
+                                       "description": f"Desc{k}MapQ", **mark})
+        secret(f"zone/m-{k}-zone.json", {"id": zn, "type": "zone", "name": f"Leak{k}ZoneQ", **mark})
+        listed += [loc, mp, zn] if k == "listed" else []
+        roles.append((k, loc, mp, zn))
+    for k, (t, mark) in FORCED.items():
+        one = nid()
+        secret(f"{t}/m-{k}.json", {"id": one, "type": t, "name": f"Leak{k}Q", **mark}, plain=k != "outside")
+        roles.append((k, one, one, one))
+    for k, loc, mp, zn in roles:
+        rows[f"map/open-{k}.json"] = {"id": nid(), "type": "map", "name": f"Openmap{k}", "width": 50, "height": 50,
+                                      "location": loc, "parent_map": mp}
+        for what, target in (("loc", loc), ("map", mp), ("zone", zn)):
+            rows[f"pin/p-{k}-{what}.json"] = {"id": nid(), "type": "pin", "name": "pinname", "map": MAP_ID,
+                                              "element_type": "location", "element_id": target, "x": 5, "y": 5}
+        rows[f"pin/p-{k}-onmap.json"] = {"id": nid(), "type": "pin", "name": "pinname", "map": mp, "x": 1, "y": 1}
+        for o in range(3):
+            rows[f"marker/k-{k}-{o}.json"] = {"id": nid(), "type": "marker", "name": "mk", "map": MAP_ID, "zone": zn,
+                                              "x": o + 1, "y": 2 * o + 1, "order": o}
+            rows[f"marker/j-{k}-{o}.json"] = {"id": nid(), "type": "marker", "name": "mk", "map": mp,
+                                              "zone": "019a9000-0000-7000-8000-0000000f0001", "x": o + 1, "y": o, "order": o}
+    rows["map/m-numid.json"] = {"id": 987654321, "type": "map", "name": "Leaknumid", "width": 10, "height": 10}
+    secrets |= {"987654321", "Leaknumid", "m-numid"}
+    return rows, {"hidden": listed}, secrets
+
+
+def test_no_left_out_kind_reaches_a_written_file_by_any_road():
+    rows, world_keys, secrets = _plant_every_kind()
+    code, text, page = _draw_rows(rows, world_keys)
+    assert code == 0, text
+    found = _held(page, *secrets)
+    assert not found, found
+    data = _page_data_of(page)
+    assert sorted(m["name"] for m in data["maps"]) == sorted(["Chart"] + [f"Openmap{k}" for k in [*LEAKS, *FORCED]])
+    print(f"{len(secrets)} ids, names, words and file stems: none in map.html")
+
+
+def _page_data_of(page):
+    return json.loads(re.search(r'<script id="data" type="application/json">(.*?)</script>', page, re.S).group(1))
 
 
 if __name__ == "__main__":
