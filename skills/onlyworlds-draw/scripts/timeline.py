@@ -15,8 +15,10 @@ A calendar (atlas_calendar, schema-dist profiles/calendar.md) labels the dates w
 the one --calendar names; else the one the World names in x_calendar; else, when the World names
 none, the world's only calendar (several, and none speaks: the script says how to pick). A World
 naming no calendar of this world, or a value that is not a calendar, leaves the dates as bare
-numbers, and the script says so. The axis itself counts plain steps. The calendar is read and
-picked by the onlyworlds package (onlyworlds.calendar), never by a copy here.
+numbers, and the script says so. The pick runs over every element read, left out or not; the page
+never names a left-out element (its calendar is "the world's calendar" there), the terminal may.
+The axis itself counts plain steps. The calendar is read and picked by the onlyworlds package
+(onlyworlds.calendar), never by a copy here.
 
 Room, proposed and hidden elements are left out unless a flag asks for them; the three reading
 aids (graph.py's docstring) are left out always and said once in the foot.
@@ -71,41 +73,79 @@ def dated(e):
     return out
 
 
-def pick_calendar(world, kept, want):
-    """(the element, the calendar) the page speaks, or (None, None); and the lines to say.
+WORLDS_CALENDAR = "the world's calendar"
+
+
+def pick_calendar(world, elements, drawn, want):
+    """(the element, the calendar) that speaks, or (None, None); the terminal's notes; the page's.
 
     The person's --calendar first; else the World's x_calendar, read by the package's
-    speaking_calendar (the calendar profile's "Which calendar speaks")."""
-    found = [(e, read_calendar_value(e["atlas_calendar"])) for e in kept.values()
+    speaking_calendar (the calendar profile's "Which calendar speaks"). The pick is made over
+    every element read from the folder (elements), as the profile and the package ask; drawn is
+    the ids this run draws. The terminal is the person's own and may name any element; the page
+    can be handed on, so its notes never carry the name or the id of an element it leaves out."""
+    left_out = [e for i, e in elements.items() if i not in drawn]
+
+    def on_page(e):
+        return e["id"] in drawn
+
+    def names_left_out(text):
+        """True when a text (a value someone typed or the World holds) would carry a left-out
+        element's id, or is a left-out element's name."""
+        t = str(text).casefold()
+        return any(str(e["id"]).casefold() in t or fold(label(e)) == fold(text) for e in left_out)
+
+    term, page = [], []
+
+    def say(t, p=None):
+        term.append(t)
+        page.append(t if p is None else p)
+
+    found = [(e, read_calendar_value(e["atlas_calendar"])) for e in elements.values()
              if e.get("atlas_calendar") is not None]
     found.sort(key=lambda ec: (fold(label(ec[0])), str(ec[0]["id"])))
-    notes = [f"{label(e)} carries an atlas_calendar that is not a calendar: its dates stay numbers"
-             for e, c in found if c is None]
+    for e, c in found:
+        if c is None:
+            say(f"{label(e)} carries an atlas_calendar that is not a calendar: its dates stay numbers",
+                None if on_page(e) else "An element this page leaves out carries an atlas_calendar that is not a calendar")
     readable = [(e, c) for e, c in found if c]
     named = world.get(WORLD_CALENDAR_KEY)
-    spoken = speaking_calendar(world, kept.values())
+    spoken = speaking_calendar(world, elements.values())
+    spoken_el = elements[spoken.id] if spoken is not None else None
     if named is not None and spoken is None:
-        notes.append(f"The World's {WORLD_CALENDAR_KEY} is {json.dumps(named, ensure_ascii=False)}, which names "
-                     "no calendar of this world" + ("" if want else ": the dates stay numbers"))
+        tail = "" if want else ": the dates stay numbers"
+        value = json.dumps(named, ensure_ascii=False)
+        say(f"The World's {WORLD_CALENDAR_KEY} is {value}, which names no calendar of this world{tail}",
+            f"The World's {WORLD_CALENDAR_KEY} names no calendar of this world{tail}" if names_left_out(value) else None)
     if want:
         hit = [(e, c) for e, c in readable if e["id"] == want or fold(label(e)) == fold(want)]
+        hidden_want = names_left_out(want)
         if not hit:
-            notes.append(f"No readable calendar named or with id {want!r}: the dates stay numbers")
-            return None, None, notes
+            say(f"No readable calendar named or with id {want!r}: the dates stay numbers",
+                "No readable calendar answers to --calendar: the dates stay numbers" if hidden_want else None)
+            return None, None, term, page
+        el, cal = hit[0]
         if len(hit) > 1:
-            notes.append(f"{len(hit)} calendars answer to {want!r}; this page speaks {label(hit[0][0])} "
-                         f"(--calendar takes an id to speak another)")
-        if spoken is not None and kept[spoken.id] is not hit[0][0]:
-            notes.append(f"This page speaks {label(hit[0][0])}, as --calendar asks; the World's own calendar "
-                         f"is {label(kept[spoken.id])}")
-        return hit[0][0], hit[0][1], notes
+            say(f"{len(hit)} calendars answer to {want!r}; this page speaks {label(el)} "
+                f"(--calendar takes an id to speak another)",
+                f"{len(hit)} calendars answer to --calendar; this page speaks the first by name"
+                if hidden_want or not all(on_page(e) for e, _ in hit) else None)
+        if spoken_el is not None and spoken_el is not el:
+            say(f"This page speaks {label(el)}, as --calendar asks; the World's own calendar is {label(spoken_el)}",
+                "This page speaks the calendar --calendar names, not the World's own"
+                if not (on_page(el) and on_page(spoken_el)) else None)
+        return el, cal, term, page
     if spoken is not None:
-        return kept[spoken.id], spoken.config, notes
+        return spoken_el, spoken.config, term, page
     if named is None and len(readable) > 1:
-        notes.append(f"{len(readable)} calendars read ({', '.join(label(e) for e, _ in readable)}) and the "
-                     f"World names none, so none speaks: pick one with --calendar NAME for this page, or name "
-                     f"its id in the World's {WORLD_CALENDAR_KEY} for every tool")
-    return None, None, notes
+        how = (f"and the World names none, so none speaks: pick one with --calendar NAME for this page, or name "
+               f"its id in the World's {WORLD_CALENDAR_KEY} for every tool")
+        shown = [label(e) for e, _ in readable if on_page(e)]
+        n_out = len(readable) - len(shown)
+        say(f"{len(readable)} calendars read ({', '.join(label(e) for e, _ in readable)}) {how}",
+            f"{len(readable)} calendars read ({', '.join(shown + [f'{n_out} on elements this page leaves out'])}) "
+            f"{how}" if n_out else None)
+    return None, None, term, page
 
 
 TL_CSS = """
@@ -181,9 +221,10 @@ def main(argv):
             left["outside --type"] += 1
         else:
             kept[i] = e
-    cal_el, cal, notes = pick_calendar(
-        world, {i: e for i, e in elements.items() if not left_out_reason(e, a.room, a.proposed, a.hidden)},
-        a.calendar)
+    drawn = {i for i, e in elements.items() if not left_out_reason(e, a.room, a.proposed, a.hidden)}
+    cal_el, cal, term_notes, page_notes = pick_calendar(world, elements, drawn, a.calendar)
+    # The page never names a left-out element: its calendar is "the world's calendar" there.
+    cal_name = "" if cal_el is None else label(cal_el) if cal_el["id"] in drawn else WORLDS_CALENDAR
 
     def say(v):
         return format_step(cal, int(v)) if cal and v is not None else ("" if v is None else str(v))
@@ -237,22 +278,26 @@ def main(argv):
     cur = world.get("time_current") if _whole(world.get("time_current")) else None
     unit = world.get("time_basic_unit") if isinstance(world.get("time_basic_unit"), str) else ""
     tl = {"min": rmin, "max": rmax, "unit": unit, "current": cur, "currentWords": say(cur),
-          "calendar": label(cal_el) if cal_el else "", "placed": placed, "groups": groups,
+          "calendar": cal_name, "placed": placed, "groups": groups,
           "eras": len(eras), "bands": eras if apart else []}
 
     out = out_folder(folder, a.out)
     head = head_line(folder, world)
-    foot = [f"{placed} dated elements and {len(eras)} eras placed on {rmin}..{rmax} {unit or 'steps'} "
-            f"(from {range_from}). Not placed: {count_line(not_placed)}. Left out: {count_line(left)}.{aids_line(left)}",
-            ("Dates read through the calendar " + label(cal_el) + "; the axis counts plain steps.") if cal_el
-            else "Dates are the world's plain integers (no calendar reads).",
-            f"Colours: {colour_source}."] + notes
+    counts = (f"{placed} dated elements and {len(eras)} eras placed on {rmin}..{rmax} {unit or 'steps'} "
+              f"(from {range_from}). Not placed: {count_line(not_placed)}. Left out: {count_line(left)}.{aids_line(left)}")
+    plain = "Dates are the world's plain integers (no calendar reads)."
+    spoken_on = "Dates read through the calendar {}; the axis counts plain steps."
+    rest = [f"Colours: {colour_source}."]
     if skipped:
-        foot.append(f"{len(skipped)} files not read: " + "; ".join(skipped[:5]) + (" ..." if len(skipped) > 5 else ""))
+        rest.append(f"{len(skipped)} files not read: " + "; ".join(skipped[:5]) + (" ..." if len(skipped) > 5 else ""))
+    foot = [counts, spoken_on.format(cal_name) if cal_el else plain] + rest[:1] + page_notes + rest[1:]
     write_page(out / "timeline.html", f"{name}: timeline", head, foot, {"tl": tl, "colors": colors}, TL_CSS, TL_JS)
 
+    term = spoken_on.format(label(cal_el)) if cal_el else plain
+    if cal_el and cal_name == WORLDS_CALENDAR:
+        term += f' It sits on an element this page leaves out, so the page says "{WORLDS_CALENDAR}".'
     print(f"# Timeline of {name}\n\n{head}\n")
-    for line in foot:
+    for line in [counts, term] + rest[:1] + term_notes + rest[1:]:
         print(f"- {line}")
     print(f"\nWrote {out / 'timeline.html'}")
     return 0

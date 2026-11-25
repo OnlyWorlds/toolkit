@@ -20,7 +20,16 @@ element's name) and the printed summary:
   points at another copy; else schema-dist's beside the toolkit's main checkout, which must not
   sit behind its fetched origin/main);
 - test_a_package_without_speaking_calendar_stops: an onlyworlds package with no
-  speaking_calendar stops the script with exit 2 and a line naming the version that has it.
+  speaking_calendar stops the script with exit 2 and a line naming the version that has it;
+- test_a_calendar_on_a_left_out_element_the_world_names_speaks: the World names a calendar on
+  a hidden element: it speaks (the pick is over every element read), the page calls it "the
+  world's calendar" and carries neither its name nor its id, and the terminal names it;
+- test_a_second_calendar_on_a_left_out_element_and_none_named: one calendar drawn, a second on
+  a hidden element, nothing named: none speaks; the page carries neither the hidden one's name
+  nor its id; the terminal's line names both.
+
+Every test but the package one fails in plain words, never skips, when the interpreter running
+it has an onlyworlds package without speaking_calendar.
 
 OW_DRAW_TIMELINE points at another copy of timeline.py (an older one, to show this test is red
 on it); graph.py and simple_fold.py must sit beside it.
@@ -66,8 +75,19 @@ def plant(root, world, elements):
         (root / "world.json").write_text(json.dumps(world), encoding="utf-8")
 
 
+def need_package():
+    """Fail in plain words, never skip, when this interpreter's onlyworlds cannot run the script."""
+    try:
+        from onlyworlds.calendar import speaking_calendar  # noqa: F401
+    except ImportError as e:
+        raise AssertionError(f"the onlyworlds package of {sys.executable} has no speaking_calendar ({e}): "
+                             'the timeline needs pip install "onlyworlds>=0.153.0"') from None
+
+
 def draw(world, elements, *args, env_extra=None):
-    """(exit code, the page's calendar name or None when no page, stdout + stderr)."""
+    """(exit code, the page's calendar name or None when no page, stdout + stderr, the page's text)."""
+    if env_extra is None:
+        need_package()
     with tempfile.TemporaryDirectory() as d:
         root, out = Path(d) / "world", Path(d) / "out"
         plant(root, world, elements)
@@ -76,10 +96,10 @@ def draw(world, elements, *args, env_extra=None):
                            check=False, capture_output=True, text=True, encoding="utf-8", env=env)
         page = out / "timeline.html"
         if r.returncode or not page.exists():
-            return r.returncode, None, r.stdout + r.stderr
+            return r.returncode, None, r.stdout + r.stderr, ""
         text = page.read_text(encoding="utf-8")
     data = json.loads(re.search(r'<script id="data" type="application/json">(.*?)</script>', text, re.DOTALL).group(1))
-    return r.returncode, data["tl"]["calendar"], r.stdout + r.stderr
+    return r.returncode, data["tl"]["calendar"], r.stdout + r.stderr, text
 
 
 def world(**keys):
@@ -90,7 +110,7 @@ TWO = [calendar(ALPHA, "Alpha reckoning"), calendar(ZETA, "Zeta reckoning")]
 
 
 def test_the_persons_pick_speaks_over_the_worlds():
-    code, spoken, out = draw(world(x_calendar=ZETA), TWO, "--calendar", "Alpha reckoning")
+    code, spoken, out, _ = draw(world(x_calendar=ZETA), TWO, "--calendar", "Alpha reckoning")
     assert code == 0, out
     assert spoken == "Alpha reckoning", (spoken, out)
     lines = [ln for ln in out.splitlines() if "as --calendar asks" in ln]
@@ -98,13 +118,13 @@ def test_the_persons_pick_speaks_over_the_worlds():
 
 
 def test_the_world_names_its_calendar():
-    code, spoken, out = draw(world(x_calendar=ZETA), TWO)
+    code, spoken, out, _ = draw(world(x_calendar=ZETA), TWO)
     assert code == 0, out
     assert spoken == "Zeta reckoning", (spoken, out)
 
 
 def test_several_calendars_and_none_named_none_speaks():
-    code, spoken, out = draw(world(), TWO)
+    code, spoken, out, _ = draw(world(), TWO)
     assert code == 0, out
     assert spoken == "", (spoken, out)
     assert "Dates are the world's plain integers (no calendar reads)." in out, out
@@ -116,13 +136,13 @@ def test_several_calendars_and_none_named_none_speaks():
 
 def test_the_world_names_no_calendar_of_this_world():
     dangling = "019a3b10-0000-7000-8000-0000000d0a09"
-    code, spoken, out = draw(world(x_calendar=dangling), TWO[:1])
+    code, spoken, out, _ = draw(world(x_calendar=dangling), TWO[:1])
     assert code == 0, out
     assert spoken == "", (spoken, out)
     lines = [ln for ln in out.splitlines() if "names no calendar of this world" in ln]
     assert len(lines) == 1, out
     assert f'x_calendar is "{dangling}"' in lines[0] and "the dates stay numbers" in lines[0], lines[0]
-    code, spoken, out = draw(world(x_calendar=dangling), TWO[:1], "--calendar", "Alpha reckoning")
+    code, spoken, out, _ = draw(world(x_calendar=dangling), TWO[:1], "--calendar", "Alpha reckoning")
     assert code == 0, out
     assert spoken == "Alpha reckoning", (spoken, out)
     lines = [ln for ln in out.splitlines() if "names no calendar of this world" in ln]
@@ -161,7 +181,7 @@ def test_the_published_world_names_cases():
     for c in cases:
         names = {e["id"]: e["name"] for e in c["elements"]}
         assert len(set(names.values())) == len(names), c["name"]
-        code, spoken, _ = draw(c["world"], c["elements"])
+        code, spoken, _, _ = draw(c["world"], c["elements"])
         want = names[c["speaks"]] if c["speaks"] is not None else ""
         if code != 0 or spoken != want:
             wrong.append(f"{c['name']}: spoke {spoken!r}, the case says {want!r} (exit {code})")
@@ -176,9 +196,36 @@ def test_a_package_without_speaking_calendar_stops():
         (pkg / "__init__.py").write_text("", encoding="utf-8")
         (pkg / "calendar.py").write_text("def format_step(cfg, step):\n    return str(step)\n\n\n"
                                          "def read_calendar_value(raw):\n    return None\n", encoding="utf-8")
-        code, _, out = draw(world(), TWO[:1], env_extra={"PYTHONPATH": d})
+        code, _, out, _ = draw(world(), TWO[:1], env_extra={"PYTHONPATH": d})
     assert code == 2, (code, out)
     assert "onlyworlds>=0.153.0" in out, out
+
+
+def no_trace_of(page, *words):
+    """The words a page must not carry, in any letter case (the page's data is ASCII-escaped JSON,
+    and these words are ASCII)."""
+    low = page.casefold()
+    return [w for w in words if w.casefold() in low]
+
+
+def test_a_calendar_on_a_left_out_element_the_world_names_speaks():
+    hidden_zeta = {**TWO[1], "hidden": True}
+    code, spoken, out, page = draw(world(x_calendar=ZETA), [TWO[0], hidden_zeta])
+    assert code == 0, out
+    assert spoken == "the world's calendar", (spoken, out)
+    assert "3 Thaw, 0" in page, "the event at step 12 is not labelled through the calendar"
+    assert no_trace_of(page, "Zeta reckoning", ZETA) == [], no_trace_of(page, "Zeta reckoning", ZETA)
+    assert "Dates read through the calendar Zeta reckoning" in out, out
+
+
+def test_a_second_calendar_on_a_left_out_element_and_none_named():
+    hidden_zeta = {**TWO[1], "hidden": True}
+    code, spoken, out, page = draw(world(), [TWO[0], hidden_zeta])
+    assert code == 0, out
+    assert spoken == "", (spoken, out)
+    assert no_trace_of(page, "Zeta reckoning", ZETA) == [], no_trace_of(page, "Zeta reckoning", ZETA)
+    lines = [ln for ln in out.splitlines() if "none speaks" in ln]
+    assert len(lines) == 1 and "Alpha reckoning" in lines[0] and "Zeta reckoning" in lines[0], out
 
 
 if __name__ == "__main__":
