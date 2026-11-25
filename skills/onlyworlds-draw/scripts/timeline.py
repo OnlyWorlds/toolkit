@@ -112,7 +112,7 @@ def pick_calendar(world, elements, left_out, want):
             return None, None, "", notes
         el, cal = hit[0]
         if len(hit) > 1:
-            notes.append(f"{len(hit)} calendars answer to {want!r}; this page speaks {label(el)} "
+            notes.append(f"{len(hit)} calendars answer to {want!r}; this page speaks {label(el)} ({el['id']}) "
                          f"(--calendar takes an id to speak another)")
         if spoken_el is not None and spoken_el is not el:
             notes.append(f"This page speaks {label(el)}, as --calendar asks; the World's own calendar is "
@@ -123,13 +123,8 @@ def pick_calendar(world, elements, left_out, want):
         return el, cal, (CHOSEN if el["id"] in left_out else f"the calendar {label(el)}"), notes
     if spoken_el is not None and spoken_el["id"] in left_out:
         why = left_out[spoken_el["id"]]
-        # The name only when a shell reads it as one argument in double quotes and it picks no other
-        # calendar; else the id, which is exact.
-        nm = label(spoken_el)
-        plain_name = nm.strip() and all(ch.isalnum() or ch in " -" for ch in nm) and \
-            sum(fold(label(e)) == fold(nm) for e, _ in readable) == 1
-        ways = (f'--calendar "{nm}"' if plain_name else f"--calendar {spoken_el['id']}") + \
-            (f", or {DRAWS[why]} to draw that element" if why in DRAWS else "")
+        # The id, always: it picks exactly that element, where a name can pick another.
+        ways = f'--calendar "{spoken_el["id"]}"' + (f", or {DRAWS[why]} to draw that element" if why in DRAWS else "")
         notes.append(f"The world's calendar is {label(spoken_el)}, on an element this run leaves out ({why}), so the "
                      f"page shows the dates as plain numbers: {ways}, labels the page with it")
         return None, None, "", notes

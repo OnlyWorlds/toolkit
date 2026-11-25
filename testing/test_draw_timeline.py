@@ -43,9 +43,10 @@ else of calendars. The terminal is the person's own.
 - test_a_name_picks_the_drawn_calendar_first: a hidden and a drawn calendar of one name, the
   hidden one's id sorting first: --calendar NAME speaks the drawn one, and the page holds none of
   the hidden one's words or its id; --calendar with the hidden one's id still picks it;
-- test_the_hint_gives_an_id_for_a_name_no_shell_reads_whole: a hidden calendar whose name holds
-  quotes and a dollar sign: the terminal's hint gives --calendar with its id, never a Python
-  repr; a plain name is given in double quotes.
+- test_the_hint_gives_the_id_in_double_quotes: the terminal's hint for a hidden world's
+  calendar gives --calendar "<id>", for a name with quotes and a dollar sign and for a plain one;
+  and where a drawn calendar's id is the hidden one's name, the hint followed as written speaks
+  the World's calendar.
 
 Every test but the package one fails in plain words, never skips, when the interpreter running
 it has an onlyworlds package without speaking_calendar.
@@ -337,16 +338,29 @@ def test_a_name_picks_the_drawn_calendar_first():
     assert spoken == "the calendar chosen for this page" and "Stillmonth" in page, (spoken, out)
 
 
-def test_the_hint_gives_an_id_for_a_name_no_shell_reads_whole():
-    odd = {**secret(), "name": 'King\'s "Old" $Reckoning'}
-    code, spoken, out, _ = draw(world(), [odd])
-    assert code == 0 and spoken == "", (code, spoken, out)
+def hint(out):
+    """The --calendar argument the terminal's hint gives, as a shell would read it."""
     lines = [ln for ln in out.splitlines() if "plain numbers" in ln and "--calendar" in ln]
     assert len(lines) == 1, out
-    assert f"--calendar {SECRET}," in lines[0] and "\\'" not in lines[0], lines[0]
-    code, spoken, out, _ = draw(world(), [secret()])
-    lines = [ln for ln in out.splitlines() if "plain numbers" in ln and "--calendar" in ln]
-    assert len(lines) == 1 and f'--calendar "{SECRET_NAME}"' in lines[0], out
+    m = re.search(r'--calendar "([^"]*)"', lines[0])
+    assert m, lines[0]
+    return m.group(1)
+
+
+def test_the_hint_gives_the_id_in_double_quotes():
+    for name in ('King\'s "Old" $Reckoning', SECRET_NAME):
+        code, spoken, out, _ = draw(world(), [{**secret(), "name": name}])
+        assert code == 0 and spoken == "", (code, spoken, out)
+        assert hint(out) == SECRET, out
+    # A drawn calendar whose id is the hidden calendar's name: the hint, followed as written,
+    # speaks the World's calendar, never the drawn one.
+    hidden = {**secret(), "name": "cal-vis"}
+    drawn = calendar("cal-vis", "Visible reckoning")
+    code, spoken, out, _ = draw(world(x_calendar=SECRET), [hidden, drawn])
+    assert code == 0 and spoken == "", (code, spoken, out)
+    code, spoken, out, page = draw(world(x_calendar=SECRET), [hidden, drawn], "--calendar", hint(out))
+    assert code == 0, out
+    assert spoken == "the calendar chosen for this page" and "Stillmonth" in page, (spoken, out)
 
 
 if __name__ == "__main__":
