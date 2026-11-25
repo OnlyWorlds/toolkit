@@ -20,8 +20,8 @@ terminal names each. A folder whose every file reads has no such line, and one f
 not read adds that one line to the page and nothing else.
 
 Small worlds then hold an element the World's hidden list names (the picture stays the reader's),
-an id two files hold with one copy hidden (in both orders: neither is drawn), and an element of a
-type outside the 22
+an id two files hold with one copy hidden (in both orders: neither is drawn), a --presentation file
+given by its absolute path (the page names no folder), and an element of a type outside the 22
 (counted, never named); the 22 types graph.py lists are the package's.
 
 graph.py's left-out rules (hidden, proposed, room, reading aid) stay its own copies, since map.py
@@ -292,7 +292,8 @@ UNREAD_WORDS = b"The list, with why each did not read, is in the terminal of who
 
 
 # What a page leaves out besides the files not read: an element the World's hidden list names, an
-# id two files hold when either copy is left out, and an element of a type outside the 22.
+# id two files hold when either copy is left out, an element of a type outside the 22, and the
+# folder of the file given to --presentation.
 LISTED, COPIED, GADGET, ADA2 = i(61), i(62), i(63), i(64)
 TYPES_22 = ("ability", "character", "collective", "construct", "creature", "event", "family",
             "institution", "language", "law", "location", "map", "marker", "narrative", "object",
@@ -368,6 +369,34 @@ def test_an_id_two_files_hold_is_drawn_from_neither_when_one_is_left_out():
     assert held([page, data], "First copy", "Second copy") == ["First copy"], data
     assert (f"character/aa-first.json and character/zz-second.json both hold the id {COPIED}; "
             "this run took character/aa-first.json") in text, text
+
+
+def presentation_files(folder):
+    """A file that is not JSON and one of the right shape, in `folder`."""
+    folder.mkdir()
+    (folder / "colours-bad.json").write_text("not json", encoding="utf-8")
+    shape = {"types": {t: {"family": "blue"} for t in TYPES_22},
+             "colors": {"order": ["blue", "green", "pink", "amber"],
+                        "families": {f: {"light": "#123456", "dark": "#654321"}
+                                     for f in ("blue", "green", "pink", "amber")}}}
+    (folder / "colours-good.json").write_text(json.dumps(shape), encoding="utf-8")
+    return folder / "colours-bad.json", folder / "colours-good.json"
+
+
+def test_the_page_names_no_folder_of_the_presentation_file():
+    with tempfile.TemporaryDirectory() as tmp:
+        bad, good = presentation_files(Path(tmp) / "presfolder-q9z")
+        # A file that did not read, or a folder given by mistake, is named on the page not at all.
+        for f, words in ((bad, "neutral greys (the presentation file did not read)"),
+                         (bad.parent, "neutral greys (the presentation file did not read)"),
+                         (good, "presentation.json from colours-good.json")):
+            code, text, page, _ = draw_rows(ada_to(), None, "--presentation", str(f))
+            assert code == 0, text
+            assert not held([page], "presfolder-q9z", "Expecting value", "colours-bad"), (f.name, page[-2000:])
+            assert words in page, (f.name, page[-2000:])
+            assert str(f) in text, text
+            if f == bad:
+                assert "Expecting value" in text, text
 
 
 def test_a_type_outside_the_22_is_left_out_and_counted():

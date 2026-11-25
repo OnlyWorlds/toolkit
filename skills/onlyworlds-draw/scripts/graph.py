@@ -337,13 +337,19 @@ def first_sentence(s, n=160):
 
 def presentation(offline=False, path=None):
     """({type: family}, {family: [light, dark]}, the page's line saying where they came from, the
-    terminal's)."""
+    terminal's). The two differ only for a file given by --presentation: the page names a file
+    that read by its name alone, and one that did not read not at all, since a page is handed on;
+    the terminal gives the path as typed and the error."""
     raw, source, said = None, None, None
     if path:
+        name = Path(path).name
         try:
-            raw, source = read_json(Path(path)), f"presentation.json from {path}"
+            raw = read_json(Path(path))
+            source, said = f"presentation.json from {name}", f"presentation.json from {path}"
         except (ValueError, OSError) as e:
-            source = f"neutral greys ({path} does not read: {e})"
+            # No name on the page: the path given may be a folder, and its name the person's own.
+            source = "neutral greys (the presentation file did not read)"
+            said = f"neutral greys ({path} does not read: {e})"
     elif not offline:
         try:
             req = urllib.request.Request(PRESENTATION_URL, headers={"User-Agent": "onlyworlds-draw"})

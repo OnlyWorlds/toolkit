@@ -54,9 +54,10 @@ else of calendars. The terminal is the person's own.
 - test_a_folder_that_reads_whole_draws_the_same_page: no line about files not read when every
   file reads, and one file that does not read adds that one line to the page and nothing else;
 - test_the_worlds_hidden_list_leaves_out_what_it_names, test_an_id_two_files_hold_is_drawn_from_
-  neither_when_one_is_left_out and test_a_type_outside_the_22_is_left_out_and_counted: a dated
-  Event the World's hidden list names, an Event id two files hold (one hidden, in both orders), and
-  a dated element of a type outside the 22: none reaches the page's bytes, each is counted;
+  neither_when_one_is_left_out, test_the_page_names_no_folder_of_the_presentation_file and
+  test_a_type_outside_the_22_is_left_out_and_counted: a dated Event the World's hidden list names,
+  an Event id two files hold (one hidden, in both orders), a --presentation file by its absolute
+  path, and a dated element of a type outside the 22: none reaches the page's bytes, each is counted;
 - test_a_proposed_mark_is_read_as_the_package_reads_it: an Event marked proposed by false, 0 or
   0.0 is left out, by "   " not, alone and beside a plain copy in either order; the World's
   calendar carrying such a mark labels no page;
@@ -450,7 +451,8 @@ def test_a_folder_that_reads_whole_draws_the_same_page():
 
 
 # What a page leaves out besides the files not read: an element the World's hidden list names, an
-# id two files hold when either copy is left out, and an element of a type outside the 22.
+# id two files hold when either copy is left out, an element of a type outside the 22, and the
+# folder of the file given to --presentation.
 LISTED = "019a3b10-0000-7000-8000-0000000de001"
 COPIED = "019a3b10-0000-7000-8000-0000000de002"
 GADGET = "019a3b10-0000-7000-8000-0000000de003"
@@ -514,6 +516,30 @@ def test_an_id_two_files_hold_is_drawn_from_neither_when_one_is_left_out():
     assert traces(page, "First copy", "Second copy") == ["First copy"], text
     assert (f"event/aa-first.json and event/zz-second.json both hold the id {COPIED}; "
             "this run took event/aa-first.json") in text, text
+
+
+def test_the_page_names_no_folder_of_the_presentation_file():
+    with tempfile.TemporaryDirectory() as tmp:
+        folder = Path(tmp) / "presfolder-q9z"
+        folder.mkdir()
+        bad, good = folder / "colours-bad.json", folder / "colours-good.json"
+        bad.write_text("not json", encoding="utf-8")
+        families = ("blue", "green", "pink", "amber")
+        good.write_text(json.dumps({"types": {t: {"family": "blue"} for t in TYPES_22},
+                                    "colors": {"order": list(families),
+                                               "families": {f: {"light": "#123456", "dark": "#654321"}
+                                                            for f in families}}}), encoding="utf-8")
+        # A file that did not read, or a folder given by mistake, is named on the page not at all.
+        for f, words in ((bad, "neutral greys (the presentation file did not read)"),
+                         (folder, "neutral greys (the presentation file did not read)"),
+                         (good, "presentation.json from colours-good.json")):
+            code, text, page = draw_rows(THAW, None, "--presentation", str(f))
+            assert code == 0, text
+            assert not traces(page, "presfolder-q9z", "Expecting value", "colours-bad"), (f.name, page[-2000:])
+            assert words in page, (f.name, page[-2000:])
+            assert str(f) in text, text
+            if f == bad:
+                assert "Expecting value" in text, text
 
 
 def test_a_type_outside_the_22_is_left_out_and_counted():
