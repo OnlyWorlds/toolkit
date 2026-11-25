@@ -34,7 +34,7 @@ The import reads your notes and does not change them. It first asks what it cann
 
 What the import holds to, in its own rules:
 
-- **No made-up fields.** Each entry uses only the fields its type has; anything else is kept under a name of its own.
+- **No made-up fields.** Each entry uses only the fields its type has; custom data goes in fields marked as custom.
 - **Nothing your notes introduce is skipped.** Anything they introduce gets an entry, even with only a name and a line.
 - **Every entry says where it came from.** Each is listed with a pointer into your notes (chapter, section, page), and the report lists what was not taken in and why.
 - **What you decided counts.** It takes in what you decided ("going with", "this is canon now"); brainstorming ("maybe", "what if", "???") is reported separately. When your notes contradict each other and you never settled it, both versions are kept for you to choose.
@@ -57,11 +57,9 @@ The report closes it: what each source contributed, what was not extracted, the 
 
 ## Install
 
-Importing your notes needs no Python: only the check the import runs on the finished world folder uses it, and without Python the import writes the folder and says the check was not run. That check (setup and update run it too), draw's graph and timeline, and carry's packing and converting use the `onlyworlds` package (`pip install onlyworlds`), which needs Python 3.12 or newer. Read's reports, draw's map and setup's writer need Python and nothing beyond its standard library.
-
 ### Claude Code
 
-These commands need Claude Code; for any other AI, see Other AIs below. Type the two lines inside Claude Code, not in a terminal, then restart Claude Code:
+These commands need [Claude Code](https://claude.com/claude-code); for any other AI, see Other AIs below. Type the two lines inside Claude Code, not in a terminal, then restart Claude Code:
 
 ```
 /plugin marketplace add OnlyWorlds/toolkit
@@ -75,6 +73,10 @@ Or direct (no restart needed):
 git clone https://github.com/OnlyWorlds/toolkit
 claude --plugin-dir ./toolkit
 ```
+
+### Python, for some skills
+
+Importing your notes needs no Python: only the check the import runs on the finished world folder uses it, and without Python the import writes the folder and says the check was not run. That check (setup and update run it too), draw's graph and timeline, and carry's packing and converting use the `onlyworlds` package (`pip install onlyworlds`), which needs Python 3.12 or newer. Read's reports, draw's map and setup's writer need Python and nothing beyond its standard library.
 
 ### Other AIs
 
