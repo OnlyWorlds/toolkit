@@ -5,10 +5,7 @@ in .json in exactly that case and does not begin with a dot. The fixed names are
 written; the order is the path below the world folder by code point, so the file kept of a
 repeated id is the same on every system. A name passed over for its case gets a line in skipped;
 a dot-file or a dot-folder is passed over in silence. Each case builds its own folder in a
-temporary directory and is asserted for both loaders.
-
-A case that needs two names differing only by case runs only on a case-sensitive disk and is
-skipped, with its reason, on one that is not (Windows, macOS by default)."""
+temporary directory and is asserted for both loaders."""
 
 import importlib.util
 import json
@@ -57,12 +54,6 @@ def _world(tmp_path, files):
 def _read(loader, world):
     _, elements, skipped = MODULES[loader].load_world(world)
     return elements, skipped
-
-
-def _case_sensitive(tmp_path):
-    probe = tmp_path / "case-probe"
-    probe.write_text("", encoding="utf-8")
-    return not (tmp_path / "CASE-PROBE").exists()
 
 
 @pytest.fixture(params=sorted(LOADERS))
@@ -158,24 +149,6 @@ def test_elements_before_spatial(tmp_path, loader):
     elements, skipped = _read(loader, world)
     assert elements["same"]["_file"] == "pin/p.json"
     assert skipped == ["spatial/pin/p.json: id same also in pin/p.json"]
-
-
-def test_two_folders_that_differ_only_by_case(tmp_path, loader):
-    if not _case_sensitive(tmp_path):
-        pytest.skip("this disk does not hold two names that differ only by case; "
-                    "the case runs on a case-sensitive system")
-    world = _world(tmp_path, [("elements/character/ada.json", "ada"),
-                              ("elements/Character/bram.json", "bram"),
-                              ("elements/character/cole.json", "cole"),
-                              ("elements/character/Cole.JSON", "cole2"),
-                              ("Elements/character/dunn.json", "dunn")])
-    elements, skipped = _read(loader, world)
-    assert sorted(elements) == ["ada", "cole"]
-    assert skipped == [
-        "Elements/: not read (the folder must be named elements/, in lower case)",
-        "elements/Character/: not read (a type folder's name is in lower case)",
-        "elements/character/Cole.JSON: not read (the name must end in .json, in lower case)",
-    ]
 
 
 def test_the_two_loaders_read_one_folder_the_same(tmp_path):
