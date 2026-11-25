@@ -43,6 +43,8 @@ data:
 - test_no_left_out_kind_reaches_a_written_file_by_any_road: every left-out kind, each by every
   road the map reads (a pin's place and map, a drawn map's location and parent, a marker's zone
   and map, a copy of its id before and after it, the World's hidden list): none in the page.
+- test_the_foot_says_nothing_false_of_a_left_out_map_or_zone: a pin and a marker on a hidden Map
+  and a marker in a hidden Zone are counted as on no map, or with no zone, drawn here.
 
 The page's data carries each map's `place` (canvas, image, unloaded, none), its size words
 (`size`) and the page's notes for a map with no canvas, so its script writes no note of its own
@@ -171,8 +173,8 @@ def test_an_id_field_that_is_no_string_names_nothing():
         assert (m["loc"], m["parent"], m["w"], m["h"]) == ("", None, 100, 80), m
         assert [p["label"] for p in m["pins"]] == ["p2"], m["pins"]
         assert m["zones"] == [], m["zones"]
-        assert ("Not placed: 1 pins on no map in the folder, 1 markers on no map in the folder, "
-                "1 markers with no zone in the folder.") in r.stdout, r.stdout
+        assert ("Not placed: 1 pins on no map drawn here, 1 markers on no map drawn here, "
+                "1 markers with no zone drawn here.") in r.stdout, r.stdout
         assert "no id" in r.stdout, r.stdout
         # With no Map, the parent_location outline reads a list as no parent.
         root2 = Path(d) / "world2"
@@ -558,6 +560,26 @@ def test_an_id_that_is_not_text_is_a_file_not_read():
     assert not _held(page, "987654321", "Numbered Nook", "Numword"), page[-1500:]
     assert "outside the 22" not in text and "1 file not read." in page, text
     assert "map/numbered.json: its id is not text" in text, text
+
+
+def test_the_foot_says_nothing_false_of_a_left_out_map_or_zone():
+    hid_map, hid_zone = "019a9000-0000-7000-8000-00000000e006", "019a9000-0000-7000-8000-00000000e007"
+    rows = {**CHART,
+            "map/hidden-map.json": {"id": hid_map, "type": "map", "name": "Hushmap", "width": 10, "height": 10,
+                                    "hidden": True},
+            "zone/hidden-zone.json": {"id": hid_zone, "type": "zone", "name": "Hushzone", "hidden": True},
+            "pin/on-hidden-map.json": {"id": "019a9000-0000-7000-8000-00000000e008", "type": "pin", "name": "ph",
+                                       "map": hid_map, "x": 1, "y": 1},
+            "marker/on-hidden-map.json": {"id": "019a9000-0000-7000-8000-00000000e009", "type": "marker",
+                                          "name": "mh", "map": hid_map, "zone": hid_zone, "x": 1, "y": 1},
+            "marker/in-hidden-zone.json": {"id": "019a9000-0000-7000-8000-00000000e00a", "type": "marker",
+                                           "name": "mz", "map": MAP_ID, "zone": hid_zone, "x": 2, "y": 2}}
+    code, text, page = _draw_rows(rows)
+    assert code == 0, text
+    assert ("Not placed: 1 pins on no map drawn here, 1 markers on no map drawn here, "
+            "1 markers with no zone drawn here.") in text, text
+    assert "in the folder" not in text.split("Not placed:")[1].split("\n")[0], text
+    assert not _held(page, "Hushmap", "Hushzone", hid_map, hid_zone), page[-1500:]
 
 
 # Every left-out kind, each by every road the map reads an element by: a pin's place (the element it

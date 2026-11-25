@@ -222,15 +222,17 @@ def main(argv):
         return 0
 
     fam_of, colors, colour_source, colour_said = presentation(a.offline, a.presentation)
-    not_placed = {"pins without integer x and y": 0, "pins on no map in the folder": 0,
+    # "Drawn here": true whether the map or zone is absent from the folder or left out by this run,
+    # and it names neither.
+    not_placed = {"pins without integer x and y": 0, "pins on no map drawn here": 0,
                   "pins placing a left-out element": 0, "markers without integer x and y": 0,
-                  "markers on no map in the folder": 0, "markers with no zone in the folder": 0}
+                  "markers on no map drawn here": 0, "markers with no zone drawn here": 0}
     pins_by, markers_by = {m: [] for m in maps}, {m: {} for m in maps}
     for e in kept.values():
         if e["_type"] == "pin":
             m = id_in(e.get("map"))
             if m not in maps:
-                not_placed["pins on no map in the folder"] += 1
+                not_placed["pins on no map drawn here"] += 1
                 continue
             x, y = whole(e.get("x")), whole(e.get("y"))
             if x is None or y is None:
@@ -248,9 +250,9 @@ def main(argv):
         elif e["_type"] == "marker":
             m, z = id_in(e.get("map")), id_in(e.get("zone"))
             if m not in maps:
-                not_placed["markers on no map in the folder"] += 1
+                not_placed["markers on no map drawn here"] += 1
             elif z not in kept or kept[z]["_type"] != "zone":
-                not_placed["markers with no zone in the folder"] += 1
+                not_placed["markers with no zone drawn here"] += 1
             elif whole(e.get("x")) is None or whole(e.get("y")) is None:
                 not_placed["markers without integer x and y"] += 1
             else:
