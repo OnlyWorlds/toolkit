@@ -90,6 +90,10 @@ Build one real packet and read it with the user: what is missing that the sessio
 
 ### Step 7: Name the next rung
 
+Say the first two to the user in a line each, in every answer; they are named, not started, unless the user asks.
+
+- **the way back**: when a session ends, what happened in it is written into the world with the update skill; until then the next packet is built from a world that has not heard it
+- **a world folder**: entries kept as plain markdown become a world folder with the import skill, no account needed; OnlyWorlds tools open that folder
 - a lookup helper the session can call mid-scene
 - a pair query before scenes between characters with history: what they have done together, what they have already told each other
 - a character decider for key choices: rebuilt from the character's core plus their current view of the world on every call, answering with a choice and a one-line why, allowed to be wrong, so it cannot drift
@@ -153,6 +157,7 @@ Whatever else it holds, the answer to a request through this skill carries these
 - The one-line index of what exists but is not loaded (Step 4, 4).
 - A source on every line, its element and field (Example).
 - The recipe file by its path: the file is the deliverable (Step 4).
+- The way back and the world folder, a line each, named and not started (Step 7).
 - What was checked and how (principles §5).
 
 ## References
