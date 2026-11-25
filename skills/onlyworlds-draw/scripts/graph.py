@@ -347,6 +347,26 @@ def aids_line(counts):
     return f" The three reading aids are not drawn ({n} element{'' if n == 1 else 's'})." if n else ""
 
 
+# The page's sentence after the count of files not read, the same in the three scripts.
+UNREAD_WHERE = "The list, with why each did not read, is in the terminal of whoever drew this page."
+
+
+def unread_count(skipped):
+    return f"{len(skipped)} file{'' if len(skipped) == 1 else 's'} not read"
+
+
+def unread_page_line(skipped):
+    """The page's line about the files not read: their count and where the list is, never a
+    file's name, an id or a reason. A page is handed on, and a file that does not read can belong
+    to anything, an element the page leaves out included."""
+    return f"{unread_count(skipped)}. {UNREAD_WHERE}"
+
+
+def unread_terminal_lines(skipped):
+    """The terminal's list, the person's own: every file not read, each with its reason."""
+    return [f"- {unread_count(skipped)}:"] + [f"  - {s}" for s in skipped]
+
+
 def embed(data):
     """JSON safe inside a <script> element: no '<' survives, and no raw non-ASCII."""
     return json.dumps(data, ensure_ascii=True, separators=(",", ":")).replace("<", "\\u003c")
@@ -601,16 +621,16 @@ def main(argv):
             f"{len(elements)} in the folder. Left out: {count_line(left)}.{aids_line(left)}",
             f"Colours: {colour_source}. Colour carries the type's group, never a label; the type is in each node's "
             "title and the legend."]
-    if skipped:
-        foot.append(f"{len(skipped)} files not read: " + "; ".join(skipped[:5])
-                    + (" ..." if len(skipped) > 5 else ""))
     data = {"graph": graph, "colors": colors, "families": list(FAMILY_ORDER)}
-    write_page(out / "graph.html", f"{name}: graph", head, foot, data, "", GRAPH_JS)
+    write_page(out / "graph.html", f"{name}: graph", head,
+               foot + ([unread_page_line(skipped)] if skipped else []), data, "", GRAPH_JS)
 
     print(f"# Graph of {name}\n")
     print(head + "\n")
     for line in foot:
         print(f"- {line}")
+    if skipped:
+        print("\n".join(unread_terminal_lines(skipped)))
     if len(graph["nodes"]) > 300 and not a.focus:
         print(f"- {len(graph['nodes'])} nodes: above about 300 the picture crowds; a focus "
               "(--focus NAME --depth 1) or a type (--type) reads better.")

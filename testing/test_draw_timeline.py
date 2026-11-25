@@ -46,7 +46,13 @@ else of calendars. The terminal is the person's own.
 - test_the_hint_gives_the_id_in_double_quotes: the terminal's hint for a hidden world's
   calendar gives --calendar "<id>", for a name with quotes and a dollar sign and for a plain one;
   and where a drawn calendar's id is the hidden one's name, the hint followed as written speaks
-  the World's calendar.
+  the World's calendar;
+- test_the_page_counts_the_files_not_read_and_names_none: a hidden calendar, a second file
+  holding its id, six files that are not JSON and an element of a type outside the 22: the page's
+  bytes hold none of their file names, not the hidden one's id or words, and say "7 files not
+  read."; the terminal names all seven;
+- test_a_folder_that_reads_whole_draws_the_same_page: no line about files not read when every
+  file reads, and one file that does not read adds that one line to the page and nothing else.
 
 Every test but the package one fails in plain words, never skips, when the interpreter running
 it has an onlyworlds package without speaking_calendar.
@@ -361,6 +367,74 @@ def test_the_hint_gives_the_id_in_double_quotes():
     code, spoken, out, page = draw(world(x_calendar=SECRET), [hidden, drawn], "--calendar", hint(out))
     assert code == 0, out
     assert spoken == "the calendar chosen for this page" and "Stillmonth" in page, (spoken, out)
+
+
+# Files not read: a page is handed on, and a file that did not read can belong to an element the
+# page leaves out, so the page counts them and names none; the terminal names each, with its reason.
+MARK = "unreadmark-q7x"
+TWIN = "zz-twin-of-hidden"
+OUTSIDE = "outside-the-types"
+UNREAD = [f"construct/{TWIN}.json"] + [f"event/{MARK}-{n}.json" for n in range(1, 7)]
+# The page's fixed sentence after the count, the same in the three scripts.
+UNREAD_WORDS = b"The list, with why each did not read, is in the terminal of whoever drew this page."
+
+
+def plant_unread(root, unread=True):
+    """The hidden secret calendar (dated, so it would be placed if drawn), a dated Event, and an
+    undated element of a type outside the 22; with `unread`, a second file holding the hidden
+    calendar's id (after it in the folder's order, so it is the file not read) and six files that
+    are not JSON, named with MARK."""
+    rows = {"construct/hidden-one.json": {**secret(), "start_date": 2},
+            "event/the-thaw.json": {"id": EVENT, "type": "event", "name": "The thaw", "start_date": 12},
+            f"widget/{OUTSIDE}.json": {"id": "019a3b10-0000-7000-8000-0000000d0a0e", "type": "widget",
+                                       "name": "Odd gadget"}}
+    if unread:
+        rows[f"construct/{TWIN}.json"] = {"id": SECRET, "type": "construct", "name": "Twin"}
+    for rel, body in rows.items():
+        p = root / "elements" / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(body), encoding="utf-8")
+    if unread:
+        for n in range(1, 7):
+            (root / "elements" / "event" / f"{MARK}-{n}.json").write_text("{ not json", encoding="utf-8")
+    (root / "world.json").write_text(json.dumps(world()), encoding="utf-8")
+
+
+def draw_unread(plant):
+    """(stdout, the page's bytes) for the folder `plant` makes."""
+    need_package()
+    with tempfile.TemporaryDirectory() as d:
+        root, out = Path(d) / "world", Path(d) / "out"
+        plant(root)
+        env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
+        r = subprocess.run([sys.executable, str(TIMELINE), str(root), "--out", str(out), "--offline"],
+                           check=False, capture_output=True, text=True, encoding="utf-8", env=env)
+        assert r.returncode == 0, r.stdout + r.stderr
+        return r.stdout, (out / "timeline.html").read_bytes()
+
+
+def test_the_page_counts_the_files_not_read_and_names_none():
+    text, page = draw_unread(plant_unread)
+    found = traces(page.decode("utf-8"), TWIN, MARK, OUTSIDE, "hidden-one", SECRET, SECRET_NAME, *SECRET_WORDS)
+    assert not found, found
+    assert b"7 files not read." in page, page.decode("utf-8")[-1500:]
+    missing = [rel for rel in UNREAD if rel not in text]
+    assert not missing and "7 files not read" in text, (missing, text)
+    print(f"the page holds the count and no name; the terminal names all {len(UNREAD)}")
+
+
+def test_a_folder_that_reads_whole_draws_the_same_page():
+    """No line about files not read when every file reads; a file that does not read changes the
+    page by that one line and nothing else (the time of the read taken out)."""
+    def one_broken(root):
+        plant_unread(root, unread=False)
+        (root / "elements" / "event" / "broken.json").write_text("{", encoding="utf-8")
+    stamp = re.compile(rb"\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC")
+    _, clean = draw_unread(lambda root: plant_unread(root, unread=False))
+    _, one = draw_unread(one_broken)
+    assert b"not read" not in clean, clean
+    a, b = stamp.sub(b"T", clean), stamp.sub(b"T", one)
+    assert b == a.replace(b'<div id="ms">', b"<div>1 file not read. " + UNREAD_WORDS + b'</div><div id="ms">'), b
 
 
 if __name__ == "__main__":

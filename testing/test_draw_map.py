@@ -25,6 +25,12 @@ data:
   tripwire for the plain slip: it shows the note and the size words it is handed, and the pins
   catch a text of its own added or changed whole (a note, words about how a size was found other
   than "(from its image)", a change of `place` where it should not), never words built from pieces.
+- test_the_page_counts_the_files_not_read_and_names_none: a hidden Location with a pin on it, a
+  second file holding its id, six files that are not JSON and an element of a type outside the
+  22: the page's bytes hold none of their file names, not the hidden one's id or name, and say
+  "7 files not read."; the terminal names all seven.
+- test_a_folder_that_reads_whole_draws_the_same_page: no line about files not read when every
+  file reads, and one file that does not read adds that one line to the page and nothing else.
 
 The page's data carries each map's `place` (canvas, image, unloaded, none), its size words
 (`size`) and the page's notes for a map with no canvas, so its script writes no note of its own
@@ -331,6 +337,77 @@ def test_the_page_script_reads_the_state():
     assert js.count(":'not placed'+(m.unplaced?") == 1, js
     for words in ("image to take", "--no-image", "is loading", "did not load"):
         assert words not in js, words
+
+
+# Files not read: a page is handed on, and a file that did not read can belong to an element the
+# page leaves out, so the page counts them and names none; the terminal names each, with its reason.
+HUSH = "019a9000-0000-7000-8000-00000000d1d1"
+HUSH_NAME = "Hushed harbour"
+MARK = "unreadmark-q7x"
+TWIN = "zz-twin-of-hidden"
+OUTSIDE = "outside-the-types"
+UNREAD = [f"location/{TWIN}.json"] + [f"pin/{MARK}-{n}.json" for n in range(1, 7)]
+# The page's fixed sentence after the count, the same in the three scripts.
+UNREAD_WORDS = b"The list, with why each did not read, is in the terminal of whoever drew this page."
+
+
+def _plant_unread(root, unread=True):
+    """A Map with a drawn Location's pin, a hidden Location and its pin, and an element of a type
+    outside the 22; with `unread`, a second file holding the hidden Location's id (after it in the
+    folder's order, so it is the file not read) and six files that are not JSON, named with MARK."""
+    rows = {"map/chart.json": {"id": MAP_ID, "type": "map", "name": "Chart", "width": 100, "height": 100},
+            "location/hidden-one.json": {"id": HUSH, "type": "location", "name": HUSH_NAME, "hidden": True},
+            "location/the-quay.json": {"id": "019a9000-0000-7000-8000-00000000d0d1", "type": "location",
+                                       "name": "The quay"},
+            "pin/a.json": _pin(1, MAP_ID, 5, 5, HUSH)[1],
+            "pin/b.json": _pin(2, MAP_ID, 9, 9, "019a9000-0000-7000-8000-00000000d0d1")[1],
+            f"widget/{OUTSIDE}.json": {"id": "019a9000-0000-7000-8000-00000000d0d2", "type": "widget",
+                                       "name": "Odd gadget"}}
+    if unread:
+        rows[f"location/{TWIN}.json"] = {"id": HUSH, "type": "location", "name": "Twin"}
+    for rel, body in rows.items():
+        p = root / "elements" / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps({"type": rel.split("/")[0], **body}), encoding="utf-8")
+    if unread:
+        for n in range(1, 7):
+            (root / "elements" / "pin" / f"{MARK}-{n}.json").write_text("{ not json", encoding="utf-8")
+    (root / "world.json").write_text(json.dumps({"id": "w", "name": "Coast"}), encoding="utf-8")
+
+
+def _draw_unread(plant):
+    """(stdout, the page's bytes) for the folder `plant` makes."""
+    with tempfile.TemporaryDirectory() as d:
+        root, out = Path(d) / "world", Path(d) / "out"
+        plant(root)
+        r = _draw(root, out)
+        assert r.returncode == 0, r.stderr
+        return r.stdout, (out / "map.html").read_bytes()
+
+
+def test_the_page_counts_the_files_not_read_and_names_none():
+    text, page = _draw_unread(_plant_unread)
+    low = page.decode("utf-8").casefold()
+    found = [w for w in (TWIN, MARK, OUTSIDE, "hidden-one", HUSH, HUSH_NAME) if w.casefold() in low]
+    assert not found, found
+    assert b"7 files not read." in page, page.decode("utf-8")[-1500:]
+    missing = [rel for rel in UNREAD if rel not in text]
+    assert not missing and "7 files not read" in text, (missing, text)
+    print(f"the page holds the count and no name; the terminal names all {len(UNREAD)}")
+
+
+def test_a_folder_that_reads_whole_draws_the_same_page():
+    """No line about files not read when every file reads; a file that does not read changes the
+    page by that one line and nothing else (the time of the read taken out)."""
+    def one_broken(root):
+        _plant_unread(root, unread=False)
+        (root / "elements" / "pin" / "broken.json").write_text("{", encoding="utf-8")
+    stamp = re.compile(rb"\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC")
+    _, clean = _draw_unread(lambda root: _plant_unread(root, unread=False))
+    _, one = _draw_unread(one_broken)
+    assert b"not read" not in clean, clean
+    a, b = stamp.sub(b"T", clean), stamp.sub(b"T", one)
+    assert b == a.replace(b'<div id="ms">', b"<div>1 file not read. " + UNREAD_WORDS + b'</div><div id="ms">'), b
 
 
 if __name__ == "__main__":

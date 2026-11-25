@@ -70,7 +70,7 @@ Principles §2: the script reads the folder and computes every position, link an
 
 ### 6. Head and foot
 
-Every page says what it is true as of and which folder it was read from, by the folder's own name and never a path (and the slice, when `world.json` names one), and its foot counts everything left out, per reason: map space, the reading aids, room, proposed, hidden, outside the cut, undated, outside the range, files that did not parse. Carry the script's summary into your answer: the counts and the left-out line, once.
+Every page says what it is true as of and which folder it was read from, by the folder's own name and never a path (and the slice, when `world.json` names one), and its foot counts everything left out, per reason: map space, the reading aids, room, proposed, hidden, outside the cut, undated, outside the range, files that did not read (the page gives their count and names none, since a page is handed on; the terminal lists each, with why). Carry the script's summary into your answer: the counts and the left-out line, once.
 
 ### 7. Never write to the world
 

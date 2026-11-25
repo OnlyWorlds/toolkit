@@ -39,7 +39,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from graph import (BASE_JS, FAMILY_ORDER, aids_line, count_line, fold, head_line, label,  # noqa: E402
-                   left_out_reason, open_folder, out_folder, presentation, write_page)
+                   left_out_reason, open_folder, out_folder, presentation, unread_page_line,
+                   unread_terminal_lines, write_page)
 
 try:
     from onlyworlds.calendar import WORLD_CALENDAR_KEY, format_step, read_calendar_value, speaking_calendar  # noqa: E402
@@ -275,18 +276,19 @@ def main(argv):
               f"(from {range_from}). Not placed: {count_line(not_placed)}. Left out: {count_line(left)}.{aids_line(left)}")
     plain = "Dates are the world's plain integers (no calendar reads)."
     spoken_on = "Dates read through {}; the axis counts plain steps."
-    rest = [f"Colours: {colour_source}."]
-    if skipped:
-        rest.append(f"{len(skipped)} files not read: " + "; ".join(skipped[:5]) + (" ..." if len(skipped) > 5 else ""))
+    colours = f"Colours: {colour_source}."
     # The page says which calendar its dates are read through, or that they are plain numbers,
     # and nothing more about calendars: the notes are the terminal's alone.
-    foot = [counts, spoken_on.format(cal_name) if cal_el else plain] + rest
+    foot = ([counts, spoken_on.format(cal_name) if cal_el else plain, colours]
+            + ([unread_page_line(skipped)] if skipped else []))
     write_page(out / "timeline.html", f"{name}: timeline", head, foot, {"tl": tl, "colors": colors}, TL_CSS, TL_JS)
 
     print(f"# Timeline of {name}\n\n{head}\n")
     term = [counts, spoken_on.format(f"the calendar {label(cal_el)}") if cal_el else plain]
-    for line in term + rest[:1] + notes + rest[1:]:
+    for line in term + [colours] + notes:
         print(f"- {line}")
+    if skipped:
+        print("\n".join(unread_terminal_lines(skipped)))
     print(f"\nWrote {out / 'timeline.html'}")
     return 0
 

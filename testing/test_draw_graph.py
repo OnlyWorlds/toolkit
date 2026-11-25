@@ -13,6 +13,12 @@ an edge, a repeated target is two, a wrong-type link draws nothing, the two decl
 edges, the left-out counts are the reader's, a cut never adds an edge, and the page carries a self
 edge in its data.
 
+A second planted world holds a hidden element, a second file with its id, six files that are not
+JSON and an element of a type outside the 22: the page and graph.json name none of those files
+and carry neither the hidden id nor its name, the page counts the seven files not read, and the
+terminal names each. A folder whose every file reads has no such line, and one file that does
+not read adds that one line to the page and nothing else.
+
 OW_DRAW_GRAPH points at another copy of graph.py (an older one, to show this test is red on it).
 
 Runs under pytest, or alone:
@@ -190,6 +196,86 @@ def test_the_page_carries_a_self_edge():
     data = json.loads(m.group(1))
     selfs = [e for e in data["graph"]["edges"] if e[0] == e[1]]
     assert selfs and data["graph"]["edges"] == graph["edges"], data["graph"]["edges"]
+
+
+# Files not read: a page is handed on, and a file that did not read can belong to an element the
+# page leaves out, so the page counts them and names none; the terminal names each, with its reason.
+HUSH = "019a7700-0000-7000-8000-00000000d1d1"
+HUSH_NAME = "Hushed reckoning"
+MARK = "unreadmark-q7x"
+TWIN = "zz-twin-of-hidden"
+OUTSIDE = "outside-the-types"
+UNREAD = [f"construct/{TWIN}.json"] + [f"event/{MARK}-{n}.json" for n in range(1, 7)]
+
+
+def plant_unread(root, unread=True):
+    """A hidden Construct, a drawn Event and Character, a Map, and an element of a type outside the
+    22; with `unread`, a second file holding the hidden element's id (after it in the folder's
+    order, so it is the file not read) and six files that are not JSON, named with MARK."""
+    rows = {"construct/hidden-one.json": {"id": HUSH, "type": "construct", "name": HUSH_NAME,
+                                           "hidden": True, "start_date": 2},
+            "event/the-thaw.json": {"id": i(51), "type": "event", "name": "The thaw", "start_date": 3},
+            "character/ada.json": {"id": i(52), "type": "character", "name": "Ada", "location": i(51)},
+            "map/chart.json": {"id": i(53), "type": "map", "name": "Chart", "width": 100, "height": 100},
+            f"widget/{OUTSIDE}.json": {"id": i(54), "type": "widget", "name": "Odd gadget"}}
+    if unread:
+        rows[f"construct/{TWIN}.json"] = {"id": HUSH, "type": "construct", "name": "Twin"}
+    for rel, body in rows.items():
+        p = root / "elements" / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(body), encoding="utf-8")
+    if unread:
+        for n in range(1, 7):
+            (root / "elements" / "event" / f"{MARK}-{n}.json").write_text("{ not json", encoding="utf-8")
+    (root / "world.json").write_text(json.dumps({"id": WORLD, "name": "Unread"}), encoding="utf-8")
+
+
+def draw_unread(unread=True):
+    """(stdout, the page's bytes, graph.json's bytes) for plant_unread's folder."""
+    with tempfile.TemporaryDirectory() as tmp:
+        world, out = Path(tmp) / "world", Path(tmp) / "draw"
+        plant_unread(world, unread)
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1")
+        r = subprocess.run([sys.executable, str(GRAPH), str(world), "--offline", "--out", str(out)],
+                           capture_output=True, text=True, encoding="utf-8", env=env)
+        assert r.returncode == 0, f"graph.py exit {r.returncode}: {r.stderr or r.stdout}"
+        return r.stdout, (out / "graph.html").read_bytes(), (out / "graph.json").read_bytes()
+
+
+def test_the_page_counts_the_files_not_read_and_names_none():
+    text, page, data = draw_unread()
+    for name, b in (("graph.html", page), ("graph.json", data)):
+        low = b.decode("utf-8").casefold()
+        found = [w for w in (TWIN, MARK, OUTSIDE, "hidden-one", HUSH, HUSH_NAME) if w.casefold() in low]
+        assert not found, (name, found)
+    assert b"7 files not read." in page, page.decode("utf-8")[-1500:]
+    missing = [rel for rel in UNREAD if rel not in text]
+    assert not missing and "7 files not read" in text, (missing, text)
+    print(f"the page holds the count and no name; the terminal names all {len(UNREAD)}")
+
+
+def test_a_folder_that_reads_whole_draws_the_same_page():
+    """No line about files not read when every file reads; a file that does not read changes the
+    page by that one line and nothing else (the time of the read taken out)."""
+    stamp = re.compile(rb"\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC")
+    _, clean, clean_data = draw_unread(unread=False)
+    assert b"not read" not in clean, clean
+    with tempfile.TemporaryDirectory() as tmp:
+        world, out = Path(tmp) / "world", Path(tmp) / "draw"
+        plant_unread(world, unread=False)
+        (world / "elements" / "event" / "broken.json").write_text("{", encoding="utf-8")
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1")
+        r = subprocess.run([sys.executable, str(GRAPH), str(world), "--offline", "--out", str(out)],
+                           capture_output=True, text=True, encoding="utf-8", env=env)
+        assert r.returncode == 0, r.stderr
+        one, one_data = (out / "graph.html").read_bytes(), (out / "graph.json").read_bytes()
+    assert one_data == clean_data
+    a, b = stamp.sub(b"T", clean), stamp.sub(b"T", one)
+    assert b == a.replace(b'<div id="ms">', b"<div>1 file not read. " + UNREAD_WORDS + b'</div><div id="ms">'), b
+
+
+# The page's fixed sentence after the count, the same in the three scripts.
+UNREAD_WORDS = b"The list, with why each did not read, is in the terminal of whoever drew this page."
 
 
 if __name__ == "__main__":

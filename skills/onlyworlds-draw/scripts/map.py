@@ -40,7 +40,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from graph import (FAMILY_ORDER, VIEW_JS, aids_line, count_line, fold, head_line, label,  # noqa: E402
-                   left_out_reason, open_folder, out_folder, presentation, write_page)
+                   left_out_reason, open_folder, out_folder, presentation, unread_page_line,
+                   unread_terminal_lines, write_page)
 
 
 def whole(v):
@@ -322,15 +323,16 @@ def main(argv):
         foot.append(f"{len(older)} {'zone carries' if len(older) == 1 else 'zones carry'} a line mark in an older key (atlas_shape or a supertype "
                     f"line) and no shape, so {'it is' if len(older) == 1 else 'they are'} drawn closed: {', '.join(names[:5])}"
                     + (" ..." if len(names) > 5 else "") + ". Set shape to line on each to draw an open path.")
-    if skipped:
-        foot.append(f"{len(skipped)} files not read: " + "; ".join(skipped[:5]) + (" ..." if len(skipped) > 5 else ""))
     data = {"maps": data_maps, "colors": colors, "families": list(FAMILY_ORDER), "noImage": a.no_image,
             "notes": NOTES}
-    write_page(out / "map.html", f"{name}: maps", head, foot, data, MAP_CSS, MAP_JS)
+    write_page(out / "map.html", f"{name}: maps", head,
+               foot + ([unread_page_line(skipped)] if skipped else []), data, MAP_CSS, MAP_JS)
 
     print(f"# Maps of {name}\n\n{head}\n")
     for line in foot:
         print(f"- {line}")
+    if skipped:
+        print("\n".join(unread_terminal_lines(skipped)))
     for m in data_maps:
         print(f"- {m['name']}: {len(m['pins'])} pins, {len(m['zones'])} zones"
               + (f" ({m['size']})" if m["size"] else "")
