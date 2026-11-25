@@ -11,10 +11,12 @@ the world sets no range); a date outside it is counted, never drawn, and a span 
 is cut there. An element with no date is counted as not placed, never placed. A span whose end
 comes before its start is drawn at its start and counted.
 
-A calendar (atlas_calendar, schema-dist profiles/calendar.md) labels the dates when one reads:
-the only one in the world, or the one --calendar names. A value that is not a calendar leaves
-the dates as bare numbers, and the script says so. The axis itself counts plain steps. The
-calendar is read by the onlyworlds package (onlyworlds.calendar), never by a copy here.
+A calendar (atlas_calendar, schema-dist profiles/calendar.md) labels the dates when one speaks:
+the one --calendar names; else the one the World names in x_calendar; else, when the World names
+none, the world's only calendar (several, and none speaks: the script says how to pick). A World
+naming no calendar of this world, or a value that is not a calendar, leaves the dates as bare
+numbers, and the script says so. The axis itself counts plain steps. The calendar is read and
+picked by the onlyworlds package (onlyworlds.calendar), never by a copy here.
 
 Room, proposed and hidden elements are left out unless a flag asks for them; the three reading
 aids (graph.py's docstring) are left out always and said once in the foot.
@@ -23,10 +25,11 @@ Usage:
     python timeline.py WORLD_FOLDER [--out DIR] [--type TYPE ...] [--calendar NAME_OR_ID]
                        [--room] [--proposed] [--hidden] [--offline] [--presentation PATH]
 
-Python 3.12+; the standard library and the onlyworlds package (>=0.68.1, for the calendar).
+Python 3.12+; the standard library and the onlyworlds package (>=0.153.0, for the calendar).
 Exit 0 on a page, 2 when the folder cannot be read or the package is missing.
 """
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -35,10 +38,10 @@ from graph import (BASE_JS, FAMILY_ORDER, aids_line, count_line, fold, head_line
                    left_out_reason, open_folder, out_folder, presentation, write_page)
 
 try:
-    from onlyworlds.calendar import format_step, read_calendar_value  # noqa: E402
+    from onlyworlds.calendar import WORLD_CALENDAR_KEY, format_step, read_calendar_value, speaking_calendar  # noqa: E402
 except ImportError:
     print('The timeline reads calendars through the onlyworlds package, which is missing or too old: '
-          'run pip install "onlyworlds>=0.68.1" (Python 3.12+) and draw again.', file=sys.stderr)
+          'run pip install "onlyworlds>=0.153.0" (Python 3.12+) and draw again.', file=sys.stderr)
     sys.exit(2)
 
 SPANS = (("start_date", "end_date"), ("grant_date", "revoke_date"))
@@ -68,26 +71,41 @@ def dated(e):
     return out
 
 
-def pick_calendar(kept, want):
-    """(the element, the calendar) the page speaks, or (None, None); and the lines to say."""
+def pick_calendar(world, kept, want):
+    """(the element, the calendar) the page speaks, or (None, None); and the lines to say.
+
+    The person's --calendar first; else the World's x_calendar, read by the package's
+    speaking_calendar (the calendar profile's "Which calendar speaks")."""
     found = [(e, read_calendar_value(e["atlas_calendar"])) for e in kept.values()
              if e.get("atlas_calendar") is not None]
     found.sort(key=lambda ec: (fold(label(ec[0])), str(ec[0]["id"])))
     notes = [f"{label(e)} carries an atlas_calendar that is not a calendar: its dates stay numbers"
              for e, c in found if c is None]
     readable = [(e, c) for e, c in found if c]
+    named = world.get(WORLD_CALENDAR_KEY)
+    spoken = speaking_calendar(world, kept.values())
+    if named is not None and spoken is None:
+        notes.append(f"The World's {WORLD_CALENDAR_KEY} is {json.dumps(named, ensure_ascii=False)}, which names "
+                     "no calendar of this world" + ("" if want else ": the dates stay numbers"))
     if want:
         hit = [(e, c) for e, c in readable if e["id"] == want or fold(label(e)) == fold(want)]
         if not hit:
             notes.append(f"No readable calendar named or with id {want!r}: the dates stay numbers")
             return None, None, notes
-        readable = hit
-    if not readable:
-        return None, None, notes
-    if len(readable) > 1:
-        notes.append(f"{len(readable)} calendars read; this page speaks {label(readable[0][0])} "
-                     f"(--calendar names another: {', '.join(label(e) for e, _ in readable[1:])})")
-    return readable[0][0], readable[0][1], notes
+        if len(hit) > 1:
+            notes.append(f"{len(hit)} calendars answer to {want!r}; this page speaks {label(hit[0][0])} "
+                         f"(--calendar takes an id to speak another)")
+        if spoken is not None and kept[spoken.id] is not hit[0][0]:
+            notes.append(f"This page speaks {label(hit[0][0])}, as --calendar asks; the World's own calendar "
+                         f"is {label(kept[spoken.id])}")
+        return hit[0][0], hit[0][1], notes
+    if spoken is not None:
+        return kept[spoken.id], spoken.config, notes
+    if named is None and len(readable) > 1:
+        notes.append(f"{len(readable)} calendars read ({', '.join(label(e) for e, _ in readable)}) and the "
+                     f"World names none, so none speaks: pick one with --calendar NAME for this page, or name "
+                     f"its id in the World's {WORLD_CALENDAR_KEY} for every tool")
+    return None, None, notes
 
 
 TL_CSS = """
@@ -164,7 +182,8 @@ def main(argv):
         else:
             kept[i] = e
     cal_el, cal, notes = pick_calendar(
-        {i: e for i, e in elements.items() if not left_out_reason(e, a.room, a.proposed, a.hidden)}, a.calendar)
+        world, {i: e for i, e in elements.items() if not left_out_reason(e, a.room, a.proposed, a.hidden)},
+        a.calendar)
 
     def say(v):
         return format_step(cal, int(v)) if cal and v is not None else ("" if v is None else str(v))
