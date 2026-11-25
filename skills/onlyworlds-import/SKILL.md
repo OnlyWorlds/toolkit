@@ -39,6 +39,7 @@ Shared rules (identity, field kinds, propose-review-apply, checking your work) l
 8. **Cite and log.** Every element's registry row carries a source pointer (chapter, section, page); to keep it in the world too, write it to `x_source`, never into `description` (a world that already holds the key, or a Charter's source rule, sets the form: principles §4). Naming a published work the world rests on is attribution, not a pointer, and readers should see it (Step 2, sources). Every report lists what was not extracted and why.
 9. **Code keeps the books.** The registry, the id index, and the coverage table live in files, not in the model's memory (principles §2).
 10. **Propose, then write.** Nothing is written into an existing world until the user has ruled on the change list. A new world folder is itself the proposal: write it, report, and let the user review it before anything builds on it.
+11. **The source is only read.** An import never edits, moves, renames or deletes the user's notes or files.
 
 ## Instructions
 
