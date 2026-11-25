@@ -109,6 +109,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -203,8 +204,15 @@ def day_number(iso):
 
 
 def slug(text, cap=40):
-    s = re.sub(r"[^a-z0-9]+", "-", text.lower().encode("ascii", "ignore").decode()).strip("-")
-    return s[:cap].strip("-")
+    """The name part of an element's file name, made as the standard makes it (schema-dist's
+    README, the rule under "The example world"; its cases: fixtures/file-names.fixture.json): the
+    name in NFKD form; every code point from U+0300 to U+036F dropped, and no other mark;
+    lowercased by Unicode's default mapping; each run outside a-z and 0-9 one hyphen, trimmed at
+    both ends; cut at `cap` code points and trimmed again at the new end. '' when nothing is left
+    (the caller then names the file by the full id). A plain ASCII name gives what it always gave."""
+    s = re.sub(r"[̀-ͯ]", "", unicodedata.normalize("NFKD", text)).lower()
+    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+    return s[:cap].rstrip("-")
 
 
 def control_in(value):
