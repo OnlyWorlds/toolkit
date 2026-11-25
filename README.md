@@ -6,9 +6,46 @@ No account required. [OnlyWorlds](https://www.onlyworlds.com), an open standard 
 
 Works with any AI that reads markdown. Optimized for Claude Code.
 
+## Notes in, a world out
+
+Notes, a manuscript, PDFs, a campaign bible, a wiki or old session notes go in. A world folder comes out: `world.json` for the world, one JSON file per element, each element one of 22 types (Character, Location, Institution, Title and the rest).
+
+```
+hyperion-notes/                  what you hand it
+├── the-consul.md
+├── the-pilgrimage.md
+└── time-tombs.md
+
+hyperion/                        the world folder it writes
+├── world.json
+└── elements/
+    ├── character/
+    │   ├── the-consul--3c9e1f07.json
+    │   └── meina-gladstone--b2d84a61.json
+    ├── institution/
+    │   └── church-of-the-shrike--7f01ce93.json
+    ├── location/
+    │   └── time-tombs--e45a0b18.json
+    └── title/
+        └── consul--90d3f6c2.json
+```
+
+The import reads your notes and does not change them. It first asks what it cannot see for itself: what the sources are, where the world should live, what it is for, which source wins a conflict, and when the world's "now" is. A bigger import keeps its working files (a source inventory, a registry and `world-rules.md`) in the world folder's root, next to `world.json`. Open the world folder in [Atlas](https://atlas.onlyworlds.com) in a desktop Chromium browser (Chrome, Edge, Brave): Atlas reads and saves the folder itself. In Firefox or Safari, open the world as one `.owworld` file (a `.zip` of the folder opens too): Atlas keeps that world in the browser, and the folder on disk is not changed.
+
+What the import holds to, in its own rules:
+
+- **Invents no fields.** Only fields listed under that type; custom data goes in `x_<name>` fields.
+- **A stub is cheap, a skip is forever.** An element for anything the source canonically introduces, even with only a name and a line.
+- **Cite and log.** Every element's registry row carries a source pointer (chapter, section, page). Every report lists what was not extracted and why.
+- **What you decided.** It parses what the author decided ("going with", "this is canon now"); brainstorming ("maybe", "what if", "???") is reported separately. When sources contradict and the author never settled it, both versions are kept for your ruling.
+- **GM-only stays hidden.** What the source marks GM-only (a secret, a twist, a stat block the players never see) goes `hidden: true` in the element's file; a published page does not show it.
+- **Propose, then write.** Nothing is written into an existing world until you have ruled on the change list. A new world folder is itself the proposal: written, reported, and reviewed by you before anything builds on it.
+
+The report closes it: what each source contributed, what was not extracted, the judgment calls, the conflicts. After each played session, the update skill writes its change list to a file beside your notes, and nothing in the world changes until you have ruled on the rows; then only the approved rows are written.
+
 ## What It Does
 
-**Structure it**: import any text into world elements. Paste a paragraph, a chapter, upload files, point at folders. Out comes a structured world: a world folder. Open the world folder in [Atlas](https://atlas.onlyworlds.com) in a desktop Chromium browser (Chrome, Edge, Brave): Atlas reads and saves the folder itself. In Firefox or Safari, open the world as one `.owworld` file (a `.zip` of the folder opens too): Atlas keeps that world in the browser, and the folder on disk is not changed. Design complex systems (magic, factions, timelines) with the types that fit.
+**Structure it**: import any text into world elements: a paragraph, a chapter, files, folders. Out comes a world folder (above). Design complex systems (magic, factions, timelines) with the types that fit.
 
 **Grow it**: work with worlds wherever they live. Read a world and get a creative brief, find missing connections, catch where it contradicts itself. Draw it as a graph, a map with its pins and zones, or a timeline. Files on disk or the API, your choice.
 
@@ -20,7 +57,7 @@ Works with any AI that reads markdown. Optimized for Claude Code.
 
 ## Install
 
-Some skills run Python on your machine. The folder check that import and setup run after writing a world, draw's graph and timeline, and carry's packing and converting use the `onlyworlds` package (`pip install onlyworlds`), which needs Python 3.12 or newer. Read's reports, draw's map and setup's writer use only Python's standard library.
+Some skills run Python on your machine. The folder check that import, setup and update run after writing to a world folder, draw's graph and timeline, and carry's packing and converting use the `onlyworlds` package (`pip install onlyworlds`), which needs Python 3.12 or newer. Read's reports, draw's map and setup's writer use only Python's standard library.
 
 ### Claude Code
 
@@ -103,7 +140,7 @@ Most of the toolkit runs on nothing but your files:
 - **Carry** packs, unpacks and converts folders on disk; only the move to or from an account needs one.
 - **Context and update** work with whatever holds your world: a folder, your own notes, or an OnlyWorlds world (where a session can open with one character's draught, what she knows as the world records it, or with a lens, a saved way of reading the world).
 
-With a free OnlyWorlds account ([onlyworlds.com](https://www.onlyworlds.com)), the same world gains cloud sync, API access, sharing, and the growing ecosystem of apps and games. The toolkit connects automatically, and everything stays exportable, always.
+With a free OnlyWorlds account ([onlyworlds.com](https://www.onlyworlds.com)), the same world gains cloud sync, API access, sharing, and the growing ecosystem of apps and games, and everything stays exportable, always. Connecting a folder to an account world is the start skill's eight steps: it adds `.env` and `.ow/` and keeps both out of git, you make a key on onlyworlds.com and type it and your world PIN into `.env` in your own editor (credentials never go through the chat), and it checks the key, caches the world's element names, and offers one line for the folder's `AGENTS.md` or `CLAUDE.md` so the next session opens the world first. From then on the other skills reconcile against that cache on their own.
 
 ## For AI Builders
 
