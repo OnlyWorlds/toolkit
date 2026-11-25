@@ -103,7 +103,10 @@ def pick_calendar(world, elements, left_out, want):
         notes.append(f"The World's {WORLD_CALENDAR_KEY} is {json.dumps(named, ensure_ascii=False)}, which names "
                      "no calendar of this world" + ("" if want else ": the dates stay numbers"))
     if want:
-        hit = [(e, c) for e, c in readable if e["id"] == want or fold(label(e)) == fold(want)]
+        # An id means exactly that element; a name may answer for several, and one this run draws
+        # comes before one it leaves out (the person typed a name they can see), else by name and id.
+        hit = [(e, c) for e, c in readable if e["id"] == want] or sorted(
+            [(e, c) for e, c in readable if fold(label(e)) == fold(want)], key=lambda ec: ec[0]["id"] in left_out)
         if not hit:
             notes.append(f"No readable calendar named or with id {want!r}: the dates stay numbers")
             return None, None, "", notes
@@ -120,7 +123,13 @@ def pick_calendar(world, elements, left_out, want):
         return el, cal, (CHOSEN if el["id"] in left_out else f"the calendar {label(el)}"), notes
     if spoken_el is not None and spoken_el["id"] in left_out:
         why = left_out[spoken_el["id"]]
-        ways = f"--calendar {label(spoken_el)!r}" + (f", or {DRAWS[why]} to draw that element" if why in DRAWS else "")
+        # The name only when a shell reads it as one argument in double quotes and it picks no other
+        # calendar; else the id, which is exact.
+        nm = label(spoken_el)
+        plain_name = nm.strip() and all(ch.isalnum() or ch in " -" for ch in nm) and \
+            sum(fold(label(e)) == fold(nm) for e, _ in readable) == 1
+        ways = (f'--calendar "{nm}"' if plain_name else f"--calendar {spoken_el['id']}") + \
+            (f", or {DRAWS[why]} to draw that element" if why in DRAWS else "")
         notes.append(f"The world's calendar is {label(spoken_el)}, on an element this run leaves out ({why}), so the "
                      f"page shows the dates as plain numbers: {ways}, labels the page with it")
         return None, None, "", notes

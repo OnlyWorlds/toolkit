@@ -39,7 +39,13 @@ else of calendars. The terminal is the person's own.
   name: the page's bytes hold none of its name, its id in any letter case, or any word of the
   calendar, and the page speaks no calendar;
 - test_calendar_picks_a_left_out_calendar: --calendar names a hidden calendar: the page is
-  labelled by it, says "the calendar chosen for this page", and holds neither name nor id.
+  labelled by it, says "the calendar chosen for this page", and holds neither name nor id;
+- test_a_name_picks_the_drawn_calendar_first: a hidden and a drawn calendar of one name, the
+  hidden one's id sorting first: --calendar NAME speaks the drawn one, and the page holds none of
+  the hidden one's words or its id; --calendar with the hidden one's id still picks it;
+- test_the_hint_gives_an_id_for_a_name_no_shell_reads_whole: a hidden calendar whose name holds
+  quotes and a dollar sign: the terminal's hint gives --calendar with its id, never a Python
+  repr; a plain name is given in double quotes.
 
 Every test but the package one fails in plain words, never skips, when the interpreter running
 it has an onlyworlds package without speaking_calendar.
@@ -315,6 +321,32 @@ def test_calendar_picks_a_left_out_calendar():
     assert "Stillmonth" in page, "the page is not labelled by the chosen calendar"
     assert traces(page, SECRET_NAME, SECRET) == [], traces(page, SECRET_NAME, SECRET)
     assert "Dates read through the calendar chosen for this page" in page, page[-800:]
+
+
+def test_a_name_picks_the_drawn_calendar_first():
+    hidden_first = {**secret(), "id": "019a3b10-0000-7000-8000-0000000d0001", "name": "Sun Reckoning"}
+    drawn_last = {**calendar("019a3b10-0000-7000-8000-0000000dffff", "Sun Reckoning")}
+    code, spoken, out, page = draw(world(), [hidden_first, drawn_last], "--calendar", "sun reckoning")
+    assert code == 0, out
+    assert spoken == called("Sun Reckoning"), (spoken, out)
+    assert "Thaw" in page, "the page is not labelled by the drawn calendar"
+    held = traces(page, hidden_first["id"], *SECRET_WORDS)
+    assert held == [], held
+    code, spoken, out, page = draw(world(), [hidden_first, drawn_last], "--calendar", hidden_first["id"])
+    assert code == 0, out
+    assert spoken == "the calendar chosen for this page" and "Stillmonth" in page, (spoken, out)
+
+
+def test_the_hint_gives_an_id_for_a_name_no_shell_reads_whole():
+    odd = {**secret(), "name": 'King\'s "Old" $Reckoning'}
+    code, spoken, out, _ = draw(world(), [odd])
+    assert code == 0 and spoken == "", (code, spoken, out)
+    lines = [ln for ln in out.splitlines() if "plain numbers" in ln and "--calendar" in ln]
+    assert len(lines) == 1, out
+    assert f"--calendar {SECRET}," in lines[0] and "\\'" not in lines[0], lines[0]
+    code, spoken, out, _ = draw(world(), [secret()])
+    lines = [ln for ln in out.splitlines() if "plain numbers" in ln and "--calendar" in ln]
+    assert len(lines) == 1 and f'--calendar "{SECRET_NAME}"' in lines[0], out
 
 
 if __name__ == "__main__":
