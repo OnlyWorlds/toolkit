@@ -219,6 +219,8 @@ def main(argv):
               "or zones on, and no coordinates are invented. The places as an outline "
               "(the parent_location tree):\n")
         print("\n".join(outline(elements, set(kept))) or "(no Location elements either)")
+        if skipped:  # the files not read are said here too, a too_deep file among them
+            print("\n" + "\n".join(unread_terminal_lines(skipped)))
         return 0
 
     fam_of, colors, colour_source, colour_said = presentation(a.offline, a.presentation)

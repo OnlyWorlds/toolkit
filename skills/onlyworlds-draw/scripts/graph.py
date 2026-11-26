@@ -24,6 +24,9 @@ from an element to itself is an edge, and a target listed twice is one edge, at 
 a profile declares, x_lens_leads_to and x_spine_depends_on, are edges too; no other x_ field is.
 A link to an id not in the world, or to an element of another type than its field's target,
 draws nothing. The left-out counts are the reader's own, printed with the script's two filters.
+An element file nested more than 200 levels deep is not read (too_deep), in the three scripts
+alike: a file not read, named with its reason in the terminal and counted on the page; a
+world.json that deep, or one that does not parse, leaves no world to read (exit 2).
 
 Colours come from schema-dist's presentation.json, fetched at run time (the only network the
 script uses): four colour groups named by their colours (blue, green, pink, amber), a visual
@@ -111,12 +114,69 @@ ROOM_WS = ("\t\n\x0b\x0c\r \x85\xa0         "
 
 
 # ---------------------------------------------------------------- reading
-# read_json, folder_files and load_world are copied from the read skill's scripts/consistency.py (its folder
-# reader), so the three skills that read folders read them the same way.
+# TOO_DEEP, MAX_DEPTH, _too_deep, read_text, read_world_json, folder_files and load_world are copied from the
+# read skill's scripts/consistency.py (its folder reader), so the three skills that read folders read them the
+# same way.
+
+# A file in which an object or array sits more than MAX_DEPTH levels deep is not read (folder spec,
+# "How deep an element file may nest"): counted in the text before any parse, so every value of a
+# repeated key counts and the verdict never depends on this Python's recursion limit.
+TOO_DEEP = "not read, too_deep (an object or array in it sits more than 200 levels deep, its top object at 1)"
+
+
+# Copied word for word from schema-dist walk/lint_folder.py (MAX_DEPTH, _too_deep), serial 148.
+MAX_DEPTH = 200
+
+
+def _too_deep(text: str) -> bool:
+    """Whether any object or array in `text` sits past MAX_DEPTH, the top one at 1. One pass
+    over the characters, with no recursion: a bracket inside a string is not counted, and a
+    backslash in a string takes the character after it, so an escaped quote does not end the
+    string."""
+    depth = 0
+    in_string = escaped = False
+    for c in text:
+        if in_string:
+            if escaped:
+                escaped = False
+            elif c == "\\":
+                escaped = True
+            elif c == '"':
+                in_string = False
+        elif c == '"':
+            in_string = True
+        elif c in "[{":
+            depth += 1
+            if depth > MAX_DEPTH:
+                return True
+        elif c in "]}":
+            depth -= 1
+    return False
+
+
+def read_text(path):
+    with open(path, encoding="utf-8-sig", newline="") as fh:
+        return fh.read()
+
 
 def read_json(path):
-    with open(path, encoding="utf-8-sig", newline="") as fh:
-        return json.loads(fh.read())
+    return json.loads(read_text(path))
+
+
+def read_world_json(folder):
+    """world.json, or exit 2 when this reader cannot read it (it does not parse, or it is too
+    deep): a world.json that cannot be read leaves no world to read, and nothing is read."""
+    path = folder / "world.json"
+    try:
+        text = read_text(path)
+        if _too_deep(text):
+            why = TOO_DEEP
+        else:
+            return json.loads(text)
+    except (ValueError, OSError) as e:
+        why = f"does not parse ({e})"
+    print(f"{path}: {why}; the folder cannot be read as a world", file=sys.stderr)
+    sys.exit(2)
 
 
 def folder_files(folder, skipped):
@@ -170,11 +230,15 @@ def load_world(folder, twins=None):
     read skill's loader exactly (testing/test_loader_files.py runs both)."""
     world = {}
     if (folder / "world.json").exists():
-        world = read_json(folder / "world.json")
+        world = read_world_json(folder)
     elements, skipped = {}, []
     for f in folder_files(folder, skipped):
         try:
-            d = read_json(f)
+            text = read_text(f)
+            if _too_deep(text):
+                skipped.append(f"{f.relative_to(folder).as_posix()}: {TOO_DEEP}")
+                continue
+            d = json.loads(text)
         except (ValueError, OSError) as e:
             skipped.append(f"{f.relative_to(folder).as_posix()}: does not parse ({e})")
             continue

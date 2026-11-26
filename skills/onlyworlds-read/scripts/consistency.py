@@ -6,7 +6,10 @@ finding names the file, the field, the two values that disagree, and the other e
 "possible" findings are questions, not verdicts. A finding that involves a proposed element
 (x_review_proposed, the review profile) is "proposal": not yet canon, a question for its keeper,
 never counted as a contradiction. It writes nothing and always exits 0 on a report (2 only
-when the folder cannot be read): a report, not a gate.
+when the folder cannot be read): a report, not a gate. An element file nested more than 200 levels
+deep is not read (too_deep): it is named under "not checked" and checked for nothing, and a link to
+it is a link to an element not in the folder; a world.json that deep, or one that does not parse,
+leaves no world to read (exit 2).
 
 The link fields and date fields come from the skill's own copy of the schema reference
 (../knowledge/schema-reference.md), so the check follows the schema the toolkit ships.
@@ -46,9 +49,61 @@ DEATH_LINE = re.compile(r"\b(death|died)\b", re.I)
 
 # ---------------------------------------------------------------- reading
 
-def read_json(path):
+# A file in which an object or array sits more than MAX_DEPTH levels deep is not read (folder spec,
+# "How deep an element file may nest"): counted in the text before any parse, so every value of a
+# repeated key counts and the verdict never depends on this Python's recursion limit.
+TOO_DEEP = "not read, too_deep (an object or array in it sits more than 200 levels deep, its top object at 1)"
+
+
+# Copied word for word from schema-dist walk/lint_folder.py (MAX_DEPTH, _too_deep), serial 148.
+MAX_DEPTH = 200
+
+
+def _too_deep(text: str) -> bool:
+    """Whether any object or array in `text` sits past MAX_DEPTH, the top one at 1. One pass
+    over the characters, with no recursion: a bracket inside a string is not counted, and a
+    backslash in a string takes the character after it, so an escaped quote does not end the
+    string."""
+    depth = 0
+    in_string = escaped = False
+    for c in text:
+        if in_string:
+            if escaped:
+                escaped = False
+            elif c == "\\":
+                escaped = True
+            elif c == '"':
+                in_string = False
+        elif c == '"':
+            in_string = True
+        elif c in "[{":
+            depth += 1
+            if depth > MAX_DEPTH:
+                return True
+        elif c in "]}":
+            depth -= 1
+    return False
+
+
+def read_text(path):
     with open(path, encoding="utf-8-sig", newline="") as fh:
-        return json.loads(fh.read())
+        return fh.read()
+
+
+def read_world_json(folder):
+    """world.json, or exit 2 when this reader cannot read it (it does not parse, or it is too
+    deep): a world.json that cannot be read leaves no world to read, and nothing is read."""
+    path = folder / "world.json"
+    try:
+        text = read_text(path)
+        if _too_deep(text):
+            why = TOO_DEEP
+        else:
+            return json.loads(text)
+    except (ValueError, OSError) as e:
+        why = f"does not parse ({e})"
+    print(f"{path}: {why}; the folder cannot be read as a world", file=sys.stderr)
+    sys.exit(2)
 
 
 def load_schema(path):
@@ -141,11 +196,15 @@ def folder_files(folder, skipped):
 def load_world(folder):
     world = {}
     if (folder / "world.json").exists():
-        world = read_json(folder / "world.json")
+        world = read_world_json(folder)
     elements, skipped = {}, []
     for f in folder_files(folder, skipped):
         try:
-            d = read_json(f)
+            text = read_text(f)
+            if _too_deep(text):
+                skipped.append(f"{f.relative_to(folder).as_posix()}: {TOO_DEEP}")
+                continue
+            d = json.loads(text)
         except (ValueError, OSError) as e:
             skipped.append(f"{f.relative_to(folder).as_posix()}: does not parse ({e})")
             continue
