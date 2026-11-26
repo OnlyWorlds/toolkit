@@ -75,7 +75,9 @@ harness trial (2026-10-22):
     (19g); a plan the writer refuses leaves the folder empty, also for a lone surrogate, a value
     that is no string, a setup day not written YYYY-MM-DD and a plan in a shape the writer does not
     read (19h); every folder is made before the first file, and a copies root that cannot be made
-    leaves nothing behind (19i);
+    leaves nothing behind (19i); a link list whose plan keys name one element twice names it once,
+    in its first place, in an element row and in the Charter's links (19j; OW_WRITE_WORLD points
+    this one test at another copy of the writer, to show it red on an older one);
 20. a run that stops after its first act takes itself back: for one plan of each pack, every act
     made to fail in turn (before it, half way through its bytes, by an interrupt) and a failure after
     the last file leave the output folder's parent and the copies' parent byte for byte as before,
@@ -1966,6 +1968,37 @@ class SetupWriter(unittest.TestCase):
                 self.assertRegex(r.stdout, r"REFUSED copies [^\n]*: the folder [^\n]* cannot be made")
                 self.assertNotIn("Traceback", r.stdout + r.stderr)
                 self.assertEqual((self.listing(case), self.listing(base)), before, "the run left something")
+
+    def test_19j_a_link_list_names_each_element_once(self):
+        """Folder spec 0.3.24: a writer that builds a list builds it with each element once. The company
+        plan with the Institution `org`'s objects given as tidetable twice, the owner's institutions as
+        org, saltmere, org, and the Charter's adjudicators as keeper-title twice: each list is written
+        with each id once, in its first place."""
+        writer = Path(os.environ.get("OW_WRITE_WORLD") or WRITER)
+        plan = json.loads(read(PLANS / "company.json"))
+        plan["copies"], plan["agents_md"] = "none", False
+        rows = {e["key"]: e for e in plan["elements"]}
+        rows["org"]["links"]["objects"] = ["tidetable", "tidetable"]
+        rows["owner"]["links"]["institutions"] = ["org", "saltmere", "org"]
+        plan["charter"]["links"]["adjudicators"] = ["keeper-title", "keeper-title"]
+        plan_path = OUT / "plans" / "repeated-links.json"
+        plan_path.parent.mkdir(parents=True, exist_ok=True)
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        out = OUT / "repeated-links"
+        r = subprocess.run([sys.executable, str(writer), str(plan_path), str(out)], capture_output=True,
+                           text=True, encoding="utf-8")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        bodies = [json.loads(read(p)) for p in sorted((out / "elements").glob("*/*.json"))]
+        by_name = {b.get("name"): b for b in bodies}
+        id_of = {k: by_name[e.get("fields", {}).get("name", k)]["id"] for k, e in rows.items()}
+        cases = [("org's objects", by_name[rows["org"]["fields"]["name"]]["objects"], [id_of["tidetable"]]),
+                 ("the owner's institutions", by_name[rows["owner"]["fields"]["name"]]["institutions"],
+                  [id_of["org"], id_of["saltmere"]]),
+                 ("the Charter's adjudicators", json.loads(read(out / "elements" / "law" / "charter.json"))["adjudicators"],
+                  [id_of["keeper-title"]])]
+        for label, got, want in cases:
+            with self.subTest(list=label):
+                self.assertEqual(got, want, f"{label}: {got}")
 
 
 class StartLine(unittest.TestCase):

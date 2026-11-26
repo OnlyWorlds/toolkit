@@ -852,7 +852,9 @@ def write_world(argv, state):
                 problems.append(f"{where}.{field}: online, {', '.join(names[k] for k in seated)} gets a "
                                 f"Character from its seat, after setup; link it on its first visit")
                 continue
-            body[field] = [ids[k] for k in keys] if isinstance(target, list) else ids[target]
+            # A multi-link names each element once (folder spec 0.3.24): an id the plan's keys give
+            # twice is written once, in its first place, compared as written.
+            body[field] = list(dict.fromkeys(ids[k] for k in keys)) if isinstance(target, list) else ids[target]
         return body
 
     charter_text = fill_template("charter.md")
