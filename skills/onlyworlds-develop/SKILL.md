@@ -100,7 +100,7 @@ Whatever else it holds, the answer to a request through this skill carries these
 
 ## The pages
 
-The routes on this page need no other document. When the work needs a route or a parameter this page does not name, it is read from the API document before it is called, never from memory: its entry in https://www.onlyworlds.com/api/v2/openapi.json (how: `references/building.md`, Read What Is Served).
+The routes on this page need no other document. When the work needs a route or a parameter this page does not name, it is read from the API document before it is called, never from memory: its entry in https://www.onlyworlds.com/api/v2/openapi.json (how: `references/building.md`, Read What Is Served). An MCP tool, or one of its arguments: the tool's own description says it.
 
 | The work | Open | When |
 |---|---|---|
