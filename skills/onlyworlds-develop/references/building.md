@@ -142,6 +142,6 @@ An element has one address in three spellings: `https://www.onlyworlds.com/w/<wo
 
 ## The answer says
 
-- The OpenAPI document by its URL, and the routes and fields taken from it (the first line; Read What Is Served).
+- For client code, the OpenAPI document by its URL, and the routes and fields taken from it (the first line; Read What Is Served).
 - A version only as read from npm or PyPI this session (Read What Is Served).
 - In client code, no PIN in a build or a `VITE_` variable, and no agent header in a person's app (Step 4).
