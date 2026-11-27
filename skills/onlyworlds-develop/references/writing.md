@@ -62,7 +62,7 @@ Atomic server-side merge on one multi-link field: `add` skips ids already presen
 
 A picture is an element's `image_url`. `POST $B/media/ticket` (a write key and its PIN, no body) answers a single-use `ticket` and its `upload_url`; POST the image's raw bytes there with `Authorization: Bearer <ticket>` (webp, png, jpeg or avif, no SVG, at most the ticket's `max_bytes`), then PATCH the answer's `url` into `image_url`. The SDK's `uploadImage` does both. Each upload counts toward the world's daily limit and the account's image storage. [Images](https://onlyworlds.github.io/docs/development/api/images.html).
 
-At most 25 MB a file and 250 MB a world. The SDK: `listFiles`, `uploadFile`, `fileDownloadLink`, `removeFile`, `worldFiles`.
+A file kept beside an element is at most 25 MB, and a world's files 250 MB in all. The SDK: `listFiles`, `uploadFile`, `fileDownloadLink`, `removeFile`, `worldFiles`.
 
 ## Bulk Upload
 
