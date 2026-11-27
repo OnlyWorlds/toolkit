@@ -4,7 +4,7 @@ A pack's texts (the charter, the skills, the seed) become element bodies when a 
 The host answers a write with `403` and an HTML page titled "Blocked", before the platform sees it,
 when a text in the body has one of a few commands directly after a backtick, a semicolon or a pipe:
 `python -m`, `python -c`, `perl -e`, or `curl` or `wget` with a URL (seen 2026-11-16; develop's
-section The Blocked page says what was tried). A world set up from such a pack could not be
+`references/writing.md`, The Blocked page, says what was tried). A world set up from such a pack could not be
 uploaded as written.
 
 The pattern here is wider than what was seen refused (any flag after `python`, any argument after

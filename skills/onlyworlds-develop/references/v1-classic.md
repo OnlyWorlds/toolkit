@@ -19,4 +19,4 @@ The v1 dialect (`/api/worldapi/…`) keeps working indefinitely. You'll meet it 
 
 **v1 error envelope** is the legacy shape, not Stripe-style: `{"detail": "Unauthorized", "error": {"code": "unauthorized", …}}` for auth, or a list of ninja `value_error` entries for validation. It still reports honestly: an unknown field on v1 now returns `422 "Unknown field 'X'. Check spelling…"`, and a dangling link returns `400 "Invalid FK: {field} — referenced {Type} with id '…' does not exist."` (v1 no longer silently drops unknown fields or nulls dangling links; that old behavior is gone on both dialects.)
 
-**Still true on both dialects:** must use `www.onlyworlds.com` (bare domain redirect behavior differs); header names are exact (`API-Key`, `API-Pin`; `Pin` or `X-Api-Key` fail with `401`, while casing does not matter); read-before-PATCH; PIN rules as in `../SKILL.md`.
+**Still true on both dialects:** must use `www.onlyworlds.com` (bare domain redirect behavior differs); header names are exact (`API-Key`, `API-Pin`; `Pin` or `X-Api-Key` fail with `401`, while casing does not matter); read-before-PATCH; PIN rules as in `writing.md`.

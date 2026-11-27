@@ -189,7 +189,7 @@ Apply only the approved items.
 2. **Edit per the world-folder writer rules**: change only the approved link fields; keep every other field, including `atlas_*`/`shadow_*`/`x_*` values and nulls, value for value; keep keys in their original order. In a folder linked to an account, set a fresh `local_updated_at` on every edited file, or Atlas never sends the edit. A new Relation is a new file: mint a UUID, name the file per the folder rules, and omit `local_updated_at`/`server_updated_at`.
 3. **Read back**: re-load each edited file and confirm every approved link landed and nothing else changed (principles §5).
 
-**API** (develop's Add or Remove Links is the full reference):
+**API** (develop's Add or Remove Links (its `references/writing.md`) is the full reference):
 
 - **Multi-link fields** (`objects`, `characters`, `friends`, …): the links endpoint adds and removes atomically on the server, skips ids already linked, tolerates removing ids that aren't there, and returns `400 invalid_link` if an added target doesn't exist. MCP-connected users: the `edit_links` tool does the same.
 ```bash

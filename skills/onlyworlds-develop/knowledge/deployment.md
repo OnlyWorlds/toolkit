@@ -239,4 +239,4 @@ Scripts and servers are not affected by CORS at all.
 
 ---
 
-*For SDK usage and API operations, see this skill's `SKILL.md`.*
+*For SDK usage and API operations, see this skill's `SKILL.md` and its `references/building.md`.*

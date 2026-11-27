@@ -35,7 +35,7 @@ A world folder on disk (`world.json` + `elements/`) never needs credentials; onl
 | Which tools exist | The tools page, `https://onlyworlds.github.io/docs/tools/` |
 | A visual app to build and browse their world | **Atlas** (`atlas.onlyworlds.com`) |
 | To open an account world to everyone | the world page, **Settings**, **Who can see this world**: **Anyone can read it, with no account** (the API and tools then read it keyless), and **Give it a public page** for a public page at `onlyworlds.com/w/<address>`, with its graph; hidden elements stay hidden. [The public page](https://onlyworlds.github.io/docs/development/api/public.html) |
-| To try the API with no account | the practice world: a shared key and PIN on the docs' [Keys page](https://onlyworlds.github.io/docs/getting-started/keys.html#the-practice-world), reset every night; the develop skill's Credentials |
+| To try the API with no account | the practice world: a shared key and PIN on the docs' [Keys page](https://onlyworlds.github.io/docs/getting-started/keys.html#the-practice-world), reset every night; the develop skill's Credentials, in its `references/writing.md` |
 | To read the schema in their own tool | schema-dist (`github.com/OnlyWorlds/schema-dist`): vendor its walk; the develop skill |
 | To report a bug or ask for a feature | `onlyworlds.com/feedback` |
 
@@ -139,7 +139,7 @@ OW_API_PIN=
 
 4. **Ask the user to fill it in** in their own editor and say when done: the API key from onlyworlds.com (**Worlds** → the world → **Access** → **Keys**, then **Make a key**; it shows once) and the world PIN (Account → Settings → World PIN). Without an account, point them to onlyworlds.com first. For an AI's own seat in a world (theirs or one they are a member of), they press **Make a seat** on its world page (the owner on **Access**, under **Let someone in**, **An AI**, **A seat here**; a member under **Your AI in this world**) and paste the `.env` lines it shows once: `OW_API_PIN` there is the seat's own secret, not their PIN. A lost key is **New key** beside the seat.
 
-What each key shape can do, the PIN's part, the `OW_*` names (the older `ONLYWORLDS_*` ones still work: keep whichever a folder already uses) and the headers every call sends: the develop skill's Credentials.
+What each key shape can do, the PIN's part, the `OW_*` names (the older `ONLYWORLDS_*` ones still work: keep whichever a folder already uses) and the headers every call sends: the develop skill's Credentials (the PIN and the agent header in its `references/writing.md`).
 
 If the user pastes a credential into chat anyway, do not repeat it back; ask them to put it in `.env`.
 

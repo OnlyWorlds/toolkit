@@ -111,7 +111,7 @@ Write the change list in the same row format the update skill uses, one line per
 1. **Resolve names to ids.** Mint a UUID per new element (v7 recommended). Resolve every link name to an id, searching only the link's target type. A name with no match, or more than one, goes back to the user; never guess.
 2. **Write**:
    - **World folder** (the default, no account needed): `world.json` + one file per element, per `knowledge/world-folder.md`. It opens in Atlas; folder mode needs a Chromium browser, and in Firefox or Safari Atlas opens the world as one `.owworld` file (the carry skill makes it).
-   - **Account world**: new elements through develop's Bulk Upload; an existing element is updated by PATCH or the links route, never resent in a batch (Bulk Upload says why).
+   - **Account world**: new elements through develop's Bulk Upload (its `references/writing.md`); an existing element is updated by PATCH or the links route, never resent in a batch (Bulk Upload says why).
    - **Grouped JSON with names** is only a review form; it is not uploadable as is.
 3. **Read back** what landed and compare it with the approved change list, or for a new folder with the extraction file (principles §5). A world folder's read-back starts with schema-dist's folder check through the Python package, `python -m onlyworlds.lint <folder>` after `pip install onlyworlds` (how, and the clone when pip is not there: `knowledge/world-folder.md`, the check paragraph), never a checker found on the disk. It catches invented fields, unresolved or mistyped links and wrong value shapes in one pass, and its last line is the count it checked.
 
@@ -150,4 +150,4 @@ Whatever else it holds, the answer to a request through this skill carries these
 
 - `knowledge/common-errors.md`: invented fields and other traps
 - `knowledge/schema-reference.md` · `knowledge/element-types.md` · `knowledge/decision-trees.md` · `knowledge/world-folder.md` · `knowledge/atlas-conventions.md` (when the user will write or keep knowledge entries in Atlas; opening a folder in Atlas does not need it)
-- The update skill (the after-each-session loop) · the model skill (systems the text only implies) · read's links report (enriching links in an existing world) · the carry skill (another app's export, an `.owworld`) · develop's Bulk Upload (sending a new world up)
+- The update skill (the after-each-session loop) · the model skill (systems the text only implies) · read's links report (enriching links in an existing world) · the carry skill (another app's export, an `.owworld`) · develop's Bulk Upload (its `references/writing.md`) (sending a new world up)

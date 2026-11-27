@@ -50,7 +50,7 @@ A reconciled import against an existing world, one batch at a time. Each step po
 4. **Review.** Present the list with counts, current vs proposed for every update, both versions for every conflict, and the judgment calls (story arcs, elements that could be modeled two ways, status changes that ripple). Write nothing until the user rules (principles §2).
 5. **Apply** only the approved rows, as the single writer.
    - Folder: write new files and edit existing ones per world-folder.md writer rules; keep unknown and extension fields.
-   - API: creates go in one `/api/v2/bulk` request with an `Idempotency-Key` (the develop skill, Bulk Upload). Existing elements change only through PATCH (read first, merge) or the links route; a `/bulk` item with an existing id replaces the whole element.
+   - API: creates go in one `/api/v2/bulk` request with an `Idempotency-Key` (the develop skill's `references/writing.md`, Bulk Upload). Existing elements change only through PATCH (read first, merge) or the links route; a `/bulk` item with an existing id replaces the whole element.
    - Link fields carry ids, never names: resolve each name to an existing id or to the id minted for its create row (import Step 7).
 6. **Verify.** Read back what landed and compare it with the approved rows (principles §5).
 7. **Finish.** Folder: commit, with the change list as the message, unless it is linked to an account (world-folder.md, keeping history). API: update `.ow/world-cache.json` and write a short batch summary to `.ow/last-parse.md`. Report counts, and what was not done.

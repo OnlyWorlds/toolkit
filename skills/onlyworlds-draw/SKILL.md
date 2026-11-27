@@ -74,7 +74,7 @@ Every page says what it is true as of and which folder it was read from, by the 
 
 ### 7. Never write to the world
 
-Output goes in `draw/` beside the world folder, never into `elements/`, and no element file is touched. To change what the picture shows, change the world: the update skill for a finished session, the import skill for new material, develop's Bulk Upload for an account world.
+Output goes in `draw/` beside the world folder, never into `elements/`, and no element file is touched. To change what the picture shows, change the world: the update skill for a finished session, the import skill for new material, develop's Bulk Upload (its `references/writing.md`) for an account world.
 
 ## Colour
 

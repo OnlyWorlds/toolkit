@@ -82,7 +82,7 @@ Every field and link in the table is one you found in that type's own section of
 - **An ecosystem, a company, a software project**: `profiles/spine.md`, the spine profile. Tools and services are Objects, the contracts they speak Constructs through `Object.technology`, where each thing lives a Location, who keeps it a Title with supertype `Seat`, its policies Laws, and what no field holds goes in its `x_spine_` keys.
 - **Fiction**: `example/hyperion/`, a small world folder (35 elements over 19 types). Steinway Piano is the Construct for the kind of the Consul's Steinway, Consul of the Hegemony a Title with its `issuer` and `holders`. A ship is an Object (it is made, owned, sunk) and the place aboard it is a Location linked to it; Hyperion as published keeps the ship as the Object the Steinway's `parent_object` names (the Ebony Spaceship).
 
-To create the elements: emit JSON or a world folder as in the import skill's Step 7 (`knowledge/world-folder.md` for the folder); an account world takes them through the develop skill's Bulk Upload.
+To create the elements: emit JSON or a world folder as in the import skill's Step 7 (`knowledge/world-folder.md` for the folder); an account world takes them through the develop skill's Bulk Upload (its `references/writing.md`).
 
 ### Step 4: Address Constraints
 
