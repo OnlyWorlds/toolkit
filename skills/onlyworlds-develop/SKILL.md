@@ -70,6 +70,7 @@ A file (pdf; txt, md, json, csv, yaml, toml; an image, png, jpg, webp, avif; a w
 ```
 
 - Store `cursor` (opaque) and pass it back as **`?since={cursor}`** for only newer changes. `?cursor=` is a `422` here: list pagination is a different mechanism.
+- A first read with no `since` that finds nothing answers the feed's head as its `cursor`, not `0`: keep that one.
 - Pages default to 500 ops (`?limit=`, max 1000). Loop until `has_more` is `false`. Walking from no `since` is a full export.
 - `?head=true` returns only the tip as `cursor` (no ops, cheap): follow from now, or check whether you are behind.
 - `head` on every page is the world's tip. A stored cursor ahead of `head` means the world was restored from backup: re-sync from zero.
