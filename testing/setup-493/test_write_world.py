@@ -118,7 +118,9 @@ harness trial (2026-10-22):
     prints the run's summary worded as what it would write and the charter the run then writes but for
     its ow://object addresses (24a), in UTF-8 through any pipe (24b), and a plan the run refuses is
     refused in the same words (24c); a command line the writer does not know exits 2 before the plan is
-    read, writing nothing (24d).
+    read, writing nothing (24d); the team packs' Charter and report skill say the keeper or the keeper's
+    AI does the changes, and the set-up skill seats the keeper's own AI on a co-builder's seat by default
+    and takes step 3's filled text from `--check` (24e).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -2811,7 +2813,9 @@ class TakenBack(unittest.TestCase):
 
 class Check(unittest.TestCase):
     """Test 24: `--check` fills and checks a plan as a run does and writes nothing (24a to 24c); a command
-    line the writer does not know stops it, exit 2, before the plan is read (24d). OW_WRITE_WORLD points the class at
+    line the writer does not know stops it, exit 2, before the plan is read (24d); the team packs'
+    sentences on the keeper's AI hold when the keeper's own AI has a contributor's seat, and the set-up
+    skill says how the filled text is shown before the yes (24e). OW_WRITE_WORLD points the class at
     another copy of the writer (and its packs and SKILL.md beside it), to show it red on an older one."""
 
     WRITER = Path(os.environ.get("OW_WRITE_WORLD") or WRITER)
@@ -2969,6 +2973,32 @@ class Check(unittest.TestCase):
                 self.assertIn("write_world.py PLAN.json OUT_FOLDER --check", err)
                 self.assertEqual(out, "")
                 self.assertEqual(contents(root.parent), before, "a usage slip wrote something")
+
+    def test_24e_the_keeper_or_the_keepers_ai(self):
+        """The team packs' Charter says who the keeper's AI is by its seat, and that the keeper or the
+        keeper's AI does the changes, never "their AI"; the report skill tells the human the same; the
+        set-up skill's question 4 seats the keeper's own AI on a co-builder's seat, and step 3 takes the
+        filled text from `--check` on the plan and the folder the run will use."""
+        packs = self.SKILL_DIR / "packs"
+        for pack in TEAM_PACKS:
+            with self.subTest(pack=pack):
+                charter = read(packs / pack / "charter.md")
+                self.assertEqual(charter.count("Only their own AI on a co-builder's seat is the keeper's AI."), 1)
+                self.assertEqual(charter.count("The keeper or the keeper's AI does, from the reports, settled."), 1)
+                self.assertNotIn("The keeper's AI is the AI its holder answers for", charter)
+                rule = next(ln for ln in charter.split("\n") if "does, from the reports, settled." in ln)
+                self.assertNotIn("their AI", rule)
+                self.assertTrue("every Charter set up with toolkit 5.9.0 or later and before 5.12.4 has one, in one "
+                                "of two wordings" in read(packs / pack / "PACK.md"), f"{pack}/PACK.md: the older worlds' line")
+                report = read(packs / pack / "report.md")
+                self.assertIn("that the keeper or the keeper's AI completes it", report)
+                self.assertNotIn("that the keeper's AI completes it", report)
+        setup = read(self.SKILL_DIR / "SKILL.md")
+        q4 = next(ln for ln in setup.split("\n") if ln.startswith("| 4 |"))
+        self.assertIn("co-builder", q4)
+        step3 = next(ln for ln in setup.split("\n") if ln.startswith("3. **Show the plan"))
+        self.assertIn("python scripts/write_world.py PLAN OUT --check", step3)
+
 
 if __name__ == "__main__":
     print(f"output: {OUT}")
