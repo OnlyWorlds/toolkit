@@ -1056,7 +1056,7 @@ def write_world(argv, state):
     # itself, a folder, a link) is refused, so the run never writes over what it did not make.
     if bulk is not None and os.path.lexists(bulk):
         problems.append(f"{os.path.abspath(bulk)}: the --bulk path already exists; the upload's body goes to a new "
-                        f"file: give a path where nothing is, or delete what is there first")
+                        f"file: give a path where nothing is")
 
     if not problems:  # the net: nothing this run would write still holds a `{{`
         outputs = dict(files)

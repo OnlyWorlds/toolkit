@@ -2423,6 +2423,8 @@ class TakenBack(unittest.TestCase):
                 out = r.stdout.decode("utf-8")
                 self.assertEqual(r.returncode, 1, out + r.stderr.decode("utf-8", "backslashreplace"))
                 self.assertIn(f"REFUSED {os.path.abspath(there)}: the --bulk path already exists", out)
+                line = next(ln for ln in out.split("\n") if "the --bulk path already exists" in ln)
+                self.assertNotIn("delete", line)
                 self.assertIn("nothing written; 1 problem(s)", out)
                 self.assertEqual(r.stderr, b"")
                 self.assertFalse(Path(argv[1]).exists(), "OUT was made")
