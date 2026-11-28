@@ -3011,6 +3011,18 @@ class Check(unittest.TestCase):
         self.assertIn("Never change the pack's sentences at set-up, and never edit what the writer wrote, before the "
                       "upload or after it", step3)
 
+    def test_24f_the_bulk_file_is_an_absolute_path(self):
+        """The set-up skill's step 4 and its step 6.4, each read alone, say that `--bulk`'s file is an
+        absolute path outside the skill's folder and outside OUT: a relative one, from a session standing
+        in the skill's folder, writes the whole world's upload body into the plugin."""
+        setup = read(self.SKILL_DIR / "SKILL.md").split("\n")
+        step4 = next(ln for ln in setup if ln.startswith("4. **Write the folder**"))
+        step64 = next(ln for ln in setup if ln.startswith("   4. The upload's body is"))
+        for name, step in (("step 4", step4), ("step 6.4", step64)):
+            with self.subTest(step=name):
+                self.assertRegex(step, r"`<file>` is an absolute path( too)?, outside this skill's folder and "
+                                       r"outside `OUT`")
+
 
 if __name__ == "__main__":
     print(f"output: {OUT}")
