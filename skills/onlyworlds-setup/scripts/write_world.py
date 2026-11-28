@@ -7,7 +7,7 @@ With --check it does everything a run does before its first write, and writes no
 the problems a run would refuse on (exit 1), or what a run would write, the run's summary worded so
 (for a plan with "online", how many items the upload's body would hold), then the filled charter
 whole, as the run would write it but for the ow://object addresses, which each run makes anew. Its
-output is UTF-8. A command line it does not know (another flag, --bulk without a value, --check
+output, as a run's, is UTF-8 with LF line ends. A command line it does not know (another flag, --bulk without a value, --check
 beside --bulk) stops it with the lines above, exit 2, before the plan is read.
 
 The model fills the plan from the interview; this script does the counting: it mints the ids,
@@ -643,11 +643,9 @@ def write_world(argv, state):
     plan_arg, out_arg, bulk_arg, check = known
     bulk = Path(bulk_arg) if bulk_arg else None
     args = [plan_arg, out_arg]
-    if hasattr(sys.stdout, "reconfigure"):  # a name the console cannot show prints escaped, never a crash
-        if check:  # the filled charter as the file holds it: UTF-8 and its own line ends, whatever the console
-            sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace", newline="\n")
-        else:
-            sys.stdout.reconfigure(errors="backslashreplace")
+    if hasattr(sys.stdout, "reconfigure"):  # the check and the run alike: UTF-8 and LF, whatever the console,
+        # so a name outside the code page reads back as written through a pipe; never a crash
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace", newline="\n")
     plan = json.loads(Path(args[0]).read_text(encoding="utf-8"))
     out = Path(args[1])
     problems = []

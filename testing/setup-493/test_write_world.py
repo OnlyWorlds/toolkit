@@ -2919,6 +2919,30 @@ class Check(unittest.TestCase):
         self.assertIn("Łucja (Agent, co-builder, Zoë Ångström's AI)", charter)
         self.assertNotIn("\\u0141", out)
 
+    def test_24g_the_run_prints_utf8_through_any_pipe(self):
+        """The run takes the check's road: through a pipe whose encoding is cp1252, an online run whose
+        AI is named Łucja, into a project whose folder is named for Zoë, prints both names as written,
+        UTF-8 with LF line ends."""
+        plan = json.loads(read(PLANS / "company.json"))
+        rows = {e["key"]: e for e in plan["elements"]}
+        rows["ai-kestrel"]["fields"]["name"] = "Łucja"
+        root = OUT / "check" / "utf8-run" / "Zoë" / "project"
+        plan, _ = variant(plan, "online", root)
+        plan_path = root.parent / "plan.json"
+        root.mkdir(parents=True, exist_ok=True)
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        world, bulk = root / "world", root.parent / "bulk.json"
+        env = dict(os.environ, PYTHONIOENCODING="cp1252", PYTHONUTF8="0")
+        r = subprocess.run([sys.executable, str(self.WRITER), str(plan_path), str(world), "--bulk", str(bulk)],
+                           capture_output=True, env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertNotIn(b"\r\n", r.stdout)
+        ran = r.stdout.decode("utf-8")  # a byte of another code page fails here
+        self.assertIn("seat: Łucja's Character comes from its seat", ran)
+        self.assertIn(f"wrote {world} (online)", ran)
+        self.assertNotIn("\\u0141", ran)
+        self.assertNotIn("\\xeb", ran)
+
     def test_24c_a_check_refuses_as_the_run_refuses(self):
         """A plan with problems (a `{{` left after filling, an AI seat above its human's), a project
         that already holds the copies of an earlier run, and a copies root where a file stands: the check
