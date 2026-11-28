@@ -3088,7 +3088,9 @@ class Check(unittest.TestCase):
         self.assertNotIn("anything online", "\n".join(setup))
         self.assertIn("6.1 and 6.2 before step 3 shows the plan", "\n".join(setup))
         for words in ("where the plan file is", "written again from that plan (6.2)",
-                      "the user's to keep or delete", "a plan in a temporary folder is said to be there",
+                      "the user's to keep or delete", "A plan in a temporary folder is said to be there",
+                      "for an online world it also says where the upload's body is, and that once sent it is the "
+                      "user's to delete",
                       "nothing is moved or deleted unasked"):
             self.assertIn(words, step8)
 
