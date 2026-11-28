@@ -81,9 +81,9 @@ harness trial (2026-10-22):
 20. a run that stops after its first act takes itself back: for one plan of each pack, every act
     made to fail in turn (before it, half way through its bytes, by an interrupt) and a failure after
     the last file leave the output folder's parent and the copies' parent byte for byte as before,
-    an appended AGENTS.md and CLAUDE.md and a written-over bulk file among them (20a); a read-only
-    AGENTS.md or CLAUDE.md (20b) and a --bulk path that is a folder (20c) refuse, nothing left; the
-    bulk file written over gets its bytes back (20d); an undo that cannot remove a file says so,
+    an appended AGENTS.md and CLAUDE.md and a new bulk file among them (20a); a read-only
+    AGENTS.md or CLAUDE.md (20b) and a --bulk path that is a folder (20c) refuse, nothing left; a
+    --bulk path that already exists, a file or the plan itself, refuses before any act (20d); an undo that cannot remove a file says so,
     each path named (20e); an error of the writer's own before its first act blames nobody (20f); an
     interrupt at any step of the undo still ends the run, and every path left is named (20g); an error
     of any kind in the undo is named and the undo goes on (20h); the summary is one write, the run's
@@ -2291,7 +2291,7 @@ class Fault:
 class TakenBack(unittest.TestCase):
     """A run that stops on an error, or an interrupt, after its first act leaves every folder it was
     given as it was, byte for byte: the folders and files it made removed, a line it appended cut
-    off, a file it wrote over given its bytes back; an undo that cannot put a path back says so."""
+    off; an undo that cannot put a path back says so."""
 
     def writer(self, tag):
         import importlib.util
@@ -2301,10 +2301,10 @@ class TakenBack(unittest.TestCase):
         return ww
 
     def project(self, pack, name, placement="folder"):
-        """A project holding the user's AGENTS.md and CLAUDE.md, and an older bulk file the run writes
-        over; the world written into a new folder in it, the copies at its root (folder and online). In
-        the repository placement the project IS the world folder, new and empty, so the user's files are
-        none and the bulk file waits beside it. (argv, the output folder's parent, the copies' parent)."""
+        """A project holding the user's AGENTS.md and CLAUDE.md; the world written into a new folder in
+        it, the copies at its root (folder and online), and the bulk file a new one beside them. In the
+        repository placement the project IS the world folder, new and empty, so the user's files are
+        none and the bulk file goes beside it. (argv, the output folder's parent, the copies' parent)."""
         case = OUT / name
         proj = case / "proj"
         case.mkdir(parents=True, exist_ok=True)
@@ -2313,7 +2313,6 @@ class TakenBack(unittest.TestCase):
             proj.mkdir(exist_ok=True)
             (proj / "AGENTS.md").write_bytes(b"# House rules\n\nKeep it short.")  # no line end: one is added
             (proj / "CLAUDE.md").write_bytes(b"# Claude\r\n\r\nRead AGENTS.md.\r\n")
-        bulk.write_bytes(b'{"items": []}\n')
         plan, world = variant(json.loads(read(PLANS / f"{pack}.json")), placement, proj)
         plan["agents_md"] = True
         plan_path = case / "plan.json"
@@ -2329,12 +2328,12 @@ class TakenBack(unittest.TestCase):
 
     def test_20a_any_act_that_fails_is_taken_back(self):
         """For one plan of each pack, in a project with an AGENTS.md and a CLAUDE.md the run appends to
-        and a bulk file it writes over: for every k from the first act to the last, the k-th act fails
+        and a bulk file it makes new: for every k from the first act to the last, the k-th act fails
         (before it, half way through its bytes, or by an interrupt), and once after the last file (the
         summary's one write fails); after each, the two listings with every file's bytes are as before,
         and the exit is 1, or the interrupt comes through. The folder placement for every pack; the
         repository and online placements for the company plan: their acts are of the same kinds (a
-        folder made, a file made new, appended to or written over) in other places and numbers, and
+        folder made, a file made new or appended to) in other places and numbers, and
         each is run here, not argued."""
         ww = self.writer("20a")
         runs, counts = 0, []
@@ -2405,17 +2404,31 @@ class TakenBack(unittest.TestCase):
         self.assertNotIn("Traceback", out)
         self.assertEqual(contents(proj, case), before, "the run left something")
 
-    def test_20d_a_file_written_over_gets_its_bytes_back(self):
-        """The one file the writer writes over when it is there, the --bulk file: a failure after it
-        was written (the summary's one write fails) gives it its bytes before."""
-        ww = self.writer("20d")
-        argv, proj, case = self.project("company", "undo-over")
-        old = (proj / "bulk.json").read_bytes()
-        before = contents(proj, case)
-        code, _ = self.run_in(ww, argv, ClosedOut(0))
-        self.assertEqual(code, 1)
-        self.assertEqual((proj / "bulk.json").read_bytes(), old)
-        self.assertEqual(contents(proj, case), before, "the run left something")
+    def test_20d_a_bulk_path_that_already_exists(self):
+        """--bulk names a file already there (an older upload body, or the plan itself) or a folder:
+        the run writes nothing anywhere, OUT never made, and refuses as a plan problem refuses, on the
+        output, the path named and counted; the file's bytes are as they were."""
+        for tag in ("file", "plan", "folder"):
+            with self.subTest(case=tag):
+                argv, proj, case = self.project("company", f"undo-exists-{tag}", "online")
+                there = {"file": proj / "bulk.json", "plan": Path(argv[0]), "folder": proj / "bulk-folder"}[tag]
+                if tag == "file":
+                    there.write_bytes(b'{"items": []}\n')
+                if tag == "folder":
+                    there.mkdir()
+                argv[-1] = str(there)
+                old = there.read_bytes() if there.is_file() else None
+                before = contents(proj, case)
+                r = subprocess.run([sys.executable, str(WRITER), *argv], capture_output=True)
+                out = r.stdout.decode("utf-8")
+                self.assertEqual(r.returncode, 1, out + r.stderr.decode("utf-8", "backslashreplace"))
+                self.assertIn(f"REFUSED {os.path.abspath(there)}: the --bulk path already exists", out)
+                self.assertIn("nothing written; 1 problem(s)", out)
+                self.assertEqual(r.stderr, b"")
+                self.assertFalse(Path(argv[1]).exists(), "OUT was made")
+                self.assertEqual(contents(proj, case), before, "the run left something")
+                if old is not None:
+                    self.assertEqual(there.read_bytes(), old)
 
     def test_20e_an_undo_that_cannot_put_a_path_back_says_so(self):
         """A file the run made is held open by another (Windows; elsewhere its folder is made read-only)
@@ -3037,7 +3050,8 @@ class Check(unittest.TestCase):
 
     def test_24f_the_bulk_file_is_an_absolute_path(self):
         """The set-up skill's step 4 and its step 6.4, each read alone, say that `--bulk`'s file is an
-        absolute path outside the skill's folder and outside OUT: a relative one, from a session standing
+        absolute path outside the skill's folder and outside OUT, and a new file (the writer refuses one
+        that exists, 20d): a relative one, from a session standing
         in the skill's folder, writes the whole world's upload body into the plugin."""
         setup = read(self.SKILL_DIR / "SKILL.md").split("\n")
         step4 = next(ln for ln in setup if ln.startswith("4. **Write the folder**"))
@@ -3045,7 +3059,8 @@ class Check(unittest.TestCase):
         for name, step in (("step 4", step4), ("step 6.4", step64)):
             with self.subTest(step=name):
                 self.assertRegex(step, r"`<file>` is an absolute path( too)?, outside this skill's folder and "
-                                       r"outside `OUT`")
+                                       r"outside `OUT`, and a new file: the writer refuses a path where anything "
+                                       r"already is")
 
     def test_24h_the_yes_guards_the_world_and_the_plan_is_the_users(self):
         """The set-up skill's yes guards the world, not the session's working files: step 3 and the

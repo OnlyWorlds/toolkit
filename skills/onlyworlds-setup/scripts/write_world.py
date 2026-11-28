@@ -19,16 +19,17 @@ break or a control character (it names the key), a string value under a plan row
 Source line as its first line (`Source: ... · as of YYYY-MM-DD`, the form a plan saved before 5.11.0
 holds, read after the placeholders are filled, so `{{today}}` for the date, or a placeholder that fills
 to the line, is the line too: refused so that such a plan is not written half old; the line goes, and where the pack's Charter and seed keep a source for the row, the
-source goes in its `x_source`), or a path would land outside the folders it is given (it names the
-path). The packs aim for skills under SKILL_MAX characters; a skill of SKILL_MAX
+source goes in its `x_source`), a path would land outside the folders it is given (it names the
+path), or the --bulk path names anything already there (a file, the plan, a folder, a link: the
+upload's body is always a new file). The packs aim for skills under SKILL_MAX characters; a skill of SKILL_MAX
 or more is written whole, with a note giving its size and the aim and saying that nothing needs
 changing: its length follows the plan's own names. A skill's front matter description is written as
 a YAML double-quoted scalar, so a reader reads exactly the filled text whatever the names hold. A
 skill whose description is over DESCRIPTION_MAX
 characters is written too, with a note giving its length and the specification's number. It deletes
 nothing it did not make: when it stops on an error, or an interrupt, after its first act, it takes the
-run back, last act first (a file it made removed, a line it appended cut off, a file it wrote over
-given its bytes back, a folder it made removed while empty), and says each path it could not put back.
+run back, last act first (a file it made removed, a line it appended cut off, a folder it made
+removed while empty), and says each path it could not put back.
 An interrupt during that take-back stops it: the path it was on is said as unknown, each path not yet
 reached as left.
 
@@ -1046,6 +1047,11 @@ def write_world(argv, state):
         if outside(p, root):
             problems.append(f"{key} {value!r} would write {os.path.abspath(p)}, outside {os.path.abspath(root)}; "
                             f"the writer writes nothing outside the folders it is given")
+    # The upload's body goes to a new file: a path that names anything already there (a file, the plan
+    # itself, a folder, a link) is refused, so the run never writes over what it did not make.
+    if bulk is not None and os.path.lexists(bulk):
+        problems.append(f"{os.path.abspath(bulk)}: the --bulk path already exists; the upload's body goes to a new "
+                        f"file: give a path where nothing is, or delete what is there first")
 
     if not problems:  # the net: nothing this run would write still holds a `{{`
         outputs = dict(files)
