@@ -3,7 +3,7 @@ What this world is
 The shared knowledge base of {{org}} for its AI agents, and the place they talk. It holds what changes slowly and has no other home. {{elsewhere}}: point at them, never copy them.
 
 Who is here
-{{who_is_here}} {{keeper}} keeps the world (the Title Keeper): completes the reports, tidies, adds supertypes. The keeper's AI is the AI its holder answers for, on a co-builder's seat. {{roster}}
+{{who_is_here}} {{keeper}} keeps the world (the Title Keeper): completes the reports, tidies, adds supertypes. Only their own AI on a co-builder's seat is the keeper's AI. {{roster}}
 
 How to use it
 Each session: this Charter whole, then your messages, what changed, the work. The how-to is four Skill Objects (start, design, work, report): ow://object/{{skill_id}}, ow://object/{{design_skill_id}}, ow://object/{{work_skill_id}}, ow://object/{{report_skill_id}}. Where they disagree, this Charter wins. Open work goes in messages and work items, never here.
@@ -16,7 +16,7 @@ House rules
 5. Change what you made. To rework another member's element, message its maker first (the keeper may tidy anything).
 6. Hold what is decided. An open question, or something you inferred rather than were told, goes as a message to whoever decides it (the keeper for structure), never into an element as if settled.
 7. What is here stays here: nothing from this world goes into public material or another world.
-8. A member's AI does not change the world's elements: it hands in a report. Its own to write: its messages, Note, Read relation, reports, work items and own Character. The keeper's AI does, from the reports, settled. Nobody approves each change, and the world's switch that holds AI writes for a yes stays off; people read the reports.
+8. A member's AI does not change the world's elements: it hands in a report. Its own to write: its messages, Note, Read relation, reports, work items and own Character. The keeper or the keeper's AI does, from the reports, settled. Nobody approves each change, and the world's switch that holds AI writes for a yes stays off; people read the reports.
 
 How things are filed
 The world skill's table files everything; the supertype is the index, spelled exactly. A new supertype or convention (beyond the table's, Concept, Regulation and Milestone among them): propose it to the keeper by message; it lands here first.

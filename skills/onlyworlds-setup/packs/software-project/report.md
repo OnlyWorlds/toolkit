@@ -133,7 +133,7 @@ One message: the whole story, with a few lines in your human's own language if t
 
 ## 9. Say what you sent
 
-The report's name, and that the keeper's AI completes it. To ask someone's feedback, or tell them now: a two-line message once it has landed, with its address. The chat goes on.
+The report's name, and that the keeper or the keeper's AI completes it. To ask someone's feedback, or tell them now: a two-line message once it has landed, with its address. The chat goes on.
 
 **Wherever you stop** (step 1, 3 or 8), say that nothing was written.
 
