@@ -1,6 +1,14 @@
 """Write a new world folder from a starter pack and a filled plan (the onlyworlds-setup skill).
 
     python write_world.py PLAN.json OUT_FOLDER [--bulk BULK.json]
+    python write_world.py PLAN.json OUT_FOLDER --check
+
+With --check it does everything a run does before its first write, and writes nothing: it prints
+the problems a run would refuse on (exit 1), or what a run would write, the run's summary worded so
+(for a plan with "online", how many items the upload's body would hold), then the filled charter
+whole, as the run would write it but for the ow://object addresses, which each run makes anew. Its
+output is UTF-8. A command line it does not know (another flag, --bulk without a value, --check
+beside --bulk) stops it with the lines above, exit 2, before the plan is read.
 
 The model fills the plan from the interview; this script does the counting: it mints the ids,
 fills every placeholder, writes each file by the folder format's writer rules, checks the sizes,
@@ -599,14 +607,47 @@ def main(argv):
         return 1
 
 
+USAGE_EXIT = 2
+
+
+def command_line(argv):
+    """(plan, out, bulk, check) from the command line, or None for one the writer does not know: a flag
+    other than --bulk and --check, either given twice, --bulk with no value or a value that begins with
+    `--`, --check beside --bulk, or not exactly two other arguments."""
+    rest, bulk, check, i = [], None, False, 0
+    while i < len(argv):
+        a = argv[i]
+        if a == "--bulk":
+            if bulk is not None or i + 1 >= len(argv) or not argv[i + 1] or argv[i + 1].startswith("--"):
+                return None
+            bulk, i = argv[i + 1], i + 2
+            continue
+        if a == "--check" and not check:
+            check = True
+        elif a.startswith("--"):
+            return None
+        else:
+            rest.append(a)
+        i += 1
+    if len(rest) != 2 or (check and bulk is not None):
+        return None
+    return rest[0], rest[1], bulk, check
+
+
 def write_world(argv, state):
-    bulk_arg = argv[argv.index("--bulk") + 1] if "--bulk" in argv and argv.index("--bulk") + 1 < len(argv) else None
+    known = command_line(argv)
+    if known is None:  # before anything is read: a mistyped flag never runs as a real write
+        if sys.stderr is not None:
+            sys.stderr.write(__doc__.split("\n\n")[1] + "\n")
+        return USAGE_EXIT
+    plan_arg, out_arg, bulk_arg, check = known
     bulk = Path(bulk_arg) if bulk_arg else None
-    args = [a for i, a in enumerate(argv) if not a.startswith("--") and not (bulk_arg and i == argv.index("--bulk") + 1)]
-    if len(args) != 2:
-        sys.exit(__doc__.split("\n\n")[1])
+    args = [plan_arg, out_arg]
     if hasattr(sys.stdout, "reconfigure"):  # a name the console cannot show prints escaped, never a crash
-        sys.stdout.reconfigure(errors="backslashreplace")
+        if check:  # the filled charter as the file holds it: UTF-8 and its own line ends, whatever the console
+            sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace", newline="\n")
+        else:
+            sys.stdout.reconfigure(errors="backslashreplace")
     plan = json.loads(Path(args[0]).read_text(encoding="utf-8"))
     out = Path(args[1])
     problems = []
@@ -878,7 +919,7 @@ def write_world(argv, state):
         text = "\n".join(lines) + "\n"
         if len(text) >= SKILL_MAX:
             over.append(f"note: the {label} is {len(text)} characters, and the packs aim for under "
-                        f"{SKILL_MAX}; it is written whole, and nothing needs changing")
+                        f"{SKILL_MAX}; it {'would be' if check else 'is'} written whole, and nothing needs changing")
         if description is not None and len(description) > DESCRIPTION_MAX:
             over.append(f"note: the {label}'s description is {len(description)} characters, and the Agent "
                         f"Skills specification gives {DESCRIPTION_MAX}")
@@ -981,7 +1022,8 @@ def write_world(argv, state):
             line_files.append(agents_md)
             if claude_md_reaches(copy_root):  # then Claude Code never reads the AGENTS.md
                 if agents_md.exists() and claude_md.exists() and os.path.samefile(agents_md, claude_md):
-                    line_one = f"{claude_md}: the same file as {agents_md.name}, so the line goes in once"
+                    line_one = (f"{claude_md}: the same file as {agents_md.name}, so the line "
+                                f"{'would go' if check else 'goes'} in once")
                 else:
                     line_files.append(claude_md)
     files[".gitattributes"] = GITATTRIBUTES  # every pack, every placement: one place
@@ -1018,7 +1060,7 @@ def write_world(argv, state):
                     problems.append(f"{rel}, line {n}: {ln[ln.index('{{'):][:40]!r} is not filled")
 
     # Every file's bytes are made, and encoded, before the first one is written.
-    writes, line_done = [], []  # (path, bytes, append)
+    writes, line_done, items = [], [], None  # (path, bytes, append)
     if not problems:
         writes = [(out / rel, text, False) for rel, text in files.items()]
         writes += [(p, t, False) for p, t in copy_paths]
@@ -1027,7 +1069,7 @@ def write_world(argv, state):
         for p in line_files:  # the user's own file: never overwritten, the line appended once
             if not p.exists():
                 writes.append((p, line + "\n", False))
-                line_done.append(f"{p}: written")
+                line_done.append(f"{p}: {'would be ' if check else ''}written")
                 continue
             try:
                 with open(p, encoding="utf-8", newline="") as fh:
@@ -1045,13 +1087,14 @@ def write_world(argv, state):
             nl = "\r\n" if "\r\n" in old else "\n"
             writes.append((p, ("" if not old or old.endswith("\n") else nl) + line + nl, True))
             others = sorted({m.group(1).lower() for m in START_ID.finditer(old)}) if by_id else []
-            line_done.append(f"{p}: the line appended" + (f"; it also holds a start line for another world, "
-                                                          f"{', '.join(others)}" if others else ""))
+            line_done.append(f"{p}: the line {'would be ' if check else ''}appended"
+                             + (f"; it also holds a start line for another world, {', '.join(others)}" if others else ""))
         if line_one:
             line_done.append(line_one)
-        if bulk:
+        if bulk or (check and online):  # the upload's body: the folder's elements, as written
             items = [{"type": rel.split("/")[1], "element": json.loads(text)}
                      for rel, text in files.items() if rel.startswith("elements/")]
+        if bulk:
             writes.append((bulk, json.dumps({"items": items}, ensure_ascii=True, indent=1) + "\n", False))
         encoded = []
         for p, text, append in writes:
@@ -1067,6 +1110,74 @@ def write_world(argv, state):
         print(f"nothing written; {len(problems)} problem(s)", file=sys.stdout or sys.stderr)
         return 1
 
+    def folders_of():
+        """Each folder the run writes into -> the plan key and value that put it there."""
+        owner_ = {}
+        for p, _, _ in writes:
+            key = (("--bulk", str(bulk)) if bulk is not None and p == bulk else
+                   ("OUT_FOLDER", str(out)) if not outside(p, out) else ("copies", copies))
+            owner_.setdefault(Path(os.path.abspath(p.parent)), key)
+        return owner_
+
+    def summary_of():
+        """The run's summary, composed whole before the first file; with --check, as what a run would write."""
+        summary = []
+        if items is not None and len(items) > 1000:
+            summary.append(f"bulk: {len(items)} items, over 1000 a request: split it before sending")
+        n = sum(1 for r in files if r.startswith("elements/"))
+        summary.append(f"{'would write' if check else 'wrote'} {out} ({placement}): world.json and {n} elements "
+                       f"({', '.join(f'{t} {c}' for t, c in sorted(counts.items()))})")
+
+        def sized(n):  # two facts and no comparison, true at any size: the skill's length and the aim
+            return f"{n} characters, the packs aim for under {SKILL_MAX}"
+        summary.append(f"charter {len(charter_text)} of under {CHARTER_MAX} characters; "
+                       f"world skill {sized(len(skill_text))}; skill name {skill_name}")
+        for kind, _, _ in extras:
+            summary.append(f"{kind} skill {sized(len(extra_texts[kind][0]))}; skill name {prefix}-{kind}")
+        summary += over
+        if not ais:
+            summary.append("note: no AI is seated (question 4's default is one, the user's): its AI will find no Character")
+        for k in sorted(from_seat):
+            summary.append(f"seat: {names[k]}'s Character comes from its seat (Make a seat, its own new Character)")
+        if online and plan.get("repo"):
+            summary.append(f"online in a repository: world.json {'would carry' if check else 'carries'} no api block; "
+                           f"the server id is in the world skill")
+        for p, _ in copy_paths:
+            summary.append(f"{'would copy' if check else 'copy'}: {p}")
+        for d in line_done:
+            summary.append(f"agents line: {d}")
+        if line_print:
+            summary.append(f"agents line, for the user to place (the copies {'would go' if check else 'went'} to a "
+                           f"home folder): {line_print}")
+        elif check and line:
+            summary.append(f"agents line, whole: {line}")
+        if bulk:
+            summary.append(f"bulk body: {bulk} ({n} items)")
+        elif check and items is not None:
+            summary.append(f"bulk body: with --bulk, the upload's body would hold {n} items, the elements above")
+        return summary
+
+    if check:  # the run up to its first act, and no act: each folder it would make is looked at, none made
+        owner, made, failed = folders_of(), set(), None
+        for folder in sorted(owner, key=lambda f: len(f.parts)):
+            for step in [*reversed(folder.parents), folder]:
+                if step.is_dir() or step in made:
+                    continue
+                if step.exists():
+                    key, value = owner[folder]
+                    failed = f"{key} {value!r}: the folder {step} cannot be made (a file is there)"
+                    break
+                made.add(step)
+            if failed:
+                break
+        if failed:
+            say_refusal(f"REFUSED {failed}; nothing is written\nnothing written; 1 problem(s)\n")
+            return 1
+        say("check: no problem found; nothing written\n" + "".join(line + "\n" for line in summary_of())
+            + "charter, filled: the rest of this output, whole; its ow://object addresses are made at the "
+              "write and will differ\n" + charter_text)
+        return 0
+
     # From the first folder the run makes to its last line of output, every act is the journal's: on any
     # error, or an interrupt, the journal is undone, last act first, and the run refuses (an interrupt
     # is let through after the undo).
@@ -1076,11 +1187,7 @@ def write_world(argv, state):
         # Every folder the run writes into is made before the first file, each an act of the journal.
         # When one cannot be made (a name the system refuses, a file where a folder goes), the journal
         # is undone and the run refuses, leaving nothing behind.
-        owner = {}  # each folder to make -> the plan key and value that put it there
-        for p, _, _ in writes:
-            key = (("--bulk", str(bulk)) if bulk is not None and p == bulk else
-                   ("OUT_FOLDER", str(out)) if not outside(p, out) else ("copies", copies))
-            owner.setdefault(Path(os.path.abspath(p.parent)), key)
+        owner = folders_of()
         failed = None
         for folder in sorted(owner, key=lambda f: len(f.parts)):
             for step in [*reversed(folder.parents), folder]:
@@ -1109,34 +1216,7 @@ def write_world(argv, state):
 
         # The summary is composed whole before the first file, and printed in one write after the last,
         # as the run's last act: a caller never reads a line about files a later failure took back.
-        summary = []
-        if bulk and len(items) > 1000:
-            summary.append(f"bulk: {len(items)} items, over 1000 a request: split it before sending")
-        n = sum(1 for r in files if r.startswith("elements/"))
-        summary.append(f"wrote {out} ({placement}): world.json and {n} elements "
-                       f"({', '.join(f'{t} {c}' for t, c in sorted(counts.items()))})")
-
-        def sized(n):  # two facts and no comparison, true at any size: the skill's length and the aim
-            return f"{n} characters, the packs aim for under {SKILL_MAX}"
-        summary.append(f"charter {len(charter_text)} of under {CHARTER_MAX} characters; "
-                       f"world skill {sized(len(skill_text))}; skill name {skill_name}")
-        for kind, _, _ in extras:
-            summary.append(f"{kind} skill {sized(len(extra_texts[kind][0]))}; skill name {prefix}-{kind}")
-        summary += over
-        if not ais:
-            summary.append("note: no AI is seated (question 4's default is one, the user's): its AI will find no Character")
-        for k in sorted(from_seat):
-            summary.append(f"seat: {names[k]}'s Character comes from its seat (Make a seat, its own new Character)")
-        if online and plan.get("repo"):
-            summary.append("online in a repository: world.json carries no api block; the server id is in the world skill")
-        for p, _ in copy_paths:
-            summary.append(f"copy: {p}")
-        for d in line_done:
-            summary.append(f"agents line: {d}")
-        if line_print:
-            summary.append(f"agents line, for the user to place (the copies went to a home folder): {line_print}")
-        if bulk:
-            summary.append(f"bulk body: {bulk} ({n} items)")
+        summary = summary_of()
 
         for p, data, append in writes:
             journal.write(p, data, append)

@@ -113,7 +113,12 @@ harness trial (2026-10-22):
     CLAUDE.md that is the AGENTS.md (a link) gets it once (23f); a CLAUDE.md, CLAUDE.local.md or .claude/CLAUDE.md above the copies root sends the line
     into the root's CLAUDE.md too (23c); at the home folder the older line is printed and nothing
     written, and the home folder's own .claude/CLAUDE.md counts for no project under it (23d); every
-    pack's online world skill holds the start line in the paragraph that says when it goes in (23e).
+    pack's online world skill holds the start line in the paragraph that says when it goes in (23e);
+24. `--check` fills and checks a plan as a run does and writes nothing: each pack, folder and online,
+    prints the run's summary worded as what it would write and the charter the run then writes but for
+    its ow://object addresses (24a), in UTF-8 through any pipe (24b), and a plan the run refuses is
+    refused in the same words (24c); a command line the writer does not know exits 2 before the plan is
+    read, writing nothing (24d).
 
 Output goes to a fresh folder under <repo>/.scratch/tests/ (OW_SETUP_TEST_OUT to override);
 nothing is deleted. The lint is schema-dist's walk/lint_folder.py, from the schema-dist checkout
@@ -2803,6 +2808,167 @@ class TakenBack(unittest.TestCase):
         source = read(WRITER)
         self.assertIsNone(re.search(r"\bsignal\b", source), "the writer names `signal`")
 
+
+class Check(unittest.TestCase):
+    """Test 24: `--check` fills and checks a plan as a run does and writes nothing (24a to 24c); a command
+    line the writer does not know stops it, exit 2, before the plan is read (24d). OW_WRITE_WORLD points the class at
+    another copy of the writer (and its packs and SKILL.md beside it), to show it red on an older one."""
+
+    WRITER = Path(os.environ.get("OW_WRITE_WORLD") or WRITER)
+    SKILL_DIR = WRITER.parents[1]
+    ADDRESS = re.compile(r"ow://object/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+    HEAD = "charter, filled: the rest of this output, whole"
+
+    def run_writer(self, *argv, env=None, cwd=None):
+        """The writer as a command: (exit code, its output as UTF-8 bytes decoded, its error output)."""
+        r = subprocess.run([sys.executable, str(self.WRITER), *map(str, argv)], capture_output=True,
+                           env=env, cwd=cwd)
+        return r.returncode, r.stdout.decode("utf-8"), r.stderr.decode("utf-8", "backslashreplace")
+
+    def case(self, name, plan):
+        """A project with a file of the user's in it, the plan saved: (plan path, world folder, project)."""
+        root = OUT / "check" / name / "project"
+        root.mkdir(parents=True, exist_ok=True)
+        (root / "notes.txt").write_bytes(b"the user's own\n")
+        plan_path = root.parent / "plan.json"
+        plan_path.write_text(json.dumps(plan, indent=1), encoding="utf-8")
+        return plan_path, root / "world", root
+
+    def checked(self, out):
+        """A check's output split at the charter's heading line: (its summary lines, the charter)."""
+        head, sep, charter = out.partition("\n" + self.HEAD)
+        self.assertTrue(sep, f"no charter heading in the check's output:\n{out[:2000]}")
+        lines = head.split("\n")
+        self.assertEqual(lines[0], "check: no problem found; nothing written")
+        return lines[1:], charter[charter.index("\n") + 1:]
+
+    @staticmethod
+    def as_would(line, items):
+        """A run's summary line as a check words it."""
+        line = re.sub(r"^wrote ", "would write ", line)
+        line = re.sub(r"^copy: ", "would copy: ", line)
+        line = re.sub(r"^(agents line: .*): written$", r"\1: would be written", line)
+        line = line.replace(": the line appended", ": the line would be appended")
+        line = line.replace("so the line goes in once", "so the line would go in once")
+        line = line.replace("world.json carries no api block", "world.json would carry no api block")
+        line = line.replace("it is written whole", "it would be written whole")
+        if line.startswith("bulk body: "):
+            line = f"bulk body: with --bulk, the upload's body would hold {items} items, the elements above"
+        return line
+
+    def test_24a_check_writes_nothing_and_says_what_a_run_writes(self):
+        """Each pack, a folder and an online world, the copies and the AGENTS.md line in a project: the
+        check exits 0 and leaves the project and the plan's folder byte for byte as they were, the world
+        folder never made; it prints the run's summary worded as what a run would write, the AGENTS.md
+        line whole, for an online plan how many items the upload's body would hold, and then the filled
+        charter, which is the run's `description` byte for byte but for its ow://object addresses."""
+        for pack in PACKS:
+            for placement in ("folder", "online"):
+                with self.subTest(pack=pack, placement=placement):
+                    root = OUT / "check" / f"{pack}-{placement}" / "project"
+                    plan, world = variant(json.loads(read(PLANS / f"{pack}.json")), placement, root)
+                    plan_path, world, root = self.case(f"{pack}-{placement}", plan)
+                    before = contents(root.parent)
+                    code, out, err = self.run_writer(plan_path, world, "--check")
+                    self.assertEqual(code, 0, out + err)
+                    self.assertFalse(world.exists(), "the check made the world folder")
+                    self.assertEqual(contents(root.parent), before, "the check wrote something")
+                    lines, charter = self.checked(out)
+                    bulk = root.parent / "bulk.json"
+                    argv = [plan_path, world] + (["--bulk", bulk] if placement == "online" else [])
+                    code, ran, err = self.run_writer(*argv)
+                    self.assertEqual(code, 0, ran + err)
+                    written = json.loads(read(world / "elements" / "law" / "charter.json"))["description"]
+                    self.assertEqual(len(self.ADDRESS.findall(charter)), len(self.ADDRESS.findall(written)))
+                    self.assertGreater(len(self.ADDRESS.findall(written)), 0)
+                    self.assertEqual(self.ADDRESS.sub("ow://object/<id>", charter),
+                                     self.ADDRESS.sub("ow://object/<id>", written))
+                    items = len(json.loads(read(bulk))["items"]) if placement == "online" else None
+                    want = [self.as_would(ln, items) for ln in ran.splitlines()]
+                    agents = read(root / "AGENTS.md").rstrip("\n").split("\n")[-1]
+                    self.assertIn(f"agents line, whole: {agents}", lines)
+                    self.assertEqual([ln for ln in lines if not ln.startswith("agents line, whole: ")], want)
+                    if placement == "online":
+                        self.assertIn(f"bulk body: with --bulk, the upload's body would hold {items} items, "
+                                      f"the elements above", lines)
+
+    def test_24b_the_check_prints_utf8_through_any_pipe(self):
+        """A name outside the console's code page (an AI named Łucja, the owner Zoë Ångström) is printed
+        as written, also through a pipe whose encoding is cp1252: the check's output is UTF-8."""
+        plan = json.loads(read(PLANS / "company.json"))
+        rows = {e["key"]: e for e in plan["elements"]}
+        rows["ai-kestrel"]["fields"]["name"] = "Łucja"
+        rows["owner"]["fields"]["name"] = plan["values"]["keeper"] = "Zoë Ångström"
+        plan, _ = variant(plan, "folder", OUT / "check" / "utf8" / "project")
+        plan_path, world, root = self.case("utf8", plan)
+        env = dict(os.environ, PYTHONIOENCODING="cp1252", PYTHONUTF8="0")
+        code, out, err = self.run_writer(plan_path, world, "--check", env=env)
+        self.assertEqual(code, 0, out + err)
+        _, charter = self.checked(out)
+        self.assertIn("Łucja (Agent, co-builder, Zoë Ångström's AI)", charter)
+        self.assertNotIn("\\u0141", out)
+
+    def test_24c_a_check_refuses_as_the_run_refuses(self):
+        """A plan with problems (a `{{` left after filling, an AI seat above its human's), a project
+        that already holds the copies of an earlier run, and a copies root where a file stands: the check
+        prints what the run prints, exit 1, and neither writes anything."""
+        plan = json.loads(read(PLANS / "company.json"))
+        rows = {e["key"]: e for e in plan["elements"]}
+        rows["org"]["fields"]["description"] = "Made by {{ Org }}."
+        rows["tomas"]["seat"] = {"role": "guest"}
+        rows["tomas"]["fields"]["name"] = "Tomas"
+        plan["elements"].append({"key": "ai-t", "type": "character", "seat": {"role": "owner", "ai_of": "tomas"},
+                                 "fields": {"name": "Tee", "supertype": "Agent"}})
+        bad, _ = variant(plan, "folder", OUT / "check" / "problems" / "project")
+        good, _ = variant(json.loads(read(PLANS / "governance.json")), "folder", OUT / "check" / "again" / "project")
+        blocked, _ = variant(json.loads(read(PLANS / "workshop.json")), "folder", OUT / "check" / "blocked" / "project")
+        for name, p in (("problems", bad), ("again", good), ("blocked", blocked)):
+            with self.subTest(case=name):
+                plan_path, world, root = self.case(name, p)
+                if name == "again":  # an earlier run's copies stand in the project
+                    code, out, err = self.run_writer(plan_path, root / "first-world")
+                    self.assertEqual(code, 0, out + err)
+                if name == "blocked":  # the copies root's .claude is a file
+                    (root / ".claude").write_bytes(b"not a folder\n")
+                before = contents(root.parent)
+                outs = []
+                for argv in ([plan_path, world, "--check"], [plan_path, world]):
+                    code, out, err = self.run_writer(*argv)
+                    self.assertEqual(code, 1, out + err)
+                    self.assertEqual(contents(root.parent), before, f"{argv[2:]} wrote something")
+                    self.assertRegex(out, r"(?m)^REFUSED ")
+                    outs.append(out.replace("\r\n", "\n"))  # a run's console line ends; the check's are LF
+                self.assertEqual(outs[0], outs[1])
+                if name == "problems":
+                    self.assertIn("is not filled", outs[0])
+                    self.assertIn("an AI's seat is at most its human's role", outs[0])
+                if name == "again":
+                    self.assertIn("a copy is the user's; not overwritten", outs[0])
+
+    def test_24d_a_command_line_the_writer_does_not_know(self):
+        """An unknown flag (`--dry-run`, `--chek`, `--bulk=F`), `--bulk` last or given twice, `--bulk
+        --check` (a value that begins with `--`), `--check` beside `--bulk F`, and one argument too few:
+        each exits 2 with the usage line, which names --check, and writes nothing, not even a file named
+        `--check`; a plan that does not exist is never read. A plan's problem still exits 1 (24c)."""
+        plan, _ = variant(json.loads(read(PLANS / "governance.json")), "folder", OUT / "check" / "usage" / "project")
+        plan_path, world, root = self.case("usage", plan)
+        f = root.parent / "bulk.json"
+        cases = {"--dry-run": [plan_path, world, "--dry-run"], "--chek": [plan_path, world, "--chek"],
+                 "--bulk=F": [plan_path, world, f"--bulk={f}"], "--bulk last": [plan_path, world, "--bulk"],
+                 "--bulk --check": [plan_path, world, "--bulk", "--check"],
+                 "--check --bulk F": [plan_path, world, "--check", "--bulk", f],
+                 "--bulk F --check": [plan_path, world, "--bulk", f, "--check"],
+                 "--bulk twice": [plan_path, world, "--bulk", f, "--bulk", root.parent / "b2.json"],
+                 "one argument": [plan_path, "--check"],
+                 "no plan read": [root.parent / "no-such-plan.json", world, "--chek"]}
+        for name, argv in cases.items():
+            with self.subTest(case=name):
+                before = contents(root.parent)
+                code, out, err = self.run_writer(*argv, cwd=root.parent)
+                self.assertEqual(code, 2, out + err)
+                self.assertIn("write_world.py PLAN.json OUT_FOLDER --check", err)
+                self.assertEqual(out, "")
+                self.assertEqual(contents(root.parent), before, "a usage slip wrote something")
 
 if __name__ == "__main__":
     print(f"output: {OUT}")
