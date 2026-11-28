@@ -3049,20 +3049,22 @@ class Check(unittest.TestCase):
 
     def test_24h_the_yes_guards_the_world_and_the_plan_is_the_users(self):
         """The set-up skill's yes guards the world, not the session's working files: step 3 and the
-        closing list say nothing of the world (its folder, the harness copies, anything online) is
-        written before it, and step 3 has the plan say which working files exist and where; step 8's
-        report says where the plan file is, that a later online write reads it, and that it is the
-        user's to keep or delete, a temporary folder said to be one."""
+        closing list say nothing of the world (its folder, the harness copies) is written before it,
+        and no sentence says nothing online happens before it (6.1 makes the empty world before the
+        plan is shown); step 3 has the plan say which working files exist and where; step 8's report
+        says where the plan file is, that a later online write reads it, and that it is the user's to
+        keep or delete, a temporary folder said to be one."""
         setup = read(self.SKILL_DIR / "SKILL.md").split("\n")
         step3 = next(ln for ln in setup if ln.startswith("3. **Show the plan"))
         step8 = next(ln for ln in setup if ln.startswith("8. **Report**"))
         listed = next(ln for ln in setup if ln.startswith("- The charter whole as `--check` printed it"))
         self.assertIn("are your working files, and the plan you show says which they are and where", step3)
-        self.assertIn("Write nothing of the world (its folder, the harness copies, anything online) until the user "
-                      "says yes", step3)
+        self.assertIn("Write nothing of the world (its folder, the harness copies) until the user says yes", step3)
         self.assertNotIn("Write nothing until", step3)
-        self.assertIn("nothing of the world written before the user's yes: not its folder, the harness copies or "
-                      "anything online", listed)
+        self.assertIn("nothing of the world written before the user's yes: not its folder or the harness copies",
+                      listed)
+        self.assertNotIn("anything online", "\n".join(setup))
+        self.assertIn("6.1 and 6.2 before step 3 shows the plan", "\n".join(setup))
         for words in ("where the plan file is", "written again from that plan (6.2)",
                       "the user's to keep or delete", "a plan in a temporary folder is said to be there",
                       "nothing is moved or deleted unasked"):
