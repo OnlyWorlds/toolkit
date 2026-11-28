@@ -2872,6 +2872,9 @@ class Check(unittest.TestCase):
                     root = OUT / "check" / f"{pack}-{placement}" / "project"
                     plan, world = variant(json.loads(read(PLANS / f"{pack}.json")), placement, root)
                     plan_path, world, root = self.case(f"{pack}-{placement}", plan)
+                    if placement == "online":  # the user's own AGENTS.md and CLAUDE.md, which the line is appended to
+                        (root / "AGENTS.md").write_bytes(b"# House rules\n")
+                        (root / "CLAUDE.md").write_bytes(b"# Claude\r\n")
                     before = contents(root.parent)
                     code, out, err = self.run_writer(plan_path, world, "--check")
                     self.assertEqual(code, 0, out + err)
