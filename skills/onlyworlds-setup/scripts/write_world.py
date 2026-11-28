@@ -7,8 +7,9 @@ With --check it does everything a run does before its first write, and writes no
 the problems a run would refuse on (exit 1), or what a run would write, the run's summary worded so
 (for a plan with "online", how many items the upload's body would hold), then the filled charter
 whole, as the run would write it but for the ow://object addresses, which each run makes anew. Its
-output, as a run's, is UTF-8 with LF line ends. A command line it does not know (another flag, --bulk without a value, --check
-beside --bulk) stops it with the lines above, exit 2, before the plan is read.
+output and its error output, as a run's, are UTF-8 with LF line ends. A command line it does not
+know (another flag, --bulk without a value, --check beside --bulk) stops it with the lines above,
+exit 2, before the plan is read.
 
 The model fills the plan from the interview; this script does the counting: it mints the ids,
 fills every placeholder, writes each file by the folder format's writer rules, checks the sizes,
@@ -636,6 +637,13 @@ def command_line(argv):
 
 
 def write_world(argv, state):
+    # Every line it prints, the check's and the run's, on the output and the error output alike: UTF-8 and
+    # LF, whatever the console, so a name outside the code page reads back as written through a pipe; never
+    # a crash. The error output is set only when it is the process's own (a caller's stream is the caller's).
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace", newline="\n")
+    if sys.stderr is not None and sys.stderr is sys.__stderr__ and hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace", newline="\n")
     known = command_line(argv)
     if known is None:  # before anything is read: a mistyped flag never runs as a real write
         if sys.stderr is not None:
@@ -644,9 +652,6 @@ def write_world(argv, state):
     plan_arg, out_arg, bulk_arg, check = known
     bulk = Path(bulk_arg) if bulk_arg else None
     args = [plan_arg, out_arg]
-    if hasattr(sys.stdout, "reconfigure"):  # the check and the run alike: UTF-8 and LF, whatever the console,
-        # so a name outside the code page reads back as written through a pipe; never a crash
-        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace", newline="\n")
     plan = json.loads(Path(args[0]).read_text(encoding="utf-8"))
     out = Path(args[1])
     problems = []

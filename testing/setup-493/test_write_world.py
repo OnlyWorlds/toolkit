@@ -2935,7 +2935,8 @@ class Check(unittest.TestCase):
     def test_24g_the_run_prints_utf8_through_any_pipe(self):
         """The run takes the check's road: through a pipe whose encoding is cp1252, an online run whose
         AI is named Łucja, into a project whose folder is named for Zoë, prints both names as written,
-        UTF-8 with LF line ends."""
+        UTF-8 with LF line ends; a second run into the folder it wrote refuses on the error output,
+        the same."""
         plan = json.loads(read(PLANS / "company.json"))
         rows = {e["key"]: e for e in plan["elements"]}
         rows["ai-kestrel"]["fields"]["name"] = "Łucja"
@@ -2955,6 +2956,12 @@ class Check(unittest.TestCase):
         self.assertIn(f"wrote {world} (online)", ran)
         self.assertNotIn("\\u0141", ran)
         self.assertNotIn("\\xeb", ran)
+        # A second run into the written folder: the refusal on the error output takes the same road.
+        r = subprocess.run([sys.executable, str(self.WRITER), str(plan_path), str(world), "--bulk",
+                            str(root.parent / "bulk-2.json")], capture_output=True, env=env)
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertNotIn(b"\r\n", r.stderr)
+        self.assertIn(f"{world} already holds files", r.stderr.decode("utf-8"))
 
     def test_24c_a_check_refuses_as_the_run_refuses(self):
         """A plan with problems (a `{{` left after filling, an AI seat above its human's), a project
