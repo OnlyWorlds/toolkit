@@ -2875,6 +2875,7 @@ class Check(unittest.TestCase):
                     if placement == "online":  # the user's own AGENTS.md and CLAUDE.md, which the line is appended to
                         (root / "AGENTS.md").write_bytes(b"# House rules\n")
                         (root / "CLAUDE.md").write_bytes(b"# Claude\r\n")
+                        (root / ".gitattributes").write_bytes(b"* text=auto\n")  # the project's own: none written
                     before = contents(root.parent)
                     code, out, err = self.run_writer(plan_path, world, "--check")
                     self.assertEqual(code, 0, out + err)
@@ -2892,6 +2893,9 @@ class Check(unittest.TestCase):
                                      self.ADDRESS.sub("ow://object/<id>", written))
                     items = len(json.loads(read(bulk))["items"]) if placement == "online" else None
                     want = [self.as_would(ln, items) for ln in ran.splitlines()]
+                    attrs = root / ".gitattributes"  # the copies root's, which the run writes where none stands
+                    named = [f"wrote {attrs}" in ran.splitlines(), f"would write {attrs}" in lines]
+                    self.assertEqual(named, [placement == "folder"] * 2, "the root .gitattributes, named when written")
                     agents = read(root / "AGENTS.md").rstrip("\n").split("\n")[-1]
                     self.assertIn(f"agents line, whole: {agents}", lines)
                     self.assertEqual([ln for ln in lines if not ln.startswith("agents line, whole: ")], want)
@@ -3001,6 +3005,11 @@ class Check(unittest.TestCase):
         self.assertIn("co-builder", q4)
         step3 = next(ln for ln in setup.split("\n") if ln.startswith("3. **Show the plan"))
         self.assertIn("python scripts/write_world.py PLAN OUT --check", step3)
+        self.assertIn("When the user picks contributor for the keeper's own AI, the plan says that this AI hands in "
+                      "reports like every member's AI, and that the keeper makes the changes the reports call for and "
+                      "completes the reports themselves.", step3)
+        self.assertIn("Never change the pack's sentences at set-up, and never edit what the writer wrote, before the "
+                      "upload or after it", step3)
 
 
 if __name__ == "__main__":

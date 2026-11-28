@@ -1144,6 +1144,8 @@ def write_world(argv, state):
                            f"the server id is in the world skill")
         for p, _ in copy_paths:
             summary.append(f"{'would copy' if check else 'copy'}: {p}")
+        if root_attrs is not None:  # the copies root's own line-ending rule, a file in the user's project
+            summary.append(f"{'would write' if check else 'wrote'} {root_attrs}")
         for d in line_done:
             summary.append(f"agents line: {d}")
         if line_print:
